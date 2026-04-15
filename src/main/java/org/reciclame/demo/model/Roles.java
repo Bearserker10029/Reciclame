@@ -1,4 +1,4 @@
 package org.reciclame.demo.model;
 
-public class prueba {
+public class roles {
 }
