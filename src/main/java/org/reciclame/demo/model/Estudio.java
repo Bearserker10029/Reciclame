@@ -1,81 +1,91 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "estudios", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
+import java.time.LocalDate;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "estudios", schema = "reciclame_db")
 public class Estudio {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.Column(name = "titulo", nullable = false, length = 300)
-private java.lang.String titulo;
+    @Column(name = "titulo", nullable = false, length = 300)
+    private String titulo;
 
-@jakarta.persistence.Column(name = "descripcion_breve", length = 500)
-private java.lang.String descripcionBreve;
+    @Column(name = "descripcion_breve", length = 500)
+    private String descripcionBreve;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "resumen")
-private java.lang.String resumen;
+    @Lob
+    @Column(name = "resumen")
+    private String resumen;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "tematica_id", nullable = false)
-private org.reciclame.demo.model.tematicas tematica;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "tematica_id", nullable = false)
+    private Tematicas tematica;
 
-@jakarta.persistence.Column(name = "autor", length = 200)
-private java.lang.String autor;
+    @Column(name = "autor", length = 200)
+    private String autor;
 
-@jakarta.persistence.Column(name = "fecha_estudio")
-private java.time.LocalDate fechaEstudio;
+    @Column(name = "fecha_estudio")
+    private LocalDate fechaEstudio;
 
-@jakarta.persistence.Column(name = "anio")
-private java.lang.Integer anio;
+    @Column(name = "anio")
+    private Integer anio;
 
-@jakarta.persistence.Column(name = "archivo_url", nullable = false, length = 500)
-private java.lang.String archivoUrl;
+    @Column(name = "archivo_url", nullable = false, length = 500)
+    private String archivoUrl;
 
-@jakarta.persistence.Column(name = "archivo_tipo_mime", length = 50)
-private java.lang.String archivoTipoMime;
+    @Column(name = "archivo_tipo_mime", length = 50)
+    private String archivoTipoMime;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
-@jakarta.persistence.JoinColumn(name = "normativa_relacionada_id")
-private org.reciclame.demo.model.Normativa normativaRelacionada;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "normativa_relacionada_id")
+    private Normativa normativaRelacionada;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@jakarta.persistence.JoinColumn(name = "subida_por_id", nullable = false)
-private org.reciclame.demo.model.Usuario subidaPor;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "subida_por_id", nullable = false)
+    private Usuario subidaPor;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
-@jakarta.persistence.JoinColumn(name = "validado_por_id")
-private org.reciclame.demo.model.Usuario validadoPor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "validado_por_id")
+    private Usuario validadoPor;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "es_publico", nullable = false)
-private java.lang.Boolean esPublico;
+    @ColumnDefault("0")
+    @Column(name = "es_publico", nullable = false)
+    private Boolean esPublico;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "visualizaciones_count", nullable = false)
-private java.lang.Integer visualizacionesCount;
+    @ColumnDefault("0")
+    @Column(name = "visualizaciones_count", nullable = false)
+    private Integer visualizacionesCount;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "descargas_count", nullable = false)
-private java.lang.Integer descargasCount;
+    @ColumnDefault("0")
+    @Column(name = "descargas_count", nullable = false)
+    private Integer descargasCount;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at", nullable = false)
-private java.time.Instant updatedAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
 
 }

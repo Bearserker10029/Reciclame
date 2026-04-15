@@ -1,30 +1,39 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "documentos_recientes", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "documentos_recientes", schema = "reciclame_db")
 public class DocumentosReciente {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
-@jakarta.persistence.JoinColumn(name = "usuario_id", nullable = false)
-private org.reciclame.demo.model.Usuario usuario;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "documento_tipo", nullable = false)
-private java.lang.String documentoTipo;
+    @Lob
+    @Column(name = "documento_tipo", nullable = false)
+    private String documentoTipo;
 
-@jakarta.persistence.Column(name = "documento_id", nullable = false)
-private java.lang.Long documentoId;
+    @Column(name = "documento_id", nullable = false)
+    private Long documentoId;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "ultima_vista", nullable = false)
-private java.time.Instant ultimaVista;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "ultima_vista", nullable = false)
+    private Instant ultimaVista;
 
 
 }

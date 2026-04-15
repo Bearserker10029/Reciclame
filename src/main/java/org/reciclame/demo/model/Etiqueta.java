@@ -1,28 +1,35 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "etiquetas", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "etiquetas", schema = "reciclame_db")
 public class Etiqueta {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.Column(name = "nombre", nullable = false, length = 50)
-private java.lang.String nombre;
+    @Column(name = "nombre", nullable = false, length = 50)
+    private String nombre;
 
-@jakarta.persistence.Column(name = "descripcion")
-private java.lang.String descripcion;
+    @Column(name = "descripcion")
+    private String descripcion;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
 
 }

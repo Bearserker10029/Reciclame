@@ -1,48 +1,57 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "notificaciones", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "notificaciones", schema = "reciclame_db")
 public class Notificacione {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
-@jakarta.persistence.JoinColumn(name = "usuario_id", nullable = false)
-private org.reciclame.demo.model.Usuario usuario;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "tipo", nullable = false)
-private java.lang.String tipo;
+    @Lob
+    @Column(name = "tipo", nullable = false)
+    private String tipo;
 
-@jakarta.persistence.Column(name = "titulo", nullable = false)
-private java.lang.String titulo;
+    @Column(name = "titulo", nullable = false)
+    private String titulo;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "mensaje", nullable = false)
-private java.lang.String mensaje;
+    @Lob
+    @Column(name = "mensaje", nullable = false)
+    private String mensaje;
 
-@jakarta.persistence.Column(name = "enlace_recurso", length = 500)
-private java.lang.String enlaceRecurso;
+    @Column(name = "enlace_recurso", length = 500)
+    private String enlaceRecurso;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "leida", nullable = false)
-private java.lang.Boolean leida;
+    @ColumnDefault("0")
+    @Column(name = "leida", nullable = false)
+    private Boolean leida;
 
-@jakarta.persistence.Column(name = "fecha_lectura")
-private java.time.Instant fechaLectura;
+    @Column(name = "fecha_lectura")
+    private Instant fechaLectura;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
 
 }

@@ -1,51 +1,60 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "solicitudes_registro", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "solicitudes_registro", schema = "reciclame_db")
 public class SolicitudesRegistro {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.Column(name = "nombre_completo", nullable = false, length = 200)
-private java.lang.String nombreCompleto;
+    @Column(name = "nombre_completo", nullable = false, length = 200)
+    private String nombreCompleto;
 
-@jakarta.persistence.Column(name = "dni", nullable = false, length = 8)
-private java.lang.String dni;
+    @Column(name = "dni", nullable = false, length = 8)
+    private String dni;
 
-@jakarta.persistence.Column(name = "correo_corporativo", nullable = false, length = 200)
-private java.lang.String correoCorporativo;
+    @Column(name = "correo_corporativo", nullable = false, length = 200)
+    private String correoCorporativo;
 
-@jakarta.persistence.Column(name = "empresa_nombre", nullable = false, length = 200)
-private java.lang.String empresaNombre;
+    @Column(name = "empresa_nombre", nullable = false, length = 200)
+    private String empresaNombre;
 
-@org.hibernate.annotations.ColumnDefault("'PENDIENTE'")
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "estado", nullable = false)
-private java.lang.String estado;
+    @ColumnDefault("'PENDIENTE'")
+    @Lob
+    @Column(name = "estado", nullable = false)
+    private String estado;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
-@jakarta.persistence.JoinColumn(name = "revisada_por_id")
-private org.reciclame.demo.model.Usuario revisadaPor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(name = "revisada_por_id")
+    private Usuario revisadaPor;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "motivo_rechazo")
-private java.lang.String motivoRechazo;
+    @Lob
+    @Column(name = "motivo_rechazo")
+    private String motivoRechazo;
 
-@jakarta.persistence.Column(name = "fecha_resolucion")
-private java.time.Instant fechaResolucion;
+    @Column(name = "fecha_resolucion")
+    private Instant fechaResolucion;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
 
 }
