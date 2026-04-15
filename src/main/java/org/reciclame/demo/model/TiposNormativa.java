@@ -16,7 +16,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Entity
 @Table(name="tipos_normativa")
-public class tipos_normativa {
+public class TiposNormativa {
     @Id
     private String id;
     private String nombre;

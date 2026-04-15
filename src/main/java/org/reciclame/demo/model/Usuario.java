@@ -1,70 +1,77 @@
-package org.reciclame.demo;
+package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "usuarios", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "usuarios", schema = "reciclame_db")
 public class Usuario {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.Column(name = "nombre_completo", nullable = false, length = 200)
-private java.lang.String nombreCompleto;
+    @Column(name = "nombre_completo", nullable = false, length = 200)
+    private String nombreCompleto;
 
-@jakarta.persistence.Column(name = "dni", nullable = false, length = 8)
-private java.lang.String dni;
+    @Column(name = "dni", nullable = false, length = 8)
+    private String dni;
 
-@jakarta.persistence.Column(name = "correo_corporativo", nullable = false, length = 200)
-private java.lang.String correoCorporativo;
+    @Column(name = "correo_corporativo", nullable = false, length = 200)
+    private String correoCorporativo;
 
-@jakarta.persistence.Column(name = "password_hash", nullable = false)
-private java.lang.String passwordHash;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
-@jakarta.persistence.Column(name = "cargo", length = 150)
-private java.lang.String cargo;
+    @Column(name = "cargo", length = 150)
+    private String cargo;
 
-@jakarta.persistence.Column(name = "foto_url", length = 500)
-private java.lang.String fotoUrl;
+    @Column(name = "foto_url", length = 500)
+    private String fotoUrl;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "intentos_fallidos", nullable = false)
-private java.lang.Byte intentosFallidos;
+    @ColumnDefault("0")
+    @Column(name = "intentos_fallidos", nullable = false)
+    private Byte intentosFallidos;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "cuenta_bloqueada", nullable = false)
-private java.lang.Boolean cuentaBloqueada;
+    @ColumnDefault("0")
+    @Column(name = "cuenta_bloqueada", nullable = false)
+    private Boolean cuentaBloqueada;
 
-@jakarta.persistence.Column(name = "ip_bloqueada", length = 45)
-private java.lang.String ipBloqueada;
+    @Column(name = "ip_bloqueada", length = 45)
+    private String ipBloqueada;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "tfa_activo", nullable = false)
-private java.lang.Boolean tfaActivo;
+    @ColumnDefault("0")
+    @Column(name = "tfa_activo", nullable = false)
+    private Boolean tfaActivo;
 
-@jakarta.persistence.Column(name = "tfa_secret", length = 64)
-private java.lang.String tfaSecret;
+    @Column(name = "tfa_secret", length = 64)
+    private String tfaSecret;
 
-@org.hibernate.annotations.ColumnDefault("'PENDIENTE'")
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "estado_cuenta", nullable = false)
-private java.lang.String estadoCuenta;
+    @ColumnDefault("'PENDIENTE'")
+    @Lob
+    @Column(name = "estado_cuenta", nullable = false)
+    private String estadoCuenta;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@jakarta.persistence.Column(name = "ultimo_login")
-private java.time.Instant ultimoLogin;
+    @Column(name = "ultimo_login")
+    private Instant ultimoLogin;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at", nullable = false)
-private java.time.Instant updatedAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
 
 }

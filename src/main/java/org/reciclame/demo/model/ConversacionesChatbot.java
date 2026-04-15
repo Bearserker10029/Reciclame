@@ -15,7 +15,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Entity
 @Table(name="conversaciones_chatbot")
-public class conversaciones_chatbot {
+public class ConversacionesChatbot {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private String id;

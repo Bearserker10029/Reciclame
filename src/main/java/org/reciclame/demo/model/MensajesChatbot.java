@@ -1,41 +1,51 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "mensajes_chatbot", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "mensajes_chatbot", schema = "reciclame_db")
 public class MensajesChatbot {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
-@jakarta.persistence.JoinColumn(name = "conversacion_id", nullable = false)
-private org.reciclame.demo.model.conversaciones_chatbot conversacion;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "conversacion_id", nullable = false)
+    private ConversacionesChatbot conversacion;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "rol", nullable = false)
-private java.lang.String rol;
+    @Lob
+    @Column(name = "rol", nullable = false)
+    private String rol;
 
-@jakarta.persistence.Lob
-@jakarta.persistence.Column(name = "contenido", nullable = false)
-private java.lang.String contenido;
+    @Lob
+    @Column(name = "contenido", nullable = false)
+    private String contenido;
 
-@jakarta.persistence.Column(name = "intent_detectado", length = 100)
-private java.lang.String intentDetectado;
+    @Column(name = "intent_detectado", length = 100)
+    private String intentDetectado;
 
-@jakarta.persistence.Column(name = "confianza", precision = 5, scale = 4)
-private java.math.BigDecimal confianza;
+    @Column(name = "confianza", precision = 5, scale = 4)
+    private BigDecimal confianza;
 
-@org.hibernate.annotations.ColumnDefault("0")
-@jakarta.persistence.Column(name = "derivado_soporte", nullable = false)
-private java.lang.Boolean derivadoSoporte;
+    @ColumnDefault("0")
+    @Column(name = "derivado_soporte", nullable = false)
+    private Boolean derivadoSoporte;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
 
 }

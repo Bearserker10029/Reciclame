@@ -1,24 +1,30 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "normativas_etiquetas", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "normativas_etiquetas", schema = "reciclame_db")
 public class NormativasEtiqueta {
-@jakarta.persistence.EmbeddedId
-private org.reciclame.demo.model.NormativasEtiquetaId id;
+    @EmbeddedId
+    private NormativasEtiquetaId id;
 
-@jakarta.persistence.MapsId("normativaId")
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
-@jakarta.persistence.JoinColumn(name = "normativa_id", nullable = false)
-private org.reciclame.demo.model.Normativa normativa;
+    @MapsId("normativaId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "normativa_id", nullable = false)
+    private Normativa normativa;
 
-@jakarta.persistence.MapsId("etiquetaId")
-@jakarta.persistence.ManyToOne(fetch = jakarta.persistence.FetchType.LAZY, optional = false)
-@org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.CASCADE)
-@jakarta.persistence.JoinColumn(name = "etiqueta_id", nullable = false)
-private org.reciclame.demo.model.Etiqueta etiqueta;
-
+    @MapsId("etiquetaId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "etiqueta_id", nullable = false)
+    private Etiqueta etiqueta;
 
 
 }

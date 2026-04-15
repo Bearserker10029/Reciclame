@@ -1,35 +1,42 @@
 package org.reciclame.demo.model;
 
-@lombok.Getter
-@lombok.Setter@jakarta.persistence.Entity
-@jakarta.persistence.Table(name = "empresas", schema = "reciclame_db")
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
+
+import java.time.Instant;
+
+@Getter
+@Setter
+@Entity
+@Table(name = "empresas", schema = "reciclame_db")
 public class Empresa {
-@jakarta.persistence.Id
-@jakarta.persistence.GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
-@jakarta.persistence.Column(name = "id", nullable = false)
-private java.lang.Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-@jakarta.persistence.Column(name = "razon_social", nullable = false, length = 200)
-private java.lang.String razonSocial;
+    @Column(name = "razon_social", nullable = false, length = 200)
+    private String razonSocial;
 
-@jakarta.persistence.Column(name = "ruc", length = 11)
-private java.lang.String ruc;
+    @Column(name = "ruc", length = 11)
+    private String ruc;
 
-@jakarta.persistence.Column(name = "sector", length = 100)
-private java.lang.String sector;
+    @Column(name = "sector", length = 100)
+    private String sector;
 
-@org.hibernate.annotations.ColumnDefault("1")
-@jakarta.persistence.Column(name = "estado_activo", nullable = false)
-private java.lang.Boolean estadoActivo;
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "created_at", nullable = false)
-private java.time.Instant createdAt;
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
-@org.hibernate.annotations.ColumnDefault("CURRENT_TIMESTAMP")
-@jakarta.persistence.Column(name = "updated_at", nullable = false)
-private java.time.Instant updatedAt;
-
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
 
 }
