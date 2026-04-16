@@ -13,8 +13,14 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "estudios", schema = "reciclame_db")
-public class Estudio {
+@Table(name = "estudios", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_estudios_tematica",
+                columnList = "tematica_id"),
+        @Index(name = "idx_estudios_anio",
+                columnList = "anio"),
+        @Index(name = "idx_estudios_publico",
+                columnList = "es_publico")})
+public class Estudios {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -32,7 +38,7 @@ public class Estudio {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tematica_id", nullable = false)
-    private Tematicas tematica;
+    private Tematicas tematicas;
 
     @Column(name = "autor", length = 200)
     private String autor;
@@ -52,16 +58,16 @@ public class Estudio {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "normativa_relacionada_id")
-    private Normativa normativaRelacionada;
+    private Normativas normativasRelacionada;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subida_por_id", nullable = false)
-    private Usuario subidaPor;
+    private Usuarios subidaPor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "validado_por_id")
-    private Usuario validadoPor;
+    private Usuarios validadoPor;
 
     @ColumnDefault("0")
     @Column(name = "es_publico", nullable = false)

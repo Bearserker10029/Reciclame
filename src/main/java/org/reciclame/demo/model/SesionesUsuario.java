@@ -12,7 +12,12 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "sesiones_usuario", schema = "reciclame_db")
+@Table(name = "sesiones_usuario", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_sesiones_usuario",
+                columnList = "usuario_id"),
+        @Index(name = "idx_sesiones_activa",
+                columnList = "activa")}, uniqueConstraints = {@UniqueConstraint(name = "token_sesion",
+        columnNames = {"token_sesion"})})
 public class SesionesUsuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +27,7 @@ public class SesionesUsuario {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Usuarios usuarios;
 
     @Column(name = "token_sesion", nullable = false)
     private String tokenSesion;

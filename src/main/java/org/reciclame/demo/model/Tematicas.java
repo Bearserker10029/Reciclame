@@ -10,15 +10,15 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "tematicas", schema = "reciclame_db")
+@Table(name = "tematicas", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "codigo",
+        columnNames = {"codigo"})})
 public class Tematicas {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "codigo", nullable = false, length = 10, unique = true)
+    @Column(name = "codigo", nullable = false, length = 10)
     private String codigo;
 
     @Column(name = "nombre", nullable = false, length = 100)
@@ -33,6 +33,8 @@ public class Tematicas {
     private Boolean estadoActivo;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+
 }

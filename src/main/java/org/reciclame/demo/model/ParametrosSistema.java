@@ -12,7 +12,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "parametros_sistema", schema = "reciclame_db")
+@Table(name = "parametros_sistema", schema = "reciclame_db", indexes = {@Index(name = "idx_parametros_clave",
+        columnList = "clave")}, uniqueConstraints = {@UniqueConstraint(name = "clave",
+        columnNames = {"clave"})})
 public class ParametrosSistema {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,14 +32,13 @@ public class ParametrosSistema {
     private String descripcion;
 
     @ColumnDefault("'STRING'")
-    @Lob
-    @Column(name = "tipo_dato", nullable = false)
+    @Column(name = "tipo_dato", nullable = false, length = 10)
     private String tipoDato;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "modificado_por_id")
-    private Usuario modificadoPor;
+    private Usuarios modificadoPor;
 
     @ColumnDefault("1")
     @Column(name = "estado_activo", nullable = false)

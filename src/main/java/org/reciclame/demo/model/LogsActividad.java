@@ -10,7 +10,17 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "logs_actividad", schema = "reciclame_db")
+@Table(name = "logs_actividad", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_logs_reporte_usuario_fecha",
+                columnList = "usuario_id, created_at, tipo_accion"),
+        @Index(name = "idx_logs_usuario",
+                columnList = "usuario_id"),
+        @Index(name = "idx_logs_reporte_descarga",
+                columnList = "tipo_accion, recurso_tipo, recurso_id, created_at"),
+        @Index(name = "idx_logs_tipo_accion",
+                columnList = "tipo_accion"),
+        @Index(name = "idx_logs_fecha",
+                columnList = "created_at")})
 public class LogsActividad {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +29,7 @@ public class LogsActividad {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Usuarios usuarios;
 
     @Column(name = "tipo_accion", nullable = false, length = 50)
     private String tipoAccion;

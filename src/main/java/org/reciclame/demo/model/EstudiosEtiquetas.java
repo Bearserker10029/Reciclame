@@ -10,7 +10,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Setter
 @Entity
 @Table(name = "estudios_etiquetas", schema = "reciclame_db")
-public class EstudiosEtiqueta {
+public class EstudiosEtiquetas {
     @EmbeddedId
     private EstudiosEtiquetaId id;
 
@@ -18,13 +18,13 @@ public class EstudiosEtiqueta {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "estudio_id", nullable = false)
-    private Estudio estudio;
+    private Estudios estudios;
 
     @MapsId("etiquetaId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "etiqueta_id", nullable = false)
-    private Etiqueta etiqueta;
+    private Etiquetas etiquetas;
 
 
 }

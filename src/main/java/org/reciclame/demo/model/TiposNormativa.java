@@ -10,15 +10,15 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "tipos_normativa", schema = "reciclame_db")
+@Table(name = "tipos_normativa", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "nombre",
+        columnNames = {"nombre"})})
 public class TiposNormativa {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "nombre", nullable = false, length = 60, unique = true)
+    @Column(name = "nombre", nullable = false, length = 60)
     private String nombre;
 
     @ColumnDefault("1")
@@ -26,6 +26,8 @@ public class TiposNormativa {
     private Boolean estadoActivo;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+
 }

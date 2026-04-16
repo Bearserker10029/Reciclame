@@ -13,7 +13,11 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "mensajes_chatbot", schema = "reciclame_db")
+@Table(name = "mensajes_chatbot", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_mensajes_conversacion",
+                columnList = "conversacion_id"),
+        @Index(name = "idx_mensajes_fecha",
+                columnList = "created_at")})
 public class MensajesChatbot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,8 +29,7 @@ public class MensajesChatbot {
     @JoinColumn(name = "conversacion_id", nullable = false)
     private ConversacionesChatbot conversacion;
 
-    @Lob
-    @Column(name = "rol", nullable = false)
+    @Column(name = "rol", nullable = false, length = 10)
     private String rol;
 
     @Lob

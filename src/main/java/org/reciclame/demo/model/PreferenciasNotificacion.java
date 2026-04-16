@@ -12,7 +12,9 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "preferencias_notificacion", schema = "reciclame_db")
+@Table(name = "preferencias_notificacion", schema = "reciclame_db", indexes = {@Index(name = "idx_preferencias_usuario",
+        columnList = "usuario_id")}, uniqueConstraints = {@UniqueConstraint(name = "usuario_id",
+        columnNames = {"usuario_id"})})
 public class PreferenciasNotificacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +24,7 @@ public class PreferenciasNotificacion {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Usuarios usuarios;
 
     @ColumnDefault("1")
     @Column(name = "email_habilitado", nullable = false)
@@ -57,8 +59,7 @@ public class PreferenciasNotificacion {
     private Boolean notifDigestoSemanal;
 
     @ColumnDefault("'DIARIA'")
-    @Lob
-    @Column(name = "frecuencia_email", nullable = false)
+    @Column(name = "frecuencia_email", nullable = false, length = 15)
     private String frecuenciaEmail;
 
     @ColumnDefault("CURRENT_TIMESTAMP")

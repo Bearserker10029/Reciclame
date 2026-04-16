@@ -12,8 +12,14 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "notificaciones", schema = "reciclame_db")
-public class Notificacione {
+@Table(name = "notificaciones", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_notificaciones_usuario",
+                columnList = "usuario_id"),
+        @Index(name = "idx_notificaciones_leida",
+                columnList = "leida"),
+        @Index(name = "idx_notificaciones_fecha",
+                columnList = "created_at")})
+public class Notificaciones {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -22,10 +28,9 @@ public class Notificacione {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    private Usuarios usuarios;
 
-    @Lob
-    @Column(name = "tipo", nullable = false)
+    @Column(name = "tipo", nullable = false, length = 30)
     private String tipo;
 
     @Column(name = "titulo", nullable = false)

@@ -13,14 +13,20 @@ import java.util.Map;
 @Getter
 @Setter
 @Entity
-@Table(name = "cambios_documento", schema = "reciclame_db")
+@Table(name = "cambios_documento", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_cambios_documento",
+                columnList = "documento_tipo, documento_id"),
+        @Index(name = "idx_cambios_usuario",
+                columnList = "modificado_por_id"),
+        @Index(name = "idx_cambios_fecha",
+                columnList = "created_at")})
 public class CambiosDocumento {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "documento_tipo", nullable = false)
+    @Column(name = "documento_tipo", nullable = false, length = 20)
     private String documentoTipo;
 
     @Column(name = "documento_id", nullable = false)
@@ -28,7 +34,7 @@ public class CambiosDocumento {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "modificado_por_id", nullable = false)
-    private Usuario modificadoPor;
+    private Usuarios modificadoPor;
 
     @Column(name = "tipo_cambio", nullable = false, length = 50)
     private String tipoCambio;

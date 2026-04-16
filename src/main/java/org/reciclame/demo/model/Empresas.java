@@ -10,8 +10,10 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "empresas", schema = "reciclame_db")
-public class Empresa {
+@Table(name = "empresas", schema = "reciclame_db", indexes = {@Index(name = "idx_empresas_razon_social",
+        columnList = "razon_social")}, uniqueConstraints = {@UniqueConstraint(name = "ruc",
+        columnNames = {"ruc"})})
+public class Empresas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
