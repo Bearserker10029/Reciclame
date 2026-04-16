@@ -12,6 +12,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "usuarios", schema = "reciclame_db")
 public class Usuario {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -20,13 +21,13 @@ public class Usuario {
     @Column(name = "nombre_completo", nullable = false, length = 200)
     private String nombreCompleto;
 
-    @Column(name = "dni", nullable = false, length = 8)
+    @Column(name = "dni", nullable = false, length = 8, unique = true)
     private String dni;
 
-    @Column(name = "correo_corporativo", nullable = false, length = 200)
+    @Column(name = "correo_corporativo", nullable = false, length = 200, unique = true)
     private String correoCorporativo;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 
     @Column(name = "cargo", length = 150)
@@ -35,6 +36,16 @@ public class Usuario {
     @Column(name = "foto_url", length = 500)
     private String fotoUrl;
 
+    // ── Relaciones FK ──────────────────────────────────────────
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "rol_id", nullable = false)
+    private Roles rol;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
+
+    // ── Seguridad ──────────────────────────────────────────────
     @ColumnDefault("0")
     @Column(name = "intentos_fallidos", nullable = false)
     private Byte intentosFallidos;
@@ -53,10 +64,11 @@ public class Usuario {
     @Column(name = "tfa_secret", length = 64)
     private String tfaSecret;
 
+    // ── Estado ─────────────────────────────────────────────────
     @ColumnDefault("'PENDIENTE'")
-    @Lob
-    @Column(name = "estado_cuenta", nullable = false)
-    private String estadoCuenta;
+    @Column(name = "estado_cuenta", nullable = false, length = 20)
+    @Enumerated(EnumType.STRING)
+    private EstadoCuenta estadoCuenta;
 
     @ColumnDefault("1")
     @Column(name = "estado_activo", nullable = false)
@@ -66,12 +78,15 @@ public class Usuario {
     private Instant ultimoLogin;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-
+    // ── Enum interno ───────────────────────────────────────────
+    public enum EstadoCuenta {
+        PENDIENTE, ACTIVO, INACTIVO, BLOQUEADO
+    }
 }
