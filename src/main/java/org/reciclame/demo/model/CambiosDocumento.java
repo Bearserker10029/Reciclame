@@ -20,7 +20,6 @@ public class CambiosDocumento {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Lob
     @Column(name = "documento_tipo", nullable = false)
     private String documentoTipo;
 

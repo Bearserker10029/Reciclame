@@ -1,27 +1,38 @@
 package org.reciclame.demo.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name="tematicas")
+@Table(name = "tematicas", schema = "reciclame_db")
 public class Tematicas {
+
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
+
+    @Column(name = "codigo", nullable = false, length = 10, unique = true)
     private String codigo;
+
+    @Column(name = "nombre", nullable = false, length = 100)
     private String nombre;
-    private String color_hex;
-    private boolean estado_activo;
-    private Timestamp created_at;
+
+    @ColumnDefault("'#95A5A6'")
+    @Column(name = "color_hex", nullable = false, length = 7)
+    private String colorHex;
+
+    @ColumnDefault("1")
+    @Column(name = "estado_activo", nullable = false)
+    private Boolean estadoActivo;
+
+    @ColumnDefault("CURRENT_TIMESTAMP")
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 }
