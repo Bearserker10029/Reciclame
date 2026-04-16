@@ -1,12 +1,12 @@
 package org.reciclame.demo.repository;
 
-import org.reciclame.demo.model.Roles;
+import org.reciclame.demo.model.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface RolesRepository extends JpaRepository<Roles, Long> {
-    Optional<Roles> findByNombre(String nombre);
+public interface RolRepository extends JpaRepository<Rol, Long> {
+    Optional<Rol> findByNombre(String nombre);
 }

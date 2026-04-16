@@ -2,8 +2,11 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.UsuarioRequestDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.model.Empresa;
+import org.reciclame.demo.model.Rol;
+import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.EmpresaRepository;
-import org.reciclame.demo.repository.RolesRepository;
+import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +18,14 @@ import java.util.stream.Collectors;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final RolesRepository   rolesRepository;
+    private final RolRepository rolRepository;
     private final EmpresaRepository empresaRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
-                          RolesRepository rolesRepository,
+                          RolRepository rolRepository,
                           EmpresaRepository empresaRepository) {
         this.usuarioRepository  = usuarioRepository;
-        this.rolesRepository    = rolesRepository;
+        this.rolRepository = rolRepository;
         this.empresaRepository  = empresaRepository;
     }
 
@@ -33,7 +36,7 @@ public class UsuarioService {
         if (usuarioRepository.existsByDni(dto.getDni()))
             throw new RuntimeException("Ya existe un usuario con ese DNI.");
 
-        Roles rol = rolesRepository.findById(dto.getRolId())
+        Rol rol = rolRepository.findById(dto.getRolId())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
 
         Empresa empresa = null;
@@ -51,7 +54,7 @@ public class UsuarioService {
         usuario.setFotoUrl(dto.getFotoUrl());
         usuario.setRol(rol);
         usuario.setEmpresa(empresa);
-        usuario.setEstadoCuenta(Usuario.EstadoCuenta.PENDIENTE);
+        usuario.setEstadoCuenta("PENDIENTE");
         usuario.setEstadoActivo(true);
         usuario.setCuentaBloqueada(false);
         usuario.setTfaActivo(false);
@@ -87,7 +90,7 @@ public class UsuarioService {
         if (dto.getFotoUrl()        != null) usuario.setFotoUrl(dto.getFotoUrl());
 
         if (dto.getRolId() != null) {
-            Roles rol = rolesRepository.findById(dto.getRolId())
+            Rol rol = rolRepository.findById(dto.getRolId())
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
             usuario.setRol(rol);
         }
@@ -109,7 +112,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         usuario.setEstadoActivo(false);
-        usuario.setEstadoCuenta(Usuario.EstadoCuenta.INACTIVO);
+        usuario.setEstadoCuenta("INACTIVO");
         usuario.setUpdatedAt(Instant.now());
         usuarioRepository.save(usuario);
     }
@@ -125,7 +128,7 @@ public class UsuarioService {
         dto.setFotoUrl(u.getFotoUrl());
         dto.setRolNombre(u.getRol() != null ? u.getRol().getNombre() : null);
         dto.setEmpresaNombre(u.getEmpresa() != null ? u.getEmpresa().getRazonSocial() : null);
-        dto.setEstadoCuenta(u.getEstadoCuenta() != null ? u.getEstadoCuenta().name() : null);
+        dto.setEstadoCuenta(u.getEstadoCuenta());
         dto.setEstadoActivo(u.getEstadoActivo());
         dto.setCuentaBloqueada(u.getCuentaBloqueada());
         dto.setTfaActivo(u.getTfaActivo());

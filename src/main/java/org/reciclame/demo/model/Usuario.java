@@ -27,7 +27,7 @@ import java.time.Instant;
                 columnNames = {"dni"}),
         @UniqueConstraint(name = "correo_corporativo",
                 columnNames = {"correo_corporativo"})})
-public class Usuarios {
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -53,12 +53,12 @@ public class Usuarios {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "rol_id", nullable = false)
-    private Roles rol;
+    private Rol rol;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "empresa_id")
-    private Empresas empresas;
+    private Empresa empresa;
 
     @ColumnDefault("0")
     @Column(name = "intentos_fallidos", nullable = false)

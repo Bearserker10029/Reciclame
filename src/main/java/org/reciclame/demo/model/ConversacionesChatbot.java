@@ -26,7 +26,7 @@ public class ConversacionesChatbot {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @ColumnDefault("'es'")
     @Column(name = "idioma", nullable = false, length = 5)

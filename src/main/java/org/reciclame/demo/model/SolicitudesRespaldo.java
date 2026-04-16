@@ -23,7 +23,7 @@ public class SolicitudesRespaldo {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "solicitado_por_id", nullable = false)
-    private Usuarios solicitadoPor;
+    private Usuario solicitadoPor;
 
     @ColumnDefault("'COMPLETO'")
     @Column(name = "tipo", nullable = false, length = 30)

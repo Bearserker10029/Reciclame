@@ -29,7 +29,7 @@ public class LogsActividad {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @Column(name = "tipo_accion", nullable = false, length = 50)
     private String tipoAccion;

@@ -13,7 +13,7 @@ import java.time.Instant;
 @Table(name = "empresas", schema = "reciclame_db", indexes = {@Index(name = "idx_empresas_razon_social",
         columnList = "razon_social")}, uniqueConstraints = {@UniqueConstraint(name = "ruc",
         columnNames = {"ruc"})})
-public class Empresas {
+public class Empresa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

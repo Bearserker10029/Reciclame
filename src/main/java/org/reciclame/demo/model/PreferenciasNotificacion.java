@@ -24,7 +24,7 @@ public class PreferenciasNotificacion {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @ColumnDefault("1")
     @Column(name = "email_habilitado", nullable = false)

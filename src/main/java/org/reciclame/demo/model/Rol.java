@@ -10,15 +10,15 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "etiquetas", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "nombre",
+@Table(name = "roles", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "nombre",
         columnNames = {"nombre"})})
-public class Etiquetas {
+public class Rol {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "nombre", nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 30)
     private String nombre;
 
     @Column(name = "descripcion")
