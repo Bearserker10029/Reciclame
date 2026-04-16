@@ -38,7 +38,7 @@ public class ParametrosSistema {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "modificado_por_id")
-    private Usuarios modificadoPor;
+    private Usuario modificadoPor;
 
     @ColumnDefault("1")
     @Column(name = "estado_activo", nullable = false)

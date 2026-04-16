@@ -26,7 +26,7 @@ import java.time.LocalDate;
                 columnList = "anio"),
         @Index(name = "idx_normativas_publica",
                 columnList = "es_publica")})
-public class Normativas {
+public class Normativa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -44,7 +44,7 @@ public class Normativas {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tematica_id", nullable = false)
-    private Tematicas tematicas;
+    private Tematica tematica;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tipo_normativa_id", nullable = false)
@@ -82,12 +82,12 @@ public class Normativas {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "creada_por_id", nullable = false)
-    private Usuarios creadaPor;
+    private Usuario creadaPor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "validada_por_id")
-    private Usuarios validadaPor;
+    private Usuario validadaPor;
 
     @ColumnDefault("0")
     @Column(name = "es_publica", nullable = false)
