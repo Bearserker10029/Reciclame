@@ -18,13 +18,13 @@ public class NormativasEtiqueta {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "normativa_id", nullable = false)
-    private Normativas normativas;
+    private Normativa normativa;
 
     @MapsId("etiquetaId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "etiqueta_id", nullable = false)
-    private Etiquetas etiquetas;
+    private Etiqueta etiqueta;
 
 
 }

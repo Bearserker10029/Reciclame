@@ -12,7 +12,7 @@ import java.time.Instant;
 @Entity
 @Table(name = "tematicas", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "codigo",
         columnNames = {"codigo"})})
-public class Tematicas {
+public class Tematica {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
