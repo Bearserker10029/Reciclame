@@ -12,7 +12,12 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "tokens_acceso", schema = "reciclame_db")
+@Table(name = "tokens_acceso", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_tokens_usuario",
+                columnList = "usuario_id"),
+        @Index(name = "idx_tokens_expiracion",
+                columnList = "fecha_expiracion")}, uniqueConstraints = {@UniqueConstraint(name = "token",
+        columnNames = {"token"})})
 public class TokensAcceso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,13 +27,12 @@ public class TokensAcceso {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
+    private Usuarios usuarios;
 
     @Column(name = "token", nullable = false)
     private String token;
 
-    @Lob
-    @Column(name = "tipo", nullable = false)
+    @Column(name = "tipo", nullable = false, length = 20)
     private String tipo;
 
     @ColumnDefault("0")

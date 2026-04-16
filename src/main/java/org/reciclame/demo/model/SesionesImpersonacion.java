@@ -10,7 +10,13 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "sesiones_impersonacion", schema = "reciclame_db")
+@Table(name = "sesiones_impersonacion", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_impersonacion_sa",
+                columnList = "superadmin_id"),
+        @Index(name = "idx_impersonacion_objetivo",
+                columnList = "usuario_objetivo_id"),
+        @Index(name = "idx_impersonacion_activa",
+                columnList = "activa")})
 public class SesionesImpersonacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,11 +25,11 @@ public class SesionesImpersonacion {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "superadmin_id", nullable = false)
-    private Usuario superadmin;
+    private Usuarios superadmin;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_objetivo_id", nullable = false)
-    private Usuario usuarioObjetivo;
+    private Usuarios usuariosObjetivo;
 
     @Column(name = "motivo", length = 500)
     private String motivo;

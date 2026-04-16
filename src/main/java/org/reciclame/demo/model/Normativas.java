@@ -13,8 +13,20 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Entity
-@Table(name = "normativas", schema = "reciclame_db")
-public class Normativa {
+@Table(name = "normativas", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_normativas_tematica",
+                columnList = "tematica_id"),
+        @Index(name = "idx_normativas_estado",
+                columnList = "estado_normativa_id"),
+        @Index(name = "idx_normativas_filtro",
+                columnList = "ambito, clasificacion, tematica_id, estado_normativa_id, tipo_normativa_id, anio"),
+        @Index(name = "idx_normativas_clasificacion",
+                columnList = "clasificacion"),
+        @Index(name = "idx_normativas_anio",
+                columnList = "anio"),
+        @Index(name = "idx_normativas_publica",
+                columnList = "es_publica")})
+public class Normativas {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -32,7 +44,7 @@ public class Normativa {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tematica_id", nullable = false)
-    private Tematicas tematica;
+    private Tematicas tematicas;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tipo_normativa_id", nullable = false)
@@ -43,9 +55,12 @@ public class Normativa {
     private EstadosNormativa estadoNormativa;
 
     @ColumnDefault("'NACIONAL'")
-    @Lob
-    @Column(name = "ambito", nullable = false)
+    @Column(name = "ambito", nullable = false, length = 15)
     private String ambito;
+
+    @ColumnDefault("'VINCULANTE'")
+    @Column(name = "clasificacion", nullable = false, length = 20)
+    private String clasificacion;
 
     @Column(name = "anio", nullable = false)
     private Integer anio;
@@ -67,12 +82,12 @@ public class Normativa {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "creada_por_id", nullable = false)
-    private Usuario creadaPor;
+    private Usuarios creadaPor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "validada_por_id")
-    private Usuario validadaPor;
+    private Usuarios validadaPor;
 
     @ColumnDefault("0")
     @Column(name = "es_publica", nullable = false)

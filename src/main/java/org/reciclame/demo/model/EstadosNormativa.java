@@ -10,7 +10,8 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "estados_normativa", schema = "reciclame_db")
+@Table(name = "estados_normativa", schema = "reciclame_db", uniqueConstraints = {@UniqueConstraint(name = "nombre",
+        columnNames = {"nombre"})})
 public class EstadosNormativa {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

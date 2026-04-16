@@ -12,7 +12,11 @@ import java.time.Instant;
 @Getter
 @Setter
 @Entity
-@Table(name = "solicitudes_registro", schema = "reciclame_db")
+@Table(name = "solicitudes_registro", schema = "reciclame_db", indexes = {
+        @Index(name = "idx_solicitudes_correo",
+                columnList = "correo_corporativo"),
+        @Index(name = "idx_solicitudes_estado",
+                columnList = "estado")})
 public class SolicitudesRegistro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,14 +36,13 @@ public class SolicitudesRegistro {
     private String empresaNombre;
 
     @ColumnDefault("'PENDIENTE'")
-    @Lob
-    @Column(name = "estado", nullable = false)
+    @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "revisada_por_id")
-    private Usuario revisadaPor;
+    private Usuarios revisadaPor;
 
     @Lob
     @Column(name = "motivo_rechazo")

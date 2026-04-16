@@ -2,9 +2,6 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.UsuarioRequestDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
-import org.reciclame.demo.model.Empresa;
-import org.reciclame.demo.model.Roles;
-import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.EmpresaRepository;
 import org.reciclame.demo.repository.RolesRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
