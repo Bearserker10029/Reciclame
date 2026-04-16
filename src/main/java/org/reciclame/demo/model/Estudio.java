@@ -20,7 +20,7 @@ import java.time.LocalDate;
                 columnList = "anio"),
         @Index(name = "idx_estudios_publico",
                 columnList = "es_publico")})
-public class Estudios {
+public class Estudio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -38,7 +38,7 @@ public class Estudios {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tematica_id", nullable = false)
-    private Tematicas tematicas;
+    private Tematica tematica;
 
     @Column(name = "autor", length = 200)
     private String autor;
@@ -58,16 +58,16 @@ public class Estudios {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "normativa_relacionada_id")
-    private Normativas normativasRelacionada;
+    private Normativa normativaRelacionada;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subida_por_id", nullable = false)
-    private Usuarios subidaPor;
+    private Usuario subidaPor;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "validado_por_id")
-    private Usuarios validadoPor;
+    private Usuario validadoPor;
 
     @ColumnDefault("0")
     @Column(name = "es_publico", nullable = false)

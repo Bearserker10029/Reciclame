@@ -34,7 +34,7 @@ public class CambiosDocumento {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "modificado_por_id", nullable = false)
-    private Usuarios modificadoPor;
+    private Usuario modificadoPor;
 
     @Column(name = "tipo_cambio", nullable = false, length = 50)
     private String tipoCambio;

@@ -25,11 +25,11 @@ public class SesionesImpersonacion {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "superadmin_id", nullable = false)
-    private Usuarios superadmin;
+    private Usuario superadmin;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_objetivo_id", nullable = false)
-    private Usuarios usuariosObjetivo;
+    private Usuario usuarioObjetivo;
 
     @Column(name = "motivo", length = 500)
     private String motivo;

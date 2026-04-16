@@ -21,7 +21,7 @@ import java.time.Instant;
                 "usuario_id",
                 "documento_tipo",
                 "documento_id"})})
-public class DocumentosRecientes {
+public class DocumentosReciente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -30,7 +30,7 @@ public class DocumentosRecientes {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @Column(name = "documento_tipo", nullable = false, length = 20)
     private String documentoTipo;

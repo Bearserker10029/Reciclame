@@ -19,7 +19,7 @@ import java.time.Instant;
                 columnList = "leida"),
         @Index(name = "idx_notificaciones_fecha",
                 columnList = "created_at")})
-public class Notificaciones {
+public class Notificacione {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -28,7 +28,7 @@ public class Notificaciones {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @Column(name = "tipo", nullable = false, length = 30)
     private String tipo;

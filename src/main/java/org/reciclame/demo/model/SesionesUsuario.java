@@ -27,7 +27,7 @@ public class SesionesUsuario {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @Column(name = "token_sesion", nullable = false)
     private String tokenSesion;

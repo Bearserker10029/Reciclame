@@ -42,7 +42,7 @@ public class SolicitudesRegistro {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "revisada_por_id")
-    private Usuarios revisadaPor;
+    private Usuario revisadaPor;
 
     @Lob
     @Column(name = "motivo_rechazo")

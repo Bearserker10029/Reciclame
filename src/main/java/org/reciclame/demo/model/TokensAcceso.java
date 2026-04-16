@@ -27,7 +27,7 @@ public class TokensAcceso {
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "usuario_id")
-    private Usuarios usuarios;
+    private Usuario usuario;
 
     @Column(name = "token", nullable = false)
     private String token;
