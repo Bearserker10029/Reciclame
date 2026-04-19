@@ -1,0 +1,131 @@
+@font-face {
+    font-family: "flaticon-v8";
+    src: url("../fonts/flaticon-v8.eot");
+    src: url("../fonts/flaticon-v8.eot?#iefix") format("embedded-opentype"), url("../fonts/flaticon-v8.woff") format("woff"), url("../fonts/flaticon-v8.ttf") format("truetype"), url("../fonts/flaticon-v8.svg#flaticon-v8") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    @font-face {
+        font-family: "flaticon-v8";
+        src: url("../fonts/flaticon-v8.svg#flaticon-v8") format("svg");
+    }
+}
+
+[class^="flaticonv8-"]:before,
+[class*=" flaticonv8-"]:before,
+[class^="flaticonv8-"]:after,
+[class*=" flaticonv8-"]:after {
+    font-family: flaticon-v8;
+    font-size: inherit;
+    font-style: normal;
+}
+
+.flaticonv8-meeting-room:before {
+    content: "\f101";
+}
+
+.flaticonv8-customer-service:before {
+    content: "\f102";
+}
+
+.flaticonv8-customer-service-1:before {
+    content: "\f103";
+}
+
+.flaticonv8-phone-ringing:before {
+    content: "\f104";
+}
+
+.flaticonv8-home:before {
+    content: "\f105";
+}
+
+.flaticonv8-send:before {
+    content: "\f106";
+}
+
+.flaticonv8-calendar:before {
+    content: "\f107";
+}
+
+.flaticonv8-content-strategy:before {
+    content: "\f108";
+}
+
+.flaticonv8-project-management:before {
+    content: "\f109";
+}
+
+.flaticonv8-bank:before {
+    content: "\f10a";
+}
+
+.flaticonv8-insurance:before {
+    content: "\f10b";
+}
+
+.flaticonv8-mobile-app:before {
+    content: "\f10c";
+}
+
+.flaticonv8-privacy:before {
+    content: "\f10d";
+}
+
+.flaticonv8-register:before {
+    content: "\f10e";
+}
+
+.flaticonv8-box:before {
+    content: "\f10f";
+}
+
+.flaticonv8-add:before {
+    content: "\f110";
+}
+
+.flaticonv8-virtual-tour:before {
+    content: "\f111";
+}
+
+.flaticonv8-sugar-cube:before {
+    content: "\f112";
+}
+
+.flaticonv8-touch-id:before {
+    content: "\f113";
+}
+
+.flaticonv8-voice-assistant:before {
+    content: "\f114";
+}
+
+.flaticonv8-cryptowallet:before {
+    content: "\f115";
+}
+
+.flaticonv8-family:before {
+    content: "\f116";
+}
+
+.flaticonv8-protection:before {
+    content: "\f117";
+}
+
+.flaticonv8-health-insurance:before {
+    content: "\f118";
+}
+
+.flaticonv8-insurance-1:before {
+    content: "\f119";
+}
+
+.flaticonv8-property:before {
+    content: "\f11a";
+}
+
+.flaticonv8-insurance-2:before {
+    content: "\f11b";
+}
