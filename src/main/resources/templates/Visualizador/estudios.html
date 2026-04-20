@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Estudios</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
+    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
+    .page{display:none;}.page.active{display:block;}
+  </style>
+</head>
+<body>
+
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+
+    <!-- SIDEBAR: Solo items base (sin Admin) -->
+    <aside style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+        <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
+          <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
+        </div>
+        <div class="nav-item" id="nav-normativo" onclick="navTo('normativo')">
+          <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
+        </div>
+        <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
+          <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('nacional')">
+            <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i><span>Nacional</span>
+          </div>
+          <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('internacional')">
+            <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i><span>Internacional</span>
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:4px;">
+        <div class="nav-item" style="color:rgba(255,255,255,.4);" onclick="goLogin()">
+          <i class="fas fa-sign-out-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Cerrar sesión</span>
+        </div>
+      </div>
+    </aside>
+
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
+
+      <!-- PAGE: ESTUDIOS -->
+      <div id="page-estudios" class="page active" style="padding:32px;">
+        <div style="margin-bottom:20px;">
+          <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
+          <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
+          <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
+            <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
+            <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="position:relative;flex:1;min-width:220px;">
+            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+            <input placeholder="Buscar estudios..." style="width:100%;padding:10px 14px 10px 36px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;" />
+          </div>
+          <select style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
+            <option>Año: 2025–2026</option><option>Año: 2024–2025</option>
+          </select>
+          <select style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
+            <option>Todos los formatos</option><option>PDF</option><option>PPTX</option>
+          </select>
+        </div>
+
+        <!-- Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
+            <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de Materiales</p>
+              <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de envases plásticos en el Perú.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
+            <div style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
+              <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2024</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del programa REP en la gestión de envases.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
+            <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
+              <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2025</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional hacia la economía circular.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: NORMATIVO -->
+      <div id="page-normativo" class="page" style="padding:32px;">
+        <th:block th:replace="Visualizador/normativo :: normativo-content"></th:block>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goLogin(){window.location.href='/login';}
+function openVisor(tipo,nombre,formato,descargable){alert('Visor: '+nombre+' ('+formato+')');}
+function setAmbitoNormativo(ambito){console.log('Filtro ámbito:',ambito);}
+</script>
+</body>
+</html>
