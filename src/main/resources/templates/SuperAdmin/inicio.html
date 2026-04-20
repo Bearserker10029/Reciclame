@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Admin Inicio</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
+    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .main-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;transition:transform .28s,box-shadow .28s;}
+    .main-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(0,0,0,.13);}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
+    .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    .update-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;}
+    .update-item:hover{background:#F9FAFB;}
+    .page{display:none;}.page.active{display:block;}
+  </style>
+</head>
+<body>
+
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
+
+      <!-- PAGE: INICIO ADMIN -->
+      <div id="page-inicio" class="page active" style="padding:32px;">
+        <div style="margin-bottom:28px;">
+          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Panel de Administración 👋</h1>
+          <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-users" style="color:#2ECC71;font-size:18px;"></i></div>
+              <span class="pill" style="background:rgba(39,174,96,.12);color:#27AE60;">+3 hoy</span>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">42</div>
+            <div style="font-size:12px;color:#6B7280;">Usuarios activos</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-clock" style="color:#F39C12;font-size:18px;"></i></div>
+              <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;">Pendiente</span>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">3</div>
+            <div style="font-size:12px;color:#6B7280;">Solicitudes nuevas</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-alt" style="color:#3498DB;font-size:18px;"></i></div>
+              <span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">+2</span>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">24</div>
+            <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
+          </div>
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-chart-bar" style="color:#9B59B6;font-size:18px;"></i></div>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">891</div>
+            <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
+          </div>
+        </div>
+
+        <!-- Donut + charts -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:28px;display:flex;align-items:center;gap:32px;">
+          <div style="flex-shrink:0;"><canvas id="donut-admin" width="140" height="140"></canvas></div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:14px;"><i class="fas fa-chart-pie" style="color:#2ECC71;margin-right:8px;"></i>Distribución de normativas por temática</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#27AE60;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EC — Economía Circular</div><div style="font-size:11px;color:#6B7280;">52 normativas · 38%</div></div></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(52,152,219,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#3498DB;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">GR — Gestión de Residuos</div><div style="font-size:11px;color:#6B7280;">34 normativas · 25%</div></div></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(243,156,18,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#F39C12;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EE — Envases y Embalajes</div><div style="font-size:11px;color:#6B7280;">28 normativas · 20%</div></div></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(231,76,60,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#E74C3C;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">REP — Responsabilidad Ext.</div><div style="font-size:11px;color:#6B7280;">16 normativas · 12%</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Two columns: recent activity + pending requests -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-clock" style="color:#2ECC71;font-size:15px;"></i><span style="font-weight:700;font-size:15px;color:#1B3A5C;">Actividad reciente</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div class="update-item">
+                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(39,174,96,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-plus" style="color:#27AE60;font-size:14px;"></i></div>
+                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nuevo usuario aprobado: Ana Sánchez</div><div style="font-size:11px;color:#9CA3AF;">Gestión de usuarios · hace 30 min</div></div>
+              </div>
+              <div class="update-item">
+                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:14px;"></i></div>
+                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Análisis de Flujo de Materiales 2025 cargado</div><div style="font-size:11px;color:#9CA3AF;">Documentos · hace 2 horas</div></div>
+              </div>
+              <div class="update-item">
+                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-download" style="color:#3498DB;font-size:14px;"></i></div>
+                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">María López descargó D.L. 1278</div><div style="font-size:11px;color:#9CA3AF;">Trazabilidad · hace 4 horas</div></div>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-user-clock" style="color:#F39C12;font-size:15px;"></i><span style="font-weight:700;font-size:15px;color:#1B3A5C;">Solicitudes pendientes</span></div>
+              <span style="background:#E74C3C;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">3 nuevas</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">AS</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Ana Sánchez</div>
+                  <div style="font-size:11px;color:#9CA3AF;">Grupo Gloria S.A. · hace 2h</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
+                  <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+              <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">LR</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Luis Rodríguez</div>
+                  <div style="font-size:11px;color:#9CA3AF;">Cartavio S.A.A. · hace 1 día</div>
+                </div>
+                <div style="display:flex;gap:4px;">
+                  <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
+                  <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+            </div>
+            <button onclick="navTo('usuarios')" style="margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Ver todas las solicitudes</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: ESTUDIOS -->
+      <div id="page-estudios" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/estudios :: estudios-content"></th:block>
+      </div>
+
+      <!-- PAGE: NORMATIVO -->
+      <div id="page-normativo" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/normativo :: normativo-content"></th:block>
+      </div>
+
+      <!-- PAGE: PERFIL -->
+      <div id="page-perfil" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/perfil :: perfil-content"></th:block>
+      </div>
+
+      <!-- PAGE: NOTIFICACIONES -->
+      <div id="page-notificaciones" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/notificaciones :: notificaciones-content"></th:block>
+      </div>
+
+      <!-- PAGE: USUARIOS -->
+      <div id="page-usuarios" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/usuarios :: usuarios-content"></th:block>
+      </div>
+
+      <!-- PAGE: ADMIN-DOCS -->
+      <div id="page-admin-docs" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/documentos :: documentos-content"></th:block>
+      </div>
+
+      <!-- PAGE: TRAZABILIDAD -->
+      <div id="page-trazabilidad" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/trazabilidad :: trazabilidad-content"></th:block>
+      </div>
+
+      <!-- PAGE: REPORTES -->
+      <div id="page-reportes" class="page" style="padding:32px;">
+        <th:block th:replace="Admin/reportes :: reportes-content"></th:block>
+      </div>
+
+      <!-- PAGE: AUDITORIA -->
+      <div id="page-auditoria" class="page" style="padding:32px;">
+        <th:block th:replace="SuperAdmin/auditoria :: auditoria-content"></th:block>
+      </div>
+
+      <!-- PAGE: IMPERSONAR -->
+      <div id="page-impersonar" class="page" style="padding:32px;">
+        <th:block th:replace="SuperAdmin/impersonar :: impersonar-content"></th:block>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goLogin(){window.location.href='/login';}
+
+const ctx=document.getElementById('donut-admin');
+if(ctx){
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:['EC','GR','EE','REP','Otro'],datasets:[{data:[52,34,28,16,8],backgroundColor:['#27AE60','#3498DB','#F39C12','#E74C3C','#95A5A6'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:false,cutout:'65%',plugins:{legend:{display:false}}}
+  });
+}
+</script>
+</body>
+</html>
