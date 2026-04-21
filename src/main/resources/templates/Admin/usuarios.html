@@ -127,6 +127,10 @@
           <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
             <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
           </select>
+          <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
+            <option>Empresa...</option>
+            <option th:each="emp : ${empresas}" th:value="${emp.id}" th:text="${emp.razonSocial}">Empresa</option>
+          </select>
           <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
           <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
         </div>
