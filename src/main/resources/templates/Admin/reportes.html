@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Reportes de Uso</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
     .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-    .report-tab{padding:10px 20px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#6B7280;border-bottom:3px solid transparent;font-family:inherit;transition:all .15s;}
-    .report-tab.active{color:#1B3A5C;border-bottom-color:#2ECC71;}
   </style>
 </head>
 <body>
@@ -37,9 +36,13 @@
   </div>
 
   <!-- Tabs -->
-  <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:24px;">
-    <button id="rtab-actividad" class="report-tab active" onclick="switchReportTab('actividad')">Actividad</button>
-    <button id="rtab-chatbot" class="report-tab" onclick="switchReportTab('chatbot')">Chatbot Analytics</button>
+  <div style="display:flex;margin-bottom:24px;gap:4px;">
+    <button id="rtab-actividad" class="report-tab active" onclick="switchReportTab('actividad')">
+      <i class="fas fa-chart-line"></i> Actividad
+    </button>
+    <button id="rtab-chatbot" class="report-tab" onclick="switchReportTab('chatbot')">
+      <i class="fas fa-comment-dots"></i> Chatbot Analytics
+    </button>
   </div>
 
   <!-- Tab: Actividad -->
