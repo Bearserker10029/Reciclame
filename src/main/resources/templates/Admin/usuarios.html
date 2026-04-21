@@ -39,8 +39,8 @@
 
   <!-- Tabs -->
   <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:20px;gap:0;">
-    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">Usuarios activos <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;">42</span></button>
-    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">Solicitudes pendientes <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;">3</span></button>
+    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">Usuarios activos <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosActivos)}">0</span></button>
+    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">Solicitudes pendientes <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosPendientes)}">0</span></button>
     <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">Historial</button>
   </div>
 
@@ -68,46 +68,35 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr th:each="usuario : ${usuariosActivos}">
             <td><input type="checkbox" /></td>
             <td>
               <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:34px;height:34px;border-radius:50%;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">JP</div>
-                <div><div style="font-weight:600;color:#1B3A5C;font-size:13px;">Juan Pérez</div><div style="font-size:11px;color:#9CA3AF;">jperez@tetrapak.com</div></div>
+                <div style="width:34px;height:34px;border-radius:50%;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;"
+                     th:text="${#strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, 2))}">??</div>
+                <div>
+                  <div style="font-weight:600;color:#1B3A5C;font-size:13px;" th:text="${usuario.nombreCompleto}">Nombre</div>
+                  <div style="font-size:11px;color:#9CA3AF;" th:text="${usuario.correoCorporativo}">correo@empresa.com</div>
+                </div>
               </div>
             </td>
-            <td style="color:#6B7280;font-size:12px;">74521836</td>
-            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">Socio</span></td>
+            <td style="color:#6B7280;font-size:12px;" th:text="${usuario.dni}">00000000</td>
+            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;" th:text="${usuario.rolNombre}">Rol</span></td>
             <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><i class="fas fa-circle" style="font-size:6px;"></i> Activo</span></td>
-            <td style="color:#6B7280;font-size:12px;">Tetra Pak Perú</td>
-            <td style="color:#9CA3AF;font-size:11px;">12/01/2026</td>
+            <td style="color:#6B7280;font-size:12px;" th:text="${usuario.empresaNombre}">—</td>
+            <td style="color:#9CA3AF;font-size:11px;" th:text="${#temporals.format(usuario.createdAt, 'dd/MM/yyyy')}">—</td>
             <td><div style="display:flex;gap:6px;">
               <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#374151;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
               <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-ban"></i></button>
             </div></td>
           </tr>
-          <tr>
-            <td><input type="checkbox" /></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:34px;height:34px;border-radius:50%;background:#3498DB;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">ML</div>
-                <div><div style="font-weight:600;color:#1B3A5C;font-size:13px;">María López</div><div style="font-size:11px;color:#9CA3AF;">mlopez@kimberly.com</div></div>
-              </div>
-            </td>
-            <td style="color:#6B7280;font-size:12px;">68341295</td>
-            <td><span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">Visualizador</span></td>
-            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><i class="fas fa-circle" style="font-size:6px;"></i> Activo</span></td>
-            <td style="color:#6B7280;font-size:12px;">Kimberly-Clark</td>
-            <td style="color:#9CA3AF;font-size:11px;">08/02/2026</td>
-            <td><div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#374151;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-ban"></i></button>
-            </div></td>
+          <tr th:if="${#lists.isEmpty(usuariosActivos)}">
+            <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;">No hay usuarios activos.</td>
           </tr>
         </tbody>
       </table>
       <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
-        <span>Mostrando 2 de 42 usuarios</span>
+        <span th:text="'Mostrando ' + ${#lists.size(usuariosActivos)} + ' usuarios'">Mostrando 0 usuarios</span>
         <div style="display:flex;gap:4px;">
           <button style="padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;">Anterior</button>
           <button style="padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;">1</button>
@@ -120,39 +109,31 @@
   <!-- Tab: pendientes (hidden by default) -->
   <div id="utab-pendientes" style="display:none;">
     <div style="display:flex;flex-direction:column;gap:12px;">
-      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
-        <div style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">AS</div>
+      <div th:each="usuario : ${usuariosPendientes}"
+           style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+        <div style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;"
+             th:text="${#strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, 2))}">??</div>
         <div style="flex:1;">
-          <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;">Ana Sánchez</div>
-          <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">ana.sanchez@gloria.com · DNI: 72341890 · Grupo Gloria S.A.</div>
-          <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;">Solicitud enviada hace 2 horas</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;gap:8px;">
-            <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
-              <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
-            </select>
-            <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
-            <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
+          <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;" th:text="${usuario.nombreCompleto}">Nombre</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">
+            <span th:text="${usuario.correoCorporativo}">correo</span> ·
+            DNI: <span th:text="${usuario.dni}">00000000</span> ·
+            <span th:text="${usuario.empresaNombre != null ? usuario.empresaNombre : '—'}">Empresa</span>
           </div>
+          <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;"
+               th:text="'Registrado el ' + ${#temporals.format(usuario.createdAt, 'dd/MM/yyyy')}">Fecha</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
+            <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
+          </select>
+          <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
+          <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
         </div>
       </div>
-      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
-        <div style="width:46px;height:46px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">LR</div>
-        <div style="flex:1;">
-          <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;">Luis Rodríguez</div>
-          <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">lrodriguez@cartavio.com · DNI: 81234567 · Cartavio S.A.A.</div>
-          <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;">Solicitud enviada hace 1 día</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="display:flex;gap:8px;">
-            <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
-              <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
-            </select>
-            <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
-            <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
-          </div>
-        </div>
+      <div th:if="${#lists.isEmpty(usuariosPendientes)}"
+           style="background:#fff;border-radius:12px;padding:40px;text-align:center;color:#9CA3AF;">
+        No hay solicitudes pendientes.
       </div>
     </div>
   </div>
