@@ -3,6 +3,8 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.RolService;
+import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,12 +17,18 @@ public class AdminController {
     private final NormativaService normativaService;
     private final EstudioService estudioService;
     private final EmpresaService empresaService;
+    private final RolService rolService;
+    private final TematicaService tematicaService;
 
-    public AdminController(UsuarioService usuarioService, NormativaService normativaService, EstudioService estudioService, EmpresaService empresaService) {
+    public AdminController(UsuarioService usuarioService, NormativaService normativaService,
+                           EstudioService estudioService, EmpresaService empresaService,
+                           RolService rolService, TematicaService tematicaService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
         this.empresaService = empresaService;
+        this.rolService = rolService;
+        this.tematicaService = tematicaService;
     }
 
     @GetMapping("/admin")
@@ -41,6 +49,7 @@ public class AdminController {
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("empresas", empresaService.listarEmpresas());
+        model.addAttribute("roles", rolService.listarRoles());
         return "admin/usuarios";
     }
 
@@ -89,6 +98,7 @@ public class AdminController {
     public String normativo(Model model) {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
         return "admin/normativo";
     }
 
@@ -96,6 +106,7 @@ public class AdminController {
     public String estudios(Model model) {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("estudios", estudioService.listarEstudios());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
         return "admin/estudios";
     }
 }
