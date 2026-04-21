@@ -14,14 +14,20 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
+.requestMatchers(
                                 "/",
                                 "/login",
                                 "/css/**",
+                                "/style.css",
+                                "/assets/**",
                                 "/js/**",
                                 "/images/**",
                                 "/fonts/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/admin",
+                                "/visualizador",
+                                "/socio",
+                                "/superadmin"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
