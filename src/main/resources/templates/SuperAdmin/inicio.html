@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Admin Inicio</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -197,6 +198,33 @@
 
     </main>
   </div>
+
+  <!-- Chatbot Mascota -->
+  <button id="chatbot-bubble" onclick="toggleChatbot()">
+    <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+  </button>
+
+  <div id="chatbot-panel">
+    <div class="chat-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+        <div>
+          <div class="chat-title">La Buena Cajita</div>
+          <div class="chat-status"><span style="display:inline-block;width:6px;height:6px;background:#2ECC71;border-radius:50%;margin-right:4px;"></span>En línea</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        <div class="bubble">¡Hola! Soy La Buena Cajita, tu asistente de Recíclame. ¿En qué puedo ayudarte hoy?</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Pregúntame sobre normativas o economía circular..." onkeypress="if(event.key==='Enter')sendChatMessage()" />
+      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -210,6 +238,38 @@ function navTo(page){
 }
 function goLogin(){window.location.href='/login';}
 
+function toggleChatbot(){
+  var panel=document.getElementById('chatbot-panel');
+  var bubble=document.getElementById('chatbot-bubble');
+  if(panel.style.display==='flex'){
+    panel.style.display='none';
+    bubble.style.display='flex';
+  }else{
+    panel.style.display='flex';
+    bubble.style.display='none';
+  }
+}
+
+function sendChatMessage(){
+  var input=document.getElementById('chat-input');
+  var message=input.value.trim();
+  if(!message)return;
+  var messagesDiv=document.getElementById('chat-messages');
+  var userMsg=document.createElement('div');
+  userMsg.className='chat-msg user';
+  userMsg.innerHTML='<div class="bubble">'+message+'</div>';
+  messagesDiv.appendChild(userMsg);
+  input.value='';
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  setTimeout(function(){
+    var botMsg=document.createElement('div');
+    botMsg.className='chat-msg bot';
+    botMsg.innerHTML='<div class="bubble">Gracias por tu mensaje. Estoy en modo demo, pero en producción me conectaré a un sistema RAG con IA para responder tus preguntas sobre normativas y economía circular.</div>';
+    messagesDiv.appendChild(botMsg);
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  },800);
+}
+
 const ctx=document.getElementById('donut-admin');
 if(ctx){
   new Chart(ctx,{
@@ -218,6 +278,8 @@ if(ctx){
     options:{responsive:false,cutout:'65%',plugins:{legend:{display:false}}}
   });
 }
+
+document.getElementById('chatbot-bubble').style.display='flex';
 </script>
 </body>
 </html>

@@ -5,23 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Gestión de Usuarios</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
-    .form-input{width:100%;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;transition:border-color .2s;}
-    .form-input:focus{border-color:#2ECC71;}
-    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
-    .tbl{width:100%;border-collapse:collapse;font-size:13px;}
-    .tbl th{background:#F8F9FA;color:#6B7280;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid #E5E7EB;text-align:left;white-space:nowrap;}
-    .tbl td{padding:14px 16px;border-bottom:1px solid #F0F2F5;color:#374151;vertical-align:middle;background:#fff;}
-    .tbl tr:nth-child(even) td{background:#FCFDFE;}
-    .tbl tr:hover td{background:#F6FAF8;}
-    .tbl tr td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px;}
-    .tbl tr td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px;}
-    .tbl tr:last-child td{border-bottom:none;}
-    .report-tab{padding:10px 20px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#6B7280;border-bottom:3px solid transparent;font-family:inherit;transition:all .15s;}
-    .report-tab.active{color:#1B3A5C;border-bottom-color:#2ECC71;}
   </style>
 </head>
 <body>
@@ -39,9 +27,15 @@
 
   <!-- Tabs -->
   <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:20px;gap:0;">
-    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">Usuarios activos <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosActivos)}">0</span></button>
-    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">Solicitudes pendientes <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosPendientes)}">0</span></button>
-    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">Historial</button>
+    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">
+      <i class="fas fa-users"></i> Usuarios activos <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosActivos)}">0</span>
+    </button>
+    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">
+      <i class="fas fa-user-clock"></i> Solicitudes pendientes <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;" th:text="${#lists.size(usuariosPendientes)}">0</span>
+    </button>
+    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">
+      <i class="fas fa-history"></i> Historial
+    </button>
   </div>
 
   <!-- Tab: activos -->
@@ -49,18 +43,18 @@
     <div style="background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div style="position:relative;flex:1;min-width:200px;">
         <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-        <input class="form-input" placeholder="Buscar por nombre o correo..." style="padding-left:36px;" />
+        <input class="form-control" placeholder="Buscar por nombre o correo..." style="padding-left:36px;" />
       </div>
-      <select class="form-input" style="width:auto;padding:10px 14px;">
+      <select class="form-control" style="width:auto;padding:10px 14px;">
         <option>Rol: Todos</option><option>Socio</option><option>Visualizador</option><option>Administrador</option>
       </select>
-      <select class="form-input" style="width:auto;padding:10px 14px;">
+      <select class="form-control" style="width:auto;padding:10px 14px;">
         <option>Estado: Todos</option><option>Activo</option><option>Inactivo</option>
       </select>
       <button style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;display:flex;align-items:center;gap:6px;"><i class="fas fa-download" style="color:#2ECC71;"></i> Exportar CSV</button>
     </div>
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-      <table class="tbl">
+      <table class="table table-striped table-hover">
         <thead>
           <tr>
             <th><input type="checkbox" style="cursor:pointer;" /></th>
