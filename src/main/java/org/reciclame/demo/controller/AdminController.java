@@ -42,7 +42,18 @@ public class AdminController {
 
     @GetMapping("/admin/documentos")
     public String documentos(Model model) {
+        var estudios   = estudioService.listarEstudios();
+        var normativas = normativaService.listarNormativas();
+
+        int totalDescargas = estudios.stream()
+                .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+
         model.addAttribute("rol", "ADMIN");
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("totalDescargas", totalDescargas);
         return "admin/documentos";
     }
 

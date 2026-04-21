@@ -39,20 +39,20 @@
   <!-- Stats -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">24</div>
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;" th:text="${#lists.size(estudios)}">0</div>
       <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
     </div>
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">138</div>
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;" th:text="${#lists.size(normativas)}">0</div>
       <div style="font-size:12px;color:#6B7280;">Normativas indexadas</div>
     </div>
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">891</div>
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;" th:text="${totalDescargas}">0</div>
       <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
     </div>
     <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">5</div>
-      <div style="font-size:12px;color:#6B7280;">Nuevas (último mes)</div>
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;" th:text="${#lists.size(estudios) + #lists.size(normativas)}">0</div>
+      <div style="font-size:12px;color:#6B7280;">Total documentos</div>
     </div>
   </div>
 
@@ -80,25 +80,21 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</td>
-          <td style="color:#6B7280;font-size:12px;max-width:240px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
-          <td>2025</td>
-          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
-          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+        <!-- Estudios -->
+        <tr th:each="e : ${estudios}">
+          <td style="font-weight:600;color:#1B3A5C;">
+            <span class="tag" style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;">Estudio</span>
+            <span th:text="${e.titulo}">—</span>
+          </td>
+          <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${e.descripcionBreve}">—</td>
+          <td th:text="${e.anio}">—</td>
           <td>
-            <div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;"><i class="fas fa-plus"></i> Agregar formato</button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+            <div style="display:flex;gap:4px;">
+              <span class="pill"
+                    th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;' : 'background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;'"
+                    th:text="${e.archivoTipoMime != null ? #strings.toUpperCase(e.archivoTipoMime) : '—'}">—</span>
             </div>
           </td>
-        </tr>
-        <tr>
-          <td style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</td>
-          <td style="color:#6B7280;font-size:12px;max-width:240px;">Monitorear el impacto del programa REP en envases</td>
-          <td>2024</td>
-          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
           <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
           <td>
             <div style="display:flex;gap:6px;">
@@ -107,18 +103,32 @@
             </div>
           </td>
         </tr>
-        <tr>
-          <td style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</td>
-          <td style="color:#6B7280;font-size:12px;max-width:240px;">Guía estratégica hacia la economía circular nacional</td>
-          <td>2025</td>
-          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
-          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+        <!-- Normativas -->
+        <tr th:each="n : ${normativas}">
+          <td style="font-weight:600;color:#1B3A5C;">
+            <span class="tag" style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;">Normativa</span>
+            <span th:text="${n.titulo}">—</span>
+          </td>
+          <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${n.descripcionBreve}">—</td>
+          <td th:text="${n.anio}">—</td>
+          <td>
+            <div style="display:flex;gap:4px;">
+              <span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span>
+            </div>
+          </td>
+          <td>
+            <span th:if="${n.esPublica}" class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;"><i class="fas fa-globe" style="font-size:8px;"></i> Público</span>
+            <span th:unless="${n.esPublica}" class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-lock" style="font-size:8px;"></i> Restringido</span>
+          </td>
           <td>
             <div style="display:flex;gap:6px;">
               <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
               <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
             </div>
           </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(estudios) and #lists.isEmpty(normativas)}">
+          <td colspan="6" style="text-align:center;padding:30px;color:#9CA3AF;">No hay documentos registrados.</td>
         </tr>
       </tbody>
     </table>
