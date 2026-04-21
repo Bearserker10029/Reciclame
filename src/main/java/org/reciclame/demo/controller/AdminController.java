@@ -2,6 +2,7 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
+import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.RolService;
 import org.reciclame.demo.service.TematicaService;
@@ -19,16 +20,19 @@ public class AdminController {
     private final EmpresaService empresaService;
     private final RolService rolService;
     private final TematicaService tematicaService;
+    private final NotificacionService notificacionService;
 
     public AdminController(UsuarioService usuarioService, NormativaService normativaService,
                            EstudioService estudioService, EmpresaService empresaService,
-                           RolService rolService, TematicaService tematicaService) {
+                           RolService rolService, TematicaService tematicaService,
+                           NotificacionService notificacionService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
         this.empresaService = empresaService;
         this.rolService = rolService;
         this.tematicaService = tematicaService;
+        this.notificacionService = notificacionService;
     }
 
     @GetMapping("/admin")
@@ -83,8 +87,16 @@ public class AdminController {
     }
 
     @GetMapping("/admin/notificaciones")
-    public String notificaciones(Model model) {
+    public String notificaciones(Model model,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal
+            org.springframework.security.core.userdetails.UserDetails userDetails) {
         model.addAttribute("rol", "ADMIN");
+        if (userDetails != null) {
+            usuarioService.findByCorreo(userDetails.getUsername()).ifPresent(u -> {
+                model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+            });
+        }
         return "admin/notificaciones";
     }
 

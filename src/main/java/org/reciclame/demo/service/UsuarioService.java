@@ -65,6 +65,11 @@ public class UsuarioService {
         return toResponseDTO(usuarioRepository.save(usuario));
     }
 
+    // ── FIND BY CORREO ────────────────────────────────────────
+    public java.util.Optional<UsuarioResponseDTO> findByCorreo(String correo) {
+        return usuarioRepository.findByCorreoCorporativo(correo).map(this::toResponseDTO);
+    }
+
     // ── READ ALL ──────────────────────────────────────────────
     public List<UsuarioResponseDTO> listarUsuarios() {
         return usuarioRepository.findAll()
