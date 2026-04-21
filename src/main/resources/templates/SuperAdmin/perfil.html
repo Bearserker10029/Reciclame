@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Mi Perfil</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
-  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -17,9 +18,6 @@
     .credential-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85;}
     .credential-badge{background:rgba(255,255,255,.2);padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;backdrop-filter:blur(4px);}
     .qr-container{background:#fff;padding:16px;border-radius:12px;display:flex;align-items:center;justify-content:center;width:220px;height:220px;margin:8px 0;position:relative;}
-    .form-input{width:100%;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;transition:border-color .2s;}
-    .form-input:focus{border-color:#2ECC71;}
-    .form-input:disabled{background:#F9FAFB;color:#9CA3AF;}
     .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
   </style>
 </head>
@@ -40,27 +38,27 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nombre completo</label>
-            <input class="form-input" type="text" value="Juan Pérez Torres" />
+            <input class="form-control" type="text" value="Juan Pérez Torres" />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">DNI</label>
-            <input class="form-input" type="text" value="74521836" disabled />
+            <input class="form-control" type="text" value="74521836" disabled />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Correo corporativo</label>
-            <input class="form-input" type="email" value="jperez@tetrapak.com" />
+            <input class="form-control" type="email" value="jperez@tetrapak.com" />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Empresa</label>
-            <input class="form-input" type="text" value="Tetra Pak Perú S.A.C." />
+            <input class="form-control" type="text" value="Tetra Pak Perú S.A.C." />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Rol</label>
-            <input class="form-input" type="text" value="Socio" disabled />
+            <input class="form-control" type="text" value="Socio" disabled />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Fecha de registro</label>
-            <input class="form-input" type="text" value="12/01/2026" disabled />
+            <input class="form-control" type="text" value="12/01/2026" disabled />
           </div>
         </div>
         <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
@@ -75,15 +73,15 @@
         <div style="display:flex;flex-direction:column;gap:14px;">
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Contraseña actual</label>
-            <input class="form-input" type="password" placeholder="••••••••" />
+            <input class="form-control" type="password" placeholder="••••••••" />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nueva contraseña</label>
-            <input class="form-input" type="password" placeholder="••••••••" />
+            <input class="form-control" type="password" placeholder="••••••••" />
           </div>
           <div>
             <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Confirmar nueva contraseña</label>
-            <input class="form-input" type="password" placeholder="••••••••" />
+            <input class="form-control" type="password" placeholder="••••••••" />
           </div>
           <div style="display:flex;justify-content:flex-end;">
             <button style="padding:9px 20px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Actualizar contraseña</button>
