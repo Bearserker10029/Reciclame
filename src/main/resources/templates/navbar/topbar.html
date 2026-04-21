@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Topbar</title>
+</head>
+<body>
+<th:block th:fragment="topbar">
+  <nav id="navbar"
+    style="position:sticky;top:0;z-index:50;background:#1B3A5C;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 2px 12px rgba(0,0,0,.18);flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <img th:src="@{https://reciclame.org/wp-content/uploads/2025/12/Logo-azul-Reciclame-.png}"
+        src="https://reciclame.org/wp-content/uploads/2025/12/Logo-azul-Reciclame-.png"
+        style="height:30px;width:auto;"
+        alt="Recíclame"
+        onerror="this.style.display='none'" />
+      <span style="color:rgba(255,255,255,.4);font-size:12px;margin-left:4px;">Repositorio Circular</span>
+      <span id="role-badge"
+        style="background:rgba(243,156,18,.2);color:#F39C12;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;display:none;">SUPERADMIN</span>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div style="position:relative;cursor:pointer;" onclick="navTo('notificaciones')">
+        <i class="fas fa-bell" style="color:rgba(255,255,255,.75);font-size:17px;"></i>
+        <span id="notif-badge"
+          style="position:absolute;top:-5px;right:-6px;background:#E74C3C;color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+      </div>
+      <div
+        style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.06);"
+        onclick="navTo('perfil')">
+        <div id="avatar-circle"
+          style="width:32px;height:32px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;">
+          JP</div>
+        <div>
+          <div id="user-name" style="color:#fff;font-size:13px;font-weight:600;line-height:1.2;">Juan Pérez</div>
+          <div id="user-role" style="color:rgba(255,255,255,.45);font-size:11px;">Socio</div>
+        </div>
+        <i class="fas fa-chevron-down" style="color:rgba(255,255,255,.4);font-size:11px;margin-left:2px;"></i>
+      </div>
+    </div>
+  </nav>
+</th:block>
+</body>
+</html>

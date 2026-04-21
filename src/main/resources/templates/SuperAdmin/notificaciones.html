@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Notificaciones</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .notif-item{display:flex;gap:14px;padding:14px 16px;border-radius:10px;cursor:pointer;transition:background .15s;border:1px solid transparent;}
+    .notif-item:hover{background:#F9FAFB;}
+    .notif-item.unread{background:rgba(46,204,113,.04);border-color:rgba(46,204,113,.15);}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="notificaciones-content">
+  <div style="margin-bottom:24px;">
+    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Notificaciones</h1>
+    <p style="color:#6B7280;font-size:13px;">Mantente al día con las actualizaciones del repositorio</p>
+  </div>
+
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;"></h1>
+    <button onclick="markAllRead()"
+      style="padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;color:#374151;font-family:inherit;">
+      <i class="fas fa-check-double" style="margin-right:6px;color:#2ECC71;"></i>Marcar todas como leídas
+    </button>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;" id="notif-list">
+    <div class="notif-item unread">
+      <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:rgba(46,204,113,.12);display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-file-alt" style="color:#2ECC71;font-size:16px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:8px;">
+          <p style="font-size:13px;font-weight:600;color:#1B3A5C;">Nuevo estudio disponible</p>
+          <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">hace 2 horas</span>
+        </div>
+        <p style="font-size:12px;color:#6B7280;margin-top:3px;">Se ha publicado <strong>Análisis de Flujo de Materiales 2025</strong> en la sección de Estudios.</p>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#2ECC71;flex-shrink:0;margin-top:6px;"></div>
+    </div>
+
+    <div class="notif-item unread">
+      <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:rgba(52,152,219,.12);display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-balance-scale" style="color:#3498DB;font-size:16px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:8px;">
+          <p style="font-size:13px;font-weight:600;color:#1B3A5C;">Nueva normativa agregada</p>
+          <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">hace 1 día</span>
+        </div>
+        <p style="font-size:12px;color:#6B7280;margin-top:3px;">Se ha agregado <strong>Decreto Legislativo 1501 — Ley del Plástico</strong> al Repositorio Normativo.</p>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#2ECC71;flex-shrink:0;margin-top:6px;"></div>
+    </div>
+
+    <div class="notif-item unread">
+      <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:rgba(243,156,18,.12);display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-sync-alt" style="color:#F39C12;font-size:16px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:8px;">
+          <p style="font-size:13px;font-weight:600;color:#1B3A5C;">Actualización del repositorio</p>
+          <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">hace 3 días</span>
+        </div>
+        <p style="font-size:12px;color:#6B7280;margin-top:3px;">El Repositorio Normativo ha sido actualizado. Se agregaron 5 nuevas normativas nacionales.</p>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:#2ECC71;flex-shrink:0;margin-top:6px;"></div>
+    </div>
+
+    <div class="notif-item" style="opacity:.7;">
+      <div style="width:40px;height:40px;border-radius:10px;flex-shrink:0;background:#F3F4F6;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-user-check" style="color:#9CA3AF;font-size:16px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:start;justify-content:space-between;gap:8px;">
+          <p style="font-size:13px;font-weight:600;color:#374151;">Cuenta aprobada</p>
+          <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">hace 2 semanas</span>
+        </div>
+        <p style="font-size:12px;color:#6B7280;margin-top:3px;">Tu solicitud de acceso fue aprobada. Bienvenido al Repositorio Circular Recíclame.</p>
+      </div>
+    </div>
+  </div>
+</th:block>
+
+<script>
+function markAllRead(){
+  document.querySelectorAll('.notif-item.unread').forEach(el=>{
+    el.classList.remove('unread');
+    el.querySelector('.\\31 2px').style.background='transparent';
+  });
+  document.querySelectorAll('#notif-list > .notif-item').forEach(el=>{
+    el.style.opacity='1';
+    const dot=el.querySelector('div[style*="8px"][style*="border-radius"]');
+    if(dot)dot.style.display='none';
+  });
+}
+</script>
+</body>
+</html>
