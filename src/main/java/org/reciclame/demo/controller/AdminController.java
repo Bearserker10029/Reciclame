@@ -1,5 +1,6 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
@@ -13,11 +14,13 @@ public class AdminController {
     private final UsuarioService usuarioService;
     private final NormativaService normativaService;
     private final EstudioService estudioService;
+    private final EmpresaService empresaService;
 
-    public AdminController(UsuarioService usuarioService, NormativaService normativaService, EstudioService estudioService) {
+    public AdminController(UsuarioService usuarioService, NormativaService normativaService, EstudioService estudioService, EmpresaService empresaService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
+        this.empresaService = empresaService;
     }
 
     @GetMapping("/admin")
@@ -37,6 +40,7 @@ public class AdminController {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
         return "admin/usuarios";
     }
 
