@@ -1,5 +1,6 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.stereotype.Controller;
@@ -11,10 +12,12 @@ public class AdminController {
 
     private final UsuarioService usuarioService;
     private final NormativaService normativaService;
+    private final EstudioService estudioService;
 
-    public AdminController(UsuarioService usuarioService, NormativaService normativaService) {
+    public AdminController(UsuarioService usuarioService, NormativaService normativaService, EstudioService estudioService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
+        this.estudioService = estudioService;
     }
 
     @GetMapping("/admin")
@@ -77,6 +80,7 @@ public class AdminController {
     @GetMapping("/admin/estudios")
     public String estudios(Model model) {
         model.addAttribute("rol", "ADMIN");
+        model.addAttribute("estudios", estudioService.listarEstudios());
         return "admin/estudios";
     }
 }
