@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Gestión de Usuarios</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .form-input{width:100%;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;transition:border-color .2s;}
+    .form-input:focus{border-color:#2ECC71;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tbl{width:100%;border-collapse:collapse;font-size:13px;}
+    .tbl th{background:#F8F9FA;color:#6B7280;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:10px 14px;border-bottom:1px solid #E5E7EB;text-align:left;white-space:nowrap;}
+    .tbl td{padding:14px 16px;border-bottom:1px solid #F0F2F5;color:#374151;vertical-align:middle;background:#fff;}
+    .tbl tr:nth-child(even) td{background:#FCFDFE;}
+    .tbl tr:hover td{background:#F6FAF8;}
+    .tbl tr td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px;}
+    .tbl tr td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px;}
+    .tbl tr:last-child td{border-bottom:none;}
+    .report-tab{padding:10px 20px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;color:#6B7280;border-bottom:3px solid transparent;font-family:inherit;transition:all .15s;}
+    .report-tab.active{color:#1B3A5C;border-bottom-color:#2ECC71;}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="usuarios-content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Gestión de Usuarios</h1>
+      <p style="color:#6B7280;font-size:13px;">Administra el acceso de socios al repositorio</p>
+    </div>
+    <button style="padding:10px 20px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-user-plus"></i> Crear usuario
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:20px;gap:0;">
+    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">Usuarios activos <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;">42</span></button>
+    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">Solicitudes pendientes <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;">3</span></button>
+    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">Historial</button>
+  </div>
+
+  <!-- Tab: activos -->
+  <div id="utab-activos">
+    <div style="background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:200px;">
+        <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+        <input class="form-input" placeholder="Buscar por nombre o correo..." style="padding-left:36px;" />
+      </div>
+      <select class="form-input" style="width:auto;padding:10px 14px;">
+        <option>Rol: Todos</option><option>Socio</option><option>Visualizador</option><option>Administrador</option>
+      </select>
+      <select class="form-input" style="width:auto;padding:10px 14px;">
+        <option>Estado: Todos</option><option>Activo</option><option>Inactivo</option>
+      </select>
+      <button style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;display:flex;align-items:center;gap:6px;"><i class="fas fa-download" style="color:#2ECC71;"></i> Exportar CSV</button>
+    </div>
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th><input type="checkbox" style="cursor:pointer;" /></th>
+            <th>Usuario</th><th>DNI</th><th>Rol</th><th>Estado</th><th>Empresa</th><th>Registro</th><th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" /></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:50%;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">JP</div>
+                <div><div style="font-weight:600;color:#1B3A5C;font-size:13px;">Juan Pérez</div><div style="font-size:11px;color:#9CA3AF;">jperez@tetrapak.com</div></div>
+              </div>
+            </td>
+            <td style="color:#6B7280;font-size:12px;">74521836</td>
+            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">Socio</span></td>
+            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><i class="fas fa-circle" style="font-size:6px;"></i> Activo</span></td>
+            <td style="color:#6B7280;font-size:12px;">Tetra Pak Perú</td>
+            <td style="color:#9CA3AF;font-size:11px;">12/01/2026</td>
+            <td><div style="display:flex;gap:6px;">
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#374151;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-ban"></i></button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" /></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:50%;background:#3498DB;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;">ML</div>
+                <div><div style="font-weight:600;color:#1B3A5C;font-size:13px;">María López</div><div style="font-size:11px;color:#9CA3AF;">mlopez@kimberly.com</div></div>
+              </div>
+            </td>
+            <td style="color:#6B7280;font-size:12px;">68341295</td>
+            <td><span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">Visualizador</span></td>
+            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><i class="fas fa-circle" style="font-size:6px;"></i> Activo</span></td>
+            <td style="color:#6B7280;font-size:12px;">Kimberly-Clark</td>
+            <td style="color:#9CA3AF;font-size:11px;">08/02/2026</td>
+            <td><div style="display:flex;gap:6px;">
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#374151;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-ban"></i></button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+        <span>Mostrando 2 de 42 usuarios</span>
+        <div style="display:flex;gap:4px;">
+          <button style="padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;">Anterior</button>
+          <button style="padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;">1</button>
+          <button style="padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;">Siguiente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: pendientes (hidden by default) -->
+  <div id="utab-pendientes" style="display:none;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+        <div style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">AS</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;">Ana Sánchez</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">ana.sanchez@gloria.com · DNI: 72341890 · Grupo Gloria S.A.</div>
+          <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;">Solicitud enviada hace 2 horas</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;">
+            <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
+              <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
+            </select>
+            <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
+            <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+        <div style="width:46px;height:46px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">LR</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;">Luis Rodríguez</div>
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">lrodriguez@cartavio.com · DNI: 81234567 · Cartavio S.A.A.</div>
+          <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;">Solicitud enviada hace 1 día</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;gap:8px;">
+            <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
+              <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
+            </select>
+            <button style="padding:7px 12px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;cursor:pointer;"><i class="fas fa-check"></i> Aprobar</button>
+            <button style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: historial (hidden by default) -->
+  <div id="utab-historial" style="display:none;">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px;">
+      <div style="font-size:14px;color:#6B7280;text-align:center;padding:40px;">Historial de cambios de usuarios — próximos 90 días.</div>
+    </div>
+  </div>
+</th:block>
+
+<script>
+function switchUserTab(tab){
+  document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('utab-activos').style.display='none';
+  document.getElementById('utab-pendientes').style.display='none';
+  document.getElementById('utab-historial').style.display='none';
+  if(tab==='activos'){document.getElementById('utab-activos').style.display='block';document.getElementById('tab-usuarios-activos').classList.add('active');}
+  else if(tab==='pendientes'){document.getElementById('utab-pendientes').style.display='block';document.getElementById('tab-usuarios-pendientes').classList.add('active');}
+  else{document.getElementById('utab-historial').style.display='block';document.getElementById('tab-usuarios-historial').classList.add('active');}
+}
+</script>
+</body>
+</html>

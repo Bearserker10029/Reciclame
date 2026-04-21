@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Inicio</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
+    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .main-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;transition:transform .28s,box-shadow .28s;}
+    .main-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(0,0,0,.13);}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
+    .tag.success{background:rgba(46,204,113,.12);color:#1F9D55;border:1px solid rgba(46,204,113,.3);}
+    .btn-green{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid #2ECC71;color:#27AE60;background:transparent;font-family:inherit;transition:background .2s,transform .12s,box-shadow .12s;}
+    .btn-green:hover{background:rgba(46,204,113,.1);box-shadow:0 6px 16px rgba(46,204,113,.25);transform:translateY(-1px);}
+    .btn-navy{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid #1B3A5C;color:#1B3A5C;background:transparent;font-family:inherit;transition:background .2s,transform .12s,box-shadow .12s;}
+    .btn-navy:hover{background:rgba(27,58,92,.08);box-shadow:0 6px 16px rgba(27,58,92,.25);transform:translateY(-1px);}
+    .update-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;}
+    .update-item:hover{background:#F9FAFB;}
+    .page{display:none;}.page.active{display:block;}
+  </style>
+</head>
+<body>
+
+<div id="s-app" style="display:flex;flex-direction:column;min-height:100vh;">
+
+  <!-- TOPBAR -->
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+
+    <!-- SIDEBAR -->
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+
+    <!-- MAIN CONTENT -->
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
+
+      <!-- PAGE: INICIO -->
+      <div id="page-inicio" class="page active" style="padding:32px;">
+        <div style="margin-bottom:28px;">
+          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Bienvenido, Juan 👋</h1>
+          <p style="color:#6B7280;font-size:14px;">Selecciona una sección para comenzar a explorar el repositorio</p>
+        </div>
+
+        <!-- Donut chart + distribution -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:28px;display:flex;align-items:center;gap:32px;">
+          <div style="flex-shrink:0;">
+            <canvas id="donut-inicio" width="140" height="140"></canvas>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:14px;"><i class="fas fa-chart-pie" style="color:#2ECC71;margin-right:8px;"></i>Distribución de normativas por temática</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.07);border-radius:8px;">
+                <div style="width:12px;height:12px;border-radius:3px;background:#27AE60;flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EC — Economía Circular</div><div style="font-size:11px;color:#6B7280;">52 normativas · 38%</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(52,152,219,.07);border-radius:8px;">
+                <div style="width:12px;height:12px;border-radius:3px;background:#3498DB;flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">GR — Gestión de Residuos</div><div style="font-size:11px;color:#6B7280;">34 normativas · 25%</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(243,156,18,.07);border-radius:8px;">
+                <div style="width:12px;height:12px;border-radius:3px;background:#F39C12;flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EE — Envases y Embalajes</div><div style="font-size:11px;color:#6B7280;">28 normativas · 20%</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(231,76,60,.07);border-radius:8px;">
+                <div style="width:12px;height:12px;border-radius:3px;background:#E74C3C;flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">REP — Resp. Ext. Productor</div><div style="font-size:11px;color:#6B7280;">16 normativas · 12%</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(149,165,166,.07);border-radius:8px;grid-column:span 2;">
+                <div style="width:12px;height:12px;border-radius:3px;background:#95A5A6;flex-shrink:0;"></div>
+                <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">Otro</div><div style="font-size:11px;color:#6B7280;">8 normativas · 6%</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards row -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+          <div class="main-card" onclick="navTo('estudios')">
+            <div style="height:5px;background:#2ECC71;"></div>
+            <div style="padding:32px;">
+              <div style="width:60px;height:60px;border-radius:14px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+                <i class="fas fa-file-alt" style="font-size:26px;color:#2ECC71;"></i>
+              </div>
+              <h2 style="font-size:19px;font-weight:700;color:#1B3A5C;margin-bottom:8px;">Estudios Recíclame</h2>
+              <p style="color:#6B7280;font-size:13px;line-height:1.6;margin-bottom:18px;">Reportes, investigaciones y ayudas memoria elaboradas por el equipo técnico de Recíclame.</p>
+              <div style="margin-bottom:18px;">
+                <span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><span style="width:6px;height:6px;background:#2ECC71;border-radius:50%;display:inline-block;"></span>24 documentos disponibles</span>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:22px;">
+                <span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;"><i class="fas fa-file-pdf" style="font-size:10px;"></i> PDF</span>
+                <span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"><i class="fas fa-file-powerpoint" style="font-size:10px;"></i> PPTX</span>
+              </div>
+              <button class="btn-green">Explorar estudios <i class="fas fa-arrow-right" style="font-size:11px;"></i></button>
+            </div>
+          </div>
+          <div class="main-card" onclick="navTo('normativo')">
+            <div style="height:5px;background:#1B3A5C;"></div>
+            <div style="padding:32px;">
+              <div style="width:60px;height:60px;border-radius:14px;background:rgba(27,58,92,.08);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+                <i class="fas fa-balance-scale" style="font-size:26px;color:#1B3A5C;"></i>
+              </div>
+              <h2 style="font-size:19px;font-weight:700;color:#1B3A5C;margin-bottom:8px;">Repositorio Normativo</h2>
+              <p style="color:#6B7280;font-size:13px;line-height:1.6;margin-bottom:18px;">Base de datos de normativas nacionales e internacionales sobre economía circular y gestión de residuos.</p>
+              <div style="margin-bottom:18px;">
+                <span class="pill" style="background:rgba(27,58,92,.08);color:#1B3A5C;"><span style="width:6px;height:6px;background:#1B3A5C;border-radius:50%;display:inline-block;"></span>138 normativas indexadas</span>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:22px;">
+                <span class="tag" style="background:rgba(39,174,96,.14);color:#27AE60;">EC</span>
+                <span class="tag" style="background:rgba(52,152,219,.14);color:#2471A3;">GR</span>
+                <span class="tag" style="background:rgba(243,156,18,.14);color:#D68910;">EE</span>
+                <span class="tag" style="background:rgba(231,76,60,.14);color:#C0392B;">REP</span>
+              </div>
+              <button class="btn-navy">Explorar normativas <i class="fas fa-arrow-right" style="font-size:11px;"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent updates -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-clock" style="color:#2ECC71;font-size:15px;"></i>
+              <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Últimas actualizaciones</span>
+            </div>
+            <span style="background:#2ECC71;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">5 nuevas</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:14px;"></i></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Análisis de Flujo de Materiales 2025</div>
+                <div style="font-size:11px;color:#9CA3AF;">Estudios Recíclame · hace 2 días</div>
+              </div><i class="fas fa-chevron-right" style="color:#D1D5DB;font-size:11px;"></i>
+            </div>
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-gavel" style="color:#3498DB;font-size:14px;"></i></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Decreto Legislativo 1501 — Ley del Plástico</div>
+                <div style="font-size:11px;color:#9CA3AF;">Repositorio Normativo · hace 3 días</div>
+              </div><i class="fas fa-chevron-right" style="color:#D1D5DB;font-size:11px;"></i>
+            </div>
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:14px;"></i></div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Hoja de Ruta Economía Circular Perú 2030</div>
+                <div style="font-size:11px;color:#9CA3AF;">Estudios Recíclame · hace 5 días</div>
+              </div><i class="fas fa-chevron-right" style="color:#D1D5DB;font-size:11px;"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: ESTUDIOS (placeholder) -->
+      <div id="page-estudios" class="page" style="padding:32px;">
+        <th:block th:replace="Socio/estudios :: estudios-content"></th:block>
+      </div>
+
+      <!-- PAGE: NORMATIVO (placeholder) -->
+      <div id="page-normativo" class="page" style="padding:32px;">
+        <th:block th:replace="Socio/normativo :: normativo-content"></th:block>
+      </div>
+
+      <!-- PAGE: PERFIL -->
+      <div id="page-perfil" class="page" style="padding:32px;">
+        <th:block th:replace="Socio/perfil :: perfil-content"></th:block>
+      </div>
+
+      <!-- PAGE: NOTIFICACIONES -->
+      <div id="page-notificaciones" class="page" style="padding:32px;">
+        <th:block th:replace="Socio/notificaciones :: notificaciones-content"></th:block>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goLogin(){window.location.href='/login';}
+
+const ctx=document.getElementById('donut-inicio');
+if(ctx){
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['EC','GR','EE','REP','Otro'],
+      datasets:[{
+        data:[52,34,28,16,8],
+        backgroundColor:['#27AE60','#3498DB','#F39C12','#E74C3C','#95A5A6'],
+        borderWidth:0,
+        hoverOffset:4
+      }]
+    },
+    options:{responsive:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.label+' '+ctx.parsed+' ('+Math.round(ctx.parsed/138*100)+'%)';}}}}
+  });
+}
+</script>
+</body>
+</html>

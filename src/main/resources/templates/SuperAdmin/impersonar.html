@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Impersonar Usuario</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="impersonar-content">
+  <div style="margin-bottom:28px;">
+    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Impersonar Usuario</h1>
+    <div style="background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.25);border-radius:8px;padding:12px 16px;">
+      <p style="font-size:12px;color:#D68910;line-height:1.6;"><i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>Esta acción inicia una sesión de soporte como el usuario seleccionado. Las acciones destructivas estarán bloqueadas. El evento quedará registrado en el audit log.</p>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:800px;">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+      <div style="width:46px;height:46px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">JP</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Juan Pérez</div>
+        <div style="font-size:12px;color:#9CA3AF;">jperez@tetrapak.com · Socio · Activo</div>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:3px;">Último acceso: hace 2 horas</div>
+      </div>
+      <span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">Activo</span>
+      <button onclick="startImpersonation('Juan Pérez')" style="padding:9px 18px;border-radius:8px;border:none;background:#F39C12;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-user-secret"></i> Entrar como este usuario
+      </button>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+      <div style="width:46px;height:46px;border-radius:50%;background:#3498DB;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">ML</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1B3A5C;font-size:14px;">María López</div>
+        <div style="font-size:12px;color:#9CA3AF;">mlopez@kimberly.com · Visualizador · Activo</div>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:3px;">Último acceso: hace 1 día</div>
+      </div>
+      <span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">Activo</span>
+      <button onclick="startImpersonation('María López')" style="padding:9px 18px;border-radius:8px;border:none;background:#F39C12;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-user-secret"></i> Entrar como este usuario
+      </button>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;">
+      <div style="width:46px;height:46px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;">CR</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Carlos Ríos</div>
+        <div style="font-size:12px;color:#9CA3AF;">crios@arcacontinental.com · Socio · Inactivo</div>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:3px;">Último acceso: hace 5 días</div>
+      </div>
+      <span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;">Inactivo</span>
+      <button onclick="startImpersonation('Carlos Ríos')" style="padding:9px 18px;border-radius:8px;border:none;background:#F39C12;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-user-secret"></i> Entrar como este usuario
+      </button>
+    </div>
+  </div>
+</th:block>
+
+<script>
+function startImpersonation(nombre){
+  if(confirm('Iniciar sesión de soporte como '+nombre+'?\n\nLas acciones destructivas estarán bloqueadas y el evento quedará registrado.')){
+    alert('Sesión de soporte iniciada como: '+nombre);
+  }
+}
+</script>
+</body>
+</html>
