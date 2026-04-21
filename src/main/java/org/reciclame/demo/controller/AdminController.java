@@ -1,11 +1,21 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class AdminController {
+
+    private final UsuarioService usuarioService;
+    private final NormativaService normativaService;
+
+    public AdminController(UsuarioService usuarioService, NormativaService normativaService) {
+        this.usuarioService = usuarioService;
+        this.normativaService = normativaService;
+    }
 
     @GetMapping("/admin")
     public String inicio(Model model) {
@@ -22,6 +32,8 @@ public class AdminController {
     @GetMapping("/admin/usuarios")
     public String usuarios(Model model) {
         model.addAttribute("rol", "ADMIN");
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         return "admin/usuarios";
     }
 
@@ -58,6 +70,7 @@ public class AdminController {
     @GetMapping("/admin/normativo")
     public String normativo(Model model) {
         model.addAttribute("rol", "ADMIN");
+        model.addAttribute("normativas", normativaService.listarNormativas());
         return "admin/normativo";
     }
 

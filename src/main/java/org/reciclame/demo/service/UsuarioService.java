@@ -73,6 +73,20 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponseDTO> listarUsuariosActivos() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()) && "ACTIVO".equals(u.getEstadoCuenta()))
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponseDTO> listarUsuariosPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> "PENDIENTE".equals(u.getEstadoCuenta()))
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // ── READ ONE ──────────────────────────────────────────────
     public UsuarioResponseDTO obtenerUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
