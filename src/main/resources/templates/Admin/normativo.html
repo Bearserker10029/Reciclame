@@ -70,7 +70,8 @@
             <option>Estado: Todos</option><option>Vigente</option><option>Proyecto publicado</option><option>Proyecto / borrador en proceso</option><option>Consulta pública</option><option>Derogada</option>
           </select>
           <select class="form-input" style="width:auto;padding:10px 14px;">
-            <option>Temática: Todas</option><option>EC</option><option>GR</option><option>EE</option><option>REP</option><option>Otro</option>
+            <option>Temática: Todas</option>
+            <option th:each="t : ${tematicas}" th:value="${t.codigo}" th:text="${t.nombre}">Temática</option>
           </select>
           <button style="padding:9px 14px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#9CA3AF;font-family:inherit;">Limpiar filtros</button>
         </div>

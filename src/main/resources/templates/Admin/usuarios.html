@@ -125,7 +125,8 @@
         </div>
         <div style="display:flex;gap:8px;">
           <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
-            <option>Asignar rol...</option><option>Socio</option><option>Visualizador</option>
+            <option>Asignar rol...</option>
+            <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
           </select>
           <select style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
             <option>Empresa...</option>
