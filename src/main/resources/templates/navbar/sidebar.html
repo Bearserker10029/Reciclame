@@ -9,7 +9,9 @@
   <aside
     style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;">
     <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-      <div class="nav-item" id="nav-inicio" onclick="navTo('inicio')">
+      <div class="nav-item" id="nav-inicio"
+           th:class="${rol == 'ADMIN' or rol == 'SUPERADMIN' or rol == 'SOCIO' or rol == 'VISUALIZADOR'} ? (${rol == 'ADMIN' or rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item') : 'nav-item'"
+           onclick="navTo('inicio')">
         <i class="fas fa-home" style="width:18px;text-align:center;font-size:15px;"></i><span>Inicio</span>
       </div>
       <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
@@ -39,41 +41,41 @@
           style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
       </div>
 
-      <!-- Admin section -->
-      <div id="admin-section" th:if="${rol == 'ADMIN' or rol == 'SUPERADMIN'}">
-        <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
-        <div
-          style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
-          Administración</div>
-        <div class="nav-item" id="nav-usuarios" onclick="navTo('usuarios')">
-          <i class="fas fa-users" style="width:18px;text-align:center;font-size:15px;"></i><span>Usuarios</span>
-          <span id="pending-badge"
-            style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;display:none;">3</span>
-        </div>
-        <div class="nav-item" id="nav-admin-docs" onclick="navTo('admin-docs')">
-          <i class="fas fa-folder-open" style="width:18px;text-align:center;font-size:15px;"></i><span>Panel de Documentos</span>
-        </div>
-        <div class="nav-item" id="nav-trazabilidad" onclick="navTo('trazabilidad')">
-          <i class="fas fa-history" style="width:18px;text-align:center;font-size:15px;"></i><span>Trazabilidad</span>
-        </div>
-        <div class="nav-item" id="nav-reportes" onclick="navTo('reportes')">
-          <i class="fas fa-chart-bar" style="width:18px;text-align:center;font-size:15px;"></i><span>Reportes</span>
-        </div>
+      <!-- Admin section - siempre visible, activo según rol -->
+      <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
+      <div
+        style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
+        Administración</div>
+      <div class="nav-item" id="nav-usuarios"
+           th:class="${rol == 'ADMIN' or rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
+           onclick="navTo('usuarios')">
+        <i class="fas fa-users" style="width:18px;text-align:center;font-size:15px;"></i><span>Usuarios</span>
+        <span id="pending-badge"
+          style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;display:none;">3</span>
+      </div>
+      <div class="nav-item" id="nav-admin-docs" onclick="navTo('admin-docs')">
+        <i class="fas fa-folder-open" style="width:18px;text-align:center;font-size:15px;"></i><span>Panel de Documentos</span>
+      </div>
+      <div class="nav-item" id="nav-trazabilidad" onclick="navTo('trazabilidad')">
+        <i class="fas fa-history" style="width:18px;text-align:center;font-size:15px;"></i><span>Trazabilidad</span>
+      </div>
+      <div class="nav-item" id="nav-reportes" onclick="navTo('reportes')">
+        <i class="fas fa-chart-bar" style="width:18px;text-align:center;font-size:15px;"></i><span>Reportes</span>
       </div>
 
-      <!-- SuperAdmin section -->
-      <div id="superadmin-section" th:if="${rol == 'SUPERADMIN'}">
-        <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
-        <div class="nav-item" id="nav-auditoria" onclick="navTo('auditoria')">
-          <i class="fas fa-shield-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Auditoría Global</span>
-        </div>
-        <div class="nav-item" id="nav-impersonar" onclick="navTo('impersonar')">
-          <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonar Usuario</span>
-        </div>
+      <!-- SuperAdmin section - siempre visible, activo según rol -->
+      <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
+      <div class="nav-item" id="nav-auditoria"
+           th:class="${rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
+           onclick="navTo('auditoria')">
+        <i class="fas fa-shield-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Auditoría Global</span>
+      </div>
+      <div class="nav-item" id="nav-impersonar" onclick="navTo('impersonar')">
+        <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonar Usuario</span>
       </div>
     </div>
     <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:4px;">
-      <div class="nav-item" style="color:rgba(255,255,255,.4);" onclick="goLogin()">
+      <div class="nav-item" style="color:rgba(255,255,255,.4);" onclick="window.location.href='/logout'">
         <i class="fas fa-sign-out-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Cerrar sesión</span>
       </div>
     </div>
