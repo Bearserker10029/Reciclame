@@ -55,6 +55,36 @@ public class AdminController {
     @GetMapping("/admin/inicio")
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+
+        // Datos para fragmento normativo
+        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+
+        // Datos para fragmento estudios
+        model.addAttribute("estudios", estudioService.listarEstudios());
+
+        // Datos para fragmento usuarios
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
+        model.addAttribute("roles", rolService.listarRoles());
+
+        // Datos para fragmento notificaciones
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
+
+        // Datos para fragmento documentos
+        var estudios   = estudioService.listarEstudios();
+        var normativas = normativaService.listarNormativas();
+        int totalDescargas = estudios.stream()
+                .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+        model.addAttribute("totalDescargas", totalDescargas);
+
         return "admin/inicio";
     }
 
@@ -63,6 +93,7 @@ public class AdminController {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
         return "admin/usuarios";

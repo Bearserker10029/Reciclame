@@ -10,136 +10,439 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+
+    /* ── Toggle view ── */
+    .view-toggle{display:flex;background:#F3F4F6;border-radius:8px;padding:3px;gap:2px;}
+    .view-btn{padding:7px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .18s;background:transparent;color:#6B7280;}
+    .view-btn.active{background:#fff;color:#1B3A5C;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+    .view-btn i{margin-right:5px;}
+
+    /* ── Pills & tags ── */
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tag{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;}
+
+    /* ── List table ── */
+    .doc-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;}
+    .doc-table th{background:#F8FAFB;color:#6B7280;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:11px 16px;border-bottom:2px solid #EEF0F3;text-align:left;white-space:nowrap;}
+    .doc-table td{padding:14px 16px;border-bottom:1px solid #F0F2F5;color:#374151;vertical-align:middle;background:#fff;transition:background .12s;}
+    .doc-table tbody tr:hover td{background:#F6FAF8;}
+    .doc-table tbody tr:last-child td{border-bottom:none;}
+
+    /* ── Grid cards ── */
+    .grid-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;}
+    .doc-card{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden;transition:transform .22s,box-shadow .22s;cursor:pointer;border:1px solid #F0F2F5;}
+    .doc-card:hover{transform:translateY(-4px);box-shadow:0 10px 28px rgba(0,0,0,.11);}
+    .doc-card-thumb{height:70px;display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;}
+    .doc-card-thumb .format-badge{position:absolute;top:8px;right:8px;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.04em;}
+    .doc-card-body{padding:14px 16px;}
+    .doc-card-title{font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .doc-card-year{font-size:11px;color:#9CA3AF;margin-bottom:6px;}
+    .doc-card-desc{font-size:11px;color:#6B7280;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px;}
+    .doc-card-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;}
+
+    /* ── Action buttons ── */
+    .btn-ver{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:7px;border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;transition:all .15s;}
+    .btn-ver:hover{background:#2ECC71;color:#fff;}
+
+    /* ── Modal ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(10,20,35,.55);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal-box{background:#fff;border-radius:16px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.22);animation:modalIn .2s ease-out;}
+    @keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(12px)}to{opacity:1;transform:none}}
+    .modal-head{padding:20px 24px 16px;border-bottom:1px solid #F0F2F5;display:flex;align-items:flex-start;gap:14px;}
+    .modal-icon{width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px;}
+    .modal-body{padding:20px 24px;}
+    .modal-meta-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;font-size:13px;}
+    .modal-meta-row i{width:16px;flex-shrink:0;margin-top:1px;color:#9CA3AF;}
+    .modal-meta-label{color:#6B7280;min-width:80px;flex-shrink:0;}
+    .modal-meta-value{color:#1B3A5C;font-weight:600;}
+    .modal-footer{padding:16px 24px;border-top:1px solid #F0F2F5;display:flex;gap:10px;justify-content:flex-end;}
+    .btn-cancel{padding:9px 20px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;color:#6B7280;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:border-color .15s;}
+    .btn-cancel:hover{border-color:#9CA3AF;}
+    .btn-open{padding:9px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;transition:background .15s;}
+    .btn-open:hover{background:#27AE60;}
+
+    /* ── Empty state ── */
+    .empty-state{text-align:center;padding:60px 20px;color:#9CA3AF;}
+    .empty-state i{font-size:40px;margin-bottom:14px;display:block;opacity:.4;}
+
+    /* ── Form controls ── */
+    .filter-input{padding:9px 14px 9px 36px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;outline:none;color:#111827;transition:border-color .2s;background:#fff;}
+    .filter-input:focus{border-color:#2ECC71;}
+    .filter-select{padding:9px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;outline:none;color:#374151;background:#fff;cursor:pointer;transition:border-color .2s;}
+    .filter-select:focus{border-color:#2ECC71;}
   </style>
 </head>
 <body>
 
 <th:block th:fragment="estudios-content">
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
-    <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
-    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
-      <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
-      <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
+
+  <!-- ── Header ── -->
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px;">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="width:36px;height:36px;background:linear-gradient(135deg,#2ECC71,#27AE60);border-radius:10px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-folder-open" style="color:#fff;font-size:16px;"></i>
+        </div>
+        <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin:0;">Estudios Recíclame</h1>
+      </div>
+      <p style="color:#6B7280;font-size:13px;margin-bottom:10px;">Reportes, infografías y ayudas memoria del equipo técnico</p>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);border-radius:6px;padding:5px 12px;">
+        <i class="fas fa-eye" style="color:#C0392B;font-size:10px;"></i>
+        <span style="font-size:11px;color:#C0392B;font-weight:600;">Solo lectura — sin descarga directa</span>
+      </div>
+    </div>
+
+    <!-- Stats mini -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="background:#fff;border-radius:10px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.07);text-align:center;min-width:80px;">
+        <div style="font-size:22px;font-weight:800;color:#1B3A5C;" id="stats-total">—</div>
+        <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">Total</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.07);text-align:center;min-width:80px;">
+        <div style="font-size:22px;font-weight:800;color:#E74C3C;" id="stats-pdf">—</div>
+        <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">PDF</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:12px 18px;box-shadow:0 2px 8px rgba(0,0,0,.07);text-align:center;min-width:80px;">
+        <div style="font-size:22px;font-weight:800;color:#27AE60;" id="stats-pptx">—</div>
+        <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.06em;">PPTX</div>
+      </div>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <!-- ── Filters bar ── -->
+  <div style="background:#fff;border-radius:12px;padding:14px 18px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <!-- Search -->
     <div style="position:relative;flex:1;min-width:220px;">
-      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-      <input class="form-control" placeholder="Buscar estudios..." style="padding-left:36px;" />
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+      <input id="filter-search" class="filter-input" style="width:100%;" placeholder="Buscar por título u objetivo…" oninput="applyFilters()" />
     </div>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Año: 2025–2026</option>
-      <option>Año: 2024–2025</option>
+    <!-- Year filter -->
+    <select id="filter-year" class="filter-select" onchange="applyFilters()">
+      <option value="">Todos los años</option>
+      <option value="last12">Último año</option>
+      <option value="2026">2026</option>
+      <option value="2025">2025</option>
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
     </select>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Todos los formatos</option>
-      <option>PDF</option>
-      <option>PPTX</option>
+    <!-- Format filter -->
+    <select id="filter-format" class="filter-select" onchange="applyFilters()">
+      <option value="">Todos los formatos</option>
+      <option value="pdf">PDF</option>
+      <option value="pptx">PPTX / Presentación</option>
     </select>
-    <select class="form-input" style="width:auto;padding:10px 14px;">
-      <option>Temática: Todas</option>
+    <!-- Tematica filter -->
+    <select id="filter-tematica" class="filter-select" onchange="applyFilters()">
+      <option value="">Temática: Todas</option>
       <option th:each="t : ${tematicas}" th:value="${t.codigo}" th:text="${t.nombre}">Temática</option>
     </select>
-    <div style="display:flex;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">
-      <button onclick="setView('lista')" style="padding:9px 14px;border:none;cursor:pointer;background:#1B3A5C;color:#fff;font-size:13px;" title="Vista lista"><i class="fas fa-list"></i></button>
-      <button onclick="setView('grid')" style="padding:9px 14px;border:none;cursor:pointer;background:#fff;color:#6B7280;font-size:13px;" title="Vista cuadrícula"><i class="fas fa-th"></i></button>
+    <!-- Clear -->
+    <button onclick="clearFilters()" style="padding:9px 14px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#9CA3AF;font-family:inherit;white-space:nowrap;transition:border-color .15s;" onmouseover="this.style.borderColor='#9CA3AF'" onmouseout="this.style.borderColor='#E5E7EB'">
+      <i class="fas fa-times" style="margin-right:4px;"></i>Limpiar
+    </button>
+    <!-- Toggle view -->
+    <div class="view-toggle">
+      <button id="btn-lista" class="view-btn active" onclick="setView('lista')">
+        <i class="fas fa-list"></i>Lista
+      </button>
+      <button id="btn-grid" class="view-btn" onclick="setView('grid')">
+        <i class="fas fa-th-large"></i>Grid
+      </button>
     </div>
   </div>
 
-  <!-- List view -->
+  <!-- Contador de resultados -->
+  <div id="filter-count" style="font-size:12px;color:#9CA3AF;margin-bottom:14px;display:none;">
+    <i class="fas fa-filter" style="margin-right:5px;"></i><span id="filter-count-text"></span>
+  </div>
+
+  <!-- ═══ LIST VIEW ═══ -->
   <div id="view-lista">
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-      <table class="table table-striped table-hover">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.07);overflow:hidden;">
+      <table class="doc-table">
         <thead>
           <tr>
-            <th>Documento</th>
+            <th style="width:40%;">Documento</th>
             <th>Objetivo</th>
             <th>Año</th>
             <th>Formato</th>
             <th>Acceso</th>
-            <th>Acciones</th>
+            <th style="text-align:center;">Acción</th>
           </tr>
         </thead>
-        <tbody>
-          <tr th:each="e : ${estudios}">
+        <tbody id="table-body">
+          <tr th:each="e : ${estudios}"
+              th:data-titulo="${e.titulo}"
+              th:data-descripcion="${e.descripcionBreve}"
+              th:data-anio="${e.anio}"
+              th:data-mime="${e.archivoTipoMime}"
+              th:data-url="${e.archivoUrl}"
+              class="doc-row">
             <td>
-              <div style="display:flex;align-items:center;gap:10px;">
+              <div style="display:flex;align-items:center;gap:12px;">
                 <div th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
-                     style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
-                  <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i>
+                     style="width:36px;height:36px;border-radius:8px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:15px;"></i>
                 </div>
                 <div th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
-                     style="width:32px;height:32px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
-                  <i class="fas fa-file-alt" style="color:#27AE60;font-size:13px;"></i>
+                     style="width:36px;height:36px;border-radius:8px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-file-powerpoint" style="color:#3498DB;font-size:15px;"></i>
                 </div>
-                <span style="font-weight:600;color:#1B3A5C;" th:text="${e.titulo}">Título</span>
+                <div>
+                  <div style="font-weight:700;color:#1B3A5C;font-size:13px;" th:text="${e.titulo}">Título</div>
+                </div>
               </div>
             </td>
-            <td style="color:#6B7280;max-width:200px;" th:text="${e.descripcionBreve}">—</td>
-            <td th:text="${e.anio}">—</td>
+            <td style="color:#6B7280;max-width:220px;font-size:12px;" th:text="${e.descripcionBreve}">—</td>
+            <td style="color:#374151;font-weight:600;white-space:nowrap;" th:text="${e.anio}">—</td>
             <td>
-              <span class="pill"
-                    th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.12);color:#C0392B;' : 'background:rgba(46,204,113,.12);color:#27AE60;'"
-                    th:text="${e.archivoTipoMime != null ? #strings.toUpperCase(e.archivoTipoMime) : '—'}">—</span>
+              <span th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                    class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">
+                <i class="fas fa-file-pdf" style="font-size:9px;"></i> PDF
+              </span>
+              <span th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                    class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">
+                <i class="fas fa-file-powerpoint" style="font-size:9px;"></i> PPTX
+              </span>
             </td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
             <td>
-              <a th:href="${e.archivoUrl}"
-                 style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;text-decoration:none;">
-                <i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver
-              </a>
+              <span class="pill" style="background:rgba(149,165,166,.12);color:#717D7E;">
+                <i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura
+              </span>
             </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(estudios)}">
-            <td colspan="6" style="text-align:center;padding:30px;color:#9CA3AF;">No hay estudios registrados.</td>
+            <td style="text-align:center;">
+              <button class="btn-ver"
+                      th:onclick="'openModal(' + '&quot;' + ${e.titulo} + '&quot;,' + '&quot;' + (${e.descripcionBreve} ?: '') + '&quot;,' + '&quot;' + (${e.anio} ?: '') + '&quot;,' + '&quot;' + (${e.archivoTipoMime} ?: '') + '&quot;,' + '&quot;' + (${e.archivoUrl} ?: '#') + '&quot;)'">
+                <i class="fas fa-eye"></i> Ver
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
+      <!-- Empty state lista -->
+      <div id="empty-lista" class="empty-state" style="display:none;">
+        <i class="fas fa-search"></i>
+        No se encontraron estudios con esos filtros.
+      </div>
+      <div th:if="${#lists.isEmpty(estudios)}" class="empty-state">
+        <i class="fas fa-folder-open"></i>
+        No hay estudios registrados aún.
+      </div>
     </div>
   </div>
 
-  <!-- Grid view (hidden by default) -->
-  <div id="view-grid" style="display:none;grid-template-columns:repeat(3,1fr);gap:20px;">
-    <div th:each="e : ${estudios}"
-         style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;">
-      <div th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;' : 'background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;'">
-        <i th:class="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'fas fa-file-pdf' : 'fas fa-file-alt'"
-           th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'font-size:30px;color:#E74C3C;' : 'font-size:30px;color:#27AE60;'"></i>
-      </div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;" th:text="${e.titulo}">Título</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;" th:text="${e.anio}">—</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;" th:text="${e.descripcionBreve}">—</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;">
-            <span class="pill"
-                  th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;' : 'background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;'"
-                  th:text="${e.archivoTipoMime != null ? #strings.toUpperCase(e.archivoTipoMime) : '—'}">—</span>
-            <span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span>
+  <!-- ═══ GRID VIEW ═══ -->
+  <div id="view-grid" style="display:none;">
+    <div class="grid-wrap" id="grid-body">
+      <div th:each="e : ${estudios}"
+           th:data-titulo="${e.titulo}"
+           th:data-descripcion="${e.descripcionBreve}"
+           th:data-anio="${e.anio}"
+           th:data-mime="${e.archivoTipoMime}"
+           th:data-url="${e.archivoUrl}"
+           class="doc-card doc-row">
+        <!-- Thumbnail -->
+        <div class="doc-card-thumb"
+             th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:linear-gradient(135deg,rgba(231,76,60,.08),rgba(231,76,60,.16));' : 'background:linear-gradient(135deg,rgba(52,152,219,.08),rgba(52,152,219,.16));'">
+          <i th:class="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'fas fa-file-pdf' : 'fas fa-file-powerpoint'"
+             th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'color:#E74C3C;font-size:30px;' : 'color:#3498DB;font-size:30px;'"></i>
+          <span class="format-badge"
+                th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.15);color:#C0392B;' : 'background:rgba(52,152,219,.15);color:#2471A3;'"
+                th:text="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'PDF' : 'PPTX'">—</span>
+        </div>
+        <div class="doc-card-body">
+          <div class="doc-card-title" th:text="${e.titulo}">Título del estudio</div>
+          <div class="doc-card-year" th:text="${e.anio}">2026</div>
+          <div class="doc-card-desc" th:text="${e.descripcionBreve}">Descripción breve del documento.</div>
+          <div class="doc-card-footer">
+            <span class="pill" style="background:rgba(149,165,166,.12);color:#717D7E;font-size:10px;">
+              <i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura
+            </span>
+            <button class="btn-ver"
+                    th:onclick="'openModal(' + '&quot;' + ${e.titulo} + '&quot;,' + '&quot;' + (${e.descripcionBreve} ?: '') + '&quot;,' + '&quot;' + (${e.anio} ?: '') + '&quot;,' + '&quot;' + (${e.archivoTipoMime} ?: '') + '&quot;,' + '&quot;' + (${e.archivoUrl} ?: '#') + '&quot;)'"
+                    style="font-size:11px;padding:5px 11px;">
+              <i class="fas fa-eye"></i> Ver
+            </button>
           </div>
-          <a th:href="${e.archivoUrl}" style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;text-decoration:none;">
-            <i class="fas fa-eye"></i> Ver
-          </a>
         </div>
       </div>
     </div>
-    <div th:if="${#lists.isEmpty(estudios)}" style="grid-column:span 3;text-align:center;padding:30px;color:#9CA3AF;background:#fff;border-radius:12px;">
-      No hay estudios registrados.
+    <!-- Empty state grid -->
+    <div id="empty-grid" class="empty-state" style="display:none;background:#fff;border-radius:12px;">
+      <i class="fas fa-search"></i>
+      No se encontraron estudios con esos filtros.
+    </div>
+    <div th:if="${#lists.isEmpty(estudios)}" class="empty-state" style="background:#fff;border-radius:12px;">
+      <i class="fas fa-folder-open"></i>
+      No hay estudios registrados aún.
     </div>
   </div>
+
 </th:block>
 
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-estudio" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-icon" id="modal-icon" style="background:rgba(231,76,60,.1);">
+        <i id="modal-icon-i" class="fas fa-file-pdf" style="color:#E74C3C;"></i>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:800;font-size:15px;color:#1B3A5C;line-height:1.4;margin-bottom:4px;" id="modal-titulo">Título del estudio</div>
+        <div style="display:inline-flex;align-items:center;gap:5px;background:rgba(149,165,166,.12);border-radius:5px;padding:3px 9px;">
+          <i class="fas fa-eye" style="color:#717D7E;font-size:9px;"></i>
+          <span style="font-size:10px;color:#717D7E;font-weight:700;">Solo lectura</span>
+        </div>
+      </div>
+      <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;color:#9CA3AF;font-size:18px;padding:0;flex-shrink:0;margin-top:-2px;" onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#9CA3AF'">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-meta-row">
+        <i class="fas fa-bullseye"></i>
+        <span class="modal-meta-label">Objetivo:</span>
+        <span class="modal-meta-value" id="modal-descripcion" style="font-weight:400;color:#374151;line-height:1.5;">—</span>
+      </div>
+      <div class="modal-meta-row">
+        <i class="fas fa-calendar"></i>
+        <span class="modal-meta-label">Año:</span>
+        <span class="modal-meta-value" id="modal-anio">—</span>
+      </div>
+      <div class="modal-meta-row">
+        <i class="fas fa-file"></i>
+        <span class="modal-meta-label">Formato:</span>
+        <span class="modal-meta-value" id="modal-formato">—</span>
+      </div>
+      <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;align-items:flex-start;gap:8px;">
+        <i class="fas fa-info-circle" style="color:#27AE60;margin-top:1px;flex-shrink:0;"></i>
+        <span style="font-size:12px;color:#374151;line-height:1.5;">Este documento es de <strong>solo lectura</strong>. Podrás visualizarlo en el visor integrado sin opción de descarga directa.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <a id="modal-link" href="#" target="_blank" class="btn-open" style="text-decoration:none;">
+        <i class="fas fa-external-link-alt"></i> Abrir documento
+      </a>
+    </div>
+  </div>
+</div>
+
 <script>
-function setView(view){
-  document.getElementById('view-lista').style.display=view==='lista'?'block':'none';
-  document.getElementById('view-grid').style.display=view==='grid'?'grid':'none';
+// ── View state ──
+var currentView = 'lista';
+function setView(v) {
+  currentView = v;
+  document.getElementById('view-lista').style.display = v === 'lista' ? 'block' : 'none';
+  document.getElementById('view-grid').style.display  = v === 'grid'  ? 'block' : 'none';
+  document.getElementById('btn-lista').classList.toggle('active', v === 'lista');
+  document.getElementById('btn-grid').classList.toggle('active',  v === 'grid');
+  applyFilters();
 }
-function openVisor(tipo,nombre,formato,descargable){
-  alert('Visor: '+nombre+' ('+formato+') — Solo lectura');
+
+// ── Stats ──
+(function() {
+  var rows = document.querySelectorAll('.doc-row');
+  var total = rows.length, pdf = 0, pptx = 0;
+  rows.forEach(function(r) {
+    var mime = (r.dataset.mime || '').toLowerCase();
+    if (mime.indexOf('pdf') > -1) pdf++;
+    else pptx++;
+  });
+  var el = function(id, val) { var e = document.getElementById(id); if(e) e.textContent = val; };
+  el('stats-total', total); el('stats-pdf', pdf); el('stats-pptx', pptx);
+})();
+
+// ── Filters ──
+var CURRENT_YEAR = new Date().getFullYear();
+function applyFilters() {
+  var search   = (document.getElementById('filter-search').value || '').toLowerCase().trim();
+  var year     = document.getElementById('filter-year').value;
+  var format   = (document.getElementById('filter-format').value || '').toLowerCase();
+  var tematica = document.getElementById('filter-tematica').value;
+
+  var rows = document.querySelectorAll('.doc-row');
+  var visible = 0;
+  rows.forEach(function(row) {
+    var titulo = (row.dataset.titulo || '').toLowerCase();
+    var desc   = (row.dataset.descripcion || '').toLowerCase();
+    var anio   = parseInt(row.dataset.anio) || 0;
+    var mime   = (row.dataset.mime || '').toLowerCase();
+
+    var matchSearch = !search || titulo.indexOf(search) > -1 || desc.indexOf(search) > -1;
+    var matchYear;
+    if (year === 'last12') {
+      matchYear = anio >= CURRENT_YEAR - 1;
+    } else if (year) {
+      matchYear = anio === parseInt(year);
+    } else {
+      matchYear = true;
+    }
+    var matchFormat = !format || (format === 'pdf' ? mime.indexOf('pdf') > -1 : mime.indexOf('pdf') === -1);
+    // tematica filter no data attribute in rows — skip for now
+    var show = matchSearch && matchYear && matchFormat;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+
+  // Empty states
+  var emptyLista = document.getElementById('empty-lista');
+  var emptyGrid  = document.getElementById('empty-grid');
+  if (emptyLista) emptyLista.style.display = (visible === 0 && currentView === 'lista') ? 'block' : 'none';
+  if (emptyGrid)  emptyGrid.style.display  = (visible === 0 && currentView === 'grid')  ? 'block' : 'none';
+
+  // Counter
+  var filterActive = search || year || format;
+  var countEl = document.getElementById('filter-count');
+  var countTxt = document.getElementById('filter-count-text');
+  if (filterActive && countEl && countTxt) {
+    countEl.style.display = 'block';
+    countTxt.textContent = visible + ' resultado' + (visible !== 1 ? 's' : '') + ' encontrado' + (visible !== 1 ? 's' : '');
+  } else if (countEl) {
+    countEl.style.display = 'none';
+  }
 }
+
+function clearFilters() {
+  document.getElementById('filter-search').value = '';
+  document.getElementById('filter-year').value = '';
+  document.getElementById('filter-format').value = '';
+  document.getElementById('filter-tematica').value = '';
+  applyFilters();
+}
+
+// ── Modal ──
+function openModal(titulo, descripcion, anio, mime, url) {
+  var isPdf = mime && mime.toLowerCase().indexOf('pdf') > -1;
+  var formato = isPdf ? 'PDF — Infografía / Reporte' : 'PPTX — Presentación';
+
+  document.getElementById('modal-titulo').textContent     = titulo || '—';
+  document.getElementById('modal-descripcion').textContent = descripcion || '—';
+  document.getElementById('modal-anio').textContent       = anio || '—';
+  document.getElementById('modal-formato').textContent    = formato;
+  document.getElementById('modal-link').href              = url || '#';
+
+  var icon   = document.getElementById('modal-icon');
+  var iconI  = document.getElementById('modal-icon-i');
+  if (isPdf) {
+    icon.style.background  = 'rgba(231,76,60,.1)';
+    iconI.className        = 'fas fa-file-pdf';
+    iconI.style.color      = '#E74C3C';
+  } else {
+    icon.style.background  = 'rgba(52,152,219,.1)';
+    iconI.className        = 'fas fa-file-powerpoint';
+    iconI.style.color      = '#3498DB';
+  }
+
+  document.getElementById('modal-estudio').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modal-estudio').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeModal(); });
 </script>
 </body>
 </html>
