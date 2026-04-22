@@ -29,17 +29,17 @@
 
   <!-- ═══ TABS ═══ -->
   <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:20px;gap:0;">
-    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">
+    <button id="tab-usuarios-activos" class="report-tab active">
       <i class="fas fa-users"></i> Usuarios activos
       <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;"
             th:text="${#lists.size(usuariosActivos)}">0</span>
     </button>
-    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">
+    <button id="tab-usuarios-pendientes" class="report-tab">
       <i class="fas fa-user-clock"></i> Solicitudes pendientes
       <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;"
             th:text="${#lists.size(usuariosPendientes)}">0</span>
     </button>
-    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">
+    <button id="tab-usuarios-historial" class="report-tab">
       <i class="fas fa-history"></i> Historial
     </button>
   </div>
@@ -51,13 +51,13 @@
       <div style="position:relative;flex:1;min-width:200px;">
         <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
         <input id="buscar-usuario" class="form-control" placeholder="Buscar por nombre o correo..."
-               style="padding-left:36px;" oninput="filtrarUsuarios()" />
+               style="padding-left:36px;" />
       </div>
-      <select id="filtro-rol" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarUsuarios()">
+      <select id="filtro-rol" class="form-control" style="width:auto;padding:10px 14px;">
         <option value="">Rol: Todos</option>
         <option th:each="r : ${roles}" th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
       </select>
-      <select id="filtro-estado" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarUsuarios()">
+      <select id="filtro-estado" class="form-control" style="width:auto;padding:10px 14px;">
         <option value="">Estado: Todos</option>
         <option value="activo">Activo</option>
         <option value="bloqueado">Bloqueado</option>
@@ -482,50 +482,7 @@
     }
   }
 
-  // ─── Tab switching ────────────────────────────────────────
-  function switchUserTab(tab) {
-    document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
-    document.getElementById('utab-activos').style.display = 'none';
-    document.getElementById('utab-pendientes').style.display = 'none';
-    document.getElementById('utab-historial').style.display = 'none';
-    if (tab === 'activos') {
-      document.getElementById('utab-activos').style.display = 'block';
-      document.getElementById('tab-usuarios-activos').classList.add('active');
-    } else if (tab === 'pendientes') {
-      document.getElementById('utab-pendientes').style.display = 'block';
-      document.getElementById('tab-usuarios-pendientes').classList.add('active');
-    } else {
-      document.getElementById('utab-historial').style.display = 'block';
-      document.getElementById('tab-usuarios-historial').classList.add('active');
-    }
-  }
-
-  // ─── Filtrar / buscar ─────────────────────────────────────
-  function filtrarUsuarios() {
-    var buscar = (document.getElementById('buscar-usuario').value || '').toLowerCase();
-    var filtroRol = (document.getElementById('filtro-rol').value || '').toLowerCase();
-    var filtroEstado = (document.getElementById('filtro-estado').value || '').toLowerCase();
-    var filas = document.querySelectorAll('#tbody-activos tr[data-nombre]');
-    var visibles = 0;
-    filas.forEach(function(tr) {
-      var nombre = tr.dataset.nombre || '';
-      var correo = tr.dataset.correo || '';
-      var rol = tr.dataset.rol || '';
-      var estado = tr.dataset.estado || '';
-      var coincide =
-        (!buscar || nombre.includes(buscar) || correo.includes(buscar)) &&
-        (!filtroRol || rol.includes(filtroRol)) &&
-        (!filtroEstado || estado.includes(filtroEstado));
-      tr.style.display = coincide ? '' : 'none';
-      if (coincide) visibles++;
-    });
-    var sinRes = document.getElementById('fila-sin-resultados');
-    if (sinRes) sinRes.style.display = (visibles === 0) ? '' : 'none';
-    var conteo = document.getElementById('conteo-usuarios');
-    if (conteo) conteo.textContent = 'Mostrando ' + visibles + ' usuario' + (visibles !== 1 ? 's' : '');
-    inicializarPaginacion();
-  }
-
+  // ─── Toggle checkboxes ─────────────────────────────────
   function toggleCheckAll(master) {
     document.querySelectorAll('.row-check').forEach(function(cb) {
       cb.checked = master.checked;

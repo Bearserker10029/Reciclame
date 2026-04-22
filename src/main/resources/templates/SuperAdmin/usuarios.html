@@ -27,13 +27,13 @@
 
   <!-- Tabs -->
   <div style="display:flex;margin-bottom:20px;gap:4px;">
-    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUserTab('activos')">
+    <button id="tab-usuarios-activos" class="report-tab active">
       <i class="fas fa-users"></i> Usuarios activos <span class="tab-badge">42</span>
     </button>
-    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUserTab('pendientes')">
+    <button id="tab-usuarios-pendientes" class="report-tab">
       <i class="fas fa-user-clock"></i> Solicitudes pendientes <span class="tab-badge">3</span>
     </button>
-    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUserTab('historial')">
+    <button id="tab-usuarios-historial" class="report-tab">
       <i class="fas fa-history"></i> Historial
     </button>
   </div>
@@ -160,15 +160,6 @@
 </th:block>
 
 <script>
-function switchUserTab(tab){
-  document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('utab-activos').style.display='none';
-  document.getElementById('utab-pendientes').style.display='none';
-  document.getElementById('utab-historial').style.display='none';
-  if(tab==='activos'){document.getElementById('utab-activos').style.display='block';document.getElementById('tab-usuarios-activos').classList.add('active');}
-  else if(tab==='pendientes'){document.getElementById('utab-pendientes').style.display='block';document.getElementById('tab-usuarios-pendientes').classList.add('active');}
-  else{document.getElementById('utab-historial').style.display='block';document.getElementById('tab-usuarios-historial').classList.add('active');}
-}
 </script>
 </body>
 </html>

@@ -84,13 +84,13 @@
     <div>
       <!-- Tabs -->
       <div class="ambito-tabs">
-        <button id="tab-todos" class="ambito-tab active" onclick="setAmbito('todos')">
+        <button id="tab-todos" class="ambito-tab active">
           <i class="fas fa-globe-americas" style="font-size:12px;"></i>Todas <span class="tab-badge" id="cnt-todos">6</span>
         </button>
-        <button id="tab-nacional" class="ambito-tab" onclick="setAmbito('nacional')">
+        <button id="tab-nacional" class="ambito-tab">
           <i class="fas fa-flag" style="font-size:12px;"></i>Nacional <span class="tab-badge" id="cnt-nacional">4</span>
         </button>
-        <button id="tab-internacional" class="ambito-tab" onclick="setAmbito('internacional')">
+        <button id="tab-internacional" class="ambito-tab">
           <i class="fas fa-globe" style="font-size:12px;"></i>Internacional <span class="tab-badge" id="cnt-internacional">2</span>
         </button>
       </div>
@@ -99,24 +99,24 @@
       <div style="background:#fff;border-radius:10px;padding:12px 16px;box-shadow:0 2px 6px rgba(0,0,0,.05);margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <div style="position:relative;flex:1;min-width:180px;">
           <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
-          <input id="n-search" class="f-input" placeholder="Buscar nombre, código, organismo…" oninput="filterN()" />
+          <input id="n-search" class="f-input" placeholder="Buscar nombre, código, organismo…" />
         </div>
-        <select id="n-tipo" class="f-select" onchange="filterN()">
+        <select id="n-tipo" class="f-select">
           <option value="">Tipo: Todos</option>
           <option>Ley</option><option>Decreto Legislativo</option><option>Decreto Supremo</option>
           <option>Reglamento</option><option>NTP / Norma técnica</option>
           <option>Directiva</option><option>Hoja de Ruta</option><option>Resolución</option>
         </select>
-        <select id="n-estado" class="f-select" onchange="filterN()">
+        <select id="n-estado" class="f-select">
           <option value="">Estado: Todos</option>
           <option>Vigente</option><option>Proyecto publicado</option><option>Consulta pública</option><option>Derogada</option>
         </select>
-        <button onclick="clearNF()" style="padding:8px 12px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#9CA3AF;font-family:inherit;white-space:nowrap;" onmouseover="this.style.borderColor='#9CA3AF'" onmouseout="this.style.borderColor='#E5E7EB'">
+        <button style="padding:8px 12px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#9CA3AF;font-family:inherit;white-space:nowrap;" onmouseover="this.style.borderColor='#9CA3AF'" onmouseout="this.style.borderColor='#E5E7EB'">
           <i class="fas fa-times" style="margin-right:3px;"></i>Limpiar
         </button>
         <div class="view-toggle">
-          <button id="btn-list" class="view-btn active" onclick="setView('list')"><i class="fas fa-list"></i></button>
-          <button id="btn-grid" class="view-btn" onclick="setView('grid')"><i class="fas fa-th-large"></i></button>
+          <button id="btn-list" class="view-btn active"><i class="fas fa-list"></i></button>
+          <button id="btn-grid" class="view-btn"><i class="fas fa-th-large"></i></button>
         </div>
       </div>
 
@@ -297,64 +297,6 @@
 </th:block>
 
 <script>
-var currentAmbito = 'todos';
-var currentView   = 'list';
-
-function setAmbito(a) {
-  currentAmbito = (a || 'todos').toLowerCase();
-  ['todos','nacional','internacional'].forEach(function(t){
-    var tab = document.getElementById('tab-' + t);
-    if (tab) tab.classList.toggle('active', t === currentAmbito);
-  });
-  filterN();
-}
-function setAmbitoNormativo(a) { setAmbito(a); }
-
-function setView(v) {
-  currentView = v;
-  document.getElementById('view-list').style.display = v === 'list' ? 'block' : 'none';
-  document.getElementById('view-grid').style.display = v === 'grid'  ? 'block' : 'none';
-  var bl = document.getElementById('btn-list'), bg = document.getElementById('btn-grid');
-  if(bl) bl.classList.toggle('active', v === 'list');
-  if(bg) bg.classList.toggle('active', v === 'grid');
-}
-
-function filterN() {
-  var search = (document.getElementById('n-search').value || '').toLowerCase().trim();
-  var tipo   = (document.getElementById('n-tipo').value   || '').toLowerCase();
-  var estado = (document.getElementById('n-estado').value || '').toLowerCase();
-
-  var els = document.querySelectorAll('.norm-row, .norm-card');
-  var visible = 0;
-  els.forEach(function(el) {
-    var titulo   = (el.dataset.titulo  || '').toLowerCase();
-    var codigo   = (el.dataset.codigo  || '').toLowerCase();
-    var tipoEl   = (el.dataset.tipo    || '').toLowerCase();
-    var estadoEl = (el.dataset.estado  || '').toLowerCase();
-    var ambitoEl = (el.dataset.ambito  || '').toUpperCase();
-
-    var mS = !search || titulo.indexOf(search) > -1 || codigo.indexOf(search) > -1;
-    var mT = !tipo   || tipoEl.indexOf(tipo)   > -1;
-    var mE = !estado || estadoEl.indexOf(estado) > -1;
-    var mA = currentAmbito === 'todos' ||
-             (currentAmbito === 'nacional'      && ambitoEl.indexOf('NACIONAL') > -1) ||
-             (currentAmbito === 'internacional' && ambitoEl.indexOf('NACIONAL') === -1);
-
-    var show = mS && mT && mE && mA;
-    el.style.display = show ? '' : 'none';
-    if (show) visible++;
-  });
-
-  var el = document.getElementById('empty-list'), eg = document.getElementById('empty-grid');
-  if (el) el.classList.toggle('show', visible === 0 && currentView === 'list');
-  if (eg) eg.classList.toggle('show', visible === 0 && currentView === 'grid');
-}
-
-function clearNF() {
-  ['n-search','n-tipo','n-estado'].forEach(function(id){ var e=document.getElementById(id); if(e) e.value=''; });
-  setAmbito('todos');
-}
-
 function openVisor(codigo, titulo, anio, formato) {
   alert('📄 ' + codigo + '\n' + titulo + ' (' + anio + ')\nFormato: ' + formato + '\n\n🔒 Solo lectura — sin descarga.');
 }

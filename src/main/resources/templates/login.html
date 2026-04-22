@@ -155,22 +155,24 @@
     }
 
     .back-btn {
-      background: rgba(255, 255, 255, .1);
-      border: none;
-      color: #fff;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+      background: rgba(46, 204, 113, .15);
+      border: 1.5px solid rgba(46, 204, 113, .4);
+      color: var(--green);
+      width: 36px;
+      height: 36px;
       cursor: pointer;
       font-size: 13px;
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: center;
-      transition: background .15s;
+      transition: all .2s;
+      flex-shrink: 0;
     }
 
     .back-btn:hover {
-      background: rgba(255, 255, 255, .18);
+      background: rgba(46, 204, 113, .25);
+      border-color: var(--green);
+      transform: scale(1.08);
     }
 
     /* INPUTS */

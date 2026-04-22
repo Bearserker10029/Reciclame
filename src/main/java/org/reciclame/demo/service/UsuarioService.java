@@ -9,12 +9,14 @@ import org.reciclame.demo.repository.EmpresaRepository;
 import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -30,6 +32,7 @@ public class UsuarioService {
     }
 
     // ── CREATE ────────────────────────────────────────────────
+    @Transactional
     public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
         if (usuarioRepository.existsByCorreoCorporativo(dto.getCorreoCorporativo()))
             throw new RuntimeException("Ya existe un usuario con ese correo corporativo.");
@@ -100,6 +103,7 @@ public class UsuarioService {
     }
 
     // ── UPDATE ────────────────────────────────────────────────
+    @Transactional
     public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -127,6 +131,7 @@ public class UsuarioService {
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
+    @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -137,6 +142,7 @@ public class UsuarioService {
     }
 
     // ── APROBAR solicitud pendiente ───────────────────────────
+    @Transactional
     public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -157,6 +163,7 @@ public class UsuarioService {
     }
 
     // ── RECHAZAR solicitud pendiente ──────────────────────────
+    @Transactional
     public UsuarioResponseDTO rechazarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -167,6 +174,7 @@ public class UsuarioService {
     }
 
     // ── BLOQUEAR / DESBLOQUEAR ────────────────────────────────
+    @Transactional
     public UsuarioResponseDTO toggleBloquear(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -178,6 +186,7 @@ public class UsuarioService {
     }
 
     // ── EXPORTAR CSV ──────────────────────────────────────────
+    @Transactional
     public String exportarCsv() {
         StringBuilder sb = new StringBuilder();
         sb.append("ID,Nombre Completo,DNI,Correo,Rol,Empresa,Estado,Registro\n");
