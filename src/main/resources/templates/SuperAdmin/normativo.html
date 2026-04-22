@@ -52,7 +52,7 @@
             <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
             <input id="buscador-normativo" class="form-control" placeholder="Buscar por nombre, código u organismo..." style="padding-left:36px;" />
           </div>
-          <select id="ambito-filter" onchange="setAmbitoNormativo(this.value)" class="form-control" style="width:auto;padding:10px 14px;">
+          <select id="ambito-filter" class="form-control" style="width:auto;padding:10px 14px;">
             <option value="todos">Ámbito: Todos</option>
             <option value="nacional">Nacional</option>
             <option value="internacional">Internacional</option>
@@ -66,7 +66,7 @@
           <select class="form-control" style="width:auto;padding:10px 14px;">
             <option>Temática: Todas</option><option>EC</option><option>GR</option><option>EE</option><option>REP</option><option>Otro</option>
           </select>
-          <button onclick="limpiarFiltros()" style="padding:9px 14px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#9CA3AF;font-family:inherit;">Limpiar filtros</button>
+          <button style="padding:9px 14px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#9CA3AF;font-family:inherit;">Limpiar filtros</button>
         </div>
       </div>
 
@@ -201,29 +201,6 @@
 <script>
 function openVisor(tipo,nombre,formato,descargable){
   alert('Visor: '+nombre+' ('+formato+') — Solo lectura');
-}
-let ambitoActual = 'todos';
-
-function setAmbitoNormativo(ambito) {
-    ambitoActual = ambito;
-    
-    var tableRows = document.querySelectorAll('tbody tr[data-ambito]');
-    tableRows.forEach(function(row) {
-        if (ambito === 'todos' || row.getAttribute('data-ambito') === ambito) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    var selector = document.getElementById('ambito-filter');
-    if (selector) selector.value = ambito;
-}
-
-function limpiarFiltros() {
-    document.getElementById('buscador-normativo').value = '';
-    document.getElementById('ambito-filter').value = 'todos';
-    setAmbitoNormativo('todos');
 }
 </script>
 </body>

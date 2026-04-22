@@ -37,7 +37,7 @@
         onclick="navTo('perfil')">
         <div id="avatar-circle"
           style="width:32px;height:32px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;"
-          th:text="${#strings.substring(usuarioNombre, 0, 2).toUpperCase()}">AG</div>
+          th:text="${usuarioNombre != null ? #strings.substring(usuarioNombre, 0, 2).toUpperCase() : 'US'}">AG</div>
         <div>
           <div id="user-name" style="color:#fff;font-size:13px;font-weight:600;line-height:1.2;" th:text="${usuarioNombre}">Admin General</div>
           <div id="user-role" style="color:rgba(255,255,255,.45);font-size:11px;" th:text="${rolNombre}">Administrador</div>
