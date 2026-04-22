@@ -76,10 +76,11 @@
       background: var(--navy);
       display: flex;
       flex-direction: column;
-      padding: 48px 52px;
+      padding: 40px 42px;
       position: relative;
       z-index: 2;
       box-shadow: 8px 0 40px rgba(0, 0, 0, .35);
+      overflow-y: auto;
     }
 
     .left::before {
@@ -93,29 +94,29 @@
     /* LOGO */
     .logo-area {
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
       position: relative;
     }
 
     .logo-area img {
-      height: 42px;
+      height: 36px;
       width: auto;
       filter: brightness(1.05);
     }
 
     .logo-tagline {
       color: var(--green);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
-      letter-spacing: .12em;
+      letter-spacing: .11em;
       text-transform: uppercase;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .logo-divider {
       height: 1px;
       background: rgba(255, 255, 255, .1);
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     /* PANELS */
@@ -133,16 +134,16 @@
 
     .section-title {
       color: #fff;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       letter-spacing: -.02em;
     }
 
     .section-sub {
       color: rgba(255, 255, 255, .5);
-      font-size: 13px;
-      margin-bottom: 28px;
+      font-size: 12px;
+      margin-bottom: 16px;
     }
 
     /* BACK */
@@ -176,25 +177,25 @@
     .field-label {
       display: block;
       color: rgba(255, 255, 255, .55);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
-      letter-spacing: .1em;
+      letter-spacing: .09em;
       text-transform: uppercase;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .field-wrap {
       position: relative;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
 
     .field-icon {
       position: absolute;
-      left: 14px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
       color: rgba(255, 255, 255, .35);
-      font-size: 13px;
+      font-size: 12px;
       pointer-events: none;
     }
 
@@ -204,9 +205,9 @@
       border: 1px solid rgba(255, 255, 255, .2);
       color: #fff;
       width: 100%;
-      padding: 12px 16px 12px 42px;
+      padding: 10px 14px 10px 38px;
       border-radius: 8px;
-      font-size: 14px;
+      font-size: 13px;
       font-family: inherit;
       outline: none;
       height: auto;
@@ -244,13 +245,13 @@
     /* FORGOT */
     .forgot-row {
       text-align: right;
-      margin-bottom: 24px;
-      margin-top: -6px;
+      margin-bottom: 18px;
+      margin-top: -4px;
     }
 
     .forgot-link {
       color: var(--green);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
       text-decoration: none;
       transition: opacity .15s;
@@ -264,22 +265,23 @@
     .btn-primary,
     .btn.btn-primary {
       width: 100%;
-      padding: 13px;
+      padding: 11px 20px;
       border-radius: 8px;
       border: none;
       background: var(--green);
       color: #fff;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
       font-family: inherit;
       letter-spacing: .01em;
       box-shadow: none;
       transition: background .2s, transform .12s, box-shadow .2s;
+      min-height: auto;
     }
 
     .btn-primary:hover {
@@ -296,14 +298,14 @@
     .register-hint {
       text-align: center;
       color: rgba(255, 255, 255, .4);
-      font-size: 12px;
-      margin-top: 20px;
+      font-size: 11px;
+      margin-top: 14px;
     }
 
     .register-hint a {
       color: var(--green);
       font-weight: 600;
-      margin-left: 4px;
+      margin-left: 3px;
       text-decoration: none;
     }
 
@@ -312,15 +314,15 @@
     }
 
     .superadmin-row {
-      margin-top: 20px;
+      margin-top: 14px;
       border-top: 1px solid rgba(255, 255, 255, .08);
-      padding-top: 18px;
+      padding-top: 12px;
       text-align: center;
     }
 
     .superadmin-link {
       color: rgba(255, 255, 255, .28);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
       text-decoration: none;
       transition: color .15s;
@@ -333,39 +335,39 @@
     /* EMBED */
     .embed-banner {
       margin-top: auto;
-      padding-top: 32px;
+      padding-top: 20px;
     }
 
     .embed-box {
       background: rgba(255, 255, 255, .06);
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-left: 3px solid var(--green);
     }
 
     .embed-label {
       color: rgba(255, 255, 255, .4);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
-      letter-spacing: .09em;
+      letter-spacing: .08em;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .embed-code {
       color: rgba(255, 255, 255, .7);
-      font-size: 12px;
+      font-size: 11px;
       font-family: 'DM Mono', monospace;
       background: rgba(0, 0, 0, .22);
-      padding: 6px 10px;
+      padding: 5px 8px;
       border-radius: 4px;
     }
 
     .footer-note {
       text-align: center;
       color: rgba(255, 255, 255, .2);
-      font-size: 11px;
-      margin-top: 14px;
+      font-size: 10px;
+      margin-top: 10px;
     }
 
     /* ERRORS / SUCCESS */
@@ -431,7 +433,7 @@
       justify-content: center;
     }
 
-    /* Imagen de fondo */
+    /* Imagen de fondo con fallback CSS */
     .right-bg {
       position: absolute;
       inset: 0;
@@ -439,8 +441,42 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
-      filter: saturate(.6) brightness(.4);
+      filter: saturate(.55) brightness(.38);
       z-index: 0;
+    }
+
+    /* Fondo CSS animado (se ve si la imagen no carga) */
+    .right::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 80%, rgba(13,92,46,.7) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 20%, rgba(27,58,92,.8) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 70% at 50% 50%, rgba(10,40,20,.9) 0%, transparent 80%),
+        linear-gradient(160deg, #071a0d 0%, #0a1e12 40%, #071520 100%);
+      animation: bgPulse 8s ease-in-out infinite alternate;
+    }
+
+    @keyframes bgPulse {
+      from { filter: brightness(1); }
+      to   { filter: brightness(1.12); }
+    }
+
+    /* Partículas flotantes CSS */
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(46, 204, 113, .12);
+      animation: float linear infinite;
+      z-index: 1;
+    }
+    @keyframes float {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: .4; }
+      100% { transform: translateY(-120px) scale(1); opacity: 0; }
     }
 
     /* Overlay gradiente */
@@ -448,45 +484,47 @@
       position: absolute;
       inset: 0;
       background:
-        radial-gradient(ellipse 70% 60% at 50% 40%, rgba(46, 204, 113, .15) 0%, transparent 65%),
-        linear-gradient(160deg, rgba(13, 43, 26, .88) 0%, rgba(15, 34, 54, .92) 50%, rgba(10, 20, 35, .95) 100%);
-      z-index: 1;
+        radial-gradient(ellipse 65% 55% at 50% 38%, rgba(46, 204, 113, .13) 0%, transparent 65%),
+        linear-gradient(180deg, rgba(7,26,13,.5) 0%, rgba(7,26,13,.15) 40%, rgba(7,26,13,.6) 100%);
+      z-index: 2;
     }
 
     /* Contenido centrado */
     .right-content {
       position: relative;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       text-align: center;
-      padding: 60px 48px;
-      gap: 48px;
+      padding: 20px 40px;
+      gap: 24px;
       width: 100%;
-      max-width: 520px;
+      max-width: 500px;
+      min-height: 100%;
+      padding-top: 80px;
     }
 
     /* Badge live */
     .live-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(255, 255, 255, .08);
-      border: 1px solid rgba(255, 255, 255, .15);
+      gap: 6px;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
       border-radius: 999px;
-      padding: 8px 20px;
-      color: rgba(255, 255, 255, .75);
-      font-size: 12px;
+      padding: 6px 16px;
+      color: rgba(255, 255, 255, .7);
+      font-size: 11px;
       font-weight: 600;
       letter-spacing: .02em;
       backdrop-filter: blur(8px);
     }
 
     .pulse-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
       background: var(--green);
       animation: pulse 2s infinite;
@@ -496,11 +534,11 @@
     /* Headline */
     .right-headline h1 {
       color: #fff;
-      font-size: 52px;
+      font-size: 45px;
       font-weight: 800;
       letter-spacing: -.04em;
       line-height: 1.1;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .right-headline h1 em {
@@ -510,9 +548,9 @@
 
     .right-headline p {
       color: rgba(255, 255, 255, .55);
-      font-size: 16px;
-      line-height: 1.7;
-      max-width: 380px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 360px;
       margin: 0 auto;
     }
 
@@ -520,18 +558,18 @@
     .stats-row {
       display: flex;
       gap: 1px;
-      background: rgba(255, 255, 255, .1);
+      background: rgba(255, 255, 255, .08);
       border: 1px solid rgba(255, 255, 255, .1);
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
       width: 100%;
-      max-width: 420px;
+      max-width: 380px;
       backdrop-filter: blur(8px);
     }
 
     .stat-item {
       flex: 1;
-      padding: 22px 16px;
+      padding: 16px 12px;
       background: rgba(255, 255, 255, .06);
       text-align: center;
       transition: background .2s;
@@ -547,29 +585,30 @@
 
     .stat-num {
       color: #fff;
-      font-size: 28px;
+      font-size: 24px;
       font-weight: 800;
       letter-spacing: -.03em;
       line-height: 1;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .stat-num span {
       color: var(--green);
+      font-size: 18px;
     }
 
     .stat-lbl {
       color: rgba(255, 255, 255, .45);
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .1em;
+      letter-spacing: .08em;
     }
 
     /* Divider decorativo */
     .right-divider {
-      width: 60px;
-      height: 3px;
+      width: 50px;
+      height: 2px;
       background: linear-gradient(90deg, var(--green), rgba(46, 204, 113, .2));
       border-radius: 999px;
     }
@@ -577,9 +616,9 @@
     /* Tagline bottom */
     .right-tagline {
       color: rgba(255, 255, 255, .3);
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 500;
-      letter-spacing: .06em;
+      letter-spacing: .05em;
       text-transform: uppercase;
     }
 
@@ -587,10 +626,18 @@
     .deco-circle {
       position: absolute;
       border-radius: 50%;
-      border: 1px solid rgba(46, 204, 113, .12);
-      z-index: 1;
+      border: 1px solid rgba(46, 204, 113, .1);
+      z-index: 2;
       pointer-events: none;
+      animation: rotateSlow linear infinite;
     }
+    @keyframes rotateSlow {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .deco-circle-1 { animation-duration: 40s; }
+    .deco-circle-2 { animation-duration: 28s; animation-direction: reverse; }
+    .deco-circle-3 { animation-duration: 55s; }
 
     .deco-circle-1 {
       width: 400px;
@@ -675,6 +722,15 @@
         <div class="section-title">Repositorio Circular</div>
         <div class="section-sub">Accede con tu correo corporativo para continuar</div>
 
+        <!-- Nota de acceso exclusivo -->
+        <div style="display:flex;align-items:flex-start;gap:10px;background:rgba(46,204,113,.07);border:1px solid rgba(46,204,113,.2);border-radius:10px;padding:11px 14px;margin-bottom:22px;">
+          <i class="fas fa-shield-alt" style="color:var(--green);font-size:13px;margin-top:1px;flex-shrink:0;"></i>
+          <div>
+            <div style="color:rgba(255,255,255,.85);font-size:12px;font-weight:700;margin-bottom:2px;">Acceso exclusivo para asociados</div>
+            <div style="color:rgba(255,255,255,.45);font-size:11px;line-height:1.5;">Solo se aceptan correos corporativos previamente validados por el equipo de Recíclame Perú.</div>
+          </div>
+        </div>
+
         <form th:action="@{/login}" method="POST">
           <div class="field-wrap">
             <label class="field-label">Correo corporativo</label>
@@ -696,8 +752,9 @@
           <div th:if="${param.error}" class="field-error show" style="display:flex;margin-bottom:10px;">
             <i class="fas fa-exclamation-circle"></i> Correo o contraseña incorrectos
           </div>
-          <div th:if="${param.logout}" class="success-box show" style="margin-bottom:16px;">
-            <div style="color:#fff;font-size:13px;">Sesión cerrada correctamente</div>
+          <div th:if="${param.logout}" style="display:flex;align-items:center;gap:8px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+            <i class="fas fa-check-circle" style="color:var(--green);font-size:14px;flex-shrink:0;"></i>
+            <span style="color:rgba(255,255,255,.8);font-size:13px;font-weight:500;">Sesión cerrada correctamente</span>
           </div>
           <div class="forgot-row">
             <a href="#" class="forgot-link" onclick="showPanel('panel-recovery');return false;">¿Olvidaste tu
@@ -831,9 +888,21 @@
        PANEL DERECHO — REDISEÑADO
   ═══════════════════════════════════════ -->
     <div class="right">
-      <img class="right-bg" src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80" alt=""
-        aria-hidden="true" />
+      <!-- Imagen de fondo (reciclaje en Perú) -->
+      <img class="right-bg"
+        src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
+        onerror="this.style.display='none'"
+        alt="" aria-hidden="true" />
+
       <div class="right-overlay"></div>
+
+      <!-- Partículas flotantes -->
+      <div class="particle" style="width:6px;height:6px;left:15%;animation-duration:12s;animation-delay:0s;"></div>
+      <div class="particle" style="width:4px;height:4px;left:35%;animation-duration:18s;animation-delay:3s;"></div>
+      <div class="particle" style="width:8px;height:8px;left:55%;animation-duration:14s;animation-delay:1.5s;"></div>
+      <div class="particle" style="width:5px;height:5px;left:75%;animation-duration:16s;animation-delay:5s;"></div>
+      <div class="particle" style="width:3px;height:3px;left:85%;animation-duration:10s;animation-delay:2s;"></div>
+      <div class="particle" style="width:7px;height:7px;left:25%;animation-duration:20s;animation-delay:7s;"></div>
 
       <!-- Círculos decorativos -->
       <div class="deco-circle deco-circle-1"></div>
@@ -842,10 +911,18 @@
 
       <div class="right-content">
 
-        <!-- Badge -->
+        <!-- Badge live -->
         <div class="live-badge">
           <span class="pulse-dot"></span>
           Sistema en línea · actualizado hoy
+        </div>
+
+        <!-- Logo Recíclame grande -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png"
+               alt="Recíclame" style="height:52px;width:auto;filter:brightness(1.1);"
+               onerror="this.style.display='none'" />
+          <div style="height:2px;width:48px;background:linear-gradient(90deg,transparent,var(--green),transparent);border-radius:999px;"></div>
         </div>
 
         <!-- Headline -->
@@ -853,9 +930,6 @@
           <h1>Repositorio<br /><em>Circular</em></h1>
           <p>La plataforma de gestión de conocimiento en economía circular para socios de Recíclame Perú.</p>
         </div>
-
-        <!-- Divider -->
-        <div class="right-divider"></div>
 
         <!-- Stats -->
         <div class="stats-row glow">
@@ -876,8 +950,30 @@
           </div>
         </div>
 
-        <!-- Tagline -->
-        <div class="right-tagline">Economía circular · Perú · 2026</div>
+        <!-- Módulos highlight -->
+        <div style="display:flex;gap:10px;width:100%;max-width:400px;">
+          <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+            <i class="fas fa-folder-open" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+            <div style="color:#fff;font-size:12px;font-weight:700;">Estudios</div>
+            <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">Solo lectura</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+            <i class="fas fa-balance-scale" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+            <div style="color:#fff;font-size:12px;font-weight:700;">Normativas</div>
+            <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">138 registros</div>
+          </div>
+          <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+            <i class="fas fa-recycle" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+            <div style="color:#fff;font-size:12px;font-weight:700;">Economía</div>
+            <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">Circular · Perú</div>
+          </div>
+        </div>
+
+        <!-- Tagline bottom -->
+        <div class="right-tagline">
+          <i class="fas fa-shield-alt" style="color:var(--green);margin-right:6px;font-size:10px;"></i>
+          Acceso exclusivo para socios verificados de Recíclame
+        </div>
 
       </div>
     </div><!-- /right -->

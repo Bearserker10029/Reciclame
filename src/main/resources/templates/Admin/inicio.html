@@ -37,10 +37,69 @@
 
       <!-- PAGE: INICIO ADMIN -->
       <div id="page-inicio" class="page active" style="padding:32px;">
-        <div style="margin-bottom:28px;">
-          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Panel de Administración 👋</h1>
+        <div style="margin-bottom:24px;">
+          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Administración</h1>
           <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
         </div>
+
+        <!-- ═══ HERO BANNERS ═══ -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
+
+          <!-- Banner Estudios -->
+          <div onclick="navTo('estudios')" style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
+               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
+            <!-- Decorative circles -->
+            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
+            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-folder-open" style="color:#fff;font-size:22px;"></i>
+              </div>
+              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Estudios</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Reportes, infografías y ayudas memoria del equipo técnico Recíclame.</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;gap:8px;">
+                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PDF</span>
+                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
+                <span style="background:rgba(231,76,60,.2);color:#FCA5A5;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-eye" style="font-size:9px;margin-right:3px;"></i>Solo lectura</span>
+              </div>
+              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Banner Normativo -->
+          <div onclick="navTo('normativo')" style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
+               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
+               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
+            <!-- Decorative circles -->
+            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
+            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-balance-scale" style="color:#fff;font-size:22px;"></i>
+              </div>
+              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Repositorio Normativo</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Acceso a la base de datos legal de economía circular: nacional e internacional.</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;gap:8px;">
+                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-flag" style="font-size:9px;margin-right:3px;"></i>Nacional</span>
+                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional</span>
+                <span style="background:rgba(46,204,113,.25);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">138 normas</span>
+              </div>
+              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /hero banners -->
 
         <!-- Stats row -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
@@ -227,6 +286,9 @@ function navTo(page){
   window.scrollTo(0,0);
 }
 function goLogin(){window.location.href='/login';}
+function setAmbitoNormativo(ambito){
+  console.log('Filtro ámbito:',ambito);
+}
 
 function toggleChatbot(){
   var panel=document.getElementById('chatbot-panel');

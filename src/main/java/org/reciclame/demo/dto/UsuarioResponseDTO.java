@@ -15,8 +15,10 @@ public class UsuarioResponseDTO {
     private String correoCorporativo;
     private String cargo;
     private String fotoUrl;
-    private String rolNombre; //nombre del rol
-    private String empresaNombre; // nombre de la empresa, no ID igual el de arriba
+    private Long rolId;
+    private String rolNombre;
+    private Long empresaId;
+    private String empresaNombre;
     private String estadoCuenta;   // PENDIENTE | ACTIVO | INACTIVO
     private Boolean estadoActivo;
     private Boolean cuentaBloqueada;
