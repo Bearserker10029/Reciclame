@@ -17,15 +17,15 @@
       <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
         <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
       </div>
-      <div class="nav-item" id="nav-normativo" onclick="navTo('normativo')">
+      <div class="nav-item" id="nav-normativo" onclick="window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
         <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
       </div>
       <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
-        <div class="nav-subitem" onclick="navTo('normativo')">
+        <div class="nav-subitem" onclick="window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
           <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Nacional</span>
         </div>
-        <div class="nav-subitem" onclick="navTo('normativo')">
+        <div class="nav-subitem" onclick="window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
           <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Internacional</span>
         </div>
