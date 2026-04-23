@@ -35,9 +35,9 @@ public class SolicitudesRegistro {
     @Column(name = "empresa_nombre", nullable = false, length = 200)
     private String empresaNombre;
 
-    @ColumnDefault("'PENDIENTE'")
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
-    private String estado;
+    private EstadoSolicitud estado;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)

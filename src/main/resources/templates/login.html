@@ -387,6 +387,19 @@
       display: flex;
     }
 
+    .glass-input.input-error {
+      border-color: #FC8181 !important;
+      background: rgba(252, 129, 129, .06) !important;
+    }
+
+    #btn-registro:disabled {
+      background: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.4);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .success-box {
       display: none;
       flex-direction: column;
@@ -765,8 +778,7 @@
           <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
         </form>
 
-        <p class="register-hint">¿No tienes cuenta? <a href="#"
-            onclick="showPanel('panel-registro');return false;">Solicitar acceso</a></p>
+        <p class="register-hint">¿No tienes cuenta? <a href="/registro">Solicitar acceso</a></p>
 
         <div class="superadmin-row">
           <a href="#" class="superadmin-link" onclick="showPanel('panel-superadmin');return false;">
@@ -816,31 +828,47 @@
             <div style="color:rgba(255,255,255,.45);font-size:12px;">Solo para socios de Recíclame Perú</div>
           </div>
         </div>
-        <form id="form-registro" onsubmit="handleRegistro(event)">
+        <form id="form-registro" onsubmit="handleRegistro(event)" novalidate>
           <div class="field-wrap" style="margin-bottom:14px;">
             <label class="field-label">Nombre completo</label>
-            <div style="position:relative;"><i class="fas fa-user field-icon"></i><input
-                class="glass-input form-control" type="text" placeholder="Ej: María López Torres" required /></div>
+            <div style="position:relative;"><i class="fas fa-user field-icon"></i>
+              <input id="inp-reg-nombre" class="glass-input form-control" type="text"
+                     placeholder="Ej: María López Torres" required /></div>
           </div>
           <div class="field-wrap" style="margin-bottom:14px;">
-            <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8
-                dígitos)</span></label>
-            <div style="position:relative;"><i class="fas fa-id-card field-icon"></i><input
-                class="glass-input form-control" type="text" placeholder="74521836" maxlength="8" required /></div>
+            <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
+            <div style="position:relative;"><i class="fas fa-id-card field-icon"></i>
+              <input id="inp-reg-dni" class="glass-input form-control" type="text"
+                     placeholder="74521836" maxlength="8" pattern="\d{8}" required /></div>
           </div>
           <div class="field-wrap" style="margin-bottom:14px;">
             <label class="field-label">Correo corporativo</label>
-            <div style="position:relative;"><i class="fas fa-envelope field-icon"></i><input
-                class="glass-input form-control" type="email" placeholder="usuario@empresa.com" required /></div>
-            <p style="color:rgba(255,255,255,.3);font-size:11px;margin-top:6px;"><i class="fas fa-info-circle"
-                style="margin-right:4px;"></i>Solo se aceptan correos corporativos</p>
+            <div style="position:relative;"><i class="fas fa-envelope field-icon"></i>
+              <input id="inp-reg-email" class="glass-input form-control" type="email"
+                     placeholder="usuario@reciclame.org"
+                     pattern="^[a-zA-Z0-9._%+\-]+@reciclame\.org$"
+                     required
+                     oninput="validateRegistroEmail()" /></div>
+            <div id="err-reg-email" class="field-error">
+              <i class="fas fa-exclamation-triangle"></i>
+              <span id="err-reg-email-msg">Solo se aceptan correos corporativos (@reciclame.org)</span>
+            </div>
+            <p style="color:rgba(255,255,255,.3);font-size:11px;margin-top:6px;">
+              <i class="fas fa-info-circle" style="margin-right:4px;"></i>Debe ser un correo @reciclame.org</p>
           </div>
           <div class="field-wrap" style="margin-bottom:20px;">
             <label class="field-label">Empresa / Organización</label>
-            <div style="position:relative;"><i class="fas fa-building field-icon"></i><input
-                class="glass-input form-control" type="text" placeholder="Ej: Tetra Pak Perú S.A.C." required /></div>
+            <div style="position:relative;"><i class="fas fa-building field-icon"></i>
+              <input id="inp-reg-empresa" class="glass-input form-control" type="text"
+                     placeholder="Ej: Tetra Pak Perú S.A.C." required /></div>
           </div>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> Solicitar acceso</button>
+          <div id="err-reg-server" class="field-error" style="margin-bottom:10px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="err-reg-server-msg"></span>
+          </div>
+          <button id="btn-registro" type="submit" class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i> Solicitar acceso
+          </button>
         </form>
         <div id="registro-success" class="success-box" style="margin-top:20px;">
           <div class="success-icon"><i class="fas fa-check-circle"></i></div>
@@ -1034,11 +1062,83 @@
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; btn.disabled = true;
       setTimeout(() => { e.target.style.display = 'none'; document.getElementById('recovery-success').classList.add('show'); }, 1200);
     }
+    var CORP_DOMAIN_RE = /^[a-zA-Z0-9._%+\-]+@reciclame\.org$/;
+
+    function validateRegistroEmail() {
+      var input = document.getElementById('inp-reg-email');
+      var errDiv = document.getElementById('err-reg-email');
+      var errMsg = document.getElementById('err-reg-email-msg');
+      var btn    = document.getElementById('btn-registro');
+      var val    = input.value.trim();
+      var ok     = true;
+
+      if (val === '') {
+        errMsg.textContent = 'El correo corporativo es requerido';
+        ok = false;
+      } else if (!val.includes('@') || val.indexOf('@') === 0) {
+        errMsg.textContent = 'Ingresa un correo válido (ejemplo@reciclame.org)';
+        ok = false;
+      } else if (!CORP_DOMAIN_RE.test(val)) {
+        errMsg.textContent = 'Solo se aceptan correos corporativos (@reciclame.org)';
+        ok = false;
+      }
+
+      if (ok) {
+        errDiv.classList.remove('show');
+        input.classList.remove('input-error');
+        btn.disabled = false;
+      } else {
+        errDiv.classList.add('show');
+        input.classList.add('input-error');
+        btn.disabled = true;
+      }
+      return ok;
+    }
+
     function handleRegistro(e) {
       e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; btn.disabled = true;
-      setTimeout(() => { e.target.style.display = 'none'; document.getElementById('registro-success').classList.add('show'); }, 1200);
+      document.getElementById('err-reg-server').classList.remove('show');
+
+      if (!validateRegistroEmail()) return;
+
+      var nombre  = document.getElementById('inp-reg-nombre').value.trim();
+      var dni     = document.getElementById('inp-reg-dni').value.trim();
+      var correo  = document.getElementById('inp-reg-email').value.trim();
+      var empresa = document.getElementById('inp-reg-empresa').value.trim();
+
+      if (!nombre || !dni || !empresa) {
+        document.getElementById('err-reg-server-msg').textContent = 'Todos los campos son requeridos';
+        document.getElementById('err-reg-server').classList.add('show');
+        return;
+      }
+
+      var btn = document.getElementById('btn-registro');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+      btn.disabled = true;
+
+      fetch('/registro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre, dni: dni, correo: correo, empresa: empresa })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          document.getElementById('form-registro').style.display = 'none';
+          document.getElementById('registro-success').classList.add('show');
+        } else {
+          document.getElementById('err-reg-server-msg').textContent = data.error || 'Error al enviar la solicitud';
+          document.getElementById('err-reg-server').classList.add('show');
+          btn.innerHTML = '<i class="fas fa-paper-plane"></i> Solicitar acceso';
+          btn.disabled = false;
+        }
+      })
+      .catch(function() {
+        document.getElementById('err-reg-server-msg').textContent = 'Error de conexión. Intenta nuevamente.';
+        document.getElementById('err-reg-server').classList.add('show');
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Solicitar acceso';
+        btn.disabled = false;
+      });
     }
     function handleSuperAdmin(e) {
       e.preventDefault();
