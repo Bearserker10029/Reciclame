@@ -7,6 +7,7 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
@@ -19,6 +20,24 @@
     .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
     .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
     .page{display:none;}.page.active{display:block;}
+
+    /* Modal Visor */
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px);}
+    .modal-overlay.show{display:flex;}
+    .modal-content{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:90%;max-width:900px;height:85vh;display:flex;flex-direction:column;animation:slideUp .3s ease-out;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #E5E7EB;}
+    .modal-title{font-size:16px;font-weight:700;color:#1B3A5C;margin:0;}
+    .modal-close{width:32px;height:32px;border-radius:8px;border:none;background:#F3F4F6;color:#6B7280;cursor:pointer;font-size:18px;transition:all .15s;font-family:inherit;}
+    .modal-close:hover{background:#E5E7EB;color:#1B3A5C;}
+    .modal-body{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#F9FAFB;}
+    .pdf-viewer{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+    .pdf-page{max-width:100%;max-height:100%;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+    .excel-table{width:100%;overflow:auto;background:#fff;border-radius:8px;border:1px solid #E5E7EB;}
+    .excel-table table{width:100%;border-collapse:collapse;font-size:12px;}
+    .excel-table th{background:#F8FAFB;color:#6B7280;font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid #EEF0F3;white-space:nowrap;}
+    .excel-table td{padding:10px 12px;border-bottom:1px solid #F0F2F5;color:#374151;}
+    .excel-table tbody tr:hover{background:#F6FAF8;}
   </style>
 </head>
 <body>
@@ -128,6 +147,29 @@
     </main>
   </div>
 
+  <!-- Modal Visor PDF/Excel -->
+  <div id="visor-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="visor-title" class="modal-title">Visor de Documento</h2>
+        <button class="modal-close" onclick="closeVisor()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="visor-pdf" class="pdf-viewer" style="display:none;">
+          <canvas id="pdf-canvas" class="pdf-page"></canvas>
+          <div style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
+            <span id="pdf-page-info">Página 1</span>
+          </div>
+        </div>
+        <div id="visor-excel" class="excel-table" style="display:none;"></div>
+        <div id="visor-loading" style="display:none;text-align:center;color:#6B7280;">
+          <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+          <span>Cargando documento...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Chatbot Mascota -->
   <button id="chatbot-bubble" onclick="toggleChatbot()">
     <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
@@ -166,7 +208,127 @@ function navTo(page){
   window.scrollTo(0,0);
 }
 function goLogin(){window.location.href='/login';}
-function openVisor(tipo,nombre,formato,descargable){alert('Visor: '+nombre+' ('+formato+')');}
+
+// Abrir visor de PDF/Excel en modal
+function openVisor(tipo,nombre,formato,descargable){
+  var modal = document.getElementById('visor-modal');
+  var titleEl = document.getElementById('visor-title');
+  var pdfDiv = document.getElementById('visor-pdf');
+  var excelDiv = document.getElementById('visor-excel');
+  var loadingDiv = document.getElementById('visor-loading');
+
+  if (!modal) return;
+
+  // Preparar modal
+  titleEl.textContent = nombre + ' (' + formato + ')';
+  pdfDiv.style.display = 'none';
+  excelDiv.style.display = 'none';
+  loadingDiv.style.display = 'flex';
+  modal.classList.add('show');
+
+  // Simular carga según formato
+  setTimeout(function() {
+    loadingDiv.style.display = 'none';
+    if (formato.toUpperCase() === 'PDF') {
+      pdfDiv.style.display = 'flex';
+      renderPdfDemo(nombre);
+    } else if (formato.toUpperCase() === 'PPTX' || formato.toUpperCase() === 'XLS') {
+      excelDiv.style.display = 'block';
+      renderExcelDemo(nombre);
+    }
+  }, 300);
+}
+
+function closeVisor(){
+  var modal = document.getElementById('visor-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+// Cerrar modal al hacer click fuera
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('visor-modal');
+  if (modal && e.target === modal) closeVisor();
+});
+
+// Render PDF demo (usando canvas simple)
+function renderPdfDemo(nombre) {
+  var canvas = document.getElementById('pdf-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = 600;
+  canvas.height = 800;
+
+  // Fondo blanco
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Sombra
+  ctx.shadowColor = 'rgba(0,0,0,.1)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  // Borde
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+  // Header
+  ctx.fillStyle = '#1B3A5C';
+  ctx.fillRect(20, 20, canvas.width - 40, 80);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 18px Inter, sans-serif';
+  ctx.fillText(nombre, 40, 65);
+
+  // Contenido
+  ctx.fillStyle = '#333';
+  ctx.font = '14px Inter, sans-serif';
+  var y = 130;
+  var lines = [
+    'DOCUMENTO CLASIFICADO',
+    'Tipo: Estudio Técnico',
+    'Estado: Solo Lectura',
+    '',
+    'Este es un documento de demostración.',
+    'Contenido del análisis técnico.',
+    '',
+    'Acceso restringido al rol Visualizador.',
+    'Sin permisos de descarga.'
+  ];
+  lines.forEach(function(line) {
+    ctx.fillText(line, 40, y);
+    y += 30;
+  });
+
+  // Footer
+  ctx.fillStyle = '#999';
+  ctx.font = '12px Inter, sans-serif';
+  ctx.fillText('Recíclame © 2026', 40, canvas.height - 40);
+}
+
+// Render Excel demo
+function renderExcelDemo(nombre) {
+  var excelDiv = document.getElementById('visor-excel');
+  if (!excelDiv) return;
+
+  var html = '<table><thead><tr><th>Métrica</th><th>Valor</th><th>Unidad</th><th>Año</th><th>Estado</th></tr></thead><tbody>';
+  html += '<tr><td><strong>' + nombre + '</strong></td><td>100.5</td><td>Toneladas</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Análisis de Flujo</td><td>45.2</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Eficiencia</td><td>78.9</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Proyección</td><td>120.0</td><td>Toneladas</td><td>2027</td><td><span style="background:#FFF9C4;color:#F57F17;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Estimado</span></td></tr>';
+  html += '</tbody></table>';
+
+  excelDiv.innerHTML = html;
+}
+
+// Navegar a normativo y aplicar filtro de ámbito
+function setAmbitoNormativo(ambito){
+  navTo('normativo');
+  // Esperar a que la page sea visible antes de filtrar
+  setTimeout(function(){
+    if(typeof setAmbito === 'function') setAmbito(ambito);
+  }, 50);
+}
 
 function toggleChatbot(){
   var panel=document.getElementById('chatbot-panel');

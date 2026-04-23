@@ -155,17 +155,18 @@
       </div>
     </div>
   </div>
+
+  <script>
+  new QRCode(document.getElementById('qr-code'),{
+    text:'RECICLAME-2026-JP-74521836',
+    width:188,
+    height:188,
+    colorDark:'#1B3A5C',
+    colorLight:'#ffffff',
+    correctLevel:QRCode.CorrectLevel.M
+  });
+  </script>
 </th:block>
 
-<script>
-new QRCode(document.getElementById('qr-code'),{
-  text:'RECICLAME-2026-JP-74521836',
-  width:188,
-  height:188,
-  colorDark:'#1B3A5C',
-  colorLight:'#ffffff',
-  correctLevel:QRCode.CorrectLevel.M
-});
-</script>
 </body>
 </html>
