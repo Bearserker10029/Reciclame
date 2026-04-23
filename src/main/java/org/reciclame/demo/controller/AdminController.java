@@ -13,6 +13,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AdminController {
@@ -41,6 +45,7 @@ public class AdminController {
     private void setupCommonAttributes(Model model, String correo) {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("rolNombre", "Administrador");
+        model.addAttribute("notifUrl", "/admin/notificaciones");
         usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
     }
 
@@ -142,6 +147,40 @@ public class AdminController {
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         return "admin/perfil";
+    }
+
+    @PostMapping("/admin/notificaciones/marcar/{id}")
+    public String marcarLeida(@PathVariable Long id) {
+        notificacionService.marcarComoLeida(id);
+        return "redirect:/admin/notificaciones";
+    }
+
+    @GetMapping("/admin/notificaciones/configuracion")
+    public String configuracionNotificaciones(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("prefs", notificacionService.obtenerOCrearPreferencias(u.getId()))
+        );
+        model.addAttribute("configuracionUrl", "/admin/notificaciones/configuracion");
+        model.addAttribute("volverUrl", "/admin/notificaciones");
+        return "configuracion-notificaciones";
+    }
+
+    @PostMapping("/admin/notificaciones/configuracion")
+    public String guardarConfiguracionNotificaciones(
+            @RequestParam(defaultValue = "false") boolean notifNuevasNormativas,
+            @RequestParam(defaultValue = "false") boolean notifNuevosEstudios,
+            @RequestParam(defaultValue = "false") boolean notifCambiosSeguidos,
+            @RequestParam(defaultValue = "false") boolean emailHabilitado,
+            @RequestParam(defaultValue = "DIARIA") String frecuenciaEmail,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes redirectAttributes) {
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                notificacionService.guardarPreferencias(u.getId(), notifNuevasNormativas,
+                        notifNuevosEstudios, notifCambiosSeguidos, emailHabilitado, frecuenciaEmail)
+        );
+        redirectAttributes.addFlashAttribute("guardado", true);
+        return "redirect:/admin/notificaciones/configuracion";
     }
 
     @GetMapping("/admin/normativo")

@@ -34,12 +34,14 @@
       <div class="nav-item" id="nav-perfil" onclick="navTo('perfil')">
         <i class="fas fa-user" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Perfil</span>
       </div>
-      <div class="nav-item" id="nav-notificaciones" onclick="navTo('notificaciones')" style="position:relative;">
+      <a th:href="${notifUrl}" href="#"
+         class="nav-item" id="nav-notificaciones"
+         style="position:relative;text-decoration:none;">
         <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
         <span>Notificaciones</span>
         <span
           style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
-      </div>
+      </a>
 
       <!-- Admin section - siempre visible, activo según rol -->
       <div th:if="${rol == 'ADMIN' or rol == 'SUPERADMIN'}">
