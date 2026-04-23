@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Solicitud enviada</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root { --navy: #1B3A5C; --navy-dark: #0F2236; --green: #2ECC71; --green-dk: #27AE60; --forest: #0d2b1a; }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--navy-dark); min-height: 100vh; overflow: hidden; }
+    .layout { display: flex; min-height: 100vh; }
+
+    .glow { position: relative; isolation: isolate; }
+    .glow-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+    .glow-outline rect { width: calc(100% - 2px); height: calc(100% - 2px); x: 1; y: 1; fill: none; stroke: rgba(46,204,113,.36); stroke-width: 1.5; filter: drop-shadow(0 0 10px rgba(46,204,113,.28)); }
+
+    .left { width: 42%; min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; padding: 40px 42px; position: relative; z-index: 2; box-shadow: 8px 0 40px rgba(0,0,0,.35); overflow-y: auto; }
+    .left::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,.025) 60px, rgba(255,255,255,.025) 61px); pointer-events: none; }
+
+    .logo-area { text-align: center; margin-bottom: 28px; position: relative; }
+    .logo-area img { height: 36px; width: auto; filter: brightness(1.05); }
+    .logo-tagline { color: var(--green); font-size: 10px; font-weight: 500; letter-spacing: .11em; text-transform: uppercase; margin-top: 6px; }
+    .logo-divider { height: 1px; background: rgba(255,255,255,.1); margin-top: 14px; }
+
+    .right { flex: 1; position: relative; overflow: hidden; background: var(--forest); display: flex; align-items: center; justify-content: center; }
+    .right-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.55) brightness(.38); z-index: 0; }
+    .right::before { content: ''; position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(13,92,46,.7) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, rgba(27,58,92,.8) 0%, transparent 55%), linear-gradient(160deg, #071a0d 0%, #0a1e12 40%, #071520 100%); animation: bgPulse 8s ease-in-out infinite alternate; }
+    @keyframes bgPulse { from { filter: brightness(1); } to { filter: brightness(1.12); } }
+
+    .particle { position: absolute; border-radius: 50%; background: rgba(46,204,113,.12); animation: float linear infinite; z-index: 1; }
+    @keyframes float { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: .4; } 100% { transform: translateY(-120px) scale(1); opacity: 0; } }
+
+    .right-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse 65% 55% at 50% 38%, rgba(46,204,113,.13) 0%, transparent 65%), linear-gradient(180deg, rgba(7,26,13,.5) 0%, rgba(7,26,13,.15) 40%, rgba(7,26,13,.6) 100%); z-index: 2; }
+    .right-content { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 80px 40px 40px; gap: 24px; width: 100%; max-width: 500px; min-height: 100%; }
+
+    .live-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 6px 16px; color: rgba(255,255,255,.7); font-size: 11px; font-weight: 600; backdrop-filter: blur(8px); }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.4); } }
+
+    .right-headline h1 { color: #fff; font-size: 45px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; margin-bottom: 12px; }
+    .right-headline h1 em { font-style: normal; color: var(--green); }
+    .right-headline p { color: rgba(255,255,255,.55); font-size: 14px; line-height: 1.6; max-width: 360px; margin: 0 auto; }
+
+    .stats-row { display: flex; gap: 1px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; overflow: hidden; width: 100%; max-width: 380px; backdrop-filter: blur(8px); }
+    .stat-item { flex: 1; padding: 16px 12px; background: rgba(255,255,255,.06); text-align: center; }
+    .stat-item + .stat-item { border-left: 1px solid rgba(255,255,255,.1); }
+    .stat-num { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -.03em; line-height: 1; margin-bottom: 4px; }
+    .stat-num span { color: var(--green); font-size: 18px; }
+    .stat-lbl { color: rgba(255,255,255,.45); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+
+    .deco-circle { position: absolute; border-radius: 50%; border: 1px solid rgba(46,204,113,.1); z-index: 2; pointer-events: none; animation: rotateSlow linear infinite; }
+    @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .deco-circle-1 { animation-duration: 40s; width: 400px; height: 400px; top: -100px; right: -100px; }
+    .deco-circle-2 { animation-duration: 28s; animation-direction: reverse; width: 280px; height: 280px; bottom: -60px; left: -60px; }
+
+    .right-tagline { color: rgba(255,255,255,.3); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+
+    /* ── Pending content ── */
+    .pending-content { flex: 1; display: flex; flex-direction: column; justify-content: center; animation: slideUp .35s ease-out; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+    .pending-icon { width: 72px; height: 72px; border-radius: 50%; background: rgba(46,204,113,.15); border: 2px solid rgba(46,204,113,.35); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 30px; color: var(--green); }
+
+    .pending-title { color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .pending-msg { color: rgba(255,255,255,.55); font-size: 13px; line-height: 1.6; margin-bottom: 24px; }
+
+    .step-list { background: rgba(255,255,255,.05); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+    .step-row { display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.65); font-size: 12px; }
+    .step-dot { width: 22px; height: 22px; border-radius: 50%; background: rgba(46,204,113,.2); color: var(--green); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    .btn-home { width: 100%; padding: 11px 20px; border-radius: 8px; border: none; background: var(--green); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: inherit; text-decoration: none; transition: background .2s, transform .12s; }
+    .btn-home:hover { background: var(--green-dk); transform: translateY(-1px); }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- ═══════════════════════ PANEL IZQUIERDO ═══════════════════════ -->
+  <div class="left glow">
+    <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
+
+    <div class="logo-area">
+      <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png" alt="Recíclame"
+           onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
+      <div id="logo-fallback" style="display:none;align-items:center;justify-content:center;gap:10px;">
+        <div style="width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-recycle" style="color:#fff;font-size:18px;"></i>
+        </div>
+        <span style="color:#fff;font-size:20px;font-weight:800;">Recíclame</span>
+      </div>
+      <div class="logo-tagline">Hacia una economía circular</div>
+      <div class="logo-divider"></div>
+    </div>
+
+    <div class="pending-content">
+      <div class="pending-icon"><i class="fas fa-clock"></i></div>
+
+      <div class="pending-title">Tu solicitud está en revisión</div>
+      <div class="pending-msg">
+        Hemos recibido tu solicitud de acceso al Repositorio Circular Recíclame.
+        El equipo la revisará y recibirás confirmación en
+        <strong style="color:#fff;">24–48 horas hábiles</strong>.
+      </div>
+
+      <div class="step-list">
+        <div class="step-row">
+          <div class="step-dot">1</div>
+          <span>Solicitud enviada y registrada en el sistema</span>
+        </div>
+        <div class="step-row">
+          <div class="step-dot">2</div>
+          <span>Revisión por el equipo administrador de Recíclame</span>
+        </div>
+        <div class="step-row">
+          <div class="step-dot">3</div>
+          <span>Acceso habilitado y notificación por correo corporativo</span>
+        </div>
+      </div>
+
+      <a th:href="@{/login}" href="/login" class="btn-home">
+        <i class="fas fa-home"></i> Volver al inicio
+      </a>
+    </div>
+  </div><!-- /left -->
+
+
+  <!-- ═══════════════════════ PANEL DERECHO ════════════════════════ -->
+  <div class="right">
+    <img class="right-bg"
+         src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
+         onerror="this.style.display='none'" alt="" aria-hidden="true" />
+
+    <div class="right-overlay"></div>
+
+    <div class="particle" style="width:6px;height:6px;left:15%;animation-duration:12s;animation-delay:0s;"></div>
+    <div class="particle" style="width:4px;height:4px;left:35%;animation-duration:18s;animation-delay:3s;"></div>
+    <div class="particle" style="width:8px;height:8px;left:55%;animation-duration:14s;animation-delay:1.5s;"></div>
+    <div class="particle" style="width:5px;height:5px;left:75%;animation-duration:16s;animation-delay:5s;"></div>
+    <div class="particle" style="width:7px;height:7px;left:25%;animation-duration:20s;animation-delay:7s;"></div>
+
+    <div class="deco-circle deco-circle-1"></div>
+    <div class="deco-circle deco-circle-2"></div>
+
+    <div class="right-content">
+      <div class="live-badge"><span class="pulse-dot"></span>Sistema en línea · actualizado hoy</div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png"
+             alt="Recíclame" style="height:52px;width:auto;filter:brightness(1.1);"
+             onerror="this.style.display='none'" />
+        <div style="height:2px;width:48px;background:linear-gradient(90deg,transparent,var(--green),transparent);border-radius:999px;"></div>
+      </div>
+
+      <div class="right-headline">
+        <h1>Repositorio<br /><em>Circular</em></h1>
+        <p>La plataforma de gestión de conocimiento en economía circular para socios de Recíclame Perú.</p>
+      </div>
+
+      <div class="stats-row glow">
+        <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
+        <div class="stat-item"><div class="stat-num">2<span>K+</span></div><div class="stat-lbl">Documentos</div></div>
+        <div class="stat-item"><div class="stat-num">340<span>+</span></div><div class="stat-lbl">Normativas</div></div>
+        <div class="stat-item"><div class="stat-num">89<span>%</span></div><div class="stat-lbl">Actualizado</div></div>
+      </div>
+
+      <div class="right-tagline">
+        <i class="fas fa-shield-alt" style="color:var(--green);margin-right:6px;font-size:10px;"></i>
+        Acceso exclusivo para socios verificados de Recíclame
+      </div>
+    </div>
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+<script>
+  function setGlowEffectRx() {
+    document.querySelectorAll('.glow').forEach(function(el) {
+      var rx = getComputedStyle(el).borderRadius;
+      el.querySelectorAll('rect').forEach(function(r) { r.setAttribute('rx', rx); });
+    });
+  }
+  setGlowEffectRx();
+  window.addEventListener('resize', setGlowEffectRx);
+</script>
+</body>
+</html>

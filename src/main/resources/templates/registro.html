@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Solicitar acceso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:      #1B3A5C;
+      --navy-dark: #0F2236;
+      --green:     #2ECC71;
+      --green-dk:  #27AE60;
+      --forest:    #0d2b1a;
+    }
+
+    body { font-family: 'DM Sans', sans-serif; background: var(--navy-dark); min-height: 100vh; overflow: hidden; }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── Glow ── */
+    .glow { position: relative; isolation: isolate; }
+    .glow-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+    .glow-outline rect { width: calc(100% - 2px); height: calc(100% - 2px); x: 1; y: 1; fill: none; stroke: rgba(46,204,113,.36); stroke-width: 1.5; filter: drop-shadow(0 0 10px rgba(46,204,113,.28)); }
+
+    /* ── Left panel ── */
+    .left { width: 42%; min-height: 100vh; background: var(--navy); display: flex; flex-direction: column; padding: 40px 42px; position: relative; z-index: 2; box-shadow: 8px 0 40px rgba(0,0,0,.35); overflow-y: auto; }
+    .left::before { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,.025) 60px, rgba(255,255,255,.025) 61px); pointer-events: none; }
+
+    /* ── Logo ── */
+    .logo-area { text-align: center; margin-bottom: 28px; position: relative; }
+    .logo-area img { height: 36px; width: auto; filter: brightness(1.05); }
+    .logo-tagline { color: var(--green); font-size: 10px; font-weight: 500; letter-spacing: .11em; text-transform: uppercase; margin-top: 6px; }
+    .logo-divider { height: 1px; background: rgba(255,255,255,.1); margin-top: 14px; }
+
+    /* ── Form content ── */
+    .section-title { color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 4px; letter-spacing: -.02em; }
+    .section-sub   { color: rgba(255,255,255,.5); font-size: 12px; margin-bottom: 20px; }
+
+    /* ── Back row ── */
+    .back-row { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
+    .back-btn { background: rgba(46,204,113,.15); border: 1.5px solid rgba(46,204,113,.4); color: var(--green); width: 36px; height: 36px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; border-radius: 4px; transition: all .2s; flex-shrink: 0; text-decoration: none; }
+    .back-btn:hover { background: rgba(46,204,113,.25); border-color: var(--green); transform: scale(1.08); color: var(--green); }
+
+    /* ── Inputs ── */
+    .field-label { display: block; color: rgba(255,255,255,.55); font-size: 9px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; margin-bottom: 6px; }
+    .field-wrap { position: relative; margin-bottom: 14px; }
+    .field-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.35); font-size: 12px; pointer-events: none; }
+
+    .glass-input, .glass-input.form-control { background: rgba(255,255,255,.09); border: 1px solid rgba(255,255,255,.2); color: #fff; width: 100%; padding: 10px 14px 10px 38px; border-radius: 8px; font-size: 13px; font-family: inherit; outline: none; height: auto; box-shadow: none; transition: border-color .2s, background .2s; }
+    .glass-input::placeholder { color: rgba(255,255,255,.35); }
+    .glass-input:focus { border-color: var(--green); background: rgba(255,255,255,.13); }
+    .glass-input.input-error { border-color: #FC8181 !important; background: rgba(252,129,129,.06) !important; }
+
+    /* ── Error / success ── */
+    .field-error { color: #FC8181; font-size: 11px; font-weight: 500; margin-top: 6px; display: none; align-items: center; gap: 5px; }
+    .field-error.show { display: flex; }
+
+    .error-banner { display: flex; align-items: flex-start; gap: 10px; background: rgba(252,129,129,.1); border: 1px solid rgba(252,129,129,.3); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px; color: #FC8181; font-size: 13px; font-weight: 500; }
+    .error-banner i { flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Button ── */
+    .btn-primary, .btn.btn-primary { width: 100%; padding: 11px 20px; border-radius: 8px; border: none; background: var(--green); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; font-family: inherit; letter-spacing: .01em; box-shadow: none; transition: background .2s, transform .12s, box-shadow .2s; min-height: auto; }
+    .btn-primary:hover { background: var(--green-dk); transform: translateY(-1px); box-shadow: 0 8px 24px rgba(46,204,113,.3); }
+    .btn-primary:active { transform: none; }
+    .btn-primary:disabled { background: rgba(255,255,255,.18); color: rgba(255,255,255,.4); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── Hint / hint ── */
+    .register-hint { text-align: center; color: rgba(255,255,255,.4); font-size: 11px; margin-top: 14px; }
+    .register-hint a { color: var(--green); font-weight: 600; margin-left: 3px; text-decoration: none; }
+    .register-hint a:hover { text-decoration: underline; }
+
+    .domain-hint { color: rgba(255,255,255,.3); font-size: 11px; margin-top: 5px; display: flex; align-items: center; gap: 4px; }
+
+    /* ── Right panel ── */
+    .right { flex: 1; position: relative; overflow: hidden; background: var(--forest); display: flex; align-items: center; justify-content: center; }
+    .right-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.55) brightness(.38); z-index: 0; }
+    .right::before { content: ''; position: absolute; inset: 0; z-index: 0; background: radial-gradient(ellipse 80% 60% at 20% 80%, rgba(13,92,46,.7) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, rgba(27,58,92,.8) 0%, transparent 55%), radial-gradient(ellipse 50% 70% at 50% 50%, rgba(10,40,20,.9) 0%, transparent 80%), linear-gradient(160deg, #071a0d 0%, #0a1e12 40%, #071520 100%); animation: bgPulse 8s ease-in-out infinite alternate; }
+    @keyframes bgPulse { from { filter: brightness(1); } to { filter: brightness(1.12); } }
+
+    .particle { position: absolute; border-radius: 50%; background: rgba(46,204,113,.12); animation: float linear infinite; z-index: 1; }
+    @keyframes float { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: .4; } 100% { transform: translateY(-120px) scale(1); opacity: 0; } }
+
+    .right-overlay { position: absolute; inset: 0; background: radial-gradient(ellipse 65% 55% at 50% 38%, rgba(46,204,113,.13) 0%, transparent 65%), linear-gradient(180deg, rgba(7,26,13,.5) 0%, rgba(7,26,13,.15) 40%, rgba(7,26,13,.6) 100%); z-index: 2; }
+
+    .right-content { position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding: 20px 40px; gap: 24px; width: 100%; max-width: 500px; min-height: 100%; padding-top: 80px; }
+
+    .live-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 6px 16px; color: rgba(255,255,255,.7); font-size: 11px; font-weight: 600; letter-spacing: .02em; backdrop-filter: blur(8px); }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; flex-shrink: 0; }
+
+    .right-headline h1 { color: #fff; font-size: 45px; font-weight: 800; letter-spacing: -.04em; line-height: 1.1; margin-bottom: 12px; }
+    .right-headline h1 em { font-style: normal; color: var(--green); }
+    .right-headline p { color: rgba(255,255,255,.55); font-size: 14px; line-height: 1.6; max-width: 360px; margin: 0 auto; }
+
+    .stats-row { display: flex; gap: 1px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); border-radius: 14px; overflow: hidden; width: 100%; max-width: 380px; backdrop-filter: blur(8px); }
+    .stat-item { flex: 1; padding: 16px 12px; background: rgba(255,255,255,.06); text-align: center; transition: background .2s; }
+    .stat-item:hover { background: rgba(255,255,255,.1); }
+    .stat-item + .stat-item { border-left: 1px solid rgba(255,255,255,.1); }
+    .stat-num { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -.03em; line-height: 1; margin-bottom: 4px; }
+    .stat-num span { color: var(--green); font-size: 18px; }
+    .stat-lbl { color: rgba(255,255,255,.45); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+
+    .right-divider { width: 50px; height: 2px; background: linear-gradient(90deg, var(--green), rgba(46,204,113,.2)); border-radius: 999px; }
+    .right-tagline { color: rgba(255,255,255,.3); font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+
+    .deco-circle { position: absolute; border-radius: 50%; border: 1px solid rgba(46,204,113,.1); z-index: 2; pointer-events: none; animation: rotateSlow linear infinite; }
+    @keyframes rotateSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .deco-circle-1 { animation-duration: 40s; width: 400px; height: 400px; top: -100px; right: -100px; }
+    .deco-circle-2 { animation-duration: 28s; animation-direction: reverse; width: 280px; height: 280px; bottom: -60px; left: -60px; }
+    .deco-circle-3 { animation-duration: 55s; width: 180px; height: 180px; top: 50%; left: 50%; transform: translate(-50%,-50%); border-color: rgba(46,204,113,.08); }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .5; transform: scale(1.4); } }
+
+    .form-content { flex: 1; display: flex; flex-direction: column; justify-content: center; animation: slideUp .3s ease-out; }
+  </style>
+</head>
+
+<body>
+<div class="layout">
+
+  <!-- ═══════════════════════ PANEL IZQUIERDO ═══════════════════════ -->
+  <div class="left glow">
+    <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
+
+    <div class="logo-area">
+      <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png" alt="Recíclame"
+           onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'" />
+      <div id="logo-fallback" style="display:none;align-items:center;justify-content:center;gap:10px;">
+        <div style="width:36px;height:36px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-recycle" style="color:#fff;font-size:18px;"></i>
+        </div>
+        <span style="color:#fff;font-size:20px;font-weight:800;">Recíclame</span>
+      </div>
+      <div class="logo-tagline">Hacia una economía circular</div>
+      <div class="logo-divider"></div>
+    </div>
+
+    <div class="form-content">
+      <div class="back-row">
+        <a th:href="@{/login}" href="/login" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+        <div>
+          <div class="section-title" style="font-size:18px;margin-bottom:2px;">Solicitar acceso</div>
+          <div style="color:rgba(255,255,255,.45);font-size:12px;">Solo para socios de Recíclame Perú</div>
+        </div>
+      </div>
+
+      <!-- Error del servidor (AC3 duplicado) -->
+      <div class="error-banner" th:if="${error != null and !#strings.isEmpty(error)}">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span th:text="${error}">Error</span>
+      </div>
+
+      <form method="post" th:action="@{/registro}" novalidate>
+
+        <div class="field-wrap">
+          <label class="field-label">Nombre completo</label>
+          <div style="position:relative;">
+            <i class="fas fa-user field-icon"></i>
+            <input class="glass-input form-control" type="text" name="nombre"
+                   th:value="${nombre}" placeholder="Ej: María López Torres" required />
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
+          <div style="position:relative;">
+            <i class="fas fa-id-card field-icon"></i>
+            <input class="glass-input form-control" type="text" name="dni"
+                   th:value="${dni}" placeholder="74521836" maxlength="8" pattern="\d{8}" required />
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          <label class="field-label">Correo corporativo</label>
+          <div style="position:relative;">
+            <i class="fas fa-envelope field-icon"></i>
+            <input id="inp-correo" class="glass-input form-control" type="email" name="correo"
+                   th:value="${correo}" placeholder="usuario@reciclame.org"
+                   pattern="^[a-zA-Z0-9._%+\-]+@reciclame\.org$"
+                   required oninput="validateCorreo()" />
+          </div>
+          <div id="err-correo" class="field-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="err-correo-msg"></span>
+          </div>
+          <p class="domain-hint"><i class="fas fa-info-circle"></i>Solo se aceptan correos @reciclame.org</p>
+        </div>
+
+        <div class="field-wrap" style="margin-bottom:20px;">
+          <label class="field-label">Empresa / Organización</label>
+          <div style="position:relative;">
+            <i class="fas fa-building field-icon"></i>
+            <input class="glass-input form-control" type="text" name="empresa"
+                   th:value="${empresa}" placeholder="Ej: Tetra Pak Perú S.A.C." required />
+          </div>
+        </div>
+
+        <button id="btn-submit" type="submit" class="btn btn-primary">
+          <i class="fas fa-paper-plane"></i> Solicitar acceso
+        </button>
+      </form>
+
+      <p class="register-hint">¿Ya tienes cuenta? <a th:href="@{/login}" href="/login">Iniciar sesión</a></p>
+    </div>
+  </div><!-- /left -->
+
+
+  <!-- ═══════════════════════ PANEL DERECHO ════════════════════════ -->
+  <div class="right">
+    <img class="right-bg"
+         src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
+         onerror="this.style.display='none'" alt="" aria-hidden="true" />
+
+    <div class="right-overlay"></div>
+
+    <div class="particle" style="width:6px;height:6px;left:15%;animation-duration:12s;animation-delay:0s;"></div>
+    <div class="particle" style="width:4px;height:4px;left:35%;animation-duration:18s;animation-delay:3s;"></div>
+    <div class="particle" style="width:8px;height:8px;left:55%;animation-duration:14s;animation-delay:1.5s;"></div>
+    <div class="particle" style="width:5px;height:5px;left:75%;animation-duration:16s;animation-delay:5s;"></div>
+    <div class="particle" style="width:3px;height:3px;left:85%;animation-duration:10s;animation-delay:2s;"></div>
+    <div class="particle" style="width:7px;height:7px;left:25%;animation-duration:20s;animation-delay:7s;"></div>
+
+    <div class="deco-circle deco-circle-1"></div>
+    <div class="deco-circle deco-circle-2"></div>
+    <div class="deco-circle deco-circle-3"></div>
+
+    <div class="right-content">
+      <div class="live-badge">
+        <span class="pulse-dot"></span>
+        Sistema en línea · actualizado hoy
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+        <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png"
+             alt="Recíclame" style="height:52px;width:auto;filter:brightness(1.1);"
+             onerror="this.style.display='none'" />
+        <div style="height:2px;width:48px;background:linear-gradient(90deg,transparent,var(--green),transparent);border-radius:999px;"></div>
+      </div>
+
+      <div class="right-headline">
+        <h1>Repositorio<br /><em>Circular</em></h1>
+        <p>La plataforma de gestión de conocimiento en economía circular para socios de Recíclame Perú.</p>
+      </div>
+
+      <div class="stats-row glow">
+        <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
+        <div class="stat-item"><div class="stat-num">2<span>K+</span></div><div class="stat-lbl">Documentos</div></div>
+        <div class="stat-item"><div class="stat-num">340<span>+</span></div><div class="stat-lbl">Normativas</div></div>
+        <div class="stat-item"><div class="stat-num">89<span>%</span></div><div class="stat-lbl">Actualizado</div></div>
+      </div>
+
+      <div style="display:flex;gap:10px;width:100%;max-width:400px;">
+        <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+          <i class="fas fa-folder-open" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+          <div style="color:#fff;font-size:12px;font-weight:700;">Estudios</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">Solo lectura</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+          <i class="fas fa-balance-scale" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+          <div style="color:#fff;font-size:12px;font-weight:700;">Normativas</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">138 registros</div>
+        </div>
+        <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
+          <i class="fas fa-recycle" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
+          <div style="color:#fff;font-size:12px;font-weight:700;">Economía</div>
+          <div style="color:rgba(255,255,255,.4);font-size:10px;margin-top:2px;">Circular · Perú</div>
+        </div>
+      </div>
+
+      <div class="right-tagline">
+        <i class="fas fa-shield-alt" style="color:var(--green);margin-right:6px;font-size:10px;"></i>
+        Acceso exclusivo para socios verificados de Recíclame
+      </div>
+    </div>
+  </div><!-- /right -->
+
+</div><!-- /layout -->
+
+<script>
+  function setGlowEffectRx() {
+    document.querySelectorAll('.glow').forEach(function(el) {
+      var rx = getComputedStyle(el).borderRadius;
+      el.querySelectorAll('rect').forEach(function(r) { r.setAttribute('rx', rx); });
+    });
+  }
+  setGlowEffectRx();
+  window.addEventListener('resize', setGlowEffectRx);
+
+  var DOMAIN_RE = /^[a-zA-Z0-9._%+\-]+@reciclame\.org$/;
+
+  function validateCorreo() {
+    var input  = document.getElementById('inp-correo');
+    var errDiv = document.getElementById('err-correo');
+    var errMsg = document.getElementById('err-correo-msg');
+    var btn    = document.getElementById('btn-submit');
+    var val    = input.value.trim();
+    var ok     = true;
+
+    if (val === '') {
+      errMsg.textContent = 'El correo corporativo es requerido';
+      ok = false;
+    } else if (!val.includes('@') || val.indexOf('@') === 0) {
+      errMsg.textContent = 'Ingresa un correo válido (ejemplo@reciclame.org)';
+      ok = false;
+    } else if (!DOMAIN_RE.test(val)) {
+      errMsg.textContent = 'Solo se aceptan correos corporativos (@reciclame.org)';
+      ok = false;
+    }
+
+    if (ok) {
+      errDiv.classList.remove('show');
+      input.classList.remove('input-error');
+      btn.disabled = false;
+    } else {
+      errDiv.classList.add('show');
+      input.classList.add('input-error');
+      btn.disabled = true;
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var inp = document.getElementById('inp-correo');
+    if (inp && inp.value) validateCorreo();
+  });
+</script>
+</body>
+</html>
