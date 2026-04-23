@@ -519,24 +519,23 @@
       </div>
     </div>
 
+    <script>
+      function openVisor(codigo, titulo, anio, formato) {
+        alert('📄 ' + codigo + '\n' + titulo + ' (' + anio + ')\nFormato: ' + formato + '\n\n🔒 Solo lectura — sin descarga.');
+      }
+
+      (function () {
+        var ctx = document.getElementById('donut-norm');
+        if (!ctx || !window.Chart) return;
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: { labels: ['EC', 'GR', 'EE', 'REP', 'Otro'], datasets: [{ data: [52, 34, 28, 16, 8], backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'], borderWidth: 0, hoverOffset: 4 }] },
+          options: { responsive: false, cutout: '68%', plugins: { legend: { display: false } } }
+        });
+      })();
+    </script>
+
   </th:block>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-  <script>
-    function openVisor(codigo, titulo, anio, formato) {
-      alert('📄 ' + codigo + '\n' + titulo + ' (' + anio + ')\nFormato: ' + formato + '\n\n🔒 Solo lectura — sin descarga.');
-    }
-
-    (function () {
-      var ctx = document.getElementById('donut-norm');
-      if (!ctx || !window.Chart) return;
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: ['EC', 'GR', 'EE', 'REP', 'Otro'], datasets: [{ data: [52, 34, 28, 16, 8], backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'], borderWidth: 0, hoverOffset: 4 }] },
-        options: { responsive: false, cutout: '68%', plugins: { legend: { display: false } } }
-      });
-    })();
-  </script>
 </body>
 
 </html>

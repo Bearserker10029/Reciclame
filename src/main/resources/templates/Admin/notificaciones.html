@@ -81,6 +81,28 @@
           </div>
         </div>
 
+        <script>
+          function toggleChatbot() {
+            var panel = document.getElementById('chatbot-panel');
+            var bubble = document.getElementById('chatbot-bubble');
+            if (panel.style.display === 'flex') { panel.style.display = 'none'; bubble.style.display = 'flex'; }
+            else { panel.style.display = 'flex'; bubble.style.display = 'none'; }
+          }
+          function sendChatMessage() {
+            var input = document.getElementById('chat-input');
+            var msg = input.value.trim();
+            if (!msg) return;
+            var div = document.getElementById('chat-messages');
+            div.innerHTML += '<div class="chat-msg user"><div class="bubble">' + msg + '</div></div>';
+            input.value = '';
+            div.scrollTop = div.scrollHeight;
+            setTimeout(function() {
+              div.innerHTML += '<div class="chat-msg bot"><div class="bubble">Gracias por tu mensaje. Estoy en modo demo.</div></div>';
+              div.scrollTop = div.scrollHeight;
+            }, 800);
+          }
+        </script>
+
       </th:block>
     </main>
   </div>
@@ -113,25 +135,6 @@
 function navTo(page) {
   var map = {'admin-docs': 'documentos'};
   window.location.href = '/admin/' + (map[page] || page);
-}
-function toggleChatbot() {
-  var panel = document.getElementById('chatbot-panel');
-  var bubble = document.getElementById('chatbot-bubble');
-  if (panel.style.display === 'flex') { panel.style.display = 'none'; bubble.style.display = 'flex'; }
-  else { panel.style.display = 'flex'; bubble.style.display = 'none'; }
-}
-function sendChatMessage() {
-  var input = document.getElementById('chat-input');
-  var msg = input.value.trim();
-  if (!msg) return;
-  var div = document.getElementById('chat-messages');
-  div.innerHTML += '<div class="chat-msg user"><div class="bubble">' + msg + '</div></div>';
-  input.value = '';
-  div.scrollTop = div.scrollHeight;
-  setTimeout(function() {
-    div.innerHTML += '<div class="chat-msg bot"><div class="bubble">Gracias por tu mensaje. Estoy en modo demo.</div></div>';
-    div.scrollTop = div.scrollHeight;
-  }, 800);
 }
 document.getElementById('chatbot-bubble').style.display = 'flex';
 </script>

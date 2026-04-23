@@ -128,24 +128,25 @@
       <div style="font-size:13px;color:#6B7280;">Métricas de uso del chatbot Recíclame — en desarrollo.</div>
     </div>
   </div>
+
+  <script>
+  function switchReportTab(tab){
+    document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('rtab-content-actividad').style.display='none';
+    document.getElementById('rtab-content-chatbot').style.display='none';
+    if(tab==='actividad'){document.getElementById('rtab-content-actividad').style.display='block';document.getElementById('rtab-actividad').classList.add('active');}
+    else{document.getElementById('rtab-content-chatbot').style.display='block';document.getElementById('rtab-chatbot').classList.add('active');}
+    initCharts();
+  }
+  function initCharts(){
+    const ci=document.getElementById('chart-ingresos');
+    if(ci&&!ci.chart){ci.chart=new Chart(ci,{type:'line',data:{labels:['1','5','10','15','20','25','30'],datasets:[{label:'Ingresos',data:[12,19,15,28,22,31,26,38,35,42,38,45],borderColor:'#2ECC71',backgroundColor:'rgba(46,204,113,.1)',fill:true,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
+    const ct=document.getElementById('chart-tematica');
+    if(ct&&!ct.chart){ct.chart=new Chart(ct,{type:'bar',data:{labels:['EC','GR','EE','REP'],datasets:[{label:'Descargas',data:[48,34,22,16],backgroundColor:['#27AE60','#3498DB','#F39C12','#E74C3C']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
+  }
+  initCharts();
+  </script>
 </th:block>
 
-<script>
-function switchReportTab(tab){
-  document.querySelectorAll('.report-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('rtab-content-actividad').style.display='none';
-  document.getElementById('rtab-content-chatbot').style.display='none';
-  if(tab==='actividad'){document.getElementById('rtab-content-actividad').style.display='block';document.getElementById('rtab-actividad').classList.add('active');}
-  else{document.getElementById('rtab-content-chatbot').style.display='block';document.getElementById('rtab-chatbot').classList.add('active');}
-  initCharts();
-}
-function initCharts(){
-  const ci=document.getElementById('chart-ingresos');
-  if(ci&&!ci.chart){ci.chart=new Chart(ci,{type:'line',data:{labels:['1','5','10','15','20','25','30'],datasets:[{label:'Ingresos',data:[12,19,15,28,22,31,26,38,35,42,38,45],borderColor:'#2ECC71',backgroundColor:'rgba(46,204,113,.1)',fill:true,tension:.4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
-  const ct=document.getElementById('chart-tematica');
-  if(ct&&!ct.chart){ct.chart=new Chart(ct,{type:'bar',data:{labels:['EC','GR','EE','REP'],datasets:[{label:'Descargas',data:[48,34,22,16],backgroundColor:['#27AE60','#3498DB','#F39C12','#E74C3C']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});}
-}
-initCharts();
-</script>
 </body>
 </html>
