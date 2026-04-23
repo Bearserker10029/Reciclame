@@ -2,8 +2,13 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.NotificacionResponseDTO;
 import org.reciclame.demo.model.Notificacione;
+import org.reciclame.demo.model.PreferenciasNotificacion;
+import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.NotificacionRepository;
+import org.reciclame.demo.repository.PreferenciasNotificacionRepository;
+import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,9 +19,15 @@ import java.util.stream.Collectors;
 public class NotificacionService {
 
     private final NotificacionRepository notificacionRepository;
+    private final PreferenciasNotificacionRepository preferenciasRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    public NotificacionService(NotificacionRepository notificacionRepository) {
+    public NotificacionService(NotificacionRepository notificacionRepository,
+                               PreferenciasNotificacionRepository preferenciasRepository,
+                               UsuarioRepository usuarioRepository) {
         this.notificacionRepository = notificacionRepository;
+        this.preferenciasRepository = preferenciasRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // ── READ ──────────────────────────────────────────────────
@@ -47,6 +58,50 @@ public class NotificacionService {
                 .orElseThrow(() -> new RuntimeException("Notificación no encontrada con id: " + id));
         notif.setEstadoActivo(false);
         notificacionRepository.save(notif);
+    }
+
+    // ── PREFERENCIAS ──────────────────────────────────────────
+    public PreferenciasNotificacion obtenerOCrearPreferencias(Long usuarioId) {
+        return preferenciasRepository.findByUsuarioId(usuarioId)
+                .orElseGet(() -> {
+                    PreferenciasNotificacion p = new PreferenciasNotificacion();
+                    p.setEmailHabilitado(true);
+                    p.setPushHabilitado(false);
+                    p.setSmsHabilitado(false);
+                    p.setNotifNuevasNormativas(true);
+                    p.setNotifNuevosEstudios(true);
+                    p.setNotifCambiosSeguidos(true);
+                    p.setNotifMensajesAdmin(true);
+                    p.setNotifDigestoSemanal(false);
+                    p.setFrecuenciaEmail("DIARIA");
+                    return p;
+                });
+    }
+
+    @Transactional
+    public void guardarPreferencias(Long usuarioId, boolean notifNuevasNormativas,
+                                    boolean notifNuevosEstudios, boolean notifCambiosSeguidos,
+                                    boolean emailHabilitado, String frecuenciaEmail) {
+        PreferenciasNotificacion prefs = preferenciasRepository.findByUsuarioId(usuarioId)
+                .orElseGet(() -> {
+                    PreferenciasNotificacion p = new PreferenciasNotificacion();
+                    Usuario u = usuarioRepository.findById(usuarioId)
+                            .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioId));
+                    p.setUsuario(u);
+                    p.setCreatedAt(Instant.now());
+                    p.setPushHabilitado(false);
+                    p.setSmsHabilitado(false);
+                    p.setNotifMensajesAdmin(true);
+                    p.setNotifDigestoSemanal(false);
+                    return p;
+                });
+        prefs.setNotifNuevasNormativas(notifNuevasNormativas);
+        prefs.setNotifNuevosEstudios(notifNuevosEstudios);
+        prefs.setNotifCambiosSeguidos(notifCambiosSeguidos);
+        prefs.setEmailHabilitado(emailHabilitado);
+        prefs.setFrecuenciaEmail(frecuenciaEmail);
+        prefs.setUpdatedAt(Instant.now());
+        preferenciasRepository.save(prefs);
     }
 
     // ── HELPER ────────────────────────────────────────────────
