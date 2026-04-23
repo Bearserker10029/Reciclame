@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Estudios</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
+    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
+    .page{display:none;}.page.active{display:block;}
+
+    /* Modal Visor */
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9999;backdrop-filter:blur(2px);}
+    .modal-overlay.show{display:flex;}
+    .modal-content{background:#fff;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:90%;max-width:900px;height:85vh;display:flex;flex-direction:column;animation:slideUp .3s ease-out;}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid #E5E7EB;}
+    .modal-title{font-size:16px;font-weight:700;color:#1B3A5C;margin:0;}
+    .modal-close{width:32px;height:32px;border-radius:8px;border:none;background:#F3F4F6;color:#6B7280;cursor:pointer;font-size:18px;transition:all .15s;font-family:inherit;}
+    .modal-close:hover{background:#E5E7EB;color:#1B3A5C;}
+    .modal-body{flex:1;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#F9FAFB;}
+    .pdf-viewer{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+    .pdf-page{max-width:100%;max-height:100%;box-shadow:0 4px 12px rgba(0,0,0,.15);}
+    .excel-table{width:100%;overflow:auto;background:#fff;border-radius:8px;border:1px solid #E5E7EB;}
+    .excel-table table{width:100%;border-collapse:collapse;font-size:12px;}
+    .excel-table th{background:#F8FAFB;color:#6B7280;font-weight:700;padding:10px 12px;text-align:left;border-bottom:2px solid #EEF0F3;white-space:nowrap;}
+    .excel-table td{padding:10px 12px;border-bottom:1px solid #F0F2F5;color:#374151;}
+    .excel-table tbody tr:hover{background:#F6FAF8;}
+  </style>
+</head>
+<body>
+
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+
+    <!-- SIDEBAR: Solo items base (sin Admin) -->
+    <aside style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
+        <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
+          <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
+        </div>
+        <div class="nav-item" id="nav-normativo" onclick="navTo('normativo')">
+          <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
+        </div>
+        <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
+          <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('nacional')">
+            <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i><span>Nacional</span>
+          </div>
+          <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('internacional')">
+            <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i><span>Internacional</span>
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:4px;">
+        <div class="nav-item" style="color:rgba(255,255,255,.4);" onclick="goLogin()">
+          <i class="fas fa-sign-out-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Cerrar sesión</span>
+        </div>
+      </div>
+    </aside>
+
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
+
+      <!-- PAGE: ESTUDIOS -->
+      <div id="page-estudios" class="page active" style="padding:32px;">
+        <div style="margin-bottom:20px;">
+          <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
+          <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
+          <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
+            <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
+            <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <div style="position:relative;flex:1;min-width:220px;">
+            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+            <input placeholder="Buscar estudios..." style="width:100%;padding:10px 14px 10px 36px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;" />
+          </div>
+          <select style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
+            <option>Año: 2025–2026</option><option>Año: 2024–2025</option>
+          </select>
+          <select style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
+            <option>Todos los formatos</option><option>PDF</option><option>PPTX</option>
+          </select>
+        </div>
+
+        <!-- Grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
+            <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de Materiales</p>
+              <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de envases plásticos en el Perú.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
+            <div style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
+              <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2024</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del programa REP en la gestión de envases.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
+            <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+            <div style="padding:14px;">
+              <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
+              <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2025</p>
+              <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional hacia la economía circular.</p>
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+                <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+                <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE: NORMATIVO -->
+      <div id="page-normativo" class="page" style="padding:32px;">
+        <th:block th:replace="Visualizador/normativo :: normativo-content"></th:block>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Modal Visor PDF/Excel -->
+  <div id="visor-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="visor-title" class="modal-title">Visor de Documento</h2>
+        <button class="modal-close" onclick="closeVisor()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="visor-pdf" class="pdf-viewer" style="display:none;">
+          <canvas id="pdf-canvas" class="pdf-page"></canvas>
+          <div style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
+            <span id="pdf-page-info">Página 1</span>
+          </div>
+        </div>
+        <div id="visor-excel" class="excel-table" style="display:none;"></div>
+        <div id="visor-loading" style="display:none;text-align:center;color:#6B7280;">
+          <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+          <span>Cargando documento...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chatbot Mascota -->
+  <button id="chatbot-bubble" onclick="toggleChatbot()">
+    <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+  </button>
+
+  <div id="chatbot-panel">
+    <div class="chat-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+        <div>
+          <div class="chat-title">La Buena Cajita</div>
+          <div class="chat-status"><span style="display:inline-block;width:6px;height:6px;background:#2ECC71;border-radius:50%;margin-right:4px;"></span>En línea</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        <div class="bubble">¡Hola! Soy La Buena Cajita, tu asistente de Recíclame. ¿En qué puedo ayudarte hoy?</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Pregúntame sobre normativas o economía circular..." onkeypress="if(event.key==='Enter')sendChatMessage()" />
+      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  var nav=document.getElementById('nav-'+page);
+  if(nav)nav.classList.add('active');
+  window.scrollTo(0,0);
+}
+function goLogin(){window.location.href='/login';}
+
+// Abrir visor de PDF/Excel en modal
+function openVisor(tipo,nombre,formato,descargable){
+  var modal = document.getElementById('visor-modal');
+  var titleEl = document.getElementById('visor-title');
+  var pdfDiv = document.getElementById('visor-pdf');
+  var excelDiv = document.getElementById('visor-excel');
+  var loadingDiv = document.getElementById('visor-loading');
+
+  if (!modal) return;
+
+  // Preparar modal
+  titleEl.textContent = nombre + ' (' + formato + ')';
+  pdfDiv.style.display = 'none';
+  excelDiv.style.display = 'none';
+  loadingDiv.style.display = 'flex';
+  modal.classList.add('show');
+
+  // Simular carga según formato
+  setTimeout(function() {
+    loadingDiv.style.display = 'none';
+    if (formato.toUpperCase() === 'PDF') {
+      pdfDiv.style.display = 'flex';
+      renderPdfDemo(nombre);
+    } else if (formato.toUpperCase() === 'PPTX' || formato.toUpperCase() === 'XLS') {
+      excelDiv.style.display = 'block';
+      renderExcelDemo(nombre);
+    }
+  }, 300);
+}
+
+function closeVisor(){
+  var modal = document.getElementById('visor-modal');
+  if (modal) modal.classList.remove('show');
+}
+
+// Cerrar modal al hacer click fuera
+document.addEventListener('click', function(e) {
+  var modal = document.getElementById('visor-modal');
+  if (modal && e.target === modal) closeVisor();
+});
+
+// Render PDF demo (usando canvas simple)
+function renderPdfDemo(nombre) {
+  var canvas = document.getElementById('pdf-canvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = 600;
+  canvas.height = 800;
+
+  // Fondo blanco
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Sombra
+  ctx.shadowColor = 'rgba(0,0,0,.1)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+
+  // Borde
+  ctx.strokeStyle = '#ddd';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+
+  // Header
+  ctx.fillStyle = '#1B3A5C';
+  ctx.fillRect(20, 20, canvas.width - 40, 80);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 18px Inter, sans-serif';
+  ctx.fillText(nombre, 40, 65);
+
+  // Contenido
+  ctx.fillStyle = '#333';
+  ctx.font = '14px Inter, sans-serif';
+  var y = 130;
+  var lines = [
+    'DOCUMENTO CLASIFICADO',
+    'Tipo: Estudio Técnico',
+    'Estado: Solo Lectura',
+    '',
+    'Este es un documento de demostración.',
+    'Contenido del análisis técnico.',
+    '',
+    'Acceso restringido al rol Visualizador.',
+    'Sin permisos de descarga.'
+  ];
+  lines.forEach(function(line) {
+    ctx.fillText(line, 40, y);
+    y += 30;
+  });
+
+  // Footer
+  ctx.fillStyle = '#999';
+  ctx.font = '12px Inter, sans-serif';
+  ctx.fillText('Recíclame © 2026', 40, canvas.height - 40);
+}
+
+// Render Excel demo
+function renderExcelDemo(nombre) {
+  var excelDiv = document.getElementById('visor-excel');
+  if (!excelDiv) return;
+
+  var html = '<table><thead><tr><th>Métrica</th><th>Valor</th><th>Unidad</th><th>Año</th><th>Estado</th></tr></thead><tbody>';
+  html += '<tr><td><strong>' + nombre + '</strong></td><td>100.5</td><td>Toneladas</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Análisis de Flujo</td><td>45.2</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Eficiencia</td><td>78.9</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
+  html += '<tr><td>Proyección</td><td>120.0</td><td>Toneladas</td><td>2027</td><td><span style="background:#FFF9C4;color:#F57F17;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Estimado</span></td></tr>';
+  html += '</tbody></table>';
+
+  excelDiv.innerHTML = html;
+}
+
+// Navegar a normativo y aplicar filtro de ámbito
+function setAmbitoNormativo(ambito){
+  navTo('normativo');
+  // Esperar a que la page sea visible antes de filtrar
+  setTimeout(function(){
+    if(typeof setAmbito === 'function') setAmbito(ambito);
+  }, 50);
+}
+
+function toggleChatbot(){
+  var panel=document.getElementById('chatbot-panel');
+  var bubble=document.getElementById('chatbot-bubble');
+  if(panel.style.display==='flex'){
+    panel.style.display='none';
+    bubble.style.display='flex';
+  }else{
+    panel.style.display='flex';
+    bubble.style.display='none';
+  }
+}
+
+function sendChatMessage(){
+  var input=document.getElementById('chat-input');
+  var message=input.value.trim();
+  if(!message)return;
+  var messagesDiv=document.getElementById('chat-messages');
+  var userMsg=document.createElement('div');
+  userMsg.className='chat-msg user';
+  userMsg.innerHTML='<div class="bubble">'+message+'</div>';
+  messagesDiv.appendChild(userMsg);
+  input.value='';
+  messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  setTimeout(function(){
+    var botMsg=document.createElement('div');
+    botMsg.className='chat-msg bot';
+    botMsg.innerHTML='<div class="bubble">Gracias por tu mensaje. Estoy en modo demo, pero en producción me conectaré a un sistema RAG con IA para responder tus preguntas sobre normativas y economía circular.</div>';
+    messagesDiv.appendChild(botMsg);
+    messagesDiv.scrollTop=messagesDiv.scrollHeight;
+  },800);
+}
+
+document.getElementById('chatbot-bubble').style.display='flex';
+</script>
+</body>
+</html>

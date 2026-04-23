@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Auditoría Global</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="auditoria-content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Auditoría Global</h1>
+      <p style="color:#6B7280;font-size:13px;">Eventos críticos de seguridad en tiempo real</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <div style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;background:#E74C3C;border-radius:50%;display:inline-block;animation:pulse 1.5s infinite;"></span>
+        <span style="font-size:12px;font-weight:600;color:#E74C3C;">1 alerta activa</span>
+      </div>
+      <button style="padding:9px 18px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
+        <i class="fas fa-download"></i> Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  <!-- Alerta activa -->
+  <div style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;">
+    <div style="width:40px;height:40px;border-radius:50%;background:#E74C3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fas fa-exclamation-triangle" style="color:#fff;font-size:16px;"></i>
+    </div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:3px;">⚠ Alerta de seguridad: 5 intentos fallidos detectados</div>
+      <div style="font-size:12px;color:#6B7280;">IP: 190.232.145.88 · 5 logins fallidos en los últimos 5 minutos · Cuenta bloqueada automáticamente 15 min.</div>
+    </div>
+    <button style="padding:7px 14px;border-radius:6px;border:1px solid #E74C3C;background:#fff;color:#E74C3C;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Ver detalle</button>
+  </div>
+
+  <!-- Filters -->
+  <div style="background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:200px;">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+      <input class="form-control" placeholder="Buscar por usuario o IP..." style="padding-left:36px;" />
+    </div>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Tipo: Todos</option><option>Login fallido</option><option>Cambio de rol</option><option>Cuenta desactivada</option><option>Doc. eliminado</option><option>Impersonación</option>
+    </select>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Últimas 24h</option><option>Última semana</option><option>Rango personalizado</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Timestamp</th><th>Tipo evento</th><th>Usuario / IP</th><th>Descripción</th><th>Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background:rgba(231,76,60,.03);">
+          <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;">01/04/2026 14:32:18</td>
+          <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;"><i class="fas fa-shield-alt" style="font-size:8px;"></i> Login fallido</span></td>
+          <td style="font-size:12px;"><div style="color:#374151;">Desconocido</div><div style="color:#9CA3AF;">190.232.145.88</div></td>
+          <td style="font-size:12px;color:#6B7280;">5 intentos fallidos en 5 min · Cuenta bloqueada</td>
+          <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">Bloqueado</span></td>
+        </tr>
+        <tr>
+          <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;">01/04/2026 11:15:44</td>
+          <td><span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;font-size:10px;"><i class="fas fa-user-secret" style="font-size:8px;"></i> Impersonación</span></td>
+          <td style="font-size:12px;"><div style="color:#374151;">SuperAdmin</div><div style="color:#9CA3AF;">192.168.1.1</div></td>
+          <td style="font-size:12px;color:#6B7280;">Inició sesión de soporte como Carlos Ríos · Duración: 8 min</td>
+          <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">OK</span></td>
+        </tr>
+        <tr>
+          <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;">31/03/2026 16:48:02</td>
+          <td><span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;font-size:10px;"><i class="fas fa-user-edit" style="font-size:8px;"></i> Cambio de rol</span></td>
+          <td style="font-size:12px;"><div style="color:#374151;">Admin → Ana Sánchez</div><div style="color:#9CA3AF;">10.0.0.5</div></td>
+          <td style="font-size:12px;color:#6B7280;">Rol cambiado de Visualizador → Socio</td>
+          <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">OK</span></td>
+        </tr>
+        <tr>
+          <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;">30/03/2026 09:22:15</td>
+          <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;"><i class="fas fa-trash-alt" style="font-size:8px;"></i> Doc. eliminado</span></td>
+          <td style="font-size:12px;"><div style="color:#374151;">Admin</div><div style="color:#9CA3AF;">10.0.0.5</div></td>
+          <td style="font-size:12px;color:#6B7280;">Eliminado: "Borrador Ley EC 2024 (obsoleto)"</td>
+          <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">OK</span></td>
+        </tr>
+        <tr>
+          <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;">29/03/2026 17:05:33</td>
+          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-ban" style="font-size:8px;"></i> Cuenta desactivada</span></td>
+          <td style="font-size:12px;"><div style="color:#374151;">Admin → Jorge Vargas</div><div style="color:#9CA3AF;">10.0.0.5</div></td>
+          <td style="font-size:12px;color:#6B7280;">Baja voluntaria confirmada por el usuario</td>
+          <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">OK</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</th:block>
+
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Panel de Documentos</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="documentos-content">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Documentos</h1>
+      <p style="color:#6B7280;font-size:13px;">Gestiona estudios y normativas del repositorio</p>
+    </div>
+    <button style="padding:10px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-cloud-upload-alt"></i> Subir documento
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">24</div>
+      <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">138</div>
+      <div style="font-size:12px;color:#6B7280;">Normativas indexadas</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">891</div>
+      <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+      <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">5</div>
+      <div style="font-size:12px;color:#6B7280;">Nuevas (último mes)</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:200px;">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+      <input class="form-control" placeholder="Buscar documentos..." style="padding-left:36px;" />
+    </div>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Sección: Todas</option><option>Estudios</option><option>Repositorio Normativo</option>
+    </select>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Categoría: Todas</option><option>EC</option><option>GR</option><option>EE</option><option>REP</option>
+    </select>
+    <button style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Limpiar filtros</button>
+  </div>
+
+  <!-- Table -->
+  <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow-x:auto;">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Descripción</th><th>Año</th><th>Formatos</th><th>Acceso</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</td>
+          <td style="color:#6B7280;font-size:12px;max-width:240px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
+          <td>2025</td>
+          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
+          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
+              <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;"><i class="fas fa-plus"></i> Agregar formato</button>
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</td>
+          <td style="color:#6B7280;font-size:12px;max-width:240px;">Monitorear el impacto del programa REP en envases</td>
+          <td>2024</td>
+          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
+          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</td>
+          <td style="color:#6B7280;font-size:12px;max-width:240px;">Guía estratégica hacia la economía circular nacional</td>
+          <td>2025</td>
+          <td><div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span></div></td>
+          <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+          <td>
+            <div style="display:flex;gap:6px;">
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
+              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</th:block>
+
+</body>
+</html>

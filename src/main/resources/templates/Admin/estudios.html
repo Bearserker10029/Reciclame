@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Estudios</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+
+<th:block th:fragment="estudios-content">
+
+  <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <div class="d-flex align-items-center justify-content-center rounded-3" style="width:36px;height:36px;background:linear-gradient(135deg,#2ECC71,#27AE60);">
+          <i class="fas fa-folder-open text-white fs-6"></i>
+        </div>
+        <h1 class="mb-0 fw-bold" style="font-size:22px;color:#1B3A5C;">Estudios Recíclame</h1>
+      </div>
+      <p class="text-muted ms-4 mb-2" style="font-size:13px;">Reportes, infografías y ayudas memoria del equipo técnico</p>
+      <div class="d-inline-flex align-items-center gap-2 rounded-2 px-3 py-1" style="background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.2);">
+        <i class="fas fa-eye" style="color:#C0392B;font-size:10px;"></i>
+        <span style="font-size:11px;color:#C0392B;font-weight:600;">Solo lectura — sin descarga directa</span>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap">
+      <div class="text-center rounded-3 px-3 py-2 shadow-sm" style="background:#fff;min-width:80px;">
+        <div class="fw-bold" id="stats-total" style="font-size:22px;color:#1B3A5C;">—</div>
+        <div class="text-uppercase" style="font-size:10px;color:#9CA3AF;font-weight:600;letter-spacing:.06em;">Total</div>
+      </div>
+      <div class="text-center rounded-3 px-3 py-2 shadow-sm" style="background:#fff;min-width:80px;">
+        <div class="fw-bold" id="stats-pdf" style="font-size:22px;color:#E74C3C;">—</div>
+        <div class="text-uppercase" style="font-size:10px;color:#9CA3AF;font-weight:600;letter-spacing:.06em;">PDF</div>
+      </div>
+      <div class="text-center rounded-3 px-3 py-2 shadow-sm" style="background:#fff;min-width:80px;">
+        <div class="fw-bold" id="stats-pptx" style="font-size:22px;color:#27AE60;">—</div>
+        <div class="text-uppercase" style="font-size:10px;color:#9CA3AF;font-weight:600;letter-spacing:.06em;">PPTX</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0" id="tabla-estudios">
+        <thead style="background:#F8FAFB;">
+          <tr>
+            <th style="width:40%;">Documento</th>
+            <th>Objetivo</th>
+            <th>Año</th>
+            <th>Formato</th>
+            <th>Acceso</th>
+            <th class="text-center">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr th:each="e : ${estudios}"
+              th:data-titulo="${e.titulo}"
+              th:data-descripcion="${e.descripcionBreve}"
+              th:data-anio="${e.anio}"
+              th:data-mime="${e.archivoTipoMime}"
+              th:data-url="${e.archivoUrl}">
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                     class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                     style="width:36px;height:36px;background:rgba(231,76,60,.1);">
+                  <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:15px;"></i>
+                </div>
+                <div th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                     class="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
+                     style="width:36px;height:36px;background:rgba(52,152,219,.1);">
+                  <i class="fas fa-file-powerpoint" style="color:#3498DB;font-size:15px;"></i>
+                </div>
+                <div class="fw-bold" style="color:#1B3A5C;font-size:13px;" th:text="${e.titulo}">Título</div>
+              </div>
+            </td>
+            <td class="text-muted" style="max-width:220px;font-size:12px;" th:text="${e.descripcionBreve}">—</td>
+            <td class="fw-bold" style="white-space:nowrap;" th:text="${e.anio}">—</td>
+            <td>
+              <span th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                    class="badge rounded-pill" style="background:rgba(231,76,60,.12);color:#C0392B;">
+                <i class="fas fa-file-pdf" style="font-size:9px;"></i> PDF
+              </span>
+              <span th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                    class="badge rounded-pill" style="background:rgba(52,152,219,.12);color:#2471A3;">
+                <i class="fas fa-file-powerpoint" style="font-size:9px;"></i> PPTX
+              </span>
+            </td>
+            <td>
+              <span class="badge rounded-pill" style="background:rgba(149,165,166,.12);color:#717D7E;">
+                <i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura
+              </span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-sm d-inline-flex align-items-center gap-1"
+                      style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:12px;font-weight:600;"
+                      th:onclick="'openModal(' + '&quot;' + ${e.titulo} + '&quot;,' + '&quot;' + (${e.descripcionBreve} ?: '') + '&quot;,' + '&quot;' + (${e.anio} ?: '') + '&quot;,' + '&quot;' + (${e.archivoTipoMime} ?: '') + '&quot;,' + '&quot;' + (${e.archivoUrl} ?: '#') + '&quot;)'">
+                <i class="fas fa-eye"></i> Ver
+              </button>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(estudios)}">
+            <td colspan="6" class="text-center py-5 text-muted">
+              <i class="fas fa-folder-open mb-2" style="font-size:40px;opacity:.4;display:block;"></i>
+              No hay estudios registrados aún.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="modal-estudio" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content rounded-4">
+      <div class="modal-header border-0 pb-0">
+        <div class="d-flex align-items-center gap-3">
+          <div id="modal-icon" class="d-flex align-items-center justify-content-center rounded-3" style="width:48px;height:48px;background:rgba(231,76,60,.1);">
+            <i id="modal-icon-i" class="fas fa-file-pdf" style="color:#E74C3C;font-size:20px;"></i>
+          </div>
+          <div>
+            <h5 class="modal-title fw-bold" id="modal-titulo" style="color:#1B3A5C;">Título del estudio</h5>
+            <span class="badge rounded-pill" style="background:rgba(149,165,166,.12);color:#717D7E;font-size:10px;">
+              <i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura
+            </span>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex align-items-start gap-2 mb-2">
+          <i class="fas fa-bullseye mt-1" style="color:#9CA3AF;width:16px;"></i>
+          <div>
+            <span class="text-muted" style="font-size:12px;min-width:80px;">Objetivo:</span>
+            <span id="modal-descripcion" style="color:#374151;line-height:1.5;">—</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-2">
+          <i class="fas fa-calendar" style="color:#9CA3AF;width:16px;"></i>
+          <span class="text-muted" style="font-size:12px;min-width:80px;">Año:</span>
+          <span id="modal-anio" class="fw-bold" style="color:#1B3A5C;">—</span>
+        </div>
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <i class="fas fa-file" style="color:#9CA3AF;width:16px;"></i>
+          <span class="text-muted" style="font-size:12px;min-width:80px;">Formato:</span>
+          <span id="modal-formato" class="fw-bold" style="color:#1B3A5C;">—</span>
+        </div>
+        <div class="rounded-3 p-3" style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);">
+          <div class="d-flex align-items-start gap-2">
+            <i class="fas fa-info-circle mt-1" style="color:#27AE60;"></i>
+            <span style="font-size:12px;color:#374151;line-height:1.5;">Este documento es de <strong>solo lectura</strong>. Podrás visualizarlo en el visor integrado sin opción de descarga directa.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <a id="modal-link" href="#" target="_blank" class="btn text-white" style="background:#2ECC71;">
+          <i class="fas fa-external-link-alt me-1"></i> Abrir documento
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var rows = document.querySelectorAll('tr[data-titulo]');
+  var total = rows.length, pdf = 0, pptx = 0;
+  rows.forEach(function(r) {
+    var mime = (r.dataset.mime || '').toLowerCase();
+    if (mime.indexOf('pdf') > -1) pdf++;
+    else pptx++;
+  });
+  var el = function(id, val) { var e = document.getElementById(id); if(e) e.textContent = val; };
+  el('stats-total', total); el('stats-pdf', pdf); el('stats-pptx', pptx);
+})();
+
+function openModal(titulo, descripcion, anio, mime, url) {
+  var isPdf = mime && mime.toLowerCase().indexOf('pdf') > -1;
+  var formato = isPdf ? 'PDF — Infografía / Reporte' : 'PPTX — Presentación';
+
+  document.getElementById('modal-titulo').textContent = titulo || '—';
+  document.getElementById('modal-descripcion').textContent = descripcion || '—';
+  document.getElementById('modal-anio').textContent = anio || '—';
+  document.getElementById('modal-formato').textContent = formato;
+  document.getElementById('modal-link').href = url || '#';
+
+  var icon = document.getElementById('modal-icon');
+  var iconI = document.getElementById('modal-icon-i');
+  if (isPdf) {
+    icon.style.background = 'rgba(231,76,60,.1)';
+    iconI.className = 'fas fa-file-pdf';
+    iconI.style.color = '#E74C3C';
+  } else {
+    icon.style.background = 'rgba(52,152,219,.1)';
+    iconI.className = 'fas fa-file-powerpoint';
+    iconI.style.color = '#3498DB';
+  }
+
+  var modal = new bootstrap.Modal(document.getElementById('modal-estudio'));
+  modal.show();
+}
+  </script>
+
+</th:block>
+</body>
+</html>
