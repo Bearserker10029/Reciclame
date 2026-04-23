@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Repositorio Normativo</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    /* Refresh visual del módulo normativo sin tocar estructura */
+    .normativo-surface {
+      background: linear-gradient(180deg, #f7fafc 0%, #f4f7fb 100%);
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid #e7edf4;
+    }
+
+    .normativo-surface .card {
+      border: 1px solid #e8edf3;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(15, 34, 54, 0.06);
+    }
+
+    .normativo-surface .table thead th {
+      background: #f8fafc;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .normativo-surface .table tbody tr {
+      transition: background-color .18s ease, transform .18s ease;
+    }
+
+    .normativo-surface .table tbody tr:hover {
+      background: #f8fffb;
+      transform: translateY(-1px);
+    }
+
+    .normativo-surface .btn {
+      transition: all .18s ease;
+    }
+
+    .normativo-surface .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .normativo-surface .badge {
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* Ajustes visuales más notorios */
+    .normativo-surface {
+      padding: 22px !important;
+      border-radius: 16px !important;
+      box-shadow: 0 10px 28px rgba(15, 34, 54, 0.08);
+    }
+
+    .normativo-surface h1 {
+      font-size: 22px !important;
+      letter-spacing: -0.01em;
+    }
+
+    .normativo-surface > .d-flex:first-child {
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e8eef5;
+      margin-bottom: 18px !important;
+    }
+
+    .normativo-surface .text-center.rounded-3 {
+      border: 1px solid #e6edf4;
+      border-radius: 10px !important;
+      min-width: 84px !important;
+    }
+
+    .normativo-surface #btn-todos,
+    .normativo-surface #btn-nacional,
+    .normativo-surface #btn-internacional {
+      padding: 8px 16px !important;
+      border-radius: 999px !important;
+      box-shadow: 0 2px 8px rgba(15, 34, 54, 0.08);
+    }
+
+    .normativo-surface #btn-todos.active {
+      background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+    }
+
+    .normativo-surface .table-responsive {
+      border-radius: 12px;
+    }
+
+    .normativo-surface .table {
+      margin-bottom: 0 !important;
+    }
+
+    .normativo-surface .table td {
+      font-size: 12px !important;
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+    }
+
+    .normativo-surface .table th {
+      font-size: 10px !important;
+      color: #6b7280 !important;
+    }
+
+    .normativo-surface .col-lg-3 .card {
+      position: sticky;
+      top: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <th:block th:fragment="normativo-content">
+    <style>
+      /* Estilos dentro del fragmento para que apliquen también en Socio */
+      .normativo-surface {
+        background: linear-gradient(180deg, #f7fafc 0%, #f4f7fb 100%);
+        border-radius: 16px;
+        padding: 22px;
+        border: 1px solid #e7edf4;
+        box-shadow: 0 10px 28px rgba(15, 34, 54, 0.08);
+      }
+
+      .normativo-surface h1 {
+        font-size: 22px !important;
+        letter-spacing: -0.01em;
+      }
+
+      .normativo-surface > .d-flex:first-child {
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e8eef5;
+        margin-bottom: 18px !important;
+      }
+
+      .normativo-surface .card {
+        border: 1px solid #e8edf3;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(15, 34, 54, 0.06);
+      }
+
+      .normativo-surface .text-center.rounded-3 {
+        border: 1px solid #e6edf4;
+        border-radius: 10px !important;
+        min-width: 84px !important;
+      }
+
+      .normativo-surface #btn-todos,
+      .normativo-surface #btn-nacional,
+      .normativo-surface #btn-internacional {
+        padding: 8px 16px !important;
+        border-radius: 999px !important;
+        box-shadow: 0 2px 8px rgba(15, 34, 54, 0.08);
+      }
+
+      .normativo-surface #btn-todos.active {
+        background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+      }
+
+      .normativo-surface .table-responsive {
+        border-radius: 12px;
+      }
+
+      .normativo-surface .table thead th {
+        background: #f8fafc;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        font-size: 10px !important;
+        color: #6b7280 !important;
+      }
+
+      .normativo-surface .table td {
+        font-size: 12px !important;
+        padding-top: 10px !important;
+        padding-bottom: 10px !important;
+      }
+
+      .normativo-surface .table tbody tr {
+        transition: background-color .18s ease, transform .18s ease;
+      }
+
+      .normativo-surface .table tbody tr:hover {
+        background: #f8fffb;
+        transform: translateY(-1px);
+      }
+
+      .normativo-surface .btn {
+        transition: all .18s ease;
+      }
+
+      .normativo-surface .btn:hover {
+        transform: translateY(-1px);
+      }
+
+      .normativo-surface .badge {
+        border-radius: 999px;
+        font-weight: 600;
+      }
+
+      .normativo-surface .col-lg-3 .card {
+        position: sticky;
+        top: 14px;
+      }
+
+      .semi-kpi-wrap {
+        display: flex;
+        justify-content: center;
+      }
+
+      .semi-kpi-chart {
+        position: relative;
+        width: 210px;
+        height: 120px;
+      }
+
+      .semi-kpi-center {
+        position: absolute;
+        left: 50%;
+        top: 62%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      }
+
+      .semi-kpi-value {
+        font-size: 32px;
+        font-weight: 800;
+        line-height: 1;
+        color: #1B3A5C;
+      }
+
+      .semi-kpi-label {
+        margin-top: 4px;
+        font-size: 10px;
+        color: #9CA3AF;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+      }
+
+      .kpi-topic-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .kpi-topic-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 10px;
+        border: 1px solid #eef2f6;
+        border-radius: 10px;
+        background: #fbfdff;
+      }
+
+      .kpi-topic-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .kpi-topic-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      .kpi-topic-text {
+        min-width: 0;
+      }
+
+      .kpi-topic-name {
+        font-size: 11px;
+        color: #374151;
+        font-weight: 600;
+        line-height: 1.1;
+      }
+
+      .kpi-topic-sub {
+        font-size: 10px;
+        color: #9CA3AF;
+        margin-top: 2px;
+      }
+
+      .kpi-topic-right {
+        font-size: 12px;
+        color: #1B3A5C;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .col-filter-control {
+        width: 100%;
+        border: 1px solid #e5eaf1;
+        border-radius: 8px;
+        background: #fff;
+        color: #374151;
+        font-size: 11px;
+        padding: 5px 8px;
+        font-family: inherit;
+      }
+
+      .col-filter-control:focus {
+        outline: none;
+        border-color: #2ECC71;
+        box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.15);
+      }
+
+      .normativo-surface .col-filter-row th {
+        padding: 4px 6px !important;
+        background: #f8fafc;
+        border-bottom: 1px solid #eef2f6 !important;
+      }
+
+      .normativo-surface .col-filter-row .col-filter-control {
+        height: 28px;
+        padding: 4px 8px;
+        font-size: 10px;
+      }
+
+      .normativo-surface .table thead tr:not(.col-filter-row) th {
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
+      }
+    </style>
+
+    <div class="normativo-surface">
+    <div style="margin-bottom:20px;">
+      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Repositorio Normativo</h1>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-9">
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="tab-todos">
+            <div class="card shadow-sm">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 norm-table" style="font-size:13px;">
+                  <thead style="background:#F8FAFB;">
+                    <tr class="col-filter-row">
+                      <th><input class="col-filter-control" data-col="0" placeholder="Filtrar nombre" /></th>
+                      <th><input class="col-filter-control" data-col="1" placeholder="Filtrar código" /></th>
+                      <th><input class="col-filter-control" data-col="2" placeholder="Filtrar organismo" /></th>
+                      <th><input class="col-filter-control" data-col="3" placeholder="Filtrar año" /></th>
+                      <th><input class="col-filter-control" data-col="4" placeholder="Filtrar tipo" /></th>
+                      <th>
+                        <select class="col-filter-control" data-col="5">
+                          <option value="">Clasif. (todas)</option>
+                          <option value="Vinculante">Vinculante</option>
+                          <option value="No vinculante">No vinculante</option>
+                        </select>
+                      </th>
+                      <th>
+                        <select class="col-filter-control" data-col="6">
+                          <option value="">Estado (todos)</option>
+                          <option value="Vigente">Vigente</option>
+                          <option value="Proyecto publicado">Proyecto publicado</option>
+                          <option value="Consulta pública">Consulta pública</option>
+                          <option value="Derogada">Derogada</option>
+                        </select>
+                      </th>
+                      <th>
+                        <select class="col-filter-control" data-col="7">
+                          <option value="">Temática (todas)</option>
+                          <option value="EC">EC</option>
+                          <option value="GR">GR</option>
+                          <option value="EE">EE</option>
+                          <option value="REP">REP</option>
+                          <option value="OTRO">OTRO</option>
+                        </select>
+                      </th>
+                      <th></th>
+                    </tr>
+                    <tr class="col-filter-row">
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Nombre</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Código</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Organismo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Año</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Tipo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Clasif.</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Estado</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Temática</th>
+                      <th class="text-center text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Acceso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr data-ambito="NACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Decreto
+                        Legislativo 1278 — Ley de Gestión de Residuos</td>
+                      <td class="text-muted" style="font-size:11px;white-space:nowrap;">D.L. 1278</td>
+                      <td class="text-muted" style="font-size:11px;">MINAM</td>
+                      <td class="fw-bold" style="font-size:12px;">2016</td>
+                      <td class="text-muted" style="font-size:11px;">Ley</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(39,174,96,.12);color:#27AE60;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Vigente</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(52,152,219,.1);color:#2471A3;border-left:3px solid #3498DB;">GR</span>
+                      </td>
+                      <td class="text-center">
+                        <button onclick="openVisor('D.L. 1278','Ley de Gestión de Residuos','2016','PDF')"
+                          class="btn btn-sm d-inline-flex align-items-center gap-1"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;">
+                          <i class="fas fa-eye"></i> Ver
+                        </button>
+                      </td>
+                    </tr>
+                    <tr data-ambito="INTERNACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">ISO
+                        14001:2015 — Sistemas de Gestión Ambiental</td>
+                      <td class="text-muted" style="font-size:11px;">ISO 14001</td>
+                      <td class="text-muted" style="font-size:11px;">ISO</td>
+                      <td class="fw-bold" style="font-size:12px;">2015</td>
+                      <td class="text-muted" style="font-size:11px;">NTP / Norma técnica</td>
+                      <td><span class="badge rounded-pill" style="background:rgba(52,152,219,.1);color:#2471A3;">No
+                          vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(39,174,96,.12);color:#27AE60;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Vigente</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
+                      </td>
+<td class="text-center">
+                         <button onclick="openVisor('ISO 14001:2015','Sistemas de Gestión Ambiental','2015','PDF')"
+                           class="btn btn-sm d-inline-flex align-items-center gap-1"
+                           style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;">
+                           <i class="fas fa-eye"></i> Ver
+                         </button>
+                       </td>
+                    </tr>
+                    <tr data-ambito="NACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
+                        Reglamento de Envases y Embalajes — D.S. 014-2021</td>
+                      <td class="text-muted" style="font-size:11px;">D.S. 014-2021</td>
+                      <td class="text-muted" style="font-size:11px;">PRODUCE</td>
+                      <td class="fw-bold" style="font-size:12px;">2021</td>
+                      <td class="text-muted" style="font-size:11px;">Reglamento</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(39,174,96,.12);color:#27AE60;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Vigente</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
+                      </td>
+                      <td class="text-center">
+                        <button onclick="openVisor('D.S. 014-2021','Envases y Embalajes','2021','PDF')"
+                          class="btn btn-sm d-inline-flex align-items-center gap-1"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;">
+                          <i class="fas fa-eye"></i> Ver
+                        </button>
+                      </td>
+                    </tr>
+                    <tr data-ambito="NACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Ley
+                        30884 — Ley que regula el plástico de un solo uso</td>
+                      <td class="text-muted" style="font-size:11px;">Ley 30884</td>
+                      <td class="text-muted" style="font-size:11px;">Congreso Perú</td>
+                      <td class="fw-bold" style="font-size:12px;">2018</td>
+                      <td class="text-muted" style="font-size:11px;">Ley</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(39,174,96,.12);color:#27AE60;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Vigente</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;border-left:3px solid #E74C3C;">REP</span>
+                      </td>
+                      <td class="text-center">
+                        <button onclick="openVisor('Ley 30884','Plástico de un solo uso','2018','PDF')"
+                          class="btn btn-sm d-inline-flex align-items-center gap-1"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;">
+                          <i class="fas fa-eye"></i> Ver
+                        </button>
+                      </td>
+                    </tr>
+                    <tr data-ambito="NACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Hoja de
+                        Ruta de Economía Circular Perú 2030</td>
+                      <td class="text-muted" style="font-size:11px;">HREC 2030</td>
+                      <td class="text-muted" style="font-size:11px;">MINAM / MEF</td>
+                      <td class="fw-bold" style="font-size:12px;">2023</td>
+                      <td class="text-muted" style="font-size:11px;">Hoja de Ruta</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(243,156,18,.12);color:#D68910;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Proyecto publicado</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
+                      </td>
+                      <td class="text-center">
+                        <button onclick="openVisor('HREC 2030','Economía Circular Perú','2023','PDF')"
+                          class="btn btn-sm d-inline-flex align-items-center gap-1"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;">
+                          <i class="fas fa-eye"></i> Ver
+                        </button>
+                      </td>
+                    </tr>
+                    <tr data-ambito="INTERNACIONAL">
+                      <td class="fw-bold" style="color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
+                        Directiva 94/62/EC — Envases y Residuos de Envases</td>
+                      <td class="text-muted" style="font-size:11px;">Dir. 94/62/EC</td>
+                      <td class="text-muted" style="font-size:11px;">Parlamento Europeo</td>
+                      <td class="fw-bold" style="font-size:12px;">1994</td>
+                      <td class="text-muted" style="font-size:11px;">Directiva</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
+                      <td><span class="badge rounded-pill" style="background:rgba(39,174,96,.12);color:#27AE60;"><i
+                            class="fas fa-circle" style="font-size:5px;"></i> Vigente</span></td>
+                      <td><span class="badge"
+                          style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
+                      </td>
+                      <td class="text-center">
+                        <span class="text-muted"><i class="fas fa-lock" style="font-size:9px;"></i></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-nacional">
+            <div class="card shadow-sm">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 norm-table" style="font-size:13px;">
+                  <thead style="background:#F8FAFB;">
+                    <tr class="col-filter-row">
+                      <th><input class="col-filter-control" data-col="0" placeholder="Filtrar nombre" /></th>
+                      <th><input class="col-filter-control" data-col="1" placeholder="Filtrar código" /></th>
+                      <th><input class="col-filter-control" data-col="2" placeholder="Filtrar organismo" /></th>
+                      <th><input class="col-filter-control" data-col="3" placeholder="Filtrar año" /></th>
+                      <th><input class="col-filter-control" data-col="4" placeholder="Filtrar tipo" /></th>
+                      <th>
+                        <select class="col-filter-control" data-col="5">
+                          <option value="">Estado (todos)</option>
+                          <option value="Vigente">Vigente</option>
+                          <option value="Proyecto publicado">Proyecto publicado</option>
+                          <option value="Consulta pública">Consulta pública</option>
+                          <option value="Derogada">Derogada</option>
+                        </select>
+                      </th>
+                      <th></th>
+                    </tr>
+                    <tr>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Nombre</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Código</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Organismo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Año</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Tipo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Estado</th>
+                      <th class="text-center" style="border-bottom:2px solid #EEF0F3;">Acceso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">Decreto Legislativo 1278 — Ley de Gestión de Residuos
+                      </td>
+                      <td class="text-muted" style="font-size:11px;">D.L. 1278</td>
+                      <td class="text-muted" style="font-size:11px;">MINAM</td>
+                      <td class="fw-bold" style="font-size:12px;">2016</td>
+                      <td class="text-muted" style="font-size:11px;">Ley</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(39,174,96,.12);color:#27AE60;">Vigente</span></td>
+                      <td class="text-center">
+                        <button onclick="openVisor('D.L. 1278','Ley de Gestión de Residuos','2016','PDF')"
+                          class="btn btn-sm"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;"><i
+                            class="fas fa-eye"></i> Ver</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">Reglamento de Envases y Embalajes — D.S. 014-2021</td>
+                      <td class="text-muted" style="font-size:11px;">D.S. 014-2021</td>
+                      <td class="text-muted" style="font-size:11px;">PRODUCE</td>
+                      <td class="fw-bold" style="font-size:12px;">2021</td>
+                      <td class="text-muted" style="font-size:11px;">Reglamento</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(39,174,96,.12);color:#27AE60;">Vigente</span></td>
+                      <td class="text-center">
+                        <button onclick="openVisor('D.S. 014-2021','Envases y Embalajes','2021','PDF')"
+                          class="btn btn-sm"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;"><i
+                            class="fas fa-eye"></i> Ver</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">Ley 30884 — Ley que regula el plástico de un solo uso
+                      </td>
+                      <td class="text-muted" style="font-size:11px;">Ley 30884</td>
+                      <td class="text-muted" style="font-size:11px;">Congreso Perú</td>
+                      <td class="fw-bold" style="font-size:12px;">2018</td>
+                      <td class="text-muted" style="font-size:11px;">Ley</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(39,174,96,.12);color:#27AE60;">Vigente</span></td>
+                      <td class="text-center">
+                        <button onclick="openVisor('Ley 30884','Plástico de un solo uso','2018','PDF')"
+                          class="btn btn-sm"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;"><i
+                            class="fas fa-eye"></i> Ver</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">Hoja de Ruta de Economía Circular Perú 2030</td>
+                      <td class="text-muted" style="font-size:11px;">HREC 2030</td>
+                      <td class="text-muted" style="font-size:11px;">MINAM / MEF</td>
+                      <td class="fw-bold" style="font-size:12px;">2023</td>
+                      <td class="text-muted" style="font-size:11px;">Hoja de Ruta</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(243,156,18,.12);color:#D68910;">Proyecto publicado</span></td>
+                      <td class="text-center">
+                        <button onclick="openVisor('HREC 2030','Economía Circular Perú','2023','PDF')"
+                          class="btn btn-sm"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;"><i
+                            class="fas fa-eye"></i> Ver</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="tab-internacional">
+            <div class="card shadow-sm">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0 norm-table" style="font-size:13px;">
+                  <thead style="background:#F8FAFB;">
+                    <tr>
+                      <th><input class="col-filter-control" data-col="0" placeholder="Filtrar nombre" /></th>
+                      <th><input class="col-filter-control" data-col="1" placeholder="Filtrar código" /></th>
+                      <th><input class="col-filter-control" data-col="2" placeholder="Filtrar organismo" /></th>
+                      <th><input class="col-filter-control" data-col="3" placeholder="Filtrar año" /></th>
+                      <th><input class="col-filter-control" data-col="4" placeholder="Filtrar tipo" /></th>
+                      <th>
+                        <select class="col-filter-control" data-col="5">
+                          <option value="">Estado (todos)</option>
+                          <option value="Vigente">Vigente</option>
+                          <option value="Proyecto publicado">Proyecto publicado</option>
+                          <option value="Consulta pública">Consulta pública</option>
+                          <option value="Derogada">Derogada</option>
+                        </select>
+                      </th>
+                      <th></th>
+                    </tr>
+                    <tr>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Nombre</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Código</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Organismo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Año</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Tipo</th>
+                      <th class="text-uppercase text-muted fw-bold"
+                        style="font-size:10px;letter-spacing:.07em;border-bottom:2px solid #EEF0F3;">Estado</th>
+                      <th class="text-center" style="border-bottom:2px solid #EEF0F3;">Acceso</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">ISO 14001:2015 — Sistemas de Gestión Ambiental</td>
+                      <td class="text-muted" style="font-size:11px;">ISO 14001</td>
+                      <td class="text-muted" style="font-size:11px;">ISO</td>
+                      <td class="fw-bold" style="font-size:12px;">2015</td>
+                      <td class="text-muted" style="font-size:11px;">NTP / Norma técnica</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(39,174,96,.12);color:#27AE60;">Vigente</span></td>
+                      <td class="text-center">
+                        <button onclick="openVisor('ISO 14001:2015','Sistemas de Gestión Ambiental','2015','PDF')"
+                          class="btn btn-sm"
+                          style="border:1.5px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;"><i
+                            class="fas fa-eye"></i> Ver</button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="fw-bold" style="color:#1B3A5C;">Directiva 94/62/EC — Envases y Residuos de Envases</td>
+                      <td class="text-muted" style="font-size:11px;">Dir. 94/62/EC</td>
+                      <td class="text-muted" style="font-size:11px;">Parlamento Europeo</td>
+                      <td class="fw-bold" style="font-size:12px;">1994</td>
+                      <td class="text-muted" style="font-size:11px;">Directiva</td>
+                      <td><span class="badge rounded-pill"
+                          style="background:rgba(39,174,96,.12);color:#27AE60;">Vigente</span></td>
+                      <td class="text-center">
+                        <span class="text-muted"><i class="fas fa-lock" style="font-size:9px;"></i></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-3">
+        <div class="card shadow-sm mb-3">
+          <div class="card-body">
+            <h6 class="card-title d-flex align-items-center gap-2 mb-3">
+              <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:11px;"></i>
+              <span style="font-size:12px;font-weight:700;color:#1B3A5C;">Distribución por temática</span>
+            </h6>
+            <div class="semi-kpi-wrap mb-3">
+              <div class="semi-kpi-chart">
+                <canvas id="donut-norm" width="210" height="120"></canvas>
+                <div class="semi-kpi-center">
+                  <div class="semi-kpi-value">112</div>
+                  <div class="semi-kpi-label">Vigentes de 138</div>
+                </div>
+              </div>
+            </div>
+            <div class="kpi-topic-list">
+              <div class="kpi-topic-item">
+                <div class="kpi-topic-left">
+                  <div class="kpi-topic-dot" style="background:#27AE60;"></div>
+                  <div class="kpi-topic-text">
+                    <div class="kpi-topic-name">Economía Circular</div>
+                    <div class="kpi-topic-sub">52 normativas</div>
+                  </div>
+                </div>
+                <div class="kpi-topic-right">38%</div>
+              </div>
+              <div class="kpi-topic-item">
+                <div class="kpi-topic-left">
+                  <div class="kpi-topic-dot" style="background:#3498DB;"></div>
+                  <div class="kpi-topic-text">
+                    <div class="kpi-topic-name">Gestión de Residuos</div>
+                    <div class="kpi-topic-sub">34 normativas</div>
+                  </div>
+                </div>
+                <div class="kpi-topic-right">25%</div>
+              </div>
+              <div class="kpi-topic-item">
+                <div class="kpi-topic-left">
+                  <div class="kpi-topic-dot" style="background:#F39C12;"></div>
+                  <div class="kpi-topic-text">
+                    <div class="kpi-topic-name">Envases y Embalajes</div>
+                    <div class="kpi-topic-sub">28 normativas</div>
+                  </div>
+                </div>
+                <div class="kpi-topic-right">20%</div>
+              </div>
+              <div class="kpi-topic-item">
+                <div class="kpi-topic-left">
+                  <div class="kpi-topic-dot" style="background:#E74C3C;"></div>
+                  <div class="kpi-topic-text">
+                    <div class="kpi-topic-name">REP</div>
+                    <div class="kpi-topic-sub">16 normativas</div>
+                  </div>
+                </div>
+                <div class="kpi-topic-right">12%</div>
+              </div>
+              <div class="kpi-topic-item">
+                <div class="kpi-topic-left">
+                  <div class="kpi-topic-dot" style="background:#95A5A6;"></div>
+                  <div class="kpi-topic-text">
+                    <div class="kpi-topic-name">Otros</div>
+                    <div class="kpi-topic-sub">8 normativas</div>
+                  </div>
+                </div>
+                <div class="kpi-topic-right">5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h6 class="card-title d-flex align-items-center gap-2 mb-2">
+              <i class="fas fa-chart-bar" style="color:#2ECC71;font-size:11px;"></i>
+              <span style="font-size:12px;font-weight:700;color:#1B3A5C;">Resumen</span>
+            </h6>
+            <div class="d-flex flex-column gap-0">
+              <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #F3F4F6;">
+                <span style="font-size:11px;color:#6B7280;">Total normativas</span>
+                <span style="font-size:13px;font-weight:700;color:#1B3A5C;">138</span>
+              </div>
+              <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #F3F4F6;">
+                <span style="font-size:11px;color:#6B7280;">Nacionales</span>
+                <span style="font-size:13px;font-weight:700;color:#1B3A5C;">89</span>
+              </div>
+              <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #F3F4F6;">
+                <span style="font-size:11px;color:#6B7280;">Internacionales</span>
+                <span style="font-size:13px;font-weight:700;color:#1B3A5C;">49</span>
+              </div>
+              <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #F3F4F6;">
+                <span style="font-size:11px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-check-circle" style="color:#27AE60;font-size:9px;"></i>Vigentes
+                </span>
+                <span style="font-size:13px;font-weight:700;color:#27AE60;">112</span>
+              </div>
+              <div class="d-flex justify-content-between py-2">
+                <span style="font-size:11px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-clock" style="color:#F39C12;font-size:9px;"></i>Consulta pública
+                </span>
+                <span style="font-size:13px;font-weight:700;color:#F39C12;">8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <script>
+      function openVisor(codigo, titulo, anio, formato) {
+        alert('📄 ' + codigo + '\n' + titulo + ' (' + anio + ')\nFormato: ' + formato + '\n\n🔒 Solo lectura — sin descarga.');
+      }
+
+      function initNormativoTabs() {
+        var panes = ['tab-todos', 'tab-nacional', 'tab-internacional']
+          .map(function (id) { return document.getElementById(id); })
+          .filter(Boolean);
+
+        if (panes.length === 0) return;
+
+        function showPane(paneId) {
+          panes.forEach(function (pane) {
+            var isTarget = pane.id === paneId;
+            pane.classList.toggle('show', isTarget);
+            pane.classList.toggle('active', isTarget);
+          });
+        }
+
+        window.showNormativoTab = function (tabKey) {
+          var paneId = 'tab-todos';
+          if (tabKey === 'nacional') paneId = 'tab-nacional';
+          if (tabKey === 'internacional') paneId = 'tab-internacional';
+          showPane(paneId);
+        };
+
+        // Estado inicial (o selección solicitada desde sidebar)
+        var requested = window.__normativoTab || 'todos';
+        window.showNormativoTab(requested);
+      }
+
+      function normalizeForFilter(value) {
+        return (value || '')
+          .toString()
+          .toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim();
+      }
+
+      function initNormativoColumnFilters() {
+        var tables = document.querySelectorAll('.norm-table');
+        if (!tables.length) return;
+
+        tables.forEach(function (table) {
+          var controls = table.querySelectorAll('thead .col-filter-control');
+          if (!controls.length) return;
+
+          function applyFilters() {
+            var rows = table.querySelectorAll('tbody tr');
+            rows.forEach(function (row) {
+              var show = true;
+
+              controls.forEach(function (control) {
+                if (!show) return;
+                var needle = normalizeForFilter(control.value);
+                if (!needle) return;
+
+                var colIndex = Number(control.getAttribute('data-col'));
+                var cell = row.children[colIndex];
+                var haystack = normalizeForFilter(cell ? cell.textContent : '');
+                if (!haystack.includes(needle)) {
+                  show = false;
+                }
+              });
+
+              row.style.display = show ? '' : 'none';
+            });
+          }
+
+          controls.forEach(function (control) {
+            control.addEventListener('input', applyFilters);
+            control.addEventListener('change', applyFilters);
+          });
+        });
+      }
+
+      (function () {
+        initNormativoTabs();
+        initNormativoColumnFilters();
+
+        var ctx = document.getElementById('donut-norm');
+        if (!ctx || !window.Chart) return;
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: ['REP', 'EE', 'EC', 'GR', 'Otros'],
+            datasets: [{
+              data: [16, 28, 52, 34, 8],
+              backgroundColor: ['#EF4444', '#F59E0B', '#22C55E', '#38BDF8', '#60A5FA'],
+              borderWidth: 0,
+              hoverOffset: 2
+            }]
+          },
+          options: {
+            responsive: false,
+            cutout: '76%',
+            rotation: 270,
+            circumference: 180,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
+      })();
+    </script>
+
+  </th:block>
+</body>
+
+</html>

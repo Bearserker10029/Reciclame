@@ -1,0 +1,449 @@
+/*
+ Theme Name: Reciclame Custom Styles
+ Description: Overrides for Bootstrap to match reciclame-mockup.html design
+ */
+
+:root {
+  --green: #2ECC71;
+  --navy: #1B3A5C;
+}
+
+/* ── TABLE STYLES (matching .tbl from mockup) ────────────── */
+.table {
+  width: 100%;
+  font-size: 13px;
+  border-collapse: collapse;
+  margin-bottom: 0;
+  background: transparent;
+}
+
+.table > thead > tr > th {
+  background: #F8F9FA !important;
+  color: #6B7280;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 10px 14px !important;
+  border-bottom: 1px solid #E5E7EB !important;
+  vertical-align: middle;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table > tbody > tr > td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid #F0F2F5 !important;
+  color: #374151;
+  vertical-align: middle;
+  background: #fff;
+}
+
+/* Striped: odd rows white, even rows light gray */
+.table.table-striped > tbody > tr:nth-of-type(odd) > td {
+  background: #fff;
+}
+
+.table.table-striped > tbody > tr:nth-of-type(even) > td {
+  background: #FCFDFE;
+}
+
+/* Hover effect */
+.table.table-hover > tbody > tr:hover > td {
+  background: #F6FAF8;
+}
+
+/* First and last cell radius */
+.table > tbody > tr > td:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.table > tbody > tr > td:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Last row - remove bottom border from last cell */
+.table > tbody > tr:last-child > td {
+  border-bottom: none;
+}
+
+/* ── FORM INPUT STYLES (matching .form-input from mockup) ─── */
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: normal;
+  font-family: inherit;
+  color: #111827;
+  height: auto;
+  background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.form-control:focus {
+  border-color: #2ECC71 !important;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, .15);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #9CA3AF;
+}
+
+.form-control:disabled {
+  background: #F9FAFB;
+  color: #9CA3AF;
+  cursor: not-allowed;
+}
+
+/* Select elements with custom arrow */
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+/* ── PILLS / TAGS ─────────────────────────────────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.tag {
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #2ECC71;
+  color: #27AE60;
+  background: transparent;
+  font-family: inherit;
+  transition: background .2s, transform .12s, box-shadow .12s;
+}
+
+.btn-green:hover {
+  background: rgba(46, 204, 113, .1);
+  box-shadow: 0 6px 16px rgba(46, 204, 113, .25);
+  transform: translateY(-1px);
+  color: #27AE60;
+}
+
+.btn-navy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #1B3A5C;
+  color: #1B3A5C;
+  background: transparent;
+  font-family: inherit;
+  transition: background .2s, transform .12s, box-shadow .12s;
+}
+
+.btn-navy:hover {
+  background: rgba(27, 58, 92, .08);
+  box-shadow: 0 6px 16px rgba(27, 58, 92, .25);
+  transform: translateY(-1px);
+  color: #1B3A5C;
+}
+
+/* ── REPORT TABS (Opción A: Verde redondeado) ─── */
+.report-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  background: rgba(46, 204, 113, .08);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6B7280;
+  border-radius: 8px 8px 0 0;
+  margin-right: 4px;
+  transition: all .2s;
+  font-family: inherit;
+}
+
+.report-tab .tab-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  margin-left: 4px;
+  background: rgba(27, 58, 92, .1);
+  color: #1B3A5C;
+}
+
+.report-tab.active {
+  background: #2ECC71;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, .3);
+}
+
+.report-tab.active .tab-badge {
+  background: rgba(255, 255, 255, .25);
+  color: #fff;
+}
+
+.report-tab:not(.active):hover {
+  background: rgba(46, 204, 113, .15);
+  color: #1B3A5C;
+}
+
+.report-tab i {
+  font-size: 13px;
+}
+
+/* ── CHATBOT MASCOTA ────────────────────────── */
+#chatbot-bubble {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 999;
+  width: 72px;
+  height: 72px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s;
+  padding: 0;
+}
+
+#chatbot-bubble:hover {
+  transform: scale(1.12) rotate(-6deg);
+}
+
+#chatbot-bubble img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,.35));
+  display: block;
+}
+
+#chatbot-panel {
+  position: fixed;
+  bottom: 92px;
+  right: 28px;
+  z-index: 999;
+  width: 360px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, .18);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 520px;
+}
+
+#chatbot-panel .chat-header {
+  background: #1B3A5C;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#chatbot-panel .chat-header img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.3));
+}
+
+#chatbot-panel .chat-title {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#chatbot-panel .chat-status {
+  color: rgba(255,255,255,.5);
+  font-size: 11px;
+}
+
+#chatbot-panel .chat-close-btn {
+  background: rgba(255,255,255,.1);
+  border: none;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#chatbot-panel .chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  max-height: 340px;
+}
+
+#chatbot-panel .chat-input-area {
+  padding: 12px 16px;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  gap: 8px;
+  background: #fff;
+}
+
+#chatbot-panel .chat-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+#chatbot-panel .chat-input:focus {
+  border-color: #2ECC71;
+}
+
+#chatbot-panel .chat-send-btn {
+  padding: 10px 14px;
+  border: none;
+  background: #2ECC71;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-msg {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.chat-msg.bot .bubble {
+  background: #F3F4F6;
+  color: #1B3A5C;
+  border-radius: 4px 14px 14px 14px;
+}
+
+.chat-msg.user .bubble {
+  background: #1B3A5C;
+  color: #fff;
+  border-radius: 14px 4px 14px 14px;
+  margin-left: auto;
+}
+
+.bubble {
+  padding: 10px 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 75%;
+}
+
+/* ── APP SHELL NAV ──────────────────────────── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: rgba(255,255,255,.65);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background .18s;
+  border-left: 3px solid transparent;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+.nav-item.active { background: rgba(46,204,113,.18); color: #fff; border-left-color: #2ECC71; }
+.nav-sublist { margin: 4px 0 6px 34px; display: flex; flex-direction: column; gap: 6px; }
+.nav-subitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: rgba(255,255,255,.65);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background .15s, color .15s;
+}
+.nav-subitem:hover { background: rgba(255,255,255,.07); color: #fff; }
+
+/* ── NOTIFICATION PAGE ──────────────────────── */
+.notif-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  gap: 14px;
+  border-left: 3px solid transparent;
+  transition: box-shadow .15s;
+}
+.notif-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+.notif-card.unread { border-left-color: #2ECC71; background: #f9fffe; }
+.notif-card.read   { opacity: .75; }
+.notif-icon {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.notif-badge-unread {
+  display: inline-block;
+  background: rgba(46,204,113,.15);
+  color: #1a7a42;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.btn-mark-read {
+  background: none;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #6B7280;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+  transition: background .15s;
+}
+.btn-mark-read:hover { background: #F3F4F6; }

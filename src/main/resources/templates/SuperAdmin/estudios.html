@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Estudios</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+  </style>
+</head>
+<body>
+
+<th:block th:fragment="estudios-content">
+  <div style="margin-bottom:20px;">
+    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
+    <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
+      <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
+      <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:220px;">
+      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+      <input class="form-control" placeholder="Buscar estudios..." style="padding-left:36px;" />
+    </div>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Año: 2025–2026</option>
+      <option>Año: 2024–2025</option>
+    </select>
+    <select class="form-control" style="width:auto;padding:10px 14px;">
+      <option>Todos los formatos</option>
+      <option>PDF</option>
+      <option>PPTX</option>
+    </select>
+    <div style="display:flex;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">
+      <button onclick="setView('lista')" style="padding:9px 14px;border:none;cursor:pointer;background:#1B3A5C;color:#fff;font-size:13px;" title="Vista lista"><i class="fas fa-list"></i></button>
+      <button onclick="setView('grid')" style="padding:9px 14px;border:none;cursor:pointer;background:#fff;color:#6B7280;font-size:13px;" title="Vista cuadrícula"><i class="fas fa-th"></i></button>
+    </div>
+  </div>
+
+  <!-- List view -->
+  <div id="view-lista">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Documento</th>
+            <th>Objetivo</th>
+            <th>Año</th>
+            <th>Formato</th>
+            <th>Acceso</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
+                <span style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</span>
+              </div>
+            </td>
+            <td style="color:#6B7280;max-width:200px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
+            <td>2025</td>
+            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
+            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+            <td><button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:13px;"></i></div>
+                <span style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</span>
+              </div>
+            </td>
+            <td style="color:#6B7280;max-width:200px;">Monitorear el impacto del programa REP en envases</td>
+            <td>2024</td>
+            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">PPTX</span></td>
+            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+            <td><button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
+          </tr>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
+                <span style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</span>
+              </div>
+            </td>
+            <td style="color:#6B7280;max-width:200px;">Guía estratégica hacia la economía circular nacional</td>
+            <td>2025</td>
+            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
+            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+            <td><button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Grid view (hidden by default) -->
+  <div id="view-grid" style="display:none;grid-template-columns:repeat(3,1fr);gap:20px;">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
+      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+      <div style="padding:14px;">
+        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de Materiales</p>
+        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
+        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de envases plásticos en el Perú.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
+      <div style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
+      <div style="padding:14px;">
+        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
+        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2024</p>
+        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del programa REP en la gestión de envases.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
+      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
+      <div style="padding:14px;">
+        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
+        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
+        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional hacia la economía circular.</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
+          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
+          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</th:block>
+
+<script>
+function setView(view){
+  document.getElementById('view-lista').style.display=view==='lista'?'block':'none';
+  document.getElementById('view-grid').style.display=view==='grid'?'grid':'none';
+}
+function openVisor(tipo,nombre,formato,descargable){
+  alert('Visor: '+nombre+' ('+formato+') — Solo lectura');
+}
+</script>
+</body>
+</html>

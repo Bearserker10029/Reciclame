@@ -1,4 +1,5 @@
-HELP.md
+*.md
+*.pdf
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -31,3 +32,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Archivos de sistema y temporales
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

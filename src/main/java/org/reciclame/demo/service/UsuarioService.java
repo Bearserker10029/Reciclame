@@ -9,12 +9,14 @@ import org.reciclame.demo.repository.EmpresaRepository;
 import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
@@ -30,6 +32,7 @@ public class UsuarioService {
     }
 
     // ── CREATE ────────────────────────────────────────────────
+    @Transactional
     public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
         if (usuarioRepository.existsByCorreoCorporativo(dto.getCorreoCorporativo()))
             throw new RuntimeException("Ya existe un usuario con ese correo corporativo.");
@@ -54,7 +57,7 @@ public class UsuarioService {
         usuario.setFotoUrl(dto.getFotoUrl());
         usuario.setRol(rol);
         usuario.setEmpresa(empresa);
-        usuario.setEstadoCuenta("PENDIENTE");
+        usuario.setEstadoCuenta("ACTIVO");
         usuario.setEstadoActivo(true);
         usuario.setCuentaBloqueada(false);
         usuario.setTfaActivo(false);
@@ -65,10 +68,29 @@ public class UsuarioService {
         return toResponseDTO(usuarioRepository.save(usuario));
     }
 
+    // ── FIND BY CORREO ────────────────────────────────────────
+    public java.util.Optional<UsuarioResponseDTO> findByCorreo(String correo) {
+        return usuarioRepository.findByCorreoCorporativo(correo).map(this::toResponseDTO);
+    }
+
     // ── READ ALL ──────────────────────────────────────────────
     public List<UsuarioResponseDTO> listarUsuarios() {
         return usuarioRepository.findAll()
                 .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponseDTO> listarUsuariosActivos() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()) && "ACTIVO".equals(u.getEstadoCuenta()))
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<UsuarioResponseDTO> listarUsuariosPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> "PENDIENTE".equals(u.getEstadoCuenta()))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -81,6 +103,7 @@ public class UsuarioService {
     }
 
     // ── UPDATE ────────────────────────────────────────────────
+    @Transactional
     public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -108,6 +131,7 @@ public class UsuarioService {
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
+    @Transactional
     public void eliminarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
@@ -115,6 +139,68 @@ public class UsuarioService {
         usuario.setEstadoCuenta("INACTIVO");
         usuario.setUpdatedAt(Instant.now());
         usuarioRepository.save(usuario);
+    }
+
+    // ── APROBAR solicitud pendiente ───────────────────────────
+    @Transactional
+    public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        usuario.setEstadoCuenta("ACTIVO");
+        usuario.setEstadoActivo(true);
+        if (rolId != null) {
+            Rol rol = rolRepository.findById(rolId)
+                    .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + rolId));
+            usuario.setRol(rol);
+        }
+        if (empresaId != null) {
+            Empresa empresa = empresaRepository.findById(empresaId)
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada con id: " + empresaId));
+            usuario.setEmpresa(empresa);
+        }
+        usuario.setUpdatedAt(Instant.now());
+        return toResponseDTO(usuarioRepository.save(usuario));
+    }
+
+    // ── RECHAZAR solicitud pendiente ──────────────────────────
+    @Transactional
+    public UsuarioResponseDTO rechazarUsuario(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        usuario.setEstadoCuenta("INACTIVO");
+        usuario.setEstadoActivo(false);
+        usuario.setUpdatedAt(Instant.now());
+        return toResponseDTO(usuarioRepository.save(usuario));
+    }
+
+    // ── BLOQUEAR / DESBLOQUEAR ────────────────────────────────
+    @Transactional
+    public UsuarioResponseDTO toggleBloquear(Long id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        boolean bloquear = !Boolean.TRUE.equals(usuario.getCuentaBloqueada());
+        usuario.setCuentaBloqueada(bloquear);
+        usuario.setEstadoCuenta(bloquear ? "BLOQUEADO" : "ACTIVO");
+        usuario.setUpdatedAt(Instant.now());
+        return toResponseDTO(usuarioRepository.save(usuario));
+    }
+
+    // ── EXPORTAR CSV ──────────────────────────────────────────
+    @Transactional
+    public String exportarCsv() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID,Nombre Completo,DNI,Correo,Rol,Empresa,Estado,Registro\n");
+        usuarioRepository.findAll().forEach(u -> {
+            sb.append(u.getId()).append(",");
+            sb.append(escapeCsv(u.getNombreCompleto())).append(",");
+            sb.append(escapeCsv(u.getDni())).append(",");
+            sb.append(escapeCsv(u.getCorreoCorporativo())).append(",");
+            sb.append(escapeCsv(u.getRol() != null ? u.getRol().getNombre() : "")).append(",");
+            sb.append(escapeCsv(u.getEmpresa() != null ? u.getEmpresa().getRazonSocial() : "")).append(",");
+            sb.append(escapeCsv(u.getEstadoCuenta())).append(",");
+            sb.append(u.getCreatedAt() != null ? u.getCreatedAt().toString() : "").append("\n");
+        });
+        return sb.toString();
     }
 
     // ── HELPERS ───────────────────────────────────────────────
@@ -126,7 +212,9 @@ public class UsuarioService {
         dto.setCorreoCorporativo(u.getCorreoCorporativo());
         dto.setCargo(u.getCargo());
         dto.setFotoUrl(u.getFotoUrl());
+        dto.setRolId(u.getRol() != null ? u.getRol().getId() : null);
         dto.setRolNombre(u.getRol() != null ? u.getRol().getNombre() : null);
+        dto.setEmpresaId(u.getEmpresa() != null ? u.getEmpresa().getId() : null);
         dto.setEmpresaNombre(u.getEmpresa() != null ? u.getEmpresa().getRazonSocial() : null);
         dto.setEstadoCuenta(u.getEstadoCuenta());
         dto.setEstadoActivo(u.getEstadoActivo());
@@ -140,5 +228,12 @@ public class UsuarioService {
 
     private String hashPassword(String password) {
         return Integer.toHexString(password.hashCode());
+    }
+
+    private String escapeCsv(String val) {
+        if (val == null) return "";
+        if (val.contains(",") || val.contains("\"") || val.contains("\n"))
+            return "\"" + val.replace("\"", "\"\"") + "\"";
+        return val;
     }
 }

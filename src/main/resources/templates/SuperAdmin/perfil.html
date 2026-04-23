@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Mi Perfil</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
+
+    .credential-card {
+      background: linear-gradient(135deg, #1B3A5C 0%, #27AE60 100%);
+      border-radius: 16px;
+      padding: 24px;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(43, 59, 92, .2);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .credential-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, .1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .credential-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .credential-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .credential-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .85;
+    }
+
+    .credential-badge {
+      background: rgba(255, 255, 255, .2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+
+    .qr-container {
+      background: #fff;
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 220px;
+      height: 220px;
+      margin: 8px 0;
+      position: relative;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <th:block th:fragment="perfil-content">
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Mi Perfil</h1>
+      <p style="color:#6B7280;font-size:13px;">Gestiona tu información personal y credencial</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
+      <!-- Left: Form -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <!-- Basic info -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-user"
+              style="color:#2ECC71;margin-right:8px;"></i>Información personal</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nombre
+                completo</label>
+              <input class="form-control" type="text" value="Juan Pérez Torres" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">DNI</label>
+              <input class="form-control" type="text" value="74521836" disabled />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Correo
+                corporativo</label>
+              <input class="form-control" type="email" value="jperez@tetrapak.com" />
+            </div>
+            <div>
+              <label
+                style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Empresa</label>
+              <input class="form-control" type="text" value="Tetra Pak Perú S.A.C." />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Rol</label>
+              <input class="form-control" type="text" value="Socio" disabled />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Fecha de
+                registro</label>
+              <input class="form-control" type="text" value="12/01/2026" disabled />
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
+            <button
+              style="padding:9px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;color:#374151;font-family:inherit;">Cancelar</button>
+            <button
+              style="padding:9px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Guardar
+              cambios</button>
+          </div>
+        </div>
+
+        <!-- Change password -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-lock"
+              style="color:#2ECC71;margin-right:8px;"></i>Cambiar contraseña</h2>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Contraseña
+                actual</label>
+              <input class="form-control" type="password" placeholder="••••••••" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nueva
+                contraseña</label>
+              <input class="form-control" type="password" placeholder="••••••••" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Confirmar
+                nueva contraseña</label>
+              <input class="form-control" type="password" placeholder="••••••••" />
+            </div>
+            <div style="display:flex;justify-content:flex-end;">
+              <button
+                style="padding:9px 20px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Actualizar
+                contraseña</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activity -->
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-history"
+              style="color:#3498DB;margin-right:8px;"></i>Actividad reciente</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;">
+            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #2ECC71;">
+              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Documentos descargados</div>
+              <div style="color:#9CA3AF;">3 normativas · Hace 4h</div>
+            </div>
+            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #3498DB;">
+              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Búsquedas realizadas</div>
+              <div style="color:#9CA3AF;">5 consultas · Hace 1 día</div>
+            </div>
+            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #F39C12;">
+              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Perfil actualizado</div>
+              <div style="color:#9CA3AF;">Cambio de foto · Hace 3 días</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Credential card -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-id-card"
+              style="color:#2ECC71;margin-right:8px;"></i>Credencial de socio</h3>
+          <div class="credential-card">
+            <div class="credential-content">
+              <div class="credential-header">
+                <span class="credential-label">Repositorio Circular</span>
+                <span class="credential-badge">Socio</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div
+                  style="width:48px;height:48px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;">
+                  JP</div>
+                <div>
+                  <div style="font-size:16px;font-weight:700;">Juan Pérez Torres</div>
+                  <div style="font-size:12px;opacity:.75;">jperez@tetrapak.com</div>
+                </div>
+              </div>
+              <div id="qr-code" class="qr-container"></div>
+              <div style="font-size:11px;opacity:.75;text-align:center;">Escanea para verificar credencial</div>
+              <div class="credential-footer"
+                style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px;margin-top:4px;">
+                <i class="fas fa-shield-alt" style="font-size:11px;"></i>
+                <span style="font-size:11px;">Recíclame Perú</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6;">
+              <span style="font-size:12px;color:#6B7280;">Documentos vistos</span>
+              <span style="font-size:14px;font-weight:700;color:#1B3A5C;">127</span>
+            </div>
+            <div
+              style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6;">
+              <span style="font-size:12px;color:#6B7280;">Búsquedas</span>
+              <span style="font-size:14px;font-weight:700;color:#1B3A5C;">45</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
+              <span style="font-size:12px;color:#6B7280;">Último acceso</span>
+              <span style="font-size:12px;color:#6B7280;">Hace 2h</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </th:block>
+
+  <script>
+    new QRCode(document.getElementById('qr-code'), {
+      text: 'RECICLAME-2026-JP-74521836',
+      width: 188,
+      height: 188,
+      colorDark: '#1B3A5C',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  </script>
+</body>
+
+</html>

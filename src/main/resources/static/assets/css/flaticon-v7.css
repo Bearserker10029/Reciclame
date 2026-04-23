@@ -1,0 +1,267 @@
+@font-face {
+    font-family: "flaticon-v7";
+    src: url("../fonts/flaticon-v7.eot");
+    src: url("../fonts/flaticon-v7.eot?#iefix") format("embedded-opentype"), url("../fonts/flaticon-v7.woff") format("woff"), url("../fonts/flaticon-v7.ttf") format("truetype"), url("../fonts/flaticon-v7.svg#flaticon-v7") format("svg");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    @font-face {
+        font-family: "flaticon-v7";
+        src: url("../fonts/flaticon-v7.svg#flaticon-v7") format("svg");
+    }
+}
+
+[class^="flaticonv7-"]:before,
+[class*=" flaticonv7-"]:before,
+[class^="flaticonv7-"]:after,
+[class*=" flaticonv7-"]:after {
+    font-family: flaticon-v7;
+    font-size: inherit;
+    font-style: normal;
+}
+
+.flaticonv7-phone-call:before {
+    content: "\f101";
+}
+
+.flaticonv7-phone-call-1:before {
+    content: "\f102";
+}
+
+.flaticonv7-consulting:before {
+    content: "\f103";
+}
+
+.flaticonv7-network:before {
+    content: "\f104";
+}
+
+.flaticonv7-analytics:before {
+    content: "\f105";
+}
+
+.flaticonv7-magnifying-glass:before {
+    content: "\f106";
+}
+
+.flaticonv7-grid:before {
+    content: "\f107";
+}
+
+.flaticonv7-grid-1:before {
+    content: "\f108";
+}
+
+.flaticonv7-graphics:before {
+    content: "\f109";
+}
+
+.flaticonv7-goal:before {
+    content: "\f10a";
+}
+
+.flaticonv7-right:before {
+    content: "\f10b";
+}
+
+.flaticonv7-audit:before {
+    content: "\f10c";
+}
+
+.flaticonv7-no:before {
+    content: "\f10d";
+}
+
+.flaticonv7-target:before {
+    content: "\f10e";
+}
+
+.flaticonv7-tap:before {
+    content: "\f10f";
+}
+
+.flaticonv7-phone-call-2:before {
+    content: "\f110";
+}
+
+.flaticonv7-contacts-book:before {
+    content: "\f111";
+}
+
+.flaticonv7-right-1:before {
+    content: "\f112";
+}
+
+.flaticonv7-training:before {
+    content: "\f113";
+}
+
+.flaticonv7-idea:before {
+    content: "\f114";
+}
+
+.flaticonv7-space-rocket-launch:before {
+    content: "\f115";
+}
+
+.flaticonv7-chat-1:before {
+    content: "\f116";
+}
+
+.flaticonv7-more:before {
+    content: "\f117";
+}
+
+.flaticonv7-check:before {
+    content: "\f118";
+}
+
+.flaticonv7-google-play:before {
+    content: "\f119";
+}
+
+.flaticonv7-app-store:before {
+    content: "\f11a";
+}
+
+.flaticonv7-tourism:before {
+    content: "\f11b";
+}
+
+.flaticonv7-crown:before {
+    content: "\f11c";
+}
+
+.flaticonv7-shield:before {
+    content: "\f11d";
+}
+
+.flaticonv7-follower:before {
+    content: "\f11e";
+}
+
+.flaticonv7-leaf:before {
+    content: "\f11f";
+}
+
+.flaticonv7-play-button:before {
+    content: "\f120";
+}
+
+.flaticonv7-contact-book:before {
+    content: "\f121";
+}
+
+.flaticonv7-next:before {
+    content: "\f122";
+}
+
+.flaticonv7-dental:before {
+    content: "\f123";
+}
+
+.flaticonv7-award:before {
+    content: "\f124";
+}
+
+.flaticonv7-link:before {
+    content: "\f125";
+}
+
+.flaticonv7-product-design:before {
+    content: "\f126";
+}
+
+.flaticonv7-rate:before {
+    content: "\f127";
+}
+
+.flaticonv7-right-arrow:before {
+    content: "\f128";
+}
+
+.flaticonv7-arrow-right:before {
+    content: "\f129";
+}
+
+.flaticonv7-portfolio:before {
+    content: "\f12a";
+}
+
+.flaticonv7-planning:before {
+    content: "\f12b";
+}
+
+.flaticonv7-strategy:before {
+    content: "\f12c";
+}
+
+.flaticonv7-growth-1:before {
+    content: "\f12d";
+}
+
+.flaticonv7-tick:before {
+    content: "\f12e";
+}
+
+.flaticonv7-down-arrow:before {
+    content: "\f12f";
+}
+
+.flaticonv7-play-button-1:before {
+    content: "\f130";
+}
+
+.flaticonv7-magnifying-glass-1:before {
+    content: "\f131";
+}
+
+.flaticonv7-list:before {
+    content: "\f132";
+}
+
+.flaticonv7-award-1:before {
+    content: "\f133";
+}
+
+.flaticonv7-globe:before {
+    content: "\f134";
+}
+
+.flaticonv7-life-insurance:before {
+    content: "\f135";
+}
+
+.flaticonv7-relationship:before {
+    content: "\f136";
+}
+
+.flaticonv7-checked:before {
+    content: "\f137";
+}
+
+.flaticonv7-user:before {
+    content: "\f138";
+}
+
+.flaticonv7-link-1:before {
+    content: "\f139";
+}
+
+.flaticonv7-buy:before {
+    content: "\f13a";
+}
+
+.flaticonv7-wrong:before {
+    content: "\f13b";
+}
+
+.flaticonv7-down-arrow-1:before {
+    content: "\f13c";
+}
+
+.flaticonv7-arrow-down-sign-to-navigate:before {
+    content: "\f13d";
+}
