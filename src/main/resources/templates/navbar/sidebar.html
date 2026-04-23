@@ -10,7 +10,7 @@
     style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;">
     <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
       <div class="nav-item" id="nav-inicio"
-           th:class="${rol == 'ADMINISTRADOR' or rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
+           th:class="${rol == 'ADMIN' or rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
            onclick="navTo('inicio')">
         <i class="fas fa-home" style="width:18px;text-align:center;font-size:15px;"></i><span>Inicio</span>
       </div>
@@ -34,14 +34,14 @@
       <div class="nav-item" id="nav-perfil" onclick="navTo('perfil')">
         <i class="fas fa-user" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Perfil</span>
       </div>
-      <a th:href="${notifUrl}" href="#"
-         class="nav-item" id="nav-notificaciones"
-         style="position:relative;text-decoration:none;">
-        <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
-        <span>Notificaciones</span>
-        <span
-          style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
-      </a>
+<div class="nav-item" id="nav-notificaciones"
+         onclick="navTo('notificaciones')"
+         style="position:relative;cursor:pointer;">
+       <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
+       <span>Notificaciones</span>
+       <span
+         style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
+     </div>
 
       <!-- Admin section - siempre visible, activo según rol -->
       <div th:if="${rol == 'ADMIN' or rol == 'SUPERADMIN'}">

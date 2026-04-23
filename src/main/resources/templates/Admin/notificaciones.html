@@ -134,9 +134,20 @@
 <script>
 function navTo(page) {
   var map = {'admin-docs': 'documentos'};
-  window.location.href = '/admin/' + (map[page] || page);
+  var target = map[page] || page;
+  if (window.location.pathname.includes('/notificaciones') && document.getElementById('page-' + target)) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + target).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    var nav = document.getElementById('nav-' + target);
+    if (nav) nav.classList.add('active');
+    window.scrollTo(0, 0);
+  } else {
+    window.location.href = '/' + (window.__baseRole || 'admin') + '/' + target;
+  }
 }
 document.getElementById('chatbot-bubble').style.display = 'flex';
+window.__baseRole = 'admin';
 </script>
 </body>
 </html>
