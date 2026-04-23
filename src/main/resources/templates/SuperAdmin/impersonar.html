@@ -63,14 +63,15 @@
       </button>
     </div>
   </div>
+
+  <script>
+  function startImpersonation(nombre){
+    if(confirm('Iniciar sesion de soporte como '+nombre+'?\n\nLas acciones destructivas estaran bloqueadas y el evento quedara registrado.')){
+      alert('Sesion de soporte iniciada como: '+nombre);
+    }
+  }
+  </script>
 </th:block>
 
-<script>
-function startImpersonation(nombre){
-  if(confirm('Iniciar sesión de soporte como '+nombre+'?\n\nLas acciones destructivas estarán bloqueadas y el evento quedará registrado.')){
-    alert('Sesión de soporte iniciada como: '+nombre);
-  }
-}
-</script>
 </body>
 </html>

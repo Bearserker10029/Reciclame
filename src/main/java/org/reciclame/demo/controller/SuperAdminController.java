@@ -1,6 +1,11 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.service.EmpresaService;
+import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NotificacionService;
+import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.RolService;
+import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,11 +21,26 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class SuperAdminController {
 
     private final UsuarioService usuarioService;
+    private final NormativaService normativaService;
+    private final EstudioService estudioService;
+    private final EmpresaService empresaService;
+    private final RolService rolService;
+    private final TematicaService tematicaService;
     private final NotificacionService notificacionService;
 
     public SuperAdminController(UsuarioService usuarioService,
+                                NormativaService normativaService,
+                                EstudioService estudioService,
+                                EmpresaService empresaService,
+                                RolService rolService,
+                                TematicaService tematicaService,
                                 NotificacionService notificacionService) {
         this.usuarioService = usuarioService;
+        this.normativaService = normativaService;
+        this.estudioService = estudioService;
+        this.empresaService = empresaService;
+        this.rolService = rolService;
+        this.tematicaService = tematicaService;
         this.notificacionService = notificacionService;
     }
 
@@ -28,43 +48,91 @@ public class SuperAdminController {
         model.addAttribute("rol", "SUPERADMIN");
         model.addAttribute("rolNombre", "SuperAdmin");
         model.addAttribute("notifUrl", "/superadmin/notificaciones");
-        usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        usuarioService.findByCorreo(correo).ifPresent(u ->
+                model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+    }
+
+    private void loadSpaData(Model model, String correo) {
+        // Datos para fragmento normativo
+        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+
+        // Datos para fragmento estudios
+        model.addAttribute("estudios", estudioService.listarEstudios());
+
+        // Datos para fragmento usuarios
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
+        model.addAttribute("roles", rolService.listarRoles());
+
+        // Datos para fragmento notificaciones
+        usuarioService.findByCorreo(correo).ifPresent(u -> {
+            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
+
+        // Datos para fragmento documentos
+        var estudios   = estudioService.listarEstudios();
+        var normativas = normativaService.listarNormativas();
+        int totalDescargas = estudios.stream()
+                .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+        model.addAttribute("totalDescargas", totalDescargas);
     }
 
     @GetMapping("/superadmin")
-    public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
+    public String raiz(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/inicio";
+        loadSpaData(model, user.getUsername());
+        return "SuperAdmin/inicio";
     }
 
     @GetMapping("/superadmin/inicio")
-    public String superAdminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
+    public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/inicio";
+        loadSpaData(model, user.getUsername());
+        return "SuperAdmin/inicio";
     }
 
     @GetMapping("/superadmin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/usuarios";
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
+        model.addAttribute("roles", rolService.listarRoles());
+        return "SuperAdmin/usuarios";
     }
 
     @GetMapping("/superadmin/documentos")
     public String documentos(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/documentos";
+        var estudios   = estudioService.listarEstudios();
+        var normativas = normativaService.listarNormativas();
+        int totalDescargas = estudios.stream()
+                .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("totalDescargas", totalDescargas);
+        return "SuperAdmin/documentos";
     }
 
     @GetMapping("/superadmin/reportes")
     public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/reportes";
+        return "SuperAdmin/reportes";
     }
 
     @GetMapping("/superadmin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/trazabilidad";
+        return "SuperAdmin/trazabilidad";
     }
 
     @GetMapping("/superadmin/notificaciones")
@@ -74,7 +142,7 @@ public class SuperAdminController {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
             model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
-        return "superadmin/notificaciones";
+        return "SuperAdmin/notificaciones";
     }
 
     @PostMapping("/superadmin/notificaciones/marcar/{id}")
@@ -86,31 +154,35 @@ public class SuperAdminController {
     @GetMapping("/superadmin/perfil")
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/perfil";
+        return "SuperAdmin/perfil";
     }
 
     @GetMapping("/superadmin/normativo")
     public String normativo(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/normativo";
+        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        return "SuperAdmin/normativo";
     }
 
     @GetMapping("/superadmin/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/estudios";
+        model.addAttribute("estudios", estudioService.listarEstudios());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        return "SuperAdmin/estudios";
     }
 
     @GetMapping("/superadmin/auditoria")
     public String auditoria(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/auditoria";
+        return "SuperAdmin/auditoria";
     }
 
     @GetMapping("/superadmin/impersonar")
     public String impersonar(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "superadmin/impersonar";
+        return "SuperAdmin/impersonar";
     }
 
     @GetMapping("/superadmin/notificaciones/configuracion")
