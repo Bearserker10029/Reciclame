@@ -1,9 +1,11 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.dto.ParametrosSistemaRequestDTO;
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.ParametrosSistemaService;
 import org.reciclame.demo.service.RolService;
 import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.UsuarioService;
@@ -27,6 +29,7 @@ public class SuperAdminController {
     private final RolService rolService;
     private final TematicaService tematicaService;
     private final NotificacionService notificacionService;
+    private final ParametrosSistemaService parametrosSistemaService;
 
     public SuperAdminController(UsuarioService usuarioService,
                                 NormativaService normativaService,
@@ -34,7 +37,8 @@ public class SuperAdminController {
                                 EmpresaService empresaService,
                                 RolService rolService,
                                 TematicaService tematicaService,
-                                NotificacionService notificacionService) {
+                                NotificacionService notificacionService,
+                                ParametrosSistemaService parametrosSistemaService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -42,6 +46,7 @@ public class SuperAdminController {
         this.rolService = rolService;
         this.tematicaService = tematicaService;
         this.notificacionService = notificacionService;
+        this.parametrosSistemaService = parametrosSistemaService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -183,6 +188,36 @@ public class SuperAdminController {
     public String impersonar(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         return "SuperAdmin/impersonar";
+    }
+
+    @GetMapping("/superadmin/parametros")
+    public String parametros(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("parametros", parametrosSistemaService.listarParametros());
+        return "SuperAdmin/parametros";
+    }
+
+    @GetMapping("/superadmin/parametros/editar/{id}")
+    public String editarParametroForm(@PathVariable Long id, Model model,
+                                      @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("parametro", parametrosSistemaService.obtenerPorId(id));
+        return "SuperAdmin/parametros-form";
+    }
+
+    @PostMapping("/superadmin/parametros/editar/{id}")
+    public String editarParametroGuardar(@PathVariable Long id,
+                                         @RequestParam String valor,
+                                         @RequestParam(required = false) String descripcion,
+                                         @RequestParam(required = false) Boolean estadoActivo,
+                                         RedirectAttributes redirectAttributes) {
+        ParametrosSistemaRequestDTO dto = new ParametrosSistemaRequestDTO();
+        dto.setValor(valor);
+        dto.setDescripcion(descripcion);
+        dto.setEstadoActivo(estadoActivo);
+        parametrosSistemaService.actualizarParametro(id, dto);
+        redirectAttributes.addFlashAttribute("exito", "Parámetro actualizado correctamente.");
+        return "redirect:/superadmin/parametros";
     }
 
     @GetMapping("/superadmin/notificaciones/configuracion")

@@ -105,6 +105,13 @@
     }
     .btn-cancel-link:hover{border-color:#E74C3C;color:#E74C3C;}
 
+    /* Error banner */
+    #form-error{
+      display:none;background:#FEF2F2;border:1px solid #FCA5A5;
+      color:#B91C1C;padding:12px 16px;border-radius:10px;
+      font-size:13px;margin-bottom:16px;
+    }
+
     /* Toast */
     #toast-norm{
       position:fixed;bottom:28px;right:28px;z-index:9999;
@@ -119,16 +126,16 @@
 </head>
 <body>
 <div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
   <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
     <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
 
     <!-- ══ DATA ISLAND ══ -->
     <script th:inline="javascript">
-      var IS_EDIT       = /*[[${isEdit}]]*/ false;
-      var NORMATIVA_ID  = /*[[${normativa?.id}]]*/ null;
-      var INIT_DATA     = IS_EDIT ? /*[[${normativa}]]*/ {} : null;
+      var IS_EDIT       = [[${isEdit}]];
+      var NORMATIVA_ID  = [[${normativa?.id}]];
+      var INIT_DATA     = IS_EDIT ? [[${normativa}]] : null;
     </script>
 
     <!-- ══ HERO ══ -->
@@ -155,6 +162,9 @@
         </div>
       </div>
     </div>
+
+    <!-- ══ ERROR BANNER ══ -->
+    <div id="form-error"></div>
 
     <!-- ══ FORM GRID ══ -->
     <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
@@ -323,6 +333,11 @@
             </div>
           </div>
 
+          <!-- Errores de validación del backend -->
+          <div id="errores-validacion" style="display:none;margin-top:14px;padding:12px 14px;
+               background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
+               color:#B91C1C;font-size:12px;line-height:1.6;"></div>
+
           <!-- Actions -->
           <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
             <button id="btn-guardar" class="btn-submit" onclick="submitForm()">
@@ -341,176 +356,302 @@
     <!-- ══ TOAST ══ -->
     <div id="toast-norm"></div>
 
-    <script th:inline="javascript">
-    // ════════════════════════════════════════════════════════
-    //  Init etiqueta chips
-    // ════════════════════════════════════════════════════════
-    document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
-      chip.addEventListener('click', function() {
-        var cb = chip.querySelector('input[type=checkbox]');
-        cb.checked = !cb.checked;
-        chip.classList.toggle('selected', cb.checked);
-      });
-    });
+    <script>
+// ════════════════════════════════════════════════════════
+//  LIMPIEZA DE BACKDROP
+//  Elimina cualquier div.modal-backdrop que el chatbot u otro
+//  componente Bootstrap haya dejado huérfano, desbloqueando la página.
+// ════════════════════════════════════════════════════════
+function limpiarModales() {
+  document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
+  document.body.style.overflow   = 'auto';
+  document.body.style.paddingRight = '';
+  document.body.classList.remove('modal-open');
+}
 
-    // ════════════════════════════════════════════════════════
-    //  Pre-populate for edit mode
-    // ════════════════════════════════════════════════════════
-    if (IS_EDIT && INIT_DATA) {
-      setVal('f-titulo',            INIT_DATA.titulo           || '');
-      setVal('f-desc',              INIT_DATA.descripcionBreve  || '');
-      setVal('f-contenido',         INIT_DATA.contenidoResumido || '');
-      setVal('f-anio',              INIT_DATA.anio              || '');
-      setVal('f-fecha-promulgacion',INIT_DATA.fechaPromulgacion || '');
-      setVal('f-fecha-vigencia',    INIT_DATA.fechaEntradaVigencia || '');
-      setVal('f-fecha-derogacion',  INIT_DATA.fechaDerogacion   || '');
-      setVal('f-tematica',          INIT_DATA.tematicaId        || '');
-      setVal('f-tipo',              INIT_DATA.tipoNormativaId   || '');
-      setVal('f-estado',            INIT_DATA.estadoNormativaId || '');
-      setVal('f-ambito',            INIT_DATA.ambito            || 'NACIONAL');
-      setVal('f-clasificacion',     INIT_DATA.clasificacion     || 'VINCULANTE');
+// Ejecutar en cuanto el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  // Pequeño delay para dejar que el chatbot termine su init
+  setTimeout(limpiarModales, 300);
+});
 
-      var pubEl = document.getElementById('f-publica');
-      if (pubEl) pubEl.checked = !!INIT_DATA.esPublica;
+// ── Helpers ────────────────────────────────────────────────
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && val !== null && val !== undefined) el.value = val;
+}
 
-      // Archivo actual
-      if (INIT_DATA.archivoUrl) {
-        var div = document.getElementById('archivo-actual');
-        var link = document.getElementById('archivo-actual-link');
-        if (div)  div.style.display  = 'block';
-        if (link) link.href = INIT_DATA.archivoUrl;
+function fmtDate(id) {
+  var v = document.getElementById(id).value;
+  return v ? v : null;
+}
+
+// ── File handling ──────────────────────────────────────────
+var selectedFile = null;
+
+function onFileChange(input) {
+  if (input.files && input.files[0]) {
+    selectedFile = input.files[0];
+    var label = document.getElementById('file-name-label');
+    label.textContent = selectedFile.name;
+    label.style.display = 'block';
+  }
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  var files = event.dataTransfer.files;
+  if (files && files[0]) {
+    selectedFile = files[0];
+    var label = document.getElementById('file-name-label');
+    label.textContent = selectedFile.name;
+    label.style.display = 'block';
+  }
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg, type) {
+  var t = document.getElementById('toast-norm');
+  t.textContent = msg;
+  t.className   = 'show ' + (type || 'success');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function() { t.className = ''; }, 3400);
+}
+
+// ── Labels para errores backend ────────────────────────────
+var LABELS_NORMATIVA = {
+  titulo:               'Título',
+  descripcionBreve:     'Descripción breve',
+  contenidoResumido:    'Contenido resumido',
+  tematicaId:           'Temática',
+  tipoNormativaId:      'Tipo de normativa',
+  estadoNormativaId:    'Estado normativa',
+  ambito:               'Ámbito',
+  clasificacion:        'Clasificación',
+  anio:                 'Año de publicación',
+  fechaPromulgacion:    'Fecha de promulgación',
+  fechaEntradaVigencia: 'Entrada en vigencia',
+  fechaDerogacion:      'Fecha de derogación',
+  etiquetasIds:         'Etiquetas'
+};
+
+function mostrarErroresBackend(errores) {
+  var div = document.getElementById('errores-validacion');
+  var html = 'Corrige los siguientes campos: ';
+  Object.entries(errores).forEach(function(entry) {
+    var campo = entry[0], msg = entry[1];
+    html += (LABELS_NORMATIVA[campo] || campo) + ': ' + msg + '. ';
+  });
+  div.textContent = html;
+  div.style.display = 'block';
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Etiqueta chips ─────────────────────────────────────────
+document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    var cb = chip.querySelector('input[type=checkbox]');
+    cb.checked = !cb.checked;
+    chip.classList.toggle('selected', cb.checked);
+  });
+});
+
+// ── Pre-populate en modo edición ───────────────────────────
+if (IS_EDIT && INIT_DATA) {
+  setVal('f-titulo',             INIT_DATA.titulo                || '');
+  setVal('f-desc',               INIT_DATA.descripcionBreve      || '');
+  setVal('f-contenido',          INIT_DATA.contenidoResumido     || '');
+  setVal('f-anio',               INIT_DATA.anio                  || '');
+  setVal('f-fecha-promulgacion', INIT_DATA.fechaPromulgacion     || '');
+  setVal('f-fecha-vigencia',     INIT_DATA.fechaEntradaVigencia  || '');
+  setVal('f-fecha-derogacion',   INIT_DATA.fechaDerogacion       || '');
+  setVal('f-tematica',           INIT_DATA.tematicaId            || '');
+  setVal('f-tipo',               INIT_DATA.tipoNormativaId       || '');
+  setVal('f-estado',             INIT_DATA.estadoNormativaId     || '');
+  setVal('f-ambito',             INIT_DATA.ambito                || 'NACIONAL');
+  setVal('f-clasificacion',      INIT_DATA.clasificacion         || 'VINCULANTE');
+
+  var pubEl = document.getElementById('f-publica');
+  if (pubEl) pubEl.checked = !!INIT_DATA.esPublica;
+
+  if (INIT_DATA.archivoUrl) {
+    var divArch = document.getElementById('archivo-actual');
+    var linkArch = document.getElementById('archivo-actual-link');
+    if (divArch)  divArch.style.display = 'block';
+    if (linkArch) linkArch.href = INIT_DATA.archivoUrl;
+  }
+
+  var idsActivos = INIT_DATA.etiquetasIds || [];
+  document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
+    var val = parseInt(chip.dataset.id, 10);
+    if (idsActivos.indexOf(val) !== -1) {
+      chip.classList.add('selected');
+      chip.querySelector('input[type=checkbox]').checked = true;
+    }
+  });
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitForm() {
+  // Limpiar cualquier backdrop que bloquee la pantalla antes de operar
+  limpiarModales();
+
+  var errBanner  = document.getElementById('form-error');
+  var errDetalle = document.getElementById('errores-validacion');
+  if (!errBanner || !errDetalle) {
+    console.error('submitForm: elementos de error no encontrados en el DOM');
+    return;
+  }
+
+  errBanner.style.display  = 'none';
+  errDetalle.style.display = 'none';
+  errDetalle.textContent   = '';
+
+  // ── Recoger campos con try-catch para detectar errores de DOM ──
+  var titulo, tematica, tipo, estado, anio, archivo;
+  try {
+    titulo   = document.getElementById('f-titulo').value.trim();
+    tematica = document.getElementById('f-tematica').value;
+    tipo     = document.getElementById('f-tipo').value;
+    estado   = document.getElementById('f-estado').value;
+    anio     = document.getElementById('f-anio').value;
+    archivo  = document.getElementById('f-archivo').files[0] || selectedFile;
+  } catch (domErr) {
+    console.error('submitForm: error leyendo campos del formulario:', domErr);
+    errBanner.textContent = 'Error interno al leer el formulario: ' + domErr.message;
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  // ── Validaciones client-side ────────────────────────────────────
+  if (!titulo) {
+    errBanner.textContent = 'El título es obligatorio.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!tematica) {
+    errBanner.textContent = 'Debes seleccionar una temática.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!tipo) {
+    errBanner.textContent = 'Debes seleccionar el tipo de normativa.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!estado) {
+    errBanner.textContent = 'Debes seleccionar el estado normativo.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!anio) {
+    errBanner.textContent = 'El año de publicación es obligatorio.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!IS_EDIT && !archivo) {
+    errBanner.textContent = 'El archivo PDF/DOC es obligatorio para crear una normativa.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  // ── Construir payload con try-catch ────────────────────────────
+  var formData;
+  try {
+    var etiquetasIds = Array.from(
+      document.querySelectorAll('.etiqueta-chip input:checked')
+    ).map(function(cb) { return parseInt(cb.value, 10); });
+
+    var normativaData = {
+      titulo:               titulo,
+      descripcionBreve:     document.getElementById('f-desc').value.trim()      || null,
+      contenidoResumido:    document.getElementById('f-contenido').value.trim() || null,
+      tematicaId:           parseInt(tematica, 10),
+      tipoNormativaId:      parseInt(tipo, 10),
+      estadoNormativaId:    parseInt(estado, 10),
+      ambito:               document.getElementById('f-ambito').value,
+      clasificacion:        document.getElementById('f-clasificacion').value,
+      anio:                 parseInt(anio, 10),
+      fechaPromulgacion:    fmtDate('f-fecha-promulgacion'),
+      fechaEntradaVigencia: fmtDate('f-fecha-vigencia'),
+      fechaDerogacion:      fmtDate('f-fecha-derogacion'),
+      esPublica:            document.getElementById('f-publica').checked,
+      etiquetasIds:         etiquetasIds
+    };
+
+    formData = new FormData();
+    formData.append('normativa', new Blob([JSON.stringify(normativaData)], { type: 'application/json' }));
+    if (archivo) formData.append('archivo', archivo);
+
+  } catch (buildErr) {
+    console.error('submitForm: error construyendo el FormData:', buildErr);
+    errBanner.textContent = 'Error interno al preparar los datos: ' + buildErr.message;
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  // ── Fetch ───────────────────────────────────────────────────────
+  var btn     = document.getElementById('btn-guardar');
+  var exito   = false;
+  var btnOrig = IS_EDIT
+    ? '<i class="fas fa-save" style="margin-right:6px;"></i> Guardar cambios'
+    : '<i class="fas fa-save" style="margin-right:6px;"></i> Crear normativa';
+
+  btn.disabled  = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Guardando...';
+
+  try {
+    var url    = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
+    var method = IS_EDIT ? 'PUT' : 'POST';
+
+    var res  = await fetch(url, { method: method, body: formData });
+    var data = await res.json();
+
+    if (!res.ok) {
+      if (data.tipo === 'VALIDACION' && data.errores) {
+        mostrarErroresBackend(data.errores);
+        showToast('Revisa los campos marcados.', 'error');
+      } else {
+        errBanner.textContent = data.mensaje || 'Error al guardar. Intenta de nuevo.';
+        errBanner.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-
-      // Etiquetas seleccionadas
-      var idsActivos = INIT_DATA.etiquetasIds || [];
-      document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
-        var val = parseInt(chip.dataset.id, 10);
-        if (idsActivos.indexOf(val) !== -1) {
-          chip.classList.add('selected');
-          chip.querySelector('input[type=checkbox]').checked = true;
-        }
-      });
+      return;
     }
 
-    function setVal(id, val) {
-      var el = document.getElementById(id);
-      if (el && val !== null && val !== undefined) el.value = val;
+    exito = true;
+    showToast(IS_EDIT ? 'Normativa actualizada.' : 'Normativa creada correctamente.', 'success');
+    setTimeout(function() { window.location.href = '/admin/normativo'; }, 1200);
+
+  } catch (fetchErr) {
+    console.error('submitForm: error en fetch:', fetchErr);
+    errBanner.textContent = 'Error de red: ' + fetchErr.message;
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } finally {
+    // Siempre limpiar posibles backdrops residuales
+    limpiarModales();
+    if (exito) {
+      btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px;"></i> Guardado';
+    } else {
+      btn.disabled  = false;
+      btn.innerHTML = btnOrig;
     }
-
-    // ════════════════════════════════════════════════════════
-    //  File handling
-    // ════════════════════════════════════════════════════════
-    var selectedFile = null;
-
-    function onFileChange(input) {
-      if (input.files && input.files[0]) {
-        selectedFile = input.files[0];
-        var label = document.getElementById('file-name-label');
-        label.textContent = selectedFile.name;
-        label.style.display = 'block';
-      }
-    }
-
-    function handleDrop(event) {
-      event.preventDefault();
-      document.getElementById('drop-zone').classList.remove('dragover');
-      var files = event.dataTransfer.files;
-      if (files && files[0]) {
-        selectedFile = files[0];
-        var label = document.getElementById('file-name-label');
-        label.textContent = selectedFile.name;
-        label.style.display = 'block';
-      }
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  Submit
-    // ════════════════════════════════════════════════════════
-    function submitForm() {
-      var titulo    = document.getElementById('f-titulo').value.trim();
-      var tematica  = document.getElementById('f-tematica').value;
-      var tipo      = document.getElementById('f-tipo').value;
-      var estado    = document.getElementById('f-estado').value;
-      var anio      = document.getElementById('f-anio').value;
-
-      if (!titulo)   { showToast('El título es obligatorio.', 'error');  return; }
-      if (!tematica) { showToast('Selecciona una temática.', 'error');   return; }
-      if (!tipo)     { showToast('Selecciona el tipo de normativa.', 'error'); return; }
-      if (!estado)   { showToast('Selecciona el estado normativo.', 'error');  return; }
-      if (!anio)     { showToast('El año de publicación es obligatorio.', 'error'); return; }
-
-      var etiquetasIds = [];
-      document.querySelectorAll('.etiqueta-chip input:checked').forEach(function(cb) {
-        etiquetasIds.push(parseInt(cb.value, 10));
-      });
-
-      function fmtDate(id) {
-        var v = document.getElementById(id).value;
-        return v ? v : null;
-      }
-
-      var normativaData = {
-        titulo:             titulo,
-        descripcionBreve:   document.getElementById('f-desc').value.trim() || null,
-        contenidoResumido:  document.getElementById('f-contenido').value.trim() || null,
-        tematicaId:         parseInt(tematica, 10),
-        tipoNormativaId:    parseInt(tipo,     10),
-        estadoNormativaId:  parseInt(estado,   10),
-        ambito:             document.getElementById('f-ambito').value,
-        clasificacion:      document.getElementById('f-clasificacion').value,
-        anio:               parseInt(anio, 10),
-        fechaPromulgacion:  fmtDate('f-fecha-promulgacion'),
-        fechaEntradaVigencia: fmtDate('f-fecha-vigencia'),
-        fechaDerogacion:    fmtDate('f-fecha-derogacion'),
-        esPublica:          document.getElementById('f-publica').checked,
-        etiquetasIds:       etiquetasIds
-      };
-
-      var formData = new FormData();
-      formData.append('normativa', new Blob([JSON.stringify(normativaData)], {type: 'application/json'}));
-      if (selectedFile) {
-        formData.append('archivo', selectedFile);
-      }
-
-      var btn = document.getElementById('btn-guardar');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Guardando…';
-
-      var url    = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
-      var method = IS_EDIT ? 'PUT' : 'POST';
-
-      fetch(url, {method: method, body: formData})
-        .then(function(res) {
-          if (!res.ok) return res.json().then(function(d) { throw new Error(d.error || 'Error al guardar'); });
-          return res.json();
-        })
-        .then(function() {
-          showToast(IS_EDIT ? 'Normativa actualizada.' : 'Normativa creada.', 'success');
-          setTimeout(function() { window.location.href = '/admin/normativo'; }, 1200);
-        })
-        .catch(function(err) {
-          showToast(err.message, 'error');
-          btn.disabled = false;
-          btn.innerHTML = (IS_EDIT ? '<i class="fas fa-save" style="margin-right:6px;"></i>Guardar cambios'
-                                   : '<i class="fas fa-save" style="margin-right:6px;"></i>Crear normativa');
-        });
-    }
-
-    // ════════════════════════════════════════════════════════
-    //  Toast
-    // ════════════════════════════════════════════════════════
-    function showToast(msg, type) {
-      var t = document.getElementById('toast-norm');
-      t.textContent = msg;
-      t.className   = 'show ' + (type || 'success');
-      clearTimeout(t._tid);
-      t._tid = setTimeout(function() { t.className = ''; }, 3400);
-    }
+  }
+}
     </script>
 
     </main>
   </div>
-  <th:block th:replace="components/chatbot :: chatbot"></th:block>
+  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </div>
 </body>
 </html>

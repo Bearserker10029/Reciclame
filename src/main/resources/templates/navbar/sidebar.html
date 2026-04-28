@@ -69,13 +69,20 @@
       <!-- SuperAdmin section - solo visible para SUPERADMIN -->
       <th:block th:if="${rol == 'SUPERADMIN'}">
         <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
-        <div class="nav-item" id="nav-auditoria"
-             th:class="${rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
-             onclick="navTo('auditoria')">
+        <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
+          Super Admin
+        </div>
+        <div class="nav-item" id="nav-auditoria" onclick="navTo('auditoria')">
           <i class="fas fa-shield-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Auditoría Global</span>
         </div>
+        <div class="nav-item" id="nav-parametros" onclick="window.location.href='/superadmin/parametros'">
+          <i class="fas fa-sliders-h" style="width:18px;text-align:center;font-size:15px;"></i><span>Parámetros</span>
+        </div>
+        <div class="nav-item" id="nav-backups" onclick="window.location.href='/superadmin/backups'">
+          <i class="fas fa-database" style="width:18px;text-align:center;font-size:15px;"></i><span>Backups</span>
+        </div>
         <div class="nav-item" id="nav-impersonar" onclick="navTo('impersonar')">
-          <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonar Usuario</span>
+          <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonación</span>
         </div>
       </th:block>
     </div>
@@ -104,7 +111,21 @@
         '/admin/trazabilidad': 'nav-trazabilidad',
         '/admin/reportes': 'nav-reportes',
         '/admin/diccionarios': 'nav-diccionarios',
-        '/admin/auditoria': 'nav-auditoria'
+        '/admin/auditoria': 'nav-auditoria',
+        '/superadmin': 'nav-inicio',
+        '/superadmin/inicio': 'nav-inicio',
+        '/superadmin/estudios': 'nav-estudios',
+        '/superadmin/normativo': 'nav-normativo',
+        '/superadmin/perfil': 'nav-perfil',
+        '/superadmin/notificaciones': 'nav-notificaciones',
+        '/superadmin/usuarios': 'nav-usuarios',
+        '/superadmin/documentos': 'nav-admin-docs',
+        '/superadmin/trazabilidad': 'nav-trazabilidad',
+        '/superadmin/reportes': 'nav-reportes',
+        '/superadmin/auditoria': 'nav-auditoria',
+        '/superadmin/impersonar': 'nav-impersonar',
+        '/superadmin/parametros': 'nav-parametros',
+        '/superadmin/backups': 'nav-backups'
       };
 
       // Eliminar clase 'active' de todos los nav-items y nav-subitems

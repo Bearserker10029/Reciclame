@@ -382,6 +382,12 @@
           <div class="card-title">
             <i class="fas fa-save"></i> Guardar
           </div>
+
+          <!-- Errores de validación del backend -->
+          <div id="errores-validacion" style="display:none;margin-bottom:14px;padding:12px 14px;
+               background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
+               color:#B91C1C;font-size:12px;line-height:1.6;"></div>
+
           <button class="btn-submit" id="btn-submit" onclick="submitForm()">
             <i th:class="${isEdit} ? 'fas fa-save' : 'fas fa-plus-circle'"></i>
             <span th:text="${isEdit} ? 'Guardar cambios' : 'Crear estudio'">Crear estudio</span>
@@ -464,11 +470,43 @@ function showToast(msg, type) {
   t._timer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
 }
 
+// ─── Labels legibles para los campos del DTO ──────────────────
+var LABELS_ESTUDIO = {
+  titulo:                 'Título',
+  descripcionBreve:       'Descripción breve',
+  tematicaId:             'Temática',
+  anio:                   'Año de publicación',
+  autor:                  'Autor',
+  fechaEstudio:           'Fecha del estudio',
+  normativaRelacionadaId: 'Normativa relacionada',
+  etiquetasIds:           'Etiquetas'
+};
+
+// ─── Pinta los errores de validación del backend ──────────────
+function mostrarErroresBackend(errores) {
+  var div = document.getElementById('errores-validacion');
+  var html = '<strong><i class="fas fa-exclamation-triangle" style="margin-right:5px;"></i>'
+           + 'Corrige los siguientes campos:</strong><ul style="margin:6px 0 0 0;padding-left:18px;">';
+  Object.entries(errores).forEach(function(entry) {
+    var campo = entry[0], msg = entry[1];
+    html += '<li><strong>' + (LABELS_ESTUDIO[campo] || campo) + '</strong>: ' + msg + '</li>';
+  });
+  html += '</ul>';
+  div.innerHTML = html;
+  div.style.display = 'block';
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
 // ─── Submit ───────────────────────────────────────────────────
 async function submitForm() {
-  var errBanner = document.getElementById('form-error');
-  errBanner.style.display = 'none';
+  // Limpiar errores anteriores
+  var errBanner  = document.getElementById('form-error');
+  var errDetalle = document.getElementById('errores-validacion');
+  errBanner.style.display  = 'none';
+  errDetalle.style.display = 'none';
+  errDetalle.innerHTML     = '';
 
+  // Validación client-side básica (evita round-trip innecesario)
   var titulo   = document.getElementById('f-titulo').value.trim();
   var tematica = document.getElementById('f-tematica').value;
   var archivo  = document.getElementById('f-archivo').files[0];
@@ -476,7 +514,7 @@ async function submitForm() {
   if (!titulo) {
     errBanner.textContent = 'El título es obligatorio.';
     errBanner.style.display = 'block';
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
   if (!tematica) {
@@ -492,33 +530,33 @@ async function submitForm() {
 
   // Recoger etiquetas seleccionadas
   var etiquetasIds = Array.from(document.querySelectorAll('.etiq-input:checked'))
-                          .map(function(cb){ return parseInt(cb.value, 10); });
+                          .map(function(cb) { return parseInt(cb.value, 10); });
 
-  // Armar el JSON del DTO
   var estudioData = {
-    titulo:                titulo,
-    descripcionBreve:      document.getElementById('f-descripcion').value.trim() || null,
-    resumen:               document.getElementById('f-resumen').value.trim()     || null,
-    tematicaId:            parseInt(tematica, 10),
-    autor:                 document.getElementById('f-autor').value.trim()       || null,
-    anio:                  document.getElementById('f-anio').value ? parseInt(document.getElementById('f-anio').value, 10) : null,
-    fechaEstudio:          document.getElementById('f-fecha').value || null,
-    esPublico:             document.getElementById('f-publico').checked,
+    titulo:                 titulo,
+    descripcionBreve:       document.getElementById('f-descripcion').value.trim() || null,
+    resumen:                document.getElementById('f-resumen').value.trim()     || null,
+    tematicaId:             parseInt(tematica, 10),
+    autor:                  document.getElementById('f-autor').value.trim()       || null,
+    anio:                   document.getElementById('f-anio').value
+                              ? parseInt(document.getElementById('f-anio').value, 10) : null,
+    fechaEstudio:           document.getElementById('f-fecha').value || null,
+    esPublico:              document.getElementById('f-publico').checked,
     normativaRelacionadaId: document.getElementById('f-normativa').value
-                              ? parseInt(document.getElementById('f-normativa').value, 10)
-                              : null,
-    etiquetasIds:          etiquetasIds
+                              ? parseInt(document.getElementById('f-normativa').value, 10) : null,
+    etiquetasIds:           etiquetasIds
   };
 
-  // Construir FormData
   var formData = new FormData();
-  formData.append('estudio', new Blob([JSON.stringify(estudioData)], {type: 'application/json'}));
-  if (archivo) {
-    formData.append('archivo', archivo);
-  }
+  formData.append('estudio', new Blob([JSON.stringify(estudioData)], { type: 'application/json' }));
+  if (archivo) formData.append('archivo', archivo);
 
-  // Deshabilitar botón
-  var btn = document.getElementById('btn-submit');
+  var btn    = document.getElementById('btn-submit');
+  var exito  = false;
+  var btnOrig = IS_EDIT
+    ? '<i class="fas fa-save"></i> Guardar cambios'
+    : '<i class="fas fa-plus-circle"></i> Crear estudio';
+
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
 
@@ -526,20 +564,46 @@ async function submitForm() {
     var url    = IS_EDIT ? '/api/estudios/' + ESTUDIO_ID : '/api/estudios';
     var method = IS_EDIT ? 'PUT' : 'POST';
 
-    var res  = await fetch(url, {method: method, body: formData});
+    var res  = await fetch(url, { method: method, body: formData });
     var data = await res.json();
 
-    if (!res.ok) throw new Error(data.error || 'Error al guardar el estudio');
+    if (!res.ok) {
+      // ── El backend devolvió 400 ──────────────────────────────
+      if (data.tipo === 'VALIDACION' && data.errores) {
+        // Errores campo por campo del @Valid
+        mostrarErroresBackend(data.errores);
+        showToast('Revisa los campos marcados.', 'error');
+      } else {
+        // Error de negocio genérico (RuntimeException del servicio)
+        errBanner.textContent = data.mensaje || 'Error al guardar.';
+        errBanner.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return; // finally se ejecuta igualmente
+    }
 
+    // ── Éxito ──────────────────────────────────────────────────
+    exito = true;
     showToast(IS_EDIT ? 'Estudio actualizado correctamente.' : 'Estudio creado correctamente.', 'success');
-    setTimeout(function(){ window.location.href = '/admin/estudios'; }, 1200);
+    setTimeout(function() { window.location.href = '/admin/estudios'; }, 1200);
 
-  } catch(e) {
-    errBanner.textContent = e.message;
+  } catch (err) {
+    // Error de red (sin conexión, timeout, etc.)
+    errBanner.textContent = 'Error de red: ' + err.message;
     errBanner.style.display = 'block';
-    window.scrollTo({top: 0, behavior: 'smooth'});
-    btn.disabled = false;
-    btn.innerHTML = (IS_EDIT ? '<i class="fas fa-save"></i> Guardar cambios' : '<i class="fas fa-plus-circle"></i> Crear estudio');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } finally {
+    // ── SIEMPRE se ejecuta: éxito, error o excepción ───────────
+    // En éxito: el botón queda como "Guardado ✓" hasta el redirect.
+    // En error: el botón vuelve a su estado original para reintento.
+    if (exito) {
+      btn.innerHTML = '<i class="fas fa-check"></i> Guardado';
+      // btn queda disabled para evitar doble envío durante el redirect
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = btnOrig;
+    }
   }
 }
 </script>

@@ -1,7 +1,6 @@
 package org.reciclame.demo.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.validation.Valid;
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
 import org.reciclame.demo.service.EstudioService;
@@ -21,11 +20,9 @@ import java.util.Map;
 public class EstudioRestController {
 
     private final EstudioService estudioService;
-    private final ObjectMapper   objectMapper;
 
     public EstudioRestController(EstudioService estudioService) {
         this.estudioService = estudioService;
-        this.objectMapper   = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -40,31 +37,33 @@ public class EstudioRestController {
         try {
             return ResponseEntity.ok(estudioService.obtenerEstudioPorId(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", e.getMessage()));
         }
     }
 
     // ── CREATE ────────────────────────────────────────────────
+    // @Valid sobre @RequestPart funciona porque el JS envía el Blob con
+    // Content-Type: application/json → Spring deserializa + valida.
+    // Si falla la validación, MethodArgumentNotValidException es lanzada
+    // ANTES de entrar al método → GlobalExceptionHandler la captura.
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
-            @RequestPart("estudio") String estudioJson,
+            @RequestPart("estudio") @Valid EstudioRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user) {
         try {
-            EstudioRequestDTO dto = objectMapper.readValue(estudioJson, EstudioRequestDTO.class);
-
             String archivoUrl      = null;
             String archivoTipoMime = null;
             if (archivo != null && !archivo.isEmpty()) {
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
-
-            EstudioResponseDTO resultado = estudioService.crearEstudio(dto, archivoUrl, archivoTipoMime, user.getUsername());
+            EstudioResponseDTO resultado = estudioService.crearEstudio(
+                    dto, archivoUrl, archivoTipoMime, user.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
@@ -72,23 +71,20 @@ public class EstudioRestController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
-            @RequestPart("estudio") String estudioJson,
+            @RequestPart("estudio") @Valid EstudioRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
         try {
-            EstudioRequestDTO dto = objectMapper.readValue(estudioJson, EstudioRequestDTO.class);
-
             String archivoUrl      = null;
             String archivoTipoMime = null;
             if (archivo != null && !archivo.isEmpty()) {
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
-
-            EstudioResponseDTO resultado = estudioService.actualizarEstudio(id, dto, archivoUrl, archivoTipoMime);
+            EstudioResponseDTO resultado = estudioService.actualizarEstudio(
+                    id, dto, archivoUrl, archivoTipoMime);
             return ResponseEntity.ok(resultado);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
@@ -99,15 +95,16 @@ public class EstudioRestController {
             estudioService.eliminarEstudio(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
-    // ── Stub de subida de archivo (sustituir por S3/GCP) ──────
+    // ── Stub subida (reemplazar con S3/GCP) ───────────────────
     private String simularSubida(MultipartFile archivo) {
         String nombre = archivo.getOriginalFilename() != null
                 ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
                 : "documento";
-        return "https://storage.googleapis.com/reciclame-docs/" + System.currentTimeMillis() + "_" + nombre;
+        return "https://storage.googleapis.com/reciclame-docs/"
+                + System.currentTimeMillis() + "_" + nombre;
     }
 }

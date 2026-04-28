@@ -1,7 +1,6 @@
 package org.reciclame.demo.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.validation.Valid;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
 import org.reciclame.demo.service.NormativaService;
@@ -21,11 +20,9 @@ import java.util.Map;
 public class NormativaRestController {
 
     private final NormativaService normativaService;
-    private final ObjectMapper     objectMapper;
 
     public NormativaRestController(NormativaService normativaService) {
         this.normativaService = normativaService;
-        this.objectMapper     = new ObjectMapper().registerModule(new JavaTimeModule());
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -40,31 +37,29 @@ public class NormativaRestController {
         try {
             return ResponseEntity.ok(normativaService.obtenerNormativaPorId(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("mensaje", e.getMessage()));
         }
     }
 
     // ── CREATE ────────────────────────────────────────────────
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
-            @RequestPart("normativa") String normativaJson,
+            @RequestPart("normativa") @Valid NormativaRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user) {
         try {
-            NormativaRequestDTO dto = objectMapper.readValue(normativaJson, NormativaRequestDTO.class);
-
             String archivoUrl      = null;
             String archivoTipoMime = null;
             if (archivo != null && !archivo.isEmpty()) {
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
-
-            NormativaResponseDTO resultado = normativaService.crearNormativa(dto, archivoUrl, archivoTipoMime, user.getUsername());
+            NormativaResponseDTO resultado = normativaService.crearNormativa(
+                    dto, archivoUrl, archivoTipoMime, user.getUsername());
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
@@ -72,23 +67,20 @@ public class NormativaRestController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
-            @RequestPart("normativa") String normativaJson,
+            @RequestPart("normativa") @Valid NormativaRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo) {
         try {
-            NormativaRequestDTO dto = objectMapper.readValue(normativaJson, NormativaRequestDTO.class);
-
             String archivoUrl      = null;
             String archivoTipoMime = null;
             if (archivo != null && !archivo.isEmpty()) {
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
-
-            NormativaResponseDTO resultado = normativaService.actualizarNormativa(id, dto, archivoUrl, archivoTipoMime);
+            NormativaResponseDTO resultado = normativaService.actualizarNormativa(
+                    id, dto, archivoUrl, archivoTipoMime);
             return ResponseEntity.ok(resultado);
-
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
@@ -99,7 +91,7 @@ public class NormativaRestController {
             normativaService.eliminarNormativa(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
     }
 
@@ -108,6 +100,7 @@ public class NormativaRestController {
         String nombre = archivo.getOriginalFilename() != null
                 ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
                 : "documento";
-        return "https://storage.googleapis.com/reciclame-docs/" + System.currentTimeMillis() + "_" + nombre;
+        return "https://storage.googleapis.com/reciclame-docs/"
+                + System.currentTimeMillis() + "_" + nombre;
     }
 }
