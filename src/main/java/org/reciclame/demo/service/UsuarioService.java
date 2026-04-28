@@ -10,6 +10,8 @@ import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,22 +24,38 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final EmpresaRepository empresaRepository;
+    private final AuditoriaService auditoriaService;
+    private final ObjectMapper objectMapper;
 
-    public UsuarioService(UsuarioRepository usuarioRepository,
-                          RolRepository rolRepository,
-                          EmpresaRepository empresaRepository) {
-        this.usuarioRepository  = usuarioRepository;
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository,
+                         EmpresaRepository empresaRepository, AuditoriaService auditoriaService) {
+        this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
-        this.empresaRepository  = empresaRepository;
+        this.empresaRepository = empresaRepository;
+        this.auditoriaService = auditoriaService;
+
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     // ── CREATE ────────────────────────────────────────────────
     @Transactional
-    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
-        if (usuarioRepository.existsByCorreoCorporativo(dto.getCorreoCorporativo()))
+    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
+        if (usuarioRepository.existsByCorreoCorporativo(dto.getCorreoCorporativo())) {
+            auditoriaService.registrarAccionFallida(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+                "Intento crear usuario con correo duplicado: " + dto.getCorreoCorporativo(),
+                "El correo ya existe en el sistema", ipAddress, userAgent);
             throw new RuntimeException("Ya existe un usuario con ese correo corporativo.");
-        if (usuarioRepository.existsByDni(dto.getDni()))
+        }
+        if (usuarioRepository.existsByDni(dto.getDni())) {
+            auditoriaService.registrarAccionFallida(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+                "Intento crear usuario con DNI duplicado: " + dto.getDni(),
+                "El DNI ya existe en el sistema", ipAddress, userAgent);
             throw new RuntimeException("Ya existe un usuario con ese DNI.");
+        }
 
         Rol rol = rolRepository.findById(dto.getRolId())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
@@ -65,7 +83,25 @@ public class UsuarioService {
         usuario.setCreatedAt(Instant.now());
         usuario.setUpdatedAt(Instant.now());
 
-        return toResponseDTO(usuarioRepository.save(usuario));
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        try {
+            String datosNuevos = objectMapper.writeValueAsString(toResponseDTO(usuarioGuardado));
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+                "Crear usuario: " + usuario.getNombreCompleto() + " (" + usuario.getCorreoCorporativo() + ")",
+                null, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+        } catch (Exception e) {
+            System.err.println("Error al serializar datos de auditoría: " + e.getMessage());
+        }
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── CREATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
+        return crearUsuario(dto, null, "Sistema", null, null);
     }
 
     // ── FIND BY CORREO ────────────────────────────────────────
@@ -104,9 +140,18 @@ public class UsuarioService {
 
     // ── UPDATE ────────────────────────────────────────────────
     @Transactional
-    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        String datosAnteriores = null;
+        String datosNuevos = null;
+
+        try {
+            datosAnteriores = objectMapper.writeValueAsString(toResponseDTO(usuario));
+        } catch (Exception e) {
+            System.err.println("Advertencia: No se pudo serializar datos anteriores: " + e.getMessage());
+        }
 
         if (dto.getNombreCompleto() != null) usuario.setNombreCompleto(dto.getNombreCompleto());
         if (dto.getCargo()          != null) usuario.setCargo(dto.getCargo());
@@ -127,23 +172,53 @@ public class UsuarioService {
         }
 
         usuario.setUpdatedAt(Instant.now());
-        return toResponseDTO(usuarioRepository.save(usuario));
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        try {
+            datosNuevos = objectMapper.writeValueAsString(toResponseDTO(usuarioGuardado));
+        } catch (Exception e) {
+            System.err.println("Advertencia: No se pudo serializar datos nuevos: " + e.getMessage());
+        }   
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_EDITAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+            "Editar usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
+            datosAnteriores, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── UPDATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+        return actualizarUsuario(id, dto, null, "Sistema", null, null);
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
     @Transactional
-    public void eliminarUsuario(Long id) {
+    public void eliminarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         usuario.setEstadoActivo(false);
         usuario.setEstadoCuenta("INACTIVO");
         usuario.setUpdatedAt(Instant.now());
         usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_ELIMINAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+            "Eliminar usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+    }
+
+    // ── DELETE (overload sin auditoría para compatibilidad) ────────────
+    @Transactional
+    public void eliminarUsuario(Long id) {
+        eliminarUsuario(id, null, "Sistema", null, null);
     }
 
     // ── APROBAR solicitud pendiente ───────────────────────────
     @Transactional
-    public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId) {
+    public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         usuario.setEstadoCuenta("ACTIVO");
@@ -159,30 +234,70 @@ public class UsuarioService {
             usuario.setEmpresa(empresa);
         }
         usuario.setUpdatedAt(Instant.now());
-        return toResponseDTO(usuarioRepository.save(usuario));
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_APROBAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+            "Aprobar usuario pendiente: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── APROBAR (overload sin auditoría para compatibilidad) ────────────
+    @Transactional
+    public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId) {
+        return aprobarUsuario(id, rolId, empresaId, null, "Sistema", null, null);
     }
 
     // ── RECHAZAR solicitud pendiente ──────────────────────────
     @Transactional
-    public UsuarioResponseDTO rechazarUsuario(Long id) {
+    public UsuarioResponseDTO rechazarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         usuario.setEstadoCuenta("INACTIVO");
         usuario.setEstadoActivo(false);
         usuario.setUpdatedAt(Instant.now());
-        return toResponseDTO(usuarioRepository.save(usuario));
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_RECHAZAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+            "Rechazar usuario pendiente: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── RECHAZAR (overload sin auditoría para compatibilidad) ────────────
+    @Transactional
+    public UsuarioResponseDTO rechazarUsuario(Long id) {
+        return rechazarUsuario(id, null, "Sistema", null, null);
     }
 
     // ── BLOQUEAR / DESBLOQUEAR ────────────────────────────────
     @Transactional
-    public UsuarioResponseDTO toggleBloquear(Long id) {
+    public UsuarioResponseDTO toggleBloquear(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         boolean bloquear = !Boolean.TRUE.equals(usuario.getCuentaBloqueada());
         usuario.setCuentaBloqueada(bloquear);
         usuario.setEstadoCuenta(bloquear ? "BLOQUEADO" : "ACTIVO");
         usuario.setUpdatedAt(Instant.now());
-        return toResponseDTO(usuarioRepository.save(usuario));
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        String accion = bloquear ? AuditoriaService.ACCION_BLOQUEAR_USUARIO : AuditoriaService.ACCION_DESBLOQUEAR_USUARIO;
+        String descripcion = (bloquear ? "Bloquear" : "Desbloquear") + " usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")";
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            accion, AuditoriaService.MODULO_USUARIOS, descripcion,
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── BLOQUEAR (overload sin auditoría para compatibilidad) ──────────
+    @Transactional
+    public UsuarioResponseDTO toggleBloquear(Long id) {
+        return toggleBloquear(id, null, "Sistema", null, null);
     }
 
     // ── EXPORTAR CSV ──────────────────────────────────────────
@@ -227,7 +342,8 @@ public class UsuarioService {
     }
 
     private String hashPassword(String password) {
-        return Integer.toHexString(password.hashCode());
+        // NoOpPasswordEncoder compara en texto plano — guardamos sin transformar
+        return password;
     }
 
     private String escapeCsv(String val) {

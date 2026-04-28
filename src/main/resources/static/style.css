@@ -405,6 +405,7 @@ select.form-control {
   transition: background .15s, color .15s;
 }
 .nav-subitem:hover { background: rgba(255,255,255,.07); color: #fff; }
+.nav-subitem.active { background: rgba(46,204,113,.15); color: #2ECC71; font-weight: 600; }
 
 /* ── NOTIFICATION PAGE ──────────────────────── */
 .notif-card {

@@ -1,0 +1,135 @@
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+</head>
+<body>
+
+<th:block th:fragment="chatbot">
+
+  <!-- ── Floating bubble ── -->
+  <button id="chatbot-bubble"
+          onclick="toggleChatbot()"
+          style="display:none;"
+          aria-label="Abrir asistente La Buena Cajita">
+    <img th:src="@{/assets/images/mascota.png}"
+         src="/assets/images/mascota.png"
+         alt="La Buena Cajita" />
+  </button>
+
+  <!-- ── Chat panel ── -->
+  <div id="chatbot-panel" style="display:none;" role="dialog" aria-label="Asistente La Buena Cajita">
+
+    <div class="chat-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img th:src="@{/assets/images/mascota.png}"
+             src="/assets/images/mascota.png"
+             alt="La Buena Cajita" />
+        <div>
+          <div class="chat-title">La Buena Cajita</div>
+          <div class="chat-status">
+            <span style="display:inline-block;width:6px;height:6px;
+                         background:#2ECC71;border-radius:50%;margin-right:4px;"></span>
+            En línea
+          </div>
+        </div>
+      </div>
+      <button class="chat-close-btn"
+              onclick="toggleChatbot()"
+              aria-label="Cerrar chat">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">
+        <div class="bubble">
+          ¡Hola! Soy La Buena Cajita, tu asistente de Recíclame.
+          ¿En qué puedo ayudarte hoy?
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <input type="text"
+             class="chat-input"
+             id="chat-input"
+             placeholder="Pregúntame sobre normativas o economía circular..."
+             onkeypress="if(event.key==='Enter') sendChatMessage()" />
+      <button class="chat-send-btn"
+              onclick="sendChatMessage()"
+              aria-label="Enviar mensaje">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Chatbot JS (inicialización segura para MPA) ── -->
+  <script>
+  (function () {
+    'use strict';
+
+    // Mostrar el bubble al cargar
+    function initChatbot() {
+      var bubble = document.getElementById('chatbot-bubble');
+      if (bubble) {
+        bubble.style.display = 'flex';
+      }
+    }
+
+    // Definir toggleChatbot solo si no está ya declarada
+    if (typeof window.toggleChatbot === 'undefined') {
+      window.toggleChatbot = function () {
+        var panel  = document.getElementById('chatbot-panel');
+        var bubble = document.getElementById('chatbot-bubble');
+        if (!panel || !bubble) return;
+
+        var isOpen = panel.style.display === 'flex';
+        panel.style.display  = isOpen ? 'none' : 'flex';
+        bubble.style.display = isOpen ? 'flex' : 'none';
+      };
+    }
+
+    // Definir sendChatMessage solo si no está ya declarada
+    if (typeof window.sendChatMessage === 'undefined') {
+      window.sendChatMessage = function () {
+        var input = document.getElementById('chat-input');
+        var msgs  = document.getElementById('chat-messages');
+        if (!input || !msgs) return;
+
+        var msg = input.value.trim();
+        if (!msg) return;
+
+        // Mensaje del usuario (escapado para seguridad)
+        var userMsgHtml = '<div class="chat-msg user"><div class="bubble">' +
+                          msg.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+                          '</div></div>';
+        msgs.innerHTML += userMsgHtml;
+        input.value = '';
+        msgs.scrollTop = msgs.scrollHeight;
+
+        // Respuesta del bot (simulada en demo)
+        setTimeout(function () {
+          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' +
+                           'Gracias por tu mensaje. Estoy en modo demo.' +
+                           '</div></div>';
+          msgs.innerHTML += botMsgHtml;
+          msgs.scrollTop = msgs.scrollHeight;
+        }, 800);
+      };
+    }
+
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initChatbot);
+    } else {
+      initChatbot();
+    }
+
+  })();
+  </script>
+
+</th:block>
+
+</body>
+</html>
