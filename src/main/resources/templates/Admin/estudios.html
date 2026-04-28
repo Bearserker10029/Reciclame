@@ -266,6 +266,7 @@
         <tbody id="table-body">
           <tr th:each="e, iStat : ${estudios}"
               class="estudio-row"
+              th:data-id="${e.id}"
               th:data-titulo="${e.titulo}"
               th:data-descripcion="${e.descripcionBreve}"
               th:data-anio="${e.anio}"
@@ -300,21 +301,21 @@
             <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo lectura</span></td>
             <!-- Ver -->
             <td class="text-center">
-              <button class="btn-ver"
-                      th:onclick="'openModal(&quot;' + ${e.titulo} + '&quot;,&quot;' + (${e.descripcionBreve} ?: '') + '&quot;,&quot;' + (${e.anio} ?: '') + '&quot;,&quot;' + (${e.archivoTipoMime} ?: '') + '&quot;,&quot;' + (${e.archivoUrl} ?: '#') + '&quot;)'">
+              <button class="btn-ver" onclick="openModalFromRow(this)">
                 <i class="fas fa-eye"></i> Ver
               </button>
             </td>
             <!-- Editar / Eliminar -->
             <td class="text-center">
               <div style="display:flex;gap:6px;justify-content:center;">
-                <a th:href="'/admin/estudios/editar/' + ${e.id}"
+                <a th:href="@{/admin/estudios/editar/{id}(id=${e.id})}"
                    style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:1.5px solid #E5E7EB;background:#fff;color:#3498DB;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;"
                    onmouseover="this.style.borderColor='#3498DB';this.style.background='rgba(52,152,219,.06)'"
                    onmouseout="this.style.borderColor='#E5E7EB';this.style.background='#fff'">
                   <i class="fas fa-edit"></i> Editar
                 </a>
-                <button th:onclick="|eliminarEstudio(${e.id})|"
+                <button th:data-id="${e.id}"
+                        onclick="eliminarEstudio(this.dataset.id)"
                         style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:1.5px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;"
                         onmouseover="this.style.borderColor='#E74C3C';this.style.background='rgba(231,76,60,.06)'"
                         onmouseout="this.style.borderColor='#E5E7EB';this.style.background='#fff'">
@@ -431,6 +432,17 @@
   }
   document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
+  function openModalFromRow(btn) {
+    var row = btn.closest('tr');
+    openModal(
+      row.dataset.titulo     || '—',
+      row.dataset.descripcion || '—',
+      row.dataset.anio       || '—',
+      row.dataset.mime       || '',
+      row.dataset.url        || '#'
+    );
+  }
+
   function openModal(titulo, descripcion, anio, mime, url) {
     var isPdf = mime && mime.toLowerCase().indexOf('pdf') > -1;
     var formato = isPdf ? 'PDF — Infografía / Reporte' : 'PPTX — Presentación';
@@ -460,10 +472,13 @@
         var data = await res.json();
         throw new Error(data.error || 'Error al eliminar');
       }
-      // Eliminar fila de la tabla sin recargar
-      var fila = document.querySelector('tr button[onclick*="eliminarEstudio(' + id + ')"]');
-      if (fila) fila.closest('tr').remove();
-      window.location.reload();
+      var fila = document.querySelector('.estudio-row[data-id="' + id + '"]');
+      if (fila) {
+        fila.style.transition = 'opacity .4s, transform .4s';
+        fila.style.opacity    = '0';
+        fila.style.transform  = 'translateX(20px)';
+        setTimeout(function() { fila.remove(); }, 420);
+      }
     } catch(e) {
       alert('Error: ' + e.message);
     }

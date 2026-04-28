@@ -275,6 +275,7 @@
                     th:data-id="${n.id}"
                     th:data-ambito="${n.ambito}"
                     th:data-titulo="${n.titulo}"
+                    th:data-anio="${n.anio}"
                     th:data-clasificacion="${n.clasificacion}"
                     th:data-estado="${n.estadoNormativaNombre}"
                     th:data-tema="${n.tematicaCodigo}"
@@ -324,7 +325,7 @@
                   <td class="text-center">
                     <button th:if="${n.archivoUrl != null and n.archivoUrl != ''}"
                             class="btn-ver"
-                            th:onclick="'openNormVisor(' + ${n.id} + ',\'' + ${n.titulo?.replace(&quot;'&quot;,&quot;&quot;)} + '\',' + ${n.anio} + ',\'' + ${n.archivoUrl} + '\')'">
+                            onclick="openNormVisorFromRow(this)">
                       <i class="fas fa-eye"></i> Ver
                     </button>
                     <span th:unless="${n.archivoUrl != null and n.archivoUrl != ''}"
@@ -346,7 +347,8 @@
                          onmouseout="this.style.background='rgba(52,152,219,.07)';this.style.color='#2471A3'">
                         <i class="fas fa-pen"></i> Editar
                       </a>
-                      <button th:onclick="'eliminarNormativa(' + ${n.id} + ')'"
+                      <button th:data-id="${n.id}"
+                              onclick="eliminarNormativa(this.dataset.id)"
                               style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
                                      border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.07);
                                      color:#C0392B;font-size:11px;font-weight:700;cursor:pointer;
@@ -670,17 +672,62 @@
     }
 
     // ════════════════════════════════════════════════════════
-    //  VISOR MODAL
+    //  LIMPIEZA DE BACKDROP (previene página congelada)
+    //  Llama cada vez que un modal se cierra o al montar la vista.
     // ════════════════════════════════════════════════════════
-    function openNormVisor(id, titulo, anio, url) {
-      document.getElementById('mnorm-titulo').textContent = titulo || '—';
-      document.getElementById('mnorm-codigo').textContent = id    || '—';
-      document.getElementById('mnorm-anio').textContent   = anio  || '—';
-      var link = document.getElementById('mnorm-link');
-      if (link) link.href = url || '#';
-      var modal = new bootstrap.Modal(document.getElementById('modal-norma'));
-      modal.show();
+    function limpiarModales() {
+      document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
+      document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
     }
+
+    // Limpieza preventiva al cargar la vista (por si el chatbot dejó backdrop)
+    document.addEventListener('DOMContentLoaded', limpiarModales);
+
+    // ════════════════════════════════════════════════════════
+    //  VISOR MODAL — instancia única en caché
+    // ════════════════════════════════════════════════════════
+    var _normVisorModal = null;
+
+    function openNormVisorFromRow(btn) {
+      try {
+        var row = btn.closest('tr');
+        openNormVisor(
+          row.dataset.id     || '—',
+          row.dataset.titulo || '—',
+          row.dataset.anio   || '—',
+          row.dataset.url    || '#'
+        );
+      } catch(e) {
+        console.error('openNormVisorFromRow error:', e);
+        limpiarModales();
+      }
+    }
+
+    function openNormVisor(id, titulo, anio, url) {
+      try {
+        document.getElementById('mnorm-titulo').textContent = titulo || '—';
+        document.getElementById('mnorm-codigo').textContent = id     || '—';
+        document.getElementById('mnorm-anio').textContent   = anio   || '—';
+        var link = document.getElementById('mnorm-link');
+        if (link) link.href = url || '#';
+
+        var el = document.getElementById('modal-norma');
+        // Reutilizar instancia existente; nunca crear dos sobre el mismo elemento
+        if (!_normVisorModal) {
+          _normVisorModal = new bootstrap.Modal(el, { backdrop: true, keyboard: true });
+        }
+        _normVisorModal.show();
+      } catch(e) {
+        console.error('openNormVisor error:', e);
+        limpiarModales();
+      }
+    }
+
+    // Limpiar backdrop cada vez que el modal se cierra
+    document.getElementById('modal-norma').addEventListener('hidden.bs.modal', function() {
+      limpiarModales();
+    });
 
     // ════════════════════════════════════════════════════════
     //  ELIMINAR normativa (borrado lógico)

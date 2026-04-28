@@ -30,7 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/socio/**").hasRole("SOCIO")
                         .requestMatchers("/visualizador/**").hasRole("VISUALIZADOR")
