@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${isEdit} ? 'Recíclame — Editar Estudio' : 'Recíclame — Nuevo Estudio'">Recíclame — Estudio</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if(typeof navTo==='undefined'){function navTo(p){window.location.href='/admin/'+p;}}</script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F0F4F8;}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ── Page header ── */
+    .form-hero{
+      background:linear-gradient(135deg,#1B3A5C 0%,#0f2540 60%,#1a5c3a 100%);
+      border-radius:20px;padding:24px 32px;margin-bottom:28px;
+      box-shadow:0 8px 32px rgba(27,58,92,.3);
+      animation:fadeUp .4s ease both;position:relative;overflow:hidden;
+    }
+    .form-hero::before{content:'';position:absolute;top:-50px;right:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(46,204,113,.18) 0%,transparent 70%);}
+
+    /* ── Back button ── */
+    .btn-back{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 16px;border-radius:9px;
+      border:1.5px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.08);color:rgba(255,255,255,.85);
+      font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;
+      transition:all .2s;text-decoration:none;
+    }
+    .btn-back:hover{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.5);}
+
+    /* ── Layout grid ── */
+    .form-grid{
+      display:grid;
+      grid-template-columns:1fr 360px;
+      gap:24px;
+      align-items:start;
+    }
+    @media(max-width:900px){.form-grid{grid-template-columns:1fr;}}
+
+    /* ── Cards ── */
+    .form-card{
+      background:#fff;border-radius:16px;
+      box-shadow:0 2px 16px rgba(0,0,0,.07);
+      padding:24px 28px;margin-bottom:20px;
+      animation:fadeUp .4s ease both;
+    }
+    .form-card:last-child{margin-bottom:0;}
+    .card-title{
+      font-size:13px;font-weight:800;color:#1B3A5C;
+      margin-bottom:18px;display:flex;align-items:center;gap:8px;
+      padding-bottom:12px;border-bottom:1px solid #F0F4F8;
+    }
+    .card-title i{color:#2ECC71;}
+
+    /* ── Fields ── */
+    .field{margin-bottom:16px;}
+    .field:last-child{margin-bottom:0;}
+    .field label{
+      display:block;font-size:12px;font-weight:600;color:#374151;
+      margin-bottom:5px;
+    }
+    .field label .req{color:#E74C3C;}
+    .field label .opt{font-weight:400;color:#9CA3AF;font-size:11px;}
+    .field input, .field select, .field textarea{
+      width:100%;border:1.5px solid #E5E7EB;border-radius:10px;
+      padding:10px 14px;font-size:13px;font-family:inherit;color:#374151;
+      transition:border-color .2s,box-shadow .2s;background:#fff;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus{
+      outline:none;border-color:#2ECC71;
+      box-shadow:0 0 0 3px rgba(46,204,113,.1);
+    }
+    .field textarea{resize:vertical;min-height:100px;}
+    .field .char-count{font-size:10px;color:#9CA3AF;text-align:right;margin-top:3px;}
+
+    /* ── Two-col row ── */
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    @media(max-width:560px){.two-col{grid-template-columns:1fr;}}
+
+    /* ── File drop zone ── */
+    .drop-zone{
+      border:2px dashed #D1D5DB;border-radius:12px;
+      padding:28px 20px;text-align:center;cursor:pointer;
+      transition:all .25s;position:relative;
+    }
+    .drop-zone:hover,.drop-zone.drag-over{
+      border-color:#2ECC71;background:rgba(46,204,113,.04);
+    }
+    .drop-zone input[type=file]{
+      position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+    }
+    .drop-zone i{font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;transition:color .2s;}
+    .drop-zone:hover i,.drop-zone.drag-over i{color:#2ECC71;}
+    .drop-zone .dz-text{font-size:13px;color:#6B7280;font-weight:500;}
+    .drop-zone .dz-hint{font-size:11px;color:#9CA3AF;margin-top:4px;}
+    #file-preview{
+      display:none;margin-top:12px;padding:10px 14px;
+      background:#F0FFF6;border:1px solid rgba(46,204,113,.2);
+      border-radius:9px;
+    }
+    #file-preview .fn{font-size:13px;font-weight:600;color:#27AE60;}
+    #file-preview .fs{font-size:11px;color:#9CA3AF;}
+
+    /* ── Etiquetas checkboxes grid ── */
+    .etiquetas-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+      gap:8px;max-height:220px;overflow-y:auto;padding:4px 2px;
+    }
+    .etiq-check{
+      display:flex;align-items:center;gap:7px;
+      padding:7px 10px;border-radius:8px;border:1.5px solid #E5E7EB;
+      cursor:pointer;transition:all .15s;font-size:12px;color:#374151;
+    }
+    .etiq-check:has(input:checked){
+      border-color:#2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-weight:600;
+    }
+    .etiq-check input{
+      width:14px;height:14px;accent-color:#2ECC71;
+      border:none;padding:0;cursor:pointer;
+    }
+
+    /* ── Toggle visible ── */
+    .toggle-wrap{display:flex;align-items:center;gap:10px;}
+    .toggle-wrap input[type=checkbox]{
+      width:40px;height:22px;appearance:none;
+      background:#D1D5DB;border-radius:999px;cursor:pointer;
+      position:relative;transition:background .2s;
+      border:none;padding:0;flex-shrink:0;
+    }
+    .toggle-wrap input[type=checkbox]:checked{background:#2ECC71;}
+    .toggle-wrap input[type=checkbox]::after{
+      content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+      background:#fff;top:3px;left:3px;transition:left .2s;
+      box-shadow:0 1px 4px rgba(0,0,0,.2);
+    }
+    .toggle-wrap input[type=checkbox]:checked::after{left:21px;}
+    .toggle-label{font-size:13px;color:#374151;cursor:pointer;}
+
+    /* ── Submit button ── */
+    .btn-submit{
+      width:100%;padding:13px;border-radius:12px;border:none;
+      background:linear-gradient(135deg,#2ECC71,#27AE60);
+      color:#fff;font-size:14px;font-weight:800;cursor:pointer;
+      font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;
+      box-shadow:0 6px 20px rgba(46,204,113,.35);
+      transition:all .25s;
+    }
+    .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(46,204,113,.5);}
+    .btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+    /* ── Error banner ── */
+    #form-error{
+      display:none;background:#FEF2F2;border:1px solid #FCA5A5;
+      color:#B91C1C;padding:12px 16px;border-radius:10px;
+      font-size:13px;margin-bottom:16px;
+    }
+
+    /* ── Toast ── */
+    #ef-toast{
+      position:fixed;bottom:28px;right:28px;z-index:9999;
+      padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;
+      box-shadow:0 8px 32px rgba(0,0,0,.2);opacity:0;transition:opacity .3s;
+      pointer-events:none;display:flex;align-items:center;gap:10px;
+    }
+    #ef-toast.show{opacity:1;}
+    #ef-toast.success{background:#1E3A2F;color:#2ECC71;border:1px solid rgba(46,204,113,.3);}
+    #ef-toast.error  {background:#3A1E1E;color:#E74C3C;border:1px solid rgba(231,76,60,.3);}
+
+    /* ── Existing file info ── */
+    .existing-file{
+      display:flex;align-items:center;gap:10px;padding:10px 14px;
+      background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;margin-bottom:10px;
+    }
+    .existing-file i{color:#E74C3C;font-size:20px;}
+    .existing-file .info{flex:1;}
+    .existing-file .info .name{font-size:12px;font-weight:600;color:#374151;word-break:break-all;}
+    .existing-file .info .hint{font-size:11px;color:#9CA3AF;}
+  </style>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+
+    <!-- ══ HERO ══ -->
+    <div class="form-hero">
+      <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:46px;height:46px;border-radius:13px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
+            <i th:class="${isEdit} ? 'fas fa-edit' : 'fas fa-plus-circle'" style="color:#2ECC71;font-size:19px;"></i>
+          </div>
+          <div>
+            <h1 style="font-size:20px;font-weight:800;color:#fff;margin:0;"
+                th:text="${isEdit} ? 'Editar Estudio' : 'Nuevo Estudio'">Nuevo Estudio</h1>
+            <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
+               th:text="${isEdit} ? ('Modificando: ' + ${estudio.titulo}) : 'Completa los datos del nuevo documento'">
+               Completa los datos del nuevo documento</p>
+          </div>
+        </div>
+        <a href="/admin/estudios" class="btn-back">
+          <i class="fas fa-arrow-left"></i> Volver a Estudios
+        </a>
+      </div>
+    </div>
+
+    <!-- ══ ERROR BANNER ══ -->
+    <div id="form-error"></div>
+
+    <!-- ══ FORM GRID ══ -->
+    <div class="form-grid">
+
+      <!-- ── Columna izquierda: campos principales ── -->
+      <div>
+
+        <!-- INFORMACIÓN BÁSICA -->
+        <div class="form-card">
+          <div class="card-title">
+            <i class="fas fa-info-circle"></i> Información Básica
+          </div>
+          <div class="field">
+            <label>Título <span class="req">*</span></label>
+            <input id="f-titulo" type="text" maxlength="300" placeholder="Ej: Informe de Economía Circular 2024"
+                   th:value="${isEdit ? estudio.titulo : ''}" />
+            <div class="char-count"><span id="cnt-titulo">0</span>/300</div>
+          </div>
+          <div class="field">
+            <label>Descripción breve <span class="opt">(objetivo del documento)</span></label>
+            <textarea id="f-descripcion" maxlength="500" rows="3"
+                      placeholder="Resumen de una línea del propósito del estudio…"
+                      th:text="${isEdit ? estudio.descripcionBreve : ''}"></textarea>
+            <div class="char-count"><span id="cnt-desc">0</span>/500</div>
+          </div>
+          <div class="field">
+            <label>Resumen completo <span class="opt">(opcional)</span></label>
+            <textarea id="f-resumen" rows="5"
+                      placeholder="Contenido extendido, metodología, hallazgos…"
+                      th:text="${isEdit ? estudio.resumen : ''}"></textarea>
+          </div>
+        </div>
+
+        <!-- METADATOS -->
+        <div class="form-card" style="animation-delay:.08s">
+          <div class="card-title">
+            <i class="fas fa-list-alt"></i> Metadatos
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label>Autor <span class="opt">(persona u organización)</span></label>
+              <input id="f-autor" type="text" maxlength="200" placeholder="Ej: MINAM, Dirección Técnica…"
+                     th:value="${isEdit ? estudio.autor : ''}" />
+            </div>
+            <div class="field">
+              <label>Año de publicación</label>
+              <input id="f-anio" type="number" min="1980" max="2100" placeholder="Ej: 2024"
+                     th:value="${isEdit ? estudio.anio : ''}" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Fecha exacta del estudio <span class="opt">(opcional)</span></label>
+            <input id="f-fecha" type="date"
+                   th:value="${isEdit and estudio.fechaEstudio != null ? #temporals.format(estudio.fechaEstudio,'yyyy-MM-dd') : ''}" />
+          </div>
+          <div class="field">
+            <label>Temática <span class="req">*</span></label>
+            <select id="f-tematica">
+              <option value="">Seleccionar temática…</option>
+              <option th:each="t : ${tematicas}"
+                      th:value="${t.id}"
+                      th:text="${t.codigo + ' — ' + t.nombre}"
+                      th:selected="${isEdit and estudio.tematicaId != null and estudio.tematicaId == t.id}">EC</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Normativa relacionada <span class="opt">(opcional)</span></label>
+            <select id="f-normativa">
+              <option value="">Sin normativa vinculada</option>
+              <option th:each="n : ${normativas}"
+                      th:value="${n.id}"
+                      th:text="${n.titulo}"
+                      th:selected="${isEdit and estudio.normativaRelacionadaId != null and estudio.normativaRelacionadaId == n.id}">Normativa</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ETIQUETAS -->
+        <div class="form-card" style="animation-delay:.14s">
+          <div class="card-title">
+            <i class="fas fa-tags"></i> Etiquetas
+            <span style="font-size:10px;font-weight:500;color:#9CA3AF;margin-left:4px;">(selecciona todas las que apliquen)</span>
+          </div>
+          <div th:if="${#lists.isEmpty(etiquetas)}"
+               style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
+            <i class="fas fa-tag" style="display:block;font-size:24px;margin-bottom:8px;color:#D1D5DB;"></i>
+            No hay etiquetas configuradas. <a href="/admin/diccionarios" style="color:#2ECC71;">Agregar en Diccionarios</a>
+          </div>
+          <div class="etiquetas-grid" th:unless="${#lists.isEmpty(etiquetas)}">
+            <label th:each="et : ${etiquetas}" class="etiq-check">
+              <input type="checkbox" class="etiq-input"
+                     th:value="${et.id}"
+                     th:checked="${isEdit and estudio.etiquetasIds != null and #lists.contains(estudio.etiquetasIds, et.id)}" />
+              <span th:text="${et.nombre}">Etiqueta</span>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Columna derecha: archivo + visibilidad + acciones ── -->
+      <div>
+
+        <!-- ARCHIVO -->
+        <div class="form-card">
+          <div class="card-title">
+            <i class="fas fa-file-upload"></i> Archivo del Documento
+          </div>
+
+          <!-- Vista previa del archivo existente (solo en edición) -->
+          <div th:if="${isEdit and estudio.archivoUrl != null}" class="existing-file">
+            <i class="fas fa-file-pdf"></i>
+            <div class="info">
+              <div class="name">Archivo actual</div>
+              <div class="hint">Sube un nuevo archivo solo si quieres reemplazarlo</div>
+            </div>
+            <a th:href="${estudio.archivoUrl}" target="_blank"
+               style="font-size:11px;color:#2ECC71;font-weight:600;text-decoration:none;">
+              <i class="fas fa-eye"></i> Ver
+            </a>
+          </div>
+
+          <div class="drop-zone" id="drop-zone"
+               ondragover="event.preventDefault();this.classList.add('drag-over')"
+               ondragleave="this.classList.remove('drag-over')"
+               ondrop="onFileDrop(event)">
+            <input type="file" id="f-archivo" accept=".pdf,.pptx,.ppt,.docx,.xlsx"
+                   onchange="onFileChange(this)" />
+            <i class="fas fa-cloud-upload-alt"></i>
+            <div class="dz-text">Arrastra el archivo aquí o haz clic para seleccionarlo</div>
+            <div class="dz-hint">PDF, PPTX, DOCX · Máximo 50 MB</div>
+          </div>
+          <div id="file-preview">
+            <div class="fn" id="file-name">—</div>
+            <div class="fs" id="file-size">—</div>
+          </div>
+          <div th:unless="${isEdit}"
+               style="margin-top:8px;font-size:11px;color:#E74C3C;font-weight:600;">
+            * El archivo es obligatorio para crear un estudio.
+          </div>
+        </div>
+
+        <!-- VISIBILIDAD -->
+        <div class="form-card" style="animation-delay:.06s">
+          <div class="card-title">
+            <i class="fas fa-eye"></i> Visibilidad
+          </div>
+          <div class="toggle-wrap">
+            <input type="checkbox" id="f-publico"
+                   th:checked="${isEdit ? estudio.esPublico : false}" />
+            <label for="f-publico" class="toggle-label">
+              <span id="publico-label" th:text="${isEdit and estudio.esPublico} ? 'Visible para socios' : 'Borrador (no visible)'">
+                Borrador (no visible)
+              </span>
+            </label>
+          </div>
+          <p style="font-size:11px;color:#9CA3AF;margin-top:8px;">
+            Los documentos en borrador solo son visibles para administradores.
+            Actívalo cuando esté listo para publicar.
+          </p>
+        </div>
+
+        <!-- ACCIÓN -->
+        <div class="form-card" style="animation-delay:.1s">
+          <div class="card-title">
+            <i class="fas fa-save"></i> Guardar
+          </div>
+          <button class="btn-submit" id="btn-submit" onclick="submitForm()">
+            <i th:class="${isEdit} ? 'fas fa-save' : 'fas fa-plus-circle'"></i>
+            <span th:text="${isEdit} ? 'Guardar cambios' : 'Crear estudio'">Crear estudio</span>
+          </button>
+          <div style="margin-top:10px;text-align:center;">
+            <a href="/admin/estudios"
+               style="font-size:12px;color:#9CA3AF;text-decoration:none;font-weight:500;">
+              Cancelar y volver
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /form-grid -->
+
+    </main>
+  </div>
+
+  <!-- ══ CHATBOT ══ -->
+  <th:block th:replace="components/chatbot :: chatbot"></th:block>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div id="ef-toast"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+     DATA ISLANDS  (Thymeleaf → JavaScript)
+════════════════════════════════════════════════════════════ -->
+<script th:inline="javascript">
+  var IS_EDIT   = /*[[${isEdit}]]*/ false;
+  var ESTUDIO_ID = /*[[${isEdit ? estudio.id : null}]]*/ null;
+</script>
+
+<!-- ════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ─── Contador de caracteres ────────────────────────────────────
+function initCharCounter(inputId, counterId) {
+  var el = document.getElementById(inputId);
+  var cnt = document.getElementById(counterId);
+  if (!el || !cnt) return;
+  cnt.textContent = el.value.length;
+  el.addEventListener('input', function() { cnt.textContent = this.value.length; });
+}
+initCharCounter('f-titulo',      'cnt-titulo');
+initCharCounter('f-descripcion', 'cnt-desc');
+
+// ─── Toggle label ─────────────────────────────────────────────
+document.getElementById('f-publico').addEventListener('change', function() {
+  document.getElementById('publico-label').textContent =
+    this.checked ? 'Visible para socios' : 'Borrador (no visible)';
+});
+
+// ─── File handlers ────────────────────────────────────────────
+function onFileChange(input) {
+  if (input.files && input.files[0]) showFilePreview(input.files[0]);
+}
+function onFileDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').classList.remove('drag-over');
+  var file = e.dataTransfer.files[0];
+  if (!file) return;
+  document.getElementById('f-archivo').files = e.dataTransfer.files;
+  showFilePreview(file);
+}
+function showFilePreview(file) {
+  var preview = document.getElementById('file-preview');
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = (file.size / (1024*1024)).toFixed(2) + ' MB';
+  preview.style.display = 'block';
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function showToast(msg, type) {
+  var t = document.getElementById('ef-toast');
+  t.innerHTML = '<i class="fas ' + (type==='success' ? 'fa-check-circle' : 'fa-exclamation-circle') + '"></i><span>' + msg + '</span>';
+  t.className = 'show ' + (type || 'success');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function(){ t.classList.remove('show'); }, 3500);
+}
+
+// ─── Submit ───────────────────────────────────────────────────
+async function submitForm() {
+  var errBanner = document.getElementById('form-error');
+  errBanner.style.display = 'none';
+
+  var titulo   = document.getElementById('f-titulo').value.trim();
+  var tematica = document.getElementById('f-tematica').value;
+  var archivo  = document.getElementById('f-archivo').files[0];
+
+  if (!titulo) {
+    errBanner.textContent = 'El título es obligatorio.';
+    errBanner.style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    return;
+  }
+  if (!tematica) {
+    errBanner.textContent = 'Debes seleccionar una temática.';
+    errBanner.style.display = 'block';
+    return;
+  }
+  if (!IS_EDIT && !archivo) {
+    errBanner.textContent = 'El archivo es obligatorio para crear un estudio.';
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  // Recoger etiquetas seleccionadas
+  var etiquetasIds = Array.from(document.querySelectorAll('.etiq-input:checked'))
+                          .map(function(cb){ return parseInt(cb.value, 10); });
+
+  // Armar el JSON del DTO
+  var estudioData = {
+    titulo:                titulo,
+    descripcionBreve:      document.getElementById('f-descripcion').value.trim() || null,
+    resumen:               document.getElementById('f-resumen').value.trim()     || null,
+    tematicaId:            parseInt(tematica, 10),
+    autor:                 document.getElementById('f-autor').value.trim()       || null,
+    anio:                  document.getElementById('f-anio').value ? parseInt(document.getElementById('f-anio').value, 10) : null,
+    fechaEstudio:          document.getElementById('f-fecha').value || null,
+    esPublico:             document.getElementById('f-publico').checked,
+    normativaRelacionadaId: document.getElementById('f-normativa').value
+                              ? parseInt(document.getElementById('f-normativa').value, 10)
+                              : null,
+    etiquetasIds:          etiquetasIds
+  };
+
+  // Construir FormData
+  var formData = new FormData();
+  formData.append('estudio', new Blob([JSON.stringify(estudioData)], {type: 'application/json'}));
+  if (archivo) {
+    formData.append('archivo', archivo);
+  }
+
+  // Deshabilitar botón
+  var btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
+
+  try {
+    var url    = IS_EDIT ? '/api/estudios/' + ESTUDIO_ID : '/api/estudios';
+    var method = IS_EDIT ? 'PUT' : 'POST';
+
+    var res  = await fetch(url, {method: method, body: formData});
+    var data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Error al guardar el estudio');
+
+    showToast(IS_EDIT ? 'Estudio actualizado correctamente.' : 'Estudio creado correctamente.', 'success');
+    setTimeout(function(){ window.location.href = '/admin/estudios'; }, 1200);
+
+  } catch(e) {
+    errBanner.textContent = e.message;
+    errBanner.style.display = 'block';
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    btn.disabled = false;
+    btn.innerHTML = (IS_EDIT ? '<i class="fas fa-save"></i> Guardar cambios' : '<i class="fas fa-plus-circle"></i> Crear estudio');
+  }
+}
+</script>
+
+</body>
+</html>
