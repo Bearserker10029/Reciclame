@@ -528,6 +528,27 @@ CREATE INDEX idx_logs_reporte_usuario_fecha ON logs_actividad (usuario_id, creat
 CREATE INDEX idx_logs_reporte_descarga      ON logs_actividad (tipo_accion, recurso_tipo, recurso_id, created_at);
 CREATE INDEX idx_normativas_filtro          ON normativas (ambito, clasificacion, tematica_id, estado_normativa_id, tipo_normativa_id, anio);
 
+CREATE TABLE auditoria (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id BIGINT NULL,
+    usuario_nombre VARCHAR(255) NOT NULL,
+    accion VARCHAR(100) NOT NULL,
+    modulo VARCHAR(100) NOT NULL,
+    descripcion TEXT NOT NULL,
+    datos_anteriores JSON,
+    datos_nuevos JSON,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(500),
+    estado VARCHAR(20) NOT NULL DEFAULT 'EXITOSO',
+    mensaje_error TEXT,
+    fecha_accion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    estado_activo BOOLEAN NOT NULL DEFAULT TRUE,
+    INDEX idx_usuario (usuario_id),
+    INDEX idx_accion (accion),
+    INDEX idx_modulo (modulo),
+    INDEX idx_estado (estado),
+    INDEX idx_fecha (fecha_accion)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 -- ============================================================
 -- FIN DEL SCRIPT DDL
 -- ============================================================

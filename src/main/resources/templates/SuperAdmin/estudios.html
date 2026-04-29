@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,152 +8,805 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(.8)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4)
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
+      }
+    }
+
+    @keyframes glowGreen {
+
+      0%,
+      100% {
+        box-shadow: 0 4px 20px rgba(46, 204, 113, .15)
+      }
+
+      50% {
+        box-shadow: 0 4px 32px rgba(46, 204, 113, .4)
+      }
+    }
+
+    .page-enter {
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-enter {
+      animation: countUp .4s ease both;
+    }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    .filter-bar {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .1s ease both;
+    }
+
+    .filter-bar input {
+      flex: 1;
+      min-width: 200px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 9px 14px 9px 38px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      color: #374151;
+    }
+
+    .filter-bar input:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .12);
+    }
+
+    .filter-bar select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color .2s;
+    }
+
+    .filter-bar select:focus {
+      outline: none;
+      border-color: #2ECC71;
+    }
+
+    .table-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .table-card table thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .table-card table thead th {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 14px 16px;
+      border: none;
+    }
+
+    .table-card table tbody tr {
+      transition: background .2s, transform .2s;
+      border-bottom: 1px solid #F3F4F6;
+      animation: slideDown .35s ease both;
+    }
+
+    .table-card table tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .table-card table tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
+
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-solo {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .btn-ver {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-ver::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s ease;
+    }
+
+    .btn-ver:hover {
+      background: #2ECC71;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46, 204, 113, .4);
+      animation: glowGreen 1.5s ease infinite;
+    }
+
+    .btn-ver:hover::after {
+      transform: translateX(100%);
+    }
+
+    .btn-ver:active {
+      transform: translateY(0);
+    }
+
+    .file-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform .25s ease;
+    }
+
+    .table-card table tbody tr:hover .file-icon {
+      transform: rotate(-5deg) scale(1.1);
+    }
+
+    .modal-content {
+      border: none;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .25);
+    }
+
+    .modal.fade .modal-dialog {
+      transform: translateY(-20px) scale(.97);
+      transition: transform .3s ease, opacity .3s ease;
+    }
+
+    .modal.show .modal-dialog {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-header-custom {
+      background: linear-gradient(135deg, #1B3A5C, #27AE60);
+      padding: 24px 28px 20px;
+      color: #fff;
+    }
+
+    .modal-body-custom {
+      padding: 24px 28px;
+    }
+
+    .modal-footer-custom {
+      padding: 16px 28px 24px;
+      border-top: 1px solid #F3F4F6;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #F9FAFB;
+      margin-bottom: 8px;
+    }
+
+    .info-row i {
+      width: 18px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: #9CA3AF;
+    }
+
+    .btn-open-doc {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 24px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .25s ease;
+      box-shadow: 0 4px 16px rgba(46, 204, 113, .3);
+    }
+
+    .btn-open-doc:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(46, 204, 113, .5);
+      color: #fff;
+    }
+
+    .btn-cancel {
+      padding: 11px 20px;
+      border-radius: 12px;
+      border: 1.5px solid #E5E7EB;
+      background: #fff;
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+
+    .btn-cancel:hover {
+      background: #F3F4F6;
+      border-color: #D1D5DB;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 32px;
+    }
+
+    .empty-state i {
+      font-size: 52px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 16px;
+      animation: pulse 2s ease infinite;
+    }
+
+    .empty-state p {
+      color: #9CA3AF;
+      font-size: 14px;
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
   </style>
 </head>
+
 <body>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+      <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
 
-<th:block th:fragment="estudios-content">
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
-    <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
-    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
-      <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
-      <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
-    </div>
-  </div>
-
-  <!-- Filters -->
-  <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <div style="position:relative;flex:1;min-width:220px;">
-      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-      <input class="form-control" placeholder="Buscar estudios..." style="padding-left:36px;" />
-    </div>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Año: 2025–2026</option>
-      <option>Año: 2024–2025</option>
-    </select>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Todos los formatos</option>
-      <option>PDF</option>
-      <option>PPTX</option>
-    </select>
-    <div style="display:flex;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">
-      <button onclick="setView('lista')" style="padding:9px 14px;border:none;cursor:pointer;background:#1B3A5C;color:#fff;font-size:13px;" title="Vista lista"><i class="fas fa-list"></i></button>
-      <button onclick="setView('grid')" style="padding:9px 14px;border:none;cursor:pointer;background:#fff;color:#6B7280;font-size:13px;" title="Vista cuadrícula"><i class="fas fa-th"></i></button>
-    </div>
-  </div>
-
-  <!-- List view -->
-  <div id="view-lista">
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>Documento</th>
-            <th>Objetivo</th>
-            <th>Año</th>
-            <th>Formato</th>
-            <th>Acceso</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</span>
+        <div class="estudios-hero">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-folder-open" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Estudios Recíclame</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Reportes, infografías y ayudas memoria
+                    del equipo técnico</p>
+                </div>
               </div>
-            </td>
-            <td style="color:#6B7280;max-width:200px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
-            <td>2025</td>
-            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</span>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Repositorio de documentos técnicos</span>
+                </div>
+                <a href="/superadmin/estudios/crear"
+                  style="display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#2ECC71,#27AE60);color:#fff;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 4px 14px rgba(46,204,113,.35);transition:all .25s;"
+                  onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(46,204,113,.5)'"
+                  onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(46,204,113,.35)'">
+                  <i class="fas fa-plus-circle"></i> Nuevo Estudio
+                </a>
               </div>
-            </td>
-            <td style="color:#6B7280;max-width:200px;">Monitorear el impacto del programa REP en envases</td>
-            <td>2024</td>
-            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">PPTX</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</span>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" id="stats-total">—</div>
+                <div class="lbl">Total</div>
               </div>
-            </td>
-            <td style="color:#6B7280;max-width:200px;">Guía estratégica hacia la economía circular nacional</td>
-            <td>2025</td>
-            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" id="stats-pdf" style="color:#F87171;">—</div>
+                <div class="lbl">PDF</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="val" id="stats-pptx" style="color:#34D399;">—</div>
+                <div class="lbl">PPTX</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  <!-- Grid view (hidden by default) -->
-  <div id="view-grid" style="display:none;grid-template-columns:repeat(3,1fr);gap:20px;">
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
-      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de Materiales</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de envases plásticos en el Perú.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+        <div class="filter-bar">
+          <div style="position:relative;flex:1;min-width:220px;">
+            <i class="fas fa-search"
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+            <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
+          </div>
+          <select id="filter-formato" onchange="filtrarEstudios()">
+            <option value="">Todos los formatos</option>
+            <option value="pdf">PDF</option>
+            <option value="pptx">PPTX / PowerPoint</option>
+          </select>
+          <button
+            onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';filtrarEstudios();"
+            style="padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
+            onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+            onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
         </div>
-      </div>
-    </div>
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
-      <div style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2024</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del programa REP en la gestión de envases.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
-        </div>
-      </div>
-    </div>
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
-      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional hacia la economía circular.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</th:block>
 
-<script>
-function setView(view){
-  document.getElementById('view-lista').style.display=view==='lista'?'block':'none';
-  document.getElementById('view-grid').style.display=view==='grid'?'grid':'none';
-}
-function openVisor(tipo,nombre,formato,descargable){
-  alert('Visor: '+nombre+' ('+formato+') — Solo lectura');
-}
-</script>
+        <div class="table-card">
+          <div style="overflow-x:auto;">
+            <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
+              <thead>
+                <tr>
+                  <th style="width:34%;">Documento</th>
+                  <th>Objetivo</th>
+                  <th>Año</th>
+                  <th>Formato</th>
+                  <th>Acceso</th>
+                  <th class="text-center">Ver</th>
+                  <th class="text-center">Gestión</th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <tr th:each="e, iStat : ${estudios}" class="estudio-row" th:data-id="${e.id}"
+                  th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}" th:data-anio="${e.anio}"
+                  th:data-mime="${e.archivoTipoMime}" th:data-url="${e.archivoUrl}"
+                  th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                        class="file-icon" style="background:rgba(231,76,60,.1);">
+                        <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:16px;"></i>
+                      </div>
+                      <div th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                        class="file-icon" style="background:rgba(52,152,219,.1);">
+                        <i class="fas fa-file-powerpoint" style="color:#3498DB;font-size:16px;"></i>
+                      </div>
+                      <span style="font-weight:700;color:#1B3A5C;font-size:13px;" th:text="${e.titulo}">Título</span>
+                    </div>
+                  </td>
+                  <td
+                    style="color:#6B7280;font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                    th:text="${e.descripcionBreve}">—</td>
+                  <td>
+                    <span
+                      style="font-weight:700;color:#1B3A5C;font-size:13px;background:#EEF2FF;padding:3px 10px;border-radius:6px;"
+                      th:text="${e.anio}">—</span>
+                  </td>
+                  <td>
+                    <span th:if="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                      class="badge-pdf">
+                      <i class="fas fa-file-pdf" style="font-size:9px;margin-right:3px;"></i>PDF
+                    </span>
+                    <span th:unless="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')}"
+                      class="badge-pptx">
+                      <i class="fas fa-file-powerpoint" style="font-size:9px;margin-right:3px;"></i>PPTX
+                    </span>
+                  </td>
+                  <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
+                      lectura</span></td>
+                  <td class="text-center">
+                    <button class="btn-ver" onclick="openModalFromRow(this)">
+                      <i class="fas fa-eye"></i> Ver
+                    </button>
+                  </td>
+                  <td class="text-center">
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                      <a th:href="@{/superadmin/estudios/editar/{id}(id=${e.id})}"
+                        style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:1.5px solid #E5E7EB;background:#fff;color:#3498DB;font-size:11px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;"
+                        onmouseover="this.style.borderColor='#3498DB';this.style.background='rgba(52,152,219,.06)'"
+                        onmouseout="this.style.borderColor='#E5E7EB';this.style.background='#fff'">
+                        <i class="fas fa-edit"></i> Editar
+                      </a>
+                      <button th:data-id="${e.id}" onclick="eliminarEstudio(this.dataset.id)"
+                        style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:7px;border:1.5px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;"
+                        onmouseover="this.style.borderColor='#E74C3C';this.style.background='rgba(231,76,60,.06)'"
+                        onmouseout="this.style.borderColor='#E5E7EB';this.style.background='#fff'">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(estudios)}">
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <i class="fas fa-folder-open"></i>
+                      <p>No hay estudios registrados aún.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal fade" id="modal-estudio" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header-custom">
+                <div style="display:flex;align-items:center;gap:14px;">
+                  <div id="modal-icon"
+                    style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);">
+                    <i id="modal-icon-i" class="fas fa-file-pdf" style="font-size:22px;color:#fff;"></i>
+                  </div>
+                  <div>
+                    <div
+                      style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:4px;">
+                      Documento técnico</div>
+                    <h5 class="modal-title" id="modal-titulo"
+                      style="color:#fff;font-weight:800;font-size:17px;margin:0;">Título del estudio</h5>
+                  </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                  style="margin:0;"></button>
+              </div>
+              <div class="modal-body-custom">
+                <div class="info-row">
+                  <i class="fas fa-bullseye"></i>
+                  <div>
+                    <div
+                      style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:3px;">
+                      Objetivo</div>
+                    <span id="modal-descripcion" style="font-size:13px;color:#374151;line-height:1.6;">—</span>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                  <div class="info-row" style="margin-bottom:0;">
+                    <i class="fas fa-calendar"></i>
+                    <div>
+                      <div
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:3px;">
+                        Año</div>
+                      <span id="modal-anio" style="font-size:14px;font-weight:700;color:#1B3A5C;">—</span>
+                    </div>
+                  </div>
+                  <div class="info-row" style="margin-bottom:0;">
+                    <i class="fas fa-file"></i>
+                    <div>
+                      <div
+                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#9CA3AF;margin-bottom:3px;">
+                        Formato</div>
+                      <span id="modal-formato" style="font-size:14px;font-weight:700;color:#1B3A5C;">—</span>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  style="padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,rgba(46,204,113,.06),rgba(39,174,96,.04));border:1px solid rgba(46,204,113,.18);">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-info-circle" style="color:#27AE60;font-size:14px;"></i>
+                    <span style="font-size:12px;color:#374151;line-height:1.5;">Este documento es de <strong>solo
+                        lectura</strong>. Se abrirá en el visor integrado del navegador.</span>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer-custom" style="display:flex;justify-content:flex-end;gap:10px;">
+                <button class="btn-cancel" data-bs-dismiss="modal">Cancelar</button>
+                <a id="modal-link" href="#" target="_blank" class="btn-open-doc">
+                  <i class="fas fa-external-link-alt"></i> Abrir documento
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          (function () {
+            var rows = document.querySelectorAll('tr[data-titulo]');
+            var total = rows.length, pdf = 0, pptx = 0;
+            rows.forEach(function (r) {
+              var mime = (r.dataset.mime || '').toLowerCase();
+              if (mime.indexOf('pdf') > -1) pdf++; else pptx++;
+            });
+            function animateCount(id, target) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              var start = 0, dur = 800, step = 16;
+              var timer = setInterval(function () {
+                start += Math.ceil(target / (dur / step));
+                if (start >= target) { start = target; clearInterval(timer); }
+                el.textContent = start;
+              }, step);
+            }
+            animateCount('stats-total', total);
+            animateCount('stats-pdf', pdf);
+            animateCount('stats-pptx', pptx);
+          })();
+
+          function filtrarEstudios() {
+            var q = (document.getElementById('search-estudios').value || '').toLowerCase();
+            var fmt = (document.getElementById('filter-formato').value || '').toLowerCase();
+            document.querySelectorAll('.estudio-row').forEach(function (row) {
+              var titulo = (row.dataset.titulo || '').toLowerCase();
+              var desc = (row.dataset.descripcion || '').toLowerCase();
+              var mime = (row.dataset.mime || '').toLowerCase();
+              var matchQ = !q || titulo.includes(q) || desc.includes(q);
+              var matchF = !fmt || (fmt === 'pdf' ? mime.includes('pdf') : !mime.includes('pdf'));
+              row.style.display = (matchQ && matchF) ? '' : 'none';
+            });
+          }
+          document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
+
+          function openModalFromRow(btn) {
+            var row = btn.closest('tr');
+            openModal(
+              row.dataset.titulo || '—',
+              row.dataset.descripcion || '—',
+              row.dataset.anio || '—',
+              row.dataset.mime || '',
+              row.dataset.url || '#'
+            );
+          }
+
+          function openModal(titulo, descripcion, anio, mime, url) {
+            var isPdf = mime && mime.toLowerCase().indexOf('pdf') > -1;
+            var formato = isPdf ? 'PDF — Infografía / Reporte' : 'PPTX — Presentación';
+            document.getElementById('modal-titulo').textContent = titulo || '—';
+            document.getElementById('modal-descripcion').textContent = descripcion || '—';
+            document.getElementById('modal-anio').textContent = anio || '—';
+            document.getElementById('modal-formato').textContent = formato;
+            document.getElementById('modal-link').href = url || '#';
+            var icon = document.getElementById('modal-icon');
+            var iconI = document.getElementById('modal-icon-i');
+            if (isPdf) {
+              icon.style.background = 'rgba(231,76,60,.2)';
+              iconI.className = 'fas fa-file-pdf';
+            } else {
+              icon.style.background = 'rgba(52,152,219,.2)';
+              iconI.className = 'fas fa-file-powerpoint';
+            }
+            var modal = new bootstrap.Modal(document.getElementById('modal-estudio'));
+            modal.show();
+          }
+
+          async function eliminarEstudio(id) {
+            if (!confirm('¿Desactivar este estudio? Dejará de ser visible para los socios.')) return;
+            try {
+              var res = await fetch('/api/estudios/' + id, { method: 'DELETE' });
+              if (!res.ok) {
+                var data = await res.json();
+                throw new Error(data.error || 'Error al eliminar');
+              }
+              var fila = document.querySelector('.estudio-row[data-id="' + id + '"]');
+              if (fila) {
+                fila.style.transition = 'opacity .4s, transform .4s';
+                fila.style.opacity = '0';
+                fila.style.transform = 'translateX(20px)';
+                setTimeout(function () { fila.remove(); }, 420);
+              }
+            } catch (e) {
+              alert('Error: ' + e.message);
+            }
+          }
+        </script>
+
+      </main>
+    </div>
+    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+  </div>
 </body>
+
 </html>

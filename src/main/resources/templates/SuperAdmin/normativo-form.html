@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${isEdit} ? 'Editar Normativa — Recíclame' : 'Nueva Normativa — Recíclame'">Normativa — Recíclame</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F0F4F8;}
+
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+    .form-hero{
+      background:linear-gradient(135deg,#1B3A5C 0%,#0d2035 55%,#0e3322 100%);
+      border-radius:20px;padding:26px 32px;margin-bottom:24px;
+      position:relative;overflow:hidden;box-shadow:0 10px 48px rgba(27,58,92,.4);
+      animation:fadeUp .4s ease both;
+    }
+    .form-hero::before{content:'';position:absolute;top:-80px;right:-40px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(46,204,113,.18) 0%,transparent 70%);}
+
+    .form-card{
+      background:#fff;border-radius:16px;padding:24px;
+      box-shadow:0 2px 16px rgba(0,0,0,.08);margin-bottom:20px;
+      animation:fadeUp .45s ease both;
+    }
+    .card-section-title{
+      font-size:13px;font-weight:700;color:#1B3A5C;
+      margin-bottom:18px;display:flex;align-items:center;gap:8px;
+      padding-bottom:12px;border-bottom:1.5px solid #F0F4F8;
+    }
+    .card-section-title i{color:#2ECC71;}
+
+    .form-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:5px;}
+    .form-control, .form-select{
+      border:1.5px solid #E5E7EB;border-radius:9px;
+      padding:9px 13px;font-size:13px;font-family:inherit;color:#374151;
+      transition:all .2s;
+    }
+    .form-control:focus,.form-select:focus{
+      outline:none;border-color:#2ECC71;box-shadow:0 0 0 3px rgba(46,204,113,.12);
+    }
+    textarea.form-control{resize:vertical;min-height:90px;}
+
+    /* File drop zone */
+    .drop-zone{
+      border:2px dashed #D1D5DB;border-radius:12px;
+      padding:32px 20px;text-align:center;cursor:pointer;
+      transition:all .25s;background:#FAFBFC;
+    }
+    .drop-zone:hover,.drop-zone.dragover{border-color:#2ECC71;background:rgba(46,204,113,.04);}
+    .drop-zone i{font-size:32px;color:#9CA3AF;display:block;margin-bottom:10px;}
+    .drop-zone p{font-size:13px;color:#6B7280;margin:0;}
+    .drop-zone .file-name{font-size:12px;color:#27AE60;font-weight:600;margin-top:8px;}
+
+    /* Etiquetas checkboxes */
+    .etiqueta-grid{display:flex;flex-wrap:wrap;gap:8px;}
+    .etiqueta-chip{
+      display:inline-flex;align-items:center;gap:5px;
+      padding:5px 11px;border-radius:999px;border:1.5px solid #E5E7EB;
+      cursor:pointer;font-size:11px;font-weight:600;color:#6B7280;
+      background:#fff;transition:all .2s;user-select:none;
+    }
+    .etiqueta-chip input{display:none;}
+    .etiqueta-chip.selected{border-color:#2ECC71;background:rgba(46,204,113,.1);color:#27AE60;}
+
+    /* Toggle switch */
+    .toggle-wrap{display:flex;align-items:center;gap:12px;}
+    .toggle-switch{position:relative;width:46px;height:26px;flex-shrink:0;}
+    .toggle-switch input{opacity:0;width:0;height:0;}
+    .toggle-slider{
+      position:absolute;inset:0;border-radius:26px;background:#D1D5DB;
+      cursor:pointer;transition:.3s;
+    }
+    .toggle-slider::before{
+      content:'';position:absolute;left:3px;bottom:3px;
+      width:20px;height:20px;border-radius:50%;background:#fff;
+      transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2);
+    }
+    .toggle-switch input:checked + .toggle-slider{background:#2ECC71;}
+    .toggle-switch input:checked + .toggle-slider::before{transform:translateX(20px);}
+
+    /* Submit buttons */
+    .btn-submit{
+      padding:12px 28px;border-radius:11px;border:none;
+      background:linear-gradient(135deg,#2ECC71,#27AE60);
+      color:#fff;font-size:14px;font-weight:700;
+      cursor:pointer;font-family:inherit;
+      box-shadow:0 4px 14px rgba(46,204,113,.3);
+      transition:all .25s;
+    }
+    .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(46,204,113,.4);}
+    .btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+
+    .btn-cancel-link{
+      padding:12px 22px;border-radius:11px;border:1.5px solid #E5E7EB;
+      background:#fff;color:#6B7280;font-size:13px;font-weight:600;
+      cursor:pointer;font-family:inherit;text-decoration:none;
+      display:inline-flex;align-items:center;gap:6px;
+      transition:all .2s;
+    }
+    .btn-cancel-link:hover{border-color:#E74C3C;color:#E74C3C;}
+
+    /* Error banner */
+    #form-error{
+      display:none;background:#FEF2F2;border:1px solid #FCA5A5;
+      color:#B91C1C;padding:12px 16px;border-radius:10px;
+      font-size:13px;margin-bottom:16px;
+    }
+
+    /* Toast */
+    #toast-norm{
+      position:fixed;bottom:28px;right:28px;z-index:9999;
+      padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;
+      color:#fff;box-shadow:0 8px 28px rgba(0,0,0,.2);
+      opacity:0;transform:translateY(12px);transition:all .3s ease;pointer-events:none;
+    }
+    #toast-norm.show{opacity:1;transform:translateY(0);}
+    #toast-norm.success{background:linear-gradient(135deg,#2ECC71,#27AE60);}
+    #toast-norm.error{background:linear-gradient(135deg,#E74C3C,#C0392B);}
+  </style>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+    <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+
+    <!-- ══ DATA ISLAND ══ -->
+    <script th:inline="javascript">
+      var IS_EDIT       = [[${isEdit}]];
+      var NORMATIVA_ID  = [[${normativa?.id}]];
+      var INIT_DATA     = IS_EDIT ? [[${normativa}]] : null;
+    </script>
+
+    <!-- ══ HERO ══ -->
+    <div class="form-hero">
+      <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
+        <a href="/superadmin/normativo"
+           style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
+                  display:flex;align-items:center;justify-content:center;text-decoration:none;
+                  color:#fff;transition:background .2s;"
+           onmouseover="this.style.background='rgba(255,255,255,.25)'"
+           onmouseout="this.style.background='rgba(255,255,255,.15)'">
+          <i class="fas fa-arrow-left" style="font-size:15px;"></i>
+        </a>
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);
+                    display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-balance-scale" style="color:#2ECC71;font-size:18px;"></i>
+        </div>
+        <div>
+          <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;"
+              th:text="${isEdit} ? 'Editar Normativa' : 'Nueva Normativa'">Nueva Normativa</h1>
+          <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
+             th:text="${isEdit} ? 'Modifica los datos de la normativa' : 'Completa el formulario para registrar la normativa'">
+            Completa el formulario para registrar la normativa</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ERROR BANNER ══ -->
+    <div id="form-error"></div>
+
+    <!-- ══ FORM GRID ══ -->
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
+
+      <!-- LEFT COLUMN -->
+      <div>
+
+        <!-- ── Card 1: Información General ── -->
+        <div class="form-card">
+          <div class="card-section-title">
+            <i class="fas fa-file-alt"></i> Información General
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label class="form-label">Título <span style="color:#E74C3C;">*</span></label>
+              <input id="f-titulo" type="text" class="form-control" maxlength="300"
+                     placeholder="Ej: Ley de Gestión Integral de Residuos Sólidos" />
+            </div>
+            <div>
+              <label class="form-label">Descripción breve</label>
+              <textarea id="f-desc" class="form-control" maxlength="500" rows="3"
+                        placeholder="Resumen en una o dos frases…"></textarea>
+            </div>
+            <div>
+              <label class="form-label">Contenido resumido</label>
+              <textarea id="f-contenido" class="form-control" rows="5"
+                        placeholder="Síntesis del contenido normativo, alcance y obligaciones principales…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 2: Clasificación Legal ── -->
+        <div class="form-card" style="animation-delay:.05s">
+          <div class="card-section-title">
+            <i class="fas fa-gavel"></i> Clasificación Legal
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label class="form-label">Temática <span style="color:#E74C3C;">*</span></label>
+              <select id="f-tematica" class="form-select">
+                <option value="">— Seleccionar —</option>
+                <option th:each="t : ${tematicas}"
+                        th:value="${t.id}"
+                        th:text="${t.codigo} + ' — ' + ${t.nombre}">EC — Economía Circular</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Tipo de normativa <span style="color:#E74C3C;">*</span></label>
+              <select id="f-tipo" class="form-select">
+                <option value="">— Seleccionar —</option>
+                <option th:each="t : ${tiposNormativa}"
+                        th:value="${t.id}"
+                        th:text="${t.nombre}">Ley</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Estado normativa <span style="color:#E74C3C;">*</span></label>
+              <select id="f-estado" class="form-select">
+                <option value="">— Seleccionar —</option>
+                <option th:each="e : ${estadosNormativa}"
+                        th:value="${e.id}"
+                        th:text="${e.nombre}">Vigente</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Ámbito</label>
+              <select id="f-ambito" class="form-select">
+                <option value="NACIONAL">Nacional</option>
+                <option value="INTERNACIONAL">Internacional</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label">Clasificación</label>
+              <select id="f-clasificacion" class="form-select">
+                <option value="VINCULANTE">Vinculante</option>
+                <option value="NO_VINCULANTE">No vinculante</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Etiquetas -->
+          <div style="margin-top:16px;">
+            <label class="form-label">Etiquetas</label>
+            <div class="etiqueta-grid" id="etiqueta-grid">
+              <label th:each="et : ${etiquetas}" class="etiqueta-chip" th:data-id="${et.id}">
+                <input type="checkbox" th:value="${et.id}" />
+                <span th:text="${et.nombre}">Etiqueta</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Card 3: Fechas Clave ── -->
+        <div class="form-card" style="animation-delay:.1s">
+          <div class="card-section-title">
+            <i class="fas fa-calendar-alt"></i> Fechas Clave
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label class="form-label">Año de publicación <span style="color:#E74C3C;">*</span></label>
+              <input id="f-anio" type="number" class="form-control" min="1900" max="2100" placeholder="2024" />
+            </div>
+            <div>
+              <label class="form-label">Fecha de promulgación</label>
+              <input id="f-fecha-promulgacion" type="date" class="form-control" />
+            </div>
+            <div>
+              <label class="form-label">Entrada en vigencia</label>
+              <input id="f-fecha-vigencia" type="date" class="form-control" />
+            </div>
+            <div>
+              <label class="form-label">Fecha de derogación</label>
+              <input id="f-fecha-derogacion" type="date" class="form-control" />
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /left column -->
+
+      <!-- RIGHT COLUMN -->
+      <div>
+
+        <!-- ── Card 4: Archivo y Visibilidad ── -->
+        <div class="form-card" style="animation-delay:.15s">
+          <div class="card-section-title">
+            <i class="fas fa-upload"></i> Archivo y Visibilidad
+          </div>
+
+          <!-- Drop zone -->
+          <div class="drop-zone" id="drop-zone"
+               onclick="document.getElementById('f-archivo').click()"
+               ondragover="event.preventDefault();this.classList.add('dragover')"
+               ondragleave="this.classList.remove('dragover')"
+               ondrop="handleDrop(event)">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Arrastra el PDF / DOC o haz clic para seleccionar</p>
+            <p style="font-size:11px;color:#9CA3AF;margin-top:4px;">Máx. 50 MB — PDF, DOC, DOCX</p>
+            <div class="file-name" id="file-name-label" style="display:none;"></div>
+          </div>
+          <input type="file" id="f-archivo" style="display:none;"
+                 accept=".pdf,.doc,.docx"
+                 onchange="onFileChange(this)" />
+
+          <!-- Archivo actual en modo edición -->
+          <div id="archivo-actual" style="display:none;margin-top:10px;padding:10px 14px;
+               background:#F0FFF6;border-radius:9px;border:1px solid rgba(46,204,113,.2);">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px;">
+              Archivo actual</div>
+            <a id="archivo-actual-link" href="#" target="_blank"
+               style="font-size:12px;color:#27AE60;font-weight:600;text-decoration:none;word-break:break-all;">
+              Ver documento existente <i class="fas fa-external-link-alt" style="font-size:10px;"></i>
+            </a>
+          </div>
+
+          <!-- Visibilidad toggle -->
+          <div style="margin-top:20px;padding:14px;background:#FAFBFC;border-radius:10px;border:1px solid #F0F4F8;">
+            <div class="toggle-wrap">
+              <label class="toggle-switch">
+                <input type="checkbox" id="f-publica" />
+                <span class="toggle-slider"></span>
+              </label>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Normativa pública</div>
+                <div style="font-size:11px;color:#9CA3AF;">Visible para todos los usuarios registrados</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Errores de validación del backend -->
+          <div id="errores-validacion" style="display:none;margin-top:14px;padding:12px 14px;
+               background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
+               color:#B91C1C;font-size:12px;line-height:1.6;"></div>
+
+          <!-- Actions -->
+          <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
+            <button id="btn-guardar" class="btn-submit" onclick="submitForm()">
+              <i class="fas fa-save" style="margin-right:6px;"></i>
+              <span th:text="${isEdit} ? 'Guardar cambios' : 'Crear normativa'">Crear normativa</span>
+            </button>
+            <a href="/superadmin/normativo" class="btn-cancel-link">
+              <i class="fas fa-times"></i> Cancelar
+            </a>
+          </div>
+        </div>
+
+      </div><!-- /right column -->
+    </div><!-- /form grid -->
+
+    <!-- ══ TOAST ══ -->
+    <div id="toast-norm"></div>
+
+    <script>
+// ════════════════════════════════════════════════════════
+//  LIMPIEZA DE BACKDROP
+//  Elimina cualquier div.modal-backdrop que el chatbot u otro
+//  componente Bootstrap haya dejado huérfano, desbloqueando la página.
+// ════════════════════════════════════════════════════════
+function limpiarModales() {
+  document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
+  document.body.style.overflow   = 'auto';
+  document.body.style.paddingRight = '';
+  document.body.classList.remove('modal-open');
+}
+
+// Ejecutar en cuanto el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  // Pequeño delay para dejar que el chatbot termine su init
+  setTimeout(limpiarModales, 300);
+});
+
+// ── Helpers ────────────────────────────────────────────────
+function setVal(id, val) {
+  var el = document.getElementById(id);
+  if (el && val !== null && val !== undefined) el.value = val;
+}
+
+function fmtDate(id) {
+  var v = document.getElementById(id).value;
+  return v ? v : null;
+}
+
+// ── File handling ──────────────────────────────────────────
+var selectedFile = null;
+
+function onFileChange(input) {
+  if (input.files && input.files[0]) {
+    selectedFile = input.files[0];
+    var label = document.getElementById('file-name-label');
+    label.textContent = selectedFile.name;
+    label.style.display = 'block';
+  }
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('drop-zone').classList.remove('dragover');
+  var files = event.dataTransfer.files;
+  if (files && files[0]) {
+    selectedFile = files[0];
+    var label = document.getElementById('file-name-label');
+    label.textContent = selectedFile.name;
+    label.style.display = 'block';
+  }
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg, type) {
+  var t = document.getElementById('toast-norm');
+  t.textContent = msg;
+  t.className   = 'show ' + (type || 'success');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(function() { t.className = ''; }, 3400);
+}
+
+// ── Labels para errores backend ────────────────────────────
+var LABELS_NORMATIVA = {
+  titulo:               'Título',
+  descripcionBreve:     'Descripción breve',
+  contenidoResumido:    'Contenido resumido',
+  tematicaId:           'Temática',
+  tipoNormativaId:      'Tipo de normativa',
+  estadoNormativaId:    'Estado normativa',
+  ambito:               'Ámbito',
+  clasificacion:        'Clasificación',
+  anio:                 'Año de publicación',
+  fechaPromulgacion:    'Fecha de promulgación',
+  fechaEntradaVigencia: 'Entrada en vigencia',
+  fechaDerogacion:      'Fecha de derogación',
+  etiquetasIds:         'Etiquetas'
+};
+
+function mostrarErroresBackend(errores) {
+  var div = document.getElementById('errores-validacion');
+  var html = 'Corrige los siguientes campos: ';
+  Object.entries(errores).forEach(function(entry) {
+    var campo = entry[0], msg = entry[1];
+    html += (LABELS_NORMATIVA[campo] || campo) + ': ' + msg + '. ';
+  });
+  div.textContent = html;
+  div.style.display = 'block';
+  div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Etiqueta chips ─────────────────────────────────────────
+document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
+  chip.addEventListener('click', function() {
+    var cb = chip.querySelector('input[type=checkbox]');
+    cb.checked = !cb.checked;
+    chip.classList.toggle('selected', cb.checked);
+  });
+});
+
+// ── Pre-populate en modo edición ───────────────────────────
+if (IS_EDIT && INIT_DATA) {
+  setVal('f-titulo',             INIT_DATA.titulo                || '');
+  setVal('f-desc',               INIT_DATA.descripcionBreve      || '');
+  setVal('f-contenido',          INIT_DATA.contenidoResumido     || '');
+  setVal('f-anio',               INIT_DATA.anio                  || '');
+  setVal('f-fecha-promulgacion', INIT_DATA.fechaPromulgacion     || '');
+  setVal('f-fecha-vigencia',     INIT_DATA.fechaEntradaVigencia  || '');
+  setVal('f-fecha-derogacion',   INIT_DATA.fechaDerogacion       || '');
+  setVal('f-tematica',           INIT_DATA.tematicaId            || '');
+  setVal('f-tipo',               INIT_DATA.tipoNormativaId       || '');
+  setVal('f-estado',             INIT_DATA.estadoNormativaId     || '');
+  setVal('f-ambito',             INIT_DATA.ambito                || 'NACIONAL');
+  setVal('f-clasificacion',      INIT_DATA.clasificacion         || 'VINCULANTE');
+
+  var pubEl = document.getElementById('f-publica');
+  if (pubEl) pubEl.checked = !!INIT_DATA.esPublica;
+
+  if (INIT_DATA.archivoUrl) {
+    var divArch = document.getElementById('archivo-actual');
+    var linkArch = document.getElementById('archivo-actual-link');
+    if (divArch)  divArch.style.display = 'block';
+    if (linkArch) linkArch.href = INIT_DATA.archivoUrl;
+  }
+
+  var idsActivos = INIT_DATA.etiquetasIds || [];
+  document.querySelectorAll('.etiqueta-chip').forEach(function(chip) {
+    var val = parseInt(chip.dataset.id, 10);
+    if (idsActivos.indexOf(val) !== -1) {
+      chip.classList.add('selected');
+      chip.querySelector('input[type=checkbox]').checked = true;
+    }
+  });
+}
+
+// ── Submit ─────────────────────────────────────────────────
+async function submitForm() {
+  // Limpiar cualquier backdrop que bloquee la pantalla antes de operar
+  limpiarModales();
+
+  var errBanner  = document.getElementById('form-error');
+  var errDetalle = document.getElementById('errores-validacion');
+  if (!errBanner || !errDetalle) {
+    console.error('submitForm: elementos de error no encontrados en el DOM');
+    return;
+  }
+
+  errBanner.style.display  = 'none';
+  errDetalle.style.display = 'none';
+  errDetalle.textContent   = '';
+
+  // ── Recoger campos con try-catch para detectar errores de DOM ──
+  var titulo, tematica, tipo, estado, anio, archivo;
+  try {
+    titulo   = document.getElementById('f-titulo').value.trim();
+    tematica = document.getElementById('f-tematica').value;
+    tipo     = document.getElementById('f-tipo').value;
+    estado   = document.getElementById('f-estado').value;
+    anio     = document.getElementById('f-anio').value;
+    archivo  = document.getElementById('f-archivo').files[0] || selectedFile;
+  } catch (domErr) {
+    console.error('submitForm: error leyendo campos del formulario:', domErr);
+    errBanner.textContent = 'Error interno al leer el formulario: ' + domErr.message;
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  // ── Validaciones client-side ────────────────────────────────────
+  if (!titulo) {
+    errBanner.textContent = 'El título es obligatorio.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!tematica) {
+    errBanner.textContent = 'Debes seleccionar una temática.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!tipo) {
+    errBanner.textContent = 'Debes seleccionar el tipo de normativa.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!estado) {
+    errBanner.textContent = 'Debes seleccionar el estado normativo.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!anio) {
+    errBanner.textContent = 'El año de publicación es obligatorio.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+  if (!IS_EDIT && !archivo) {
+    errBanner.textContent = 'El archivo PDF/DOC es obligatorio para crear una normativa.';
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  // ── Construir payload con try-catch ────────────────────────────
+  var formData;
+  try {
+    var etiquetasIds = Array.from(
+      document.querySelectorAll('.etiqueta-chip input:checked')
+    ).map(function(cb) { return parseInt(cb.value, 10); });
+
+    var normativaData = {
+      titulo:               titulo,
+      descripcionBreve:     document.getElementById('f-desc').value.trim()      || null,
+      contenidoResumido:    document.getElementById('f-contenido').value.trim() || null,
+      tematicaId:           parseInt(tematica, 10),
+      tipoNormativaId:      parseInt(tipo, 10),
+      estadoNormativaId:    parseInt(estado, 10),
+      ambito:               document.getElementById('f-ambito').value,
+      clasificacion:        document.getElementById('f-clasificacion').value,
+      anio:                 parseInt(anio, 10),
+      fechaPromulgacion:    fmtDate('f-fecha-promulgacion'),
+      fechaEntradaVigencia: fmtDate('f-fecha-vigencia'),
+      fechaDerogacion:      fmtDate('f-fecha-derogacion'),
+      esPublica:            document.getElementById('f-publica').checked,
+      etiquetasIds:         etiquetasIds
+    };
+
+    formData = new FormData();
+    formData.append('normativa', new Blob([JSON.stringify(normativaData)], { type: 'application/json' }));
+    if (archivo) formData.append('archivo', archivo);
+
+  } catch (buildErr) {
+    console.error('submitForm: error construyendo el FormData:', buildErr);
+    errBanner.textContent = 'Error interno al preparar los datos: ' + buildErr.message;
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  // ── Fetch ───────────────────────────────────────────────────────
+  var btn     = document.getElementById('btn-guardar');
+  var exito   = false;
+  var btnOrig = IS_EDIT
+    ? '<i class="fas fa-save" style="margin-right:6px;"></i> Guardar cambios'
+    : '<i class="fas fa-save" style="margin-right:6px;"></i> Crear normativa';
+
+  btn.disabled  = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Guardando...';
+
+  try {
+    var url    = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
+    var method = IS_EDIT ? 'PUT' : 'POST';
+
+    var res  = await fetch(url, { method: method, body: formData });
+    var data = await res.json();
+
+    if (!res.ok) {
+      if (data.tipo === 'VALIDACION' && data.errores) {
+        mostrarErroresBackend(data.errores);
+        showToast('Revisa los campos marcados.', 'error');
+      } else {
+        errBanner.textContent = data.mensaje || 'Error al guardar. Intenta de nuevo.';
+        errBanner.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      return;
+    }
+
+    exito = true;
+    showToast(IS_EDIT ? 'Normativa actualizada.' : 'Normativa creada correctamente.', 'success');
+    setTimeout(function() { window.location.href = '/superadmin/normativo'; }, 1200);
+
+  } catch (fetchErr) {
+    console.error('submitForm: error en fetch:', fetchErr);
+    errBanner.textContent = 'Error de red: ' + fetchErr.message;
+    errBanner.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  } finally {
+    // Siempre limpiar posibles backdrops residuales
+    limpiarModales();
+    if (exito) {
+      btn.innerHTML = '<i class="fas fa-check" style="margin-right:6px;"></i> Guardado';
+    } else {
+      btn.disabled  = false;
+      btn.innerHTML = btnOrig;
+    }
+  }
+}
+    </script>
+
+    </main>
+  </div>
+  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+</div>
+</body>
+</html>
