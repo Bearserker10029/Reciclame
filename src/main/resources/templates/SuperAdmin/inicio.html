@@ -311,7 +311,7 @@
                   <div style="font-size:12px;font-weight:700;color:#1B3A5C;"
                     th:text="${t.codigo != null ? t.codigo : t.nombre}">—</div>
                   <div style="font-size:11px;color:#6B7280;"
-                    th:text="${normativas != null ? normativas.size() + ' normativas' : '0'}">—</div>
+                    th:text="${conteoPorTematica != null and conteoPorTematica[t.codigo] != null ? conteoPorTematica[t.codigo] + ' normativas' : '0 normativas'}">0</div>
                 </div>
               </div>
               <div
@@ -434,21 +434,28 @@
       if (!ctx) return;
       var normativasData = /*[[${normativas}]]*/ [];
       var tematicasData = /*[[${tematicas}]]*/ [];
-      var colorMap = {};
-      if (tematicasData) {
-        tematicasData.forEach(function(t) {
-          if (t.codigo && t.colorHex) colorMap[t.codigo] = t.colorHex;
-        });
-      }
+      
+      console.log('normativas:', normativasData);
+      console.log('tematicas:', tematicasData);
+      
+      var colorMap = {
+        'EC': '#27AE60',
+        'GR': '#3498DB',
+        'EE': '#F39C12',
+        'REP': '#E74C3C',
+        'Otro': '#95A5A6'
+      };
+      
       var counts = {};
       var colors = [];
       var labels = [];
-      if (normativasData) {
+      
+      if (normativasData && normativasData.length > 0) {
         normativasData.forEach(function(n) {
-          var key = n.tematicaCodigo || 'Otro';
+          var key = n.tematicaCodigo || n.tematica || 'Otro';
           counts[key] = (counts[key] || 0) + 1;
         });
-        var total = normativasData.length || 1;
+        
         Object.keys(counts).forEach(function(key) {
           labels.push(key);
           colors.push(colorMap[key] || '#95A5A6');
@@ -458,24 +465,30 @@
         colors = ['#E5E7EB'];
         counts = { 'Sin datos': 1 };
       }
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [{
-            data: labels.map(function(l) { return counts[l] || 0; }),
-            backgroundColor: colors,
-            borderWidth: 0,
-            hoverOffset: 4
-          }]
-        },
-        options: {
-          responsive: false,
-          cutout: '65%',
-          animation: { duration: 1200, easing: 'easeInOutQuart' },
-          plugins: { legend: { display: false } }
-        }
-      });
+      
+      console.log('labels:', labels);
+      console.log('counts:', counts);
+      
+      if (labels.length > 0 && labels[0] !== 'Sin datos') {
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: labels.map(function(l) { return counts[l] || 0; }),
+              backgroundColor: colors,
+              borderWidth: 0,
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: false,
+            cutout: '65%',
+            animation: { duration: 1200, easing: 'easeInOutQuart' },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
     })();
   </script>
 

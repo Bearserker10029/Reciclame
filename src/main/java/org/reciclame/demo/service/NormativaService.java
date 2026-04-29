@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,6 +46,18 @@ public class NormativaService {
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Map<String, Long> contarPorTematica() {
+        Map<String, Long> conteo = new HashMap<>();
+        List<Normativa> activas = normativaRepository.findByEstadoActivoTrue();
+        for (Normativa n : activas) {
+            String codigo = n.getTematica() != null && n.getTematica().getCodigo() != null 
+                ? n.getTematica().getCodigo() 
+                : "Otro";
+            conteo.put(codigo, conteo.getOrDefault(codigo, 0L) + 1);
+        }
+        return conteo;
     }
 
     // ── READ ONE ──────────────────────────────────────────────

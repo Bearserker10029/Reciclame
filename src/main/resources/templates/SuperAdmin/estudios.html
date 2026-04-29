@@ -558,7 +558,7 @@
         </div>
 
         <div class="table-card">
-          <div style="overflow-x:auto;">
+          <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
             <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
               <thead>
                 <tr>
@@ -641,6 +641,10 @@
                 </tr>
               </tbody>
             </table>
+            <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+              <span id="conteo-estudios">Mostrando estudios</span>
+              <div style="display:flex;gap:4px;" id="paginacion-estudios"></div>
+            </div>
           </div>
         </div>
 
@@ -801,6 +805,72 @@
               alert('Error: ' + e.message);
             }
           }
+
+          // Paginación de Estudios (5 por página)
+          const ESTUDIOS_POR_PAGINA = 5;
+          let paginaEstudiosActual = 1;
+
+          function inicializarPaginacionEstudios() {
+            var filas = document.querySelectorAll('#table-body tr.estudio-row');
+            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / ESTUDIOS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaEstudiosActual = 1;
+
+            var paginacionDiv = document.getElementById('paginacion-estudios');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = 'Anterior';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnAnterior.onclick = function() { if (paginaEstudiosActual > 1) { paginaEstudiosActual--; mostrarPaginaEstudios(paginaEstudiosActual); actualizarBotonesPaginacionEstudios(); } };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btnPagina = document.createElement('button');
+              btnPagina.textContent = i;
+              btnPagina.id = 'btn-est-pagina-' + i;
+              var estaActiva = (i === paginaEstudiosActual);
+              btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+              btnPagina.onclick = (function(pageNum) { return function() { paginaEstudiosActual = pageNum; mostrarPaginaEstudios(pageNum); actualizarBotonesPaginacionEstudios(); }; })(i);
+              paginacionDiv.appendChild(btnPagina);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Siguiente';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function() { if (paginaEstudiosActual < totalPaginas) { paginaEstudiosActual++; mostrarPaginaEstudios(paginaEstudiosActual); actualizarBotonesPaginacionEstudios(); } };
+            paginacionDiv.appendChild(btnSiguiente);
+
+            document.getElementById('conteo-estudios').textContent = 'Mostrando ' + filasVisibles + ' estudios';
+            mostrarPaginaEstudios(1);
+          }
+
+          function mostrarPaginaEstudios(numero) {
+            var filas = document.querySelectorAll('#table-body tr.estudio-row');
+            var inicio = (numero - 1) * ESTUDIOS_POR_PAGINA;
+            var fin = inicio + ESTUDIOS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function(tr) {
+              if (tr.style.display === 'none') { tr.style.display = 'none'; }
+              else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
+            });
+          }
+
+          function actualizarBotonesPaginacionEstudios() {
+            var filas = document.querySelectorAll('#table-body tr.estudio-row');
+            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / ESTUDIOS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btn = document.getElementById('btn-est-pagina-' + i);
+              if (btn) { btn.style.background = (i === paginaEstudiosActual) ? '#2ECC71' : '#fff'; btn.style.borderColor = (i === paginaEstudiosActual) ? '#2ECC71' : '#E5E7EB'; btn.style.color = (i === paginaEstudiosActual) ? '#fff' : '#6B7280'; }
+            }
+          }
+
+          // Inicializar paginación al cargar
+          setTimeout(inicializarPaginacionEstudios, 100);
         </script>
 
       </main>

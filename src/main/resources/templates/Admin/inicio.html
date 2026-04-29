@@ -320,29 +320,29 @@ function navTo(page) {
 
 function goLogin() { window.location.href = '/login'; }
 
-// Donut chart — distribución de normativas
-(function () {
-  var ctx = document.getElementById('donut-admin');
-  if (!ctx) return;
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['EC', 'GR', 'EE', 'REP', 'Otro'],
-      datasets: [{
-        data: [52, 34, 28, 16, 8],
-        backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'],
-        borderWidth: 0,
-        hoverOffset: 4
-      }]
-    },
-    options: {
-      responsive: false,
-      cutout: '65%',
-      animation: { duration: 1200, easing: 'easeInOutQuart' },
-      plugins: { legend: { display: false } }
-    }
-  });
-})();
+  // Donut chart — distribución de normativas
+  (function () {
+    var ctx = document.getElementById('donut-admin');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['EC', 'GR', 'EE', 'REP', 'Otro'],
+        datasets: [{
+          data: [52, 34, 28, 16, 8],
+          backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '65%',
+        animation: { duration: 1200, easing: 'easeInOutQuart' },
+        plugins: { legend: { display: false } }
+      }
+    });
+  })();
 </script>
 
 </body>
