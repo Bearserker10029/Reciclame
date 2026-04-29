@@ -130,6 +130,8 @@ public class AuditoriaService {
     public static final String ACCION_LOGIN = "LOGIN";
     public static final String ACCION_LOGOUT = "LOGOUT";
     public static final String ACCION_CAMBIAR_PASSWORD = "CAMBIAR_PASSWORD";
+    public static final String ACCION_IMPERSONAR = "IMPERSONAR_USUARIO";
+    public static final String ACCION_SALIR_IMPERSONACION = "SALIR_IMPERSONACION";
 
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";

@@ -353,9 +353,12 @@
               <span class="status-pill active" th:if="${u.estadoActivo}"><i class="fas fa-circle"></i>Activo</span>
               <span class="status-pill inactive" th:unless="${u.estadoActivo}"><i class="fas fa-circle"></i>Inactivo</span>
             </div>
-            <button class="btn-impersonate" th:attr="onclick=|startImpersonation('${u.nombreCompleto}')|">
-              <i class="fas fa-user-secret"></i>Entrar como este usuario
-            </button>
+<form th:action="@{/superadmin/impersonar/{id}(id=${u.id})}" method="post" style="display:inline;">
+              <button type="submit" class="btn-impersonate"
+                th:attr="onclick=|return confirm('Iniciar sesión de soporte como ${u.nombreCompleto}? Las acciones destructivas estarán bloqueadas y el evento quedará registrado.')|">
+                <i class="fas fa-user-secret"></i>Entrar como este usuario
+              </button>
+            </form>
           </div>
         </div>
 
