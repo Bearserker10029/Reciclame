@@ -336,104 +336,167 @@
   </div>
 
   <script th:inline="javascript">
-  // ── Variables dinámicas de Thymeleaf ──
-  var datosIngresos = /*[[${chartIngresosData}]]*/ [8,12,10,18,15,22,19,28,25,34,30,38,36,42,39,46];
+  /*
+   * ─────────────────────────────────────────────────────
+   *  VARIABLES THYMELEAF  (scope global — usadas en initCharts)
+   * ─────────────────────────────────────────────────────
+   */
+  var datosIngresos  = /*[[${chartIngresosData}]]*/  [8,12,10,18,15,22,19,28,25,34,30,38,36,42,39,46];
   var labelsIngresos = /*[[${chartIngresosLabels}]]*/ ['1','3','5','7','9','11','13','15','17','19','21','23','25','27','29','31'];
-  var datosTematica = /*[[${chartTematicaData}]]*/ [48, 34, 22, 16];
-  var labelsTematica = /*[[${chartTematicaLabels}]]*/ ['EC', 'GR', 'EE', 'REP'];
+  var datosTematica  = /*[[${chartTematicaData}]]*/  [48,34,22,16];
+  var labelsTematica = /*[[${chartTematicaLabels}]]*/ ['EC','GR','EE','REP'];
 
-  // ── Count-up animation ──
-  document.querySelectorAll('.kpi-val[data-count]').forEach(function(el) {
-    var target = parseInt(el.dataset.count);
-    var dur = 1200, step = 16, start = 0;
-    var timer = setInterval(function() {
-      start += Math.ceil(target / (dur / step));
-      if (start >= target) { start = target; clearInterval(timer); }
-      el.textContent = start.toLocaleString();
-    }, step);
-  });
+  /*
+   * ─────────────────────────────────────────────────────
+   *  FUNCIONES GLOBALES  (requeridas por onclick del HTML)
+   * ─────────────────────────────────────────────────────
+   */
 
-  // ── Animate rank bars on load ──
-  setTimeout(function() {
-    document.querySelectorAll('.rank-bar[data-w]').forEach(function(bar) {
-      bar.style.width = bar.dataset.w;
-    });
-  }, 400);
-
-  // ── Tab switching ──
+  // Cambio de pestaña Actividad / Chatbot
   function switchReportTab(tab) {
-    document.querySelectorAll('.rtab').forEach(function(t) { t.classList.remove('active'); });
-    var act = document.getElementById('rtab-content-actividad');
-    var cbot = document.getElementById('rtab-content-chatbot');
-    if (tab === 'actividad') {
-      act.style.display = 'block'; cbot.style.display = 'none';
-      document.getElementById('rtab-actividad').classList.add('active');
-      initCharts();
-    } else {
-      act.style.display = 'none'; cbot.style.display = 'block';
-      document.getElementById('rtab-chatbot').classList.add('active');
+    try {
+      document.querySelectorAll('.rtab').forEach(function(t) { t.classList.remove('active'); });
+      var act  = document.getElementById('rtab-content-actividad');
+      var cbot = document.getElementById('rtab-content-chatbot');
+      if (tab === 'actividad') {
+        if (act)  act.style.display  = 'block';
+        if (cbot) cbot.style.display = 'none';
+        var btn = document.getElementById('rtab-actividad');
+        if (btn) btn.classList.add('active');
+        initCharts();
+      } else {
+        if (act)  act.style.display  = 'none';
+        if (cbot) cbot.style.display = 'block';
+        var btn = document.getElementById('rtab-chatbot');
+        if (btn) btn.classList.add('active');
+      }
+    } catch (err) {
+      console.error('[reportes] switchReportTab:', err);
     }
   }
 
-  // ── Charts ──
+  // Inicialización de gráficas Chart.js (idempotente gracias a _chart flag)
   function initCharts() {
-    var ci = document.getElementById('chart-ingresos');
-    if (ci && !ci._chart) {
-      ci._chart = new Chart(ci, {
-        type: 'line',
-        data: {
-          labels: labelsIngresos,
-          datasets: [{
-            label: 'Ingresos',
-            data: datosIngresos,
-            borderColor: '#2ECC71',
-            backgroundColor: function(ctx) {
-              var grad = ctx.chart.ctx.createLinearGradient(0,0,0,200);
-              grad.addColorStop(0,'rgba(46,204,113,.25)');
-              grad.addColorStop(1,'rgba(46,204,113,.01)');
-              return grad;
-            },
-            fill: true, tension: .45, borderWidth: 2.5,
-            pointBackgroundColor: '#2ECC71', pointRadius: 3, pointHoverRadius: 6
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          animation: { duration: 1200, easing: 'easeInOutQuart' },
-          plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
-            y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 } } }
+    // Gráfica de línea — Ingresos diarios
+    try {
+      var ci = document.getElementById('chart-ingresos');
+      if (ci && !ci._chart && typeof Chart !== 'undefined') {
+        ci._chart = new Chart(ci, {
+          type: 'line',
+          data: {
+            labels: labelsIngresos,
+            datasets: [{
+              label: 'Ingresos',
+              data: datosIngresos,
+              borderColor: '#2ECC71',
+              backgroundColor: function(ctx) {
+                var grad = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
+                grad.addColorStop(0, 'rgba(46,204,113,.25)');
+                grad.addColorStop(1, 'rgba(46,204,113,.01)');
+                return grad;
+              },
+              fill: true, tension: .45, borderWidth: 2.5,
+              pointBackgroundColor: '#2ECC71', pointRadius: 3, pointHoverRadius: 6
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 1200, easing: 'easeInOutQuart' },
+            plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+              y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 } } }
+            }
           }
-        }
-      });
+        });
+      }
+    } catch (err) {
+      console.error('[reportes] chart-ingresos:', err);
     }
-    var ct = document.getElementById('chart-tematica');
-    if (ct && !ct._chart) {
-      ct._chart = new Chart(ct, {
-        type: 'bar',
-        data: {
-          labels: labelsTematica,
-          datasets: [{
-            label: 'Descargas',
-            data: datosTematica,
-            backgroundColor: ['rgba(46,204,113,.85)','rgba(52,152,219,.85)','rgba(243,156,18,.85)','rgba(231,76,60,.85)'],
-            borderRadius: 8, borderSkipped: false
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          animation: { duration: 1000, easing: 'easeOutBounce' },
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { display: false }, ticks: { font: { size: 11, weight: '700' } } },
-            y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 } } }
+
+    // Gráfica de barras — Descargas por temática
+    try {
+      var ct = document.getElementById('chart-tematica');
+      if (ct && !ct._chart && typeof Chart !== 'undefined') {
+        ct._chart = new Chart(ct, {
+          type: 'bar',
+          data: {
+            labels: labelsTematica,
+            datasets: [{
+              label: 'Descargas',
+              data: datosTematica,
+              backgroundColor: [
+                'rgba(46,204,113,.85)', 'rgba(52,152,219,.85)',
+                'rgba(243,156,18,.85)', 'rgba(231,76,60,.85)'
+              ],
+              borderRadius: 8, borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false,
+            animation: { duration: 1000, easing: 'easeOutBounce' },
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { font: { size: 11, weight: '700' } } },
+              y: { grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 } } }
+            }
           }
-        }
-      });
+        });
+      }
+    } catch (err) {
+      console.error('[reportes] chart-tematica:', err);
     }
   }
-  initCharts();
+
+  /*
+   * ─────────────────────────────────────────────────────
+   *  INICIALIZACIÓN  (DOMContentLoaded — seguro y no bloqueante)
+   * ─────────────────────────────────────────────────────
+   */
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. Limpiar artefactos bloqueantes de Bootstrap (modal-backdrop, overflow, etc.)
+    try {
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
+      document.body.style.overflow    = '';
+      document.body.style.paddingRight = '';
+    } catch (err) {
+      console.warn('[reportes] Bootstrap cleanup:', err);
+    }
+
+    // 2. Animación count-up para KPIs
+    //    CORRECCIÓN: guard NaN e increment mínimo 1 para evitar setInterval infinito
+    try {
+      document.querySelectorAll('.kpi-val[data-count]').forEach(function(el) {
+        var target = parseInt(el.dataset.count, 10);
+        if (isNaN(target) || target <= 0) { el.textContent = '0'; return; }
+        var dur = 1200, step = 16, start = 0;
+        var increment = Math.max(1, Math.ceil(target / (dur / step)));
+        var timer = setInterval(function() {
+          start += increment;
+          if (start >= target) { start = target; clearInterval(timer); }
+          el.textContent = start.toLocaleString('es-PE');
+        }, step);
+      });
+    } catch (err) {
+      console.error('[reportes] count-up:', err);
+    }
+
+    // 3. Animar barras de ranking (con retardo para que la transición CSS sea visible)
+    try {
+      setTimeout(function() {
+        document.querySelectorAll('.rank-bar[data-w]').forEach(function(bar) {
+          bar.style.width = bar.dataset.w || '0%';
+        });
+      }, 400);
+    } catch (err) {
+      console.error('[reportes] rank-bars:', err);
+    }
+
+    // 4. Inicializar gráficas
+    initCharts();
+  });
   </script>
 
     </main>
