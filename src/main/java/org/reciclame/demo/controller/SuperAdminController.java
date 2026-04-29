@@ -349,6 +349,12 @@ public class SuperAdminController extends AdminController {
         return "redirect:/superadmin/notificaciones/configuracion";
     }
 
+    @Override
+    @GetMapping("/superadmin/admin-docs")
+    public String adminDocs(Model model, @AuthenticationPrincipal UserDetails user) {
+        return "redirect:/superadmin/documentos";
+    }
+
     @GetMapping("/superadmin/diccionarios")
     public String diccionarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
