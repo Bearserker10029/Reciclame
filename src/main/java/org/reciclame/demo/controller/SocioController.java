@@ -36,7 +36,11 @@ public class SocioController {
         model.addAttribute("rol", "SOCIO");
         model.addAttribute("rolNombre", "Socio");
         model.addAttribute("notifUrl", "/socio/notificaciones");
-        usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        try {
+            usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        } catch (Exception e) {
+            model.addAttribute("usuarioNombre", "Usuario");
+        }
     }
 
     @GetMapping("/socio")

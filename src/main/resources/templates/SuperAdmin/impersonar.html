@@ -353,12 +353,9 @@
               <span class="status-pill active" th:if="${u.estadoActivo}"><i class="fas fa-circle"></i>Activo</span>
               <span class="status-pill inactive" th:unless="${u.estadoActivo}"><i class="fas fa-circle"></i>Inactivo</span>
             </div>
-<form th:action="@{/superadmin/impersonar/{id}(id=${u.id})}" method="post" style="display:inline;">
-              <button type="submit" class="btn-impersonate"
-                th:attr="onclick=|return confirm('Iniciar sesión de soporte como ${u.nombreCompleto}? Las acciones destructivas estarán bloqueadas y el evento quedará registrado.')|">
-                <i class="fas fa-user-secret"></i>Entrar como este usuario
-              </button>
-            </form>
+<button type="button" class="btn-impersonate" th:attr="onclick=|openModal(${u.id}, '${u.nombreCompleto}')|">
+              <i class="fas fa-user-secret"></i>Entrar como este usuario
+            </button>
           </div>
         </div>
 
@@ -373,10 +370,55 @@
       </main>
     </div>
 
+    <!-- Modal Confirmación -->
+    <div id="impersonateModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <div style="width:56px;height:56px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-user-shield" style="color:#fff;font-size:24px;"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:18px;font-weight:700;color:#1B3A5C;">Iniciar Sesión de Soporte</h3>
+            <p style="margin:4px 0 0 0;font-size:13px;color:#6B7280;">Confirmar impersonación</p>
+          </div>
+        </div>
+        <p id="modalUserName" style="font-size:15px;color:#374151;margin-bottom:16px;line-height:1.6;"></p>
+        <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:14px;margin-bottom:24px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <i class="fas fa-exclamation-triangle" style="color:#F59E0B;margin-top:2px;"></i>
+            <div>
+              <p style="margin:0;font-size:12px;color:#92400E;font-weight:600;">Nota de seguridad</p>
+              <p style="margin:4px 0 0 0;font-size:12px;color:#B45309;">Las acciones destructivas estarán bloqueadas y el evento quedará registrado en el log de auditoría.</p>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" onclick="closeModal()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+          <form id="impersonateForm" method="post" style="display:inline;">
+            <button type="submit" style="padding:12px 24px;border:none;border-radius:8px;background:#F59E0B;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Confirmar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <th:block th:replace="components/chatbot :: chatbot"></th:block>
   </div>
 
   <script>
+    function openModal(userId, userName) {
+      document.getElementById('modalUserName').innerHTML = '¿Estás seguro de que quieres iniciar una sesión de soporte como <strong style="color:#1B3A5C;">' + userName + '</strong>?';
+      document.getElementById('impersonateForm').action = '/superadmin/impersonar/' + userId;
+      document.getElementById('impersonateModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('impersonateModal').style.display = 'none';
+    }
+
+    document.getElementById('impersonateModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
     function navTo(page) {
       var map = { 'admin-docs': 'documentos' };
       window.location.href = '/superadmin/' + (map[page] || page);

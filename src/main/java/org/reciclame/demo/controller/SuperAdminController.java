@@ -1,5 +1,6 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.dto.EmpresaRequestDTO;
 import org.reciclame.demo.dto.ParametrosSistemaRequestDTO;
 import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EmpresaService;
@@ -118,6 +119,8 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
+        var conteoPorTematica = normativaService.contarPorTematica();
+        model.addAttribute("conteoPorTematica", conteoPorTematica);
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
@@ -393,6 +396,73 @@ String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNo
 
         redirectAttributes.addFlashAttribute("mensaje", "Has vuelto a tu sesión de SuperAdmin");
         return "redirect:/superadmin/inicio";
+    }
+
+    @GetMapping("/superadmin/empresas")
+    public String empresas(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
+        return "SuperAdmin/empresas";
+    }
+
+    @GetMapping("/superadmin/empresas/nueva")
+    public String nuevaEmpresaForm(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "SuperAdmin/empresa-form";
+    }
+
+    @PostMapping("/superadmin/empresas/guardar")
+    public String guardarEmpresa(@RequestParam String razonSocial,
+            @RequestParam String ruc,
+            @RequestParam String sector,
+            RedirectAttributes redirectAttributes) {
+        try {
+            EmpresaRequestDTO dto = new EmpresaRequestDTO();
+            dto.setRazonSocial(razonSocial);
+            dto.setRuc(ruc);
+            dto.setSector(sector);
+            empresaService.crearEmpresa(dto);
+            redirectAttributes.addFlashAttribute("mensaje", "Empresa creada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/superadmin/empresas";
+    }
+
+    @GetMapping("/superadmin/empresas/editar/{id}")
+    public String editarEmpresaForm(@PathVariable Long id, Model model,
+            @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("empresa", empresaService.obtenerEmpresaPorId(id));
+        return "SuperAdmin/empresa-form";
+    }
+
+    @PostMapping("/superadmin/empresas/editar/{id}")
+    public String editarEmpresaGuardar(@PathVariable Long id,
+            @RequestParam String razonSocial,
+            @RequestParam String sector,
+            RedirectAttributes redirectAttributes) {
+        try {
+            EmpresaRequestDTO dto = new EmpresaRequestDTO();
+            dto.setRazonSocial(razonSocial);
+            dto.setSector(sector);
+            empresaService.actualizarEmpresa(id, dto);
+            redirectAttributes.addFlashAttribute("mensaje", "Empresa actualizada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/superadmin/empresas";
+    }
+
+    @PostMapping("/superadmin/empresas/eliminar/{id}")
+    public String eliminarEmpresa(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            empresaService.eliminarEmpresa(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Empresa eliminada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/superadmin/empresas";
     }
 
     @GetMapping("/superadmin/parametros")

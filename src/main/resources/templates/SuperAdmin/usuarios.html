@@ -186,7 +186,7 @@
 
           <!-- Tabla -->
           <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-            <table class="table table-striped table-hover" id="tabla-usuarios-activos">
+            <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
               <thead>
                 <tr>
                   <th><input type="checkbox" id="check-all" style="cursor:pointer;" onclick="toggleCheckAll(this)" />
@@ -555,7 +555,7 @@
             });
           }
 
-          const USUARIOS_POR_PAGINA = 10;
+          const USUARIOS_POR_PAGINA = 5;
           let paginaActual = 1;
 
           function inicializarPaginacion() {

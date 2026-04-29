@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="${empresa != null ? 'Editar Empresa' : 'Nueva Empresa'}">Empresa</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    if (typeof navTo === 'undefined') {
+      function navTo(page) { window.location.href = '/superadmin/' + page; }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F5F6FA; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .hero-section {
+      background: linear-gradient(135deg, #1B3A5C 0%, #2C4A6E 50%, #1B3A5C 100%);
+      border-radius: 16px; padding: 28px 32px; margin-bottom: 24px; animation: fadeUp .4s ease-out;
+    }
+    .hero-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .hero-subtitle { font-size: 13px; color: rgba(255, 255, 255, .7); }
+    .form-card {
+      background: #fff; border-radius: 16px; padding: 32px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .08); max-width: 600px; margin: 0 auto;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px;
+      font-size: 14px; color: #374151; transition: all .2s;
+    }
+    .form-group input:focus, .form-group select:focus {
+      outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .12);
+    }
+    .btn-guardar {
+      padding: 14px 28px; border-radius: 10px; border: none;
+      background: #2ECC71; color: #fff; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-guardar:hover { background: #27AE60; transform: translateY(-2px); }
+    .btn-cancelar {
+      padding: 14px 28px; border-radius: 10px; border: 1.5px solid #E5E7EB;
+      background: #fff; color: #6B7280; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-cancelar:hover { border-color: #9CA3AF; color: #374151; }
+    .required { color: #E74C3C; }
+  </style>
+</head>
+
+<body>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+      <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+
+        <div class="hero-section">
+          <h1 class="hero-title" th:text="${empresa != null ? 'Editar Empresa' : 'Nueva Empresa'}">Empresa</h1>
+          <p class="hero-subtitle" th:text="${empresa != null ? 'Modifica los datos de la empresa' : 'Ingresa los datos de la nueva empresa'}"></p>
+        </div>
+
+        <div class="form-card">
+          <form th:action="${empresa != null ? '/superadmin/empresas/editar/' + empresa.id : '/superadmin/empresas/guardar'}" method="post">
+            <div class="form-group">
+              <label>RUC <span class="required">*</span></label>
+              <input type="text" name="ruc" th:value="${empresa?.ruc}" required pattern="[0-9]{11}" maxlength="11"
+                th:disabled="${empresa != null}" th:readonly="${empresa != null}"
+                placeholder="Ingrese 11 dígitos del RUC" />
+              <small style="color:#9CA3AF;font-size:12px;" th:if="${empresa == null}">El RUC no podrá ser modificado después de crear</small>
+            </div>
+
+            <div class="form-group">
+              <label>Razón Social <span class="required">*</span></label>
+              <input type="text" name="razonSocial" th:value="${empresa?.razonSocial}" required
+                placeholder="Ingrese la razón social" />
+            </div>
+
+            <div class="form-group">
+              <label>Sector</label>
+              <select name="sector">
+                <option value="">Seleccionar sector...</option>
+                <option value="Reciclaje" th:selected="${empresa?.sector == 'Reciclaje'}">Reciclaje</option>
+                <option value="Manufactura" th:selected="${empresa?.sector == 'Manufactura'}">Manufactura</option>
+                <option value="Comercio" th:selected="${empresa?.sector == 'Comercio'}">Comercio</option>
+                <option value="Servicios" th:selected="${empresa?.sector == 'Servicios'}">Servicios</option>
+                <option value="Construcción" th:selected="${empresa?.sector == 'Construcción'}">Construcción</option>
+                <option value="Agricultura" th:selected="${empresa?.sector == 'Agricultura'}">Agricultura</option>
+                <option value="Otro" th:selected="${empresa?.sector == 'Otro'}">Otro</option>
+              </select>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:28px;">
+              <a href="/superadmin/empresas" class="btn-cancelar">Cancelar</a>
+              <button type="submit" class="btn-guardar">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </main>
+    </div>
+    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+  </div>
+</body>
+
+</html>
