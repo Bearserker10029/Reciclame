@@ -138,6 +138,11 @@ public class UsuarioService {
         return toResponseDTO(usuario);
     }
 
+    public Usuario obtenerUsuarioEntityPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+    }
+
     // ── UPDATE ────────────────────────────────────────────────
     @Transactional
     public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {

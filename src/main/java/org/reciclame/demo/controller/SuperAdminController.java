@@ -22,6 +22,16 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
+import org.reciclame.demo.model.Usuario;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Controller
 public class SuperAdminController extends AdminController {
@@ -285,10 +295,104 @@ public class SuperAdminController extends AdminController {
     }
 
     @GetMapping("/superadmin/impersonar")
-    public String impersonar(Model model, @AuthenticationPrincipal UserDetails user) {
+    public String impersonar(Model model, @AuthenticationPrincipal UserDetails user,
+            HttpSession session) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("estaImpersonando", session.getAttribute("ORIGINAL_USER") != null);
+        if (session.getAttribute("IMPERSONATED_USER") != null) {
+            model.addAttribute("usuarioImpersonado", session.getAttribute("IMPERSONATED_USER"));
+        }
         return "SuperAdmin/impersonar";
+    }
+
+    @PostMapping("/superadmin/impersonar/{id}")
+    public String impersonarUsuario(@PathVariable Long id, HttpServletRequest request,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+        String superAdminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        session.setAttribute("ORIGINAL_USER", superAdminUsername);
+        session.setAttribute("IMPERSONATED_USER", usuarioService.obtenerUsuarioPorId(id).getNombreCompleto());
+
+        Usuario usuarioTarget = usuarioService.obtenerUsuarioEntityPorId(id);
+
+String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNombre() : "USUARIO";
+
+        List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
+        combinedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre));
+        combinedAuthorities.add(new SimpleGrantedAuthority("ROLE_IMPERSONATOR"));
+
+        org.springframework.security.core.userdetails.User principal =
+            new org.springframework.security.core.userdetails.User(
+                usuarioTarget.getCorreoCorporativo(),
+                "",
+                combinedAuthorities
+);
+
+        org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
+            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                principal, null, combinedAuthorities
+            );
+
+        authToken.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authToken);
+
+        auditoriaService.registrarAccion(null, superAdminUsername,
+            AuditoriaService.ACCION_IMPERSONAR, AuditoriaService.MODULO_USUARIOS,
+            "Impersonar usuario: " + usuarioTarget.getNombreCompleto() + " (" + usuarioTarget.getCorreoCorporativo() + ")",
+            null, null, "EXITOSO", null, null, null);
+
+        String redirectUrl = switch (rolNombre) {
+            case "ADMINISTRADOR" -> "/admin/inicio";
+            case "SOCIO" -> "/socio/inicio";
+            case "VISUALIZADOR" -> "/visualizador/inicio";
+            default -> "/admin/inicio";
+        };
+
+        return "redirect:" + redirectUrl;
+    }
+
+    @PostMapping("/superadmin/impersonar/salir")
+    public String salirImpersonacion(HttpSession session, RedirectAttributes redirectAttributes) {
+        String originalUser = (String) session.getAttribute("ORIGINAL_USER");
+        String impersonatedUser = (String) session.getAttribute("IMPERSONATED_USER");
+
+        if (originalUser != null) {
+            org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.findByCorreo(originalUser)
+                .map(u -> usuarioService.obtenerUsuarioEntityPorId(u.getId()))
+                .orElse(null);
+
+            if (usuarioOriginal != null) {
+                String rolNombre = usuarioOriginal.getRol() != null ? usuarioOriginal.getRol().getNombre() : "SUPERADMIN";
+                Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + rolNombre));
+
+                org.springframework.security.core.userdetails.User principal =
+                    new org.springframework.security.core.userdetails.User(
+                        usuarioOriginal.getCorreoCorporativo(),
+                        "",
+                        authorities
+                    );
+
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
+                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        principal, null, authorities
+                    );
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                auditoriaService.registrarAccion(null, originalUser,
+                    AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
+                    "Salir de impersonación. Usuario impersonado: " + impersonatedUser,
+                    null, null, "EXITOSO", null, null, null);
+            }
+        }
+
+        session.removeAttribute("ORIGINAL_USER");
+        session.removeAttribute("IMPERSONATED_USER");
+
+        redirectAttributes.addFlashAttribute("mensaje", "Has vuelto a tu sesión de SuperAdmin");
+        return "redirect:/superadmin/inicio";
     }
 
     @GetMapping("/superadmin/parametros")
