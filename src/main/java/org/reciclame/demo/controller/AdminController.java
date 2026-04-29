@@ -160,6 +160,28 @@ public class AdminController {
         return "Admin/documentos";
     }
 
+    /**
+     * Alias /admin/admin-docs → devuelve la vista dedicada Admin/admin-docs.html.
+     * Necesario porque el sidebar llama navTo('admin-docs') y en páginas standalone
+     * eso resuelve a /admin/admin-docs (no a /admin/documentos).
+     */
+    @GetMapping("/admin/admin-docs")
+    public String adminDocs(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        var estudios   = estudioService.listarEstudios();
+        var normativas = normativaService.listarNormativas();
+
+        int totalDescargas = estudios.stream()
+                .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("totalDescargas", totalDescargas);
+        return "Admin/admin-docs";
+    }
+
     @GetMapping("/admin/reportes")
     public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());

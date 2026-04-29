@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recíclame — Admin Inicio</title>
+  <title>Recíclame — SuperAdmin Panel</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -19,6 +19,7 @@
     .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
     .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
     .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-subitem.active{background:rgba(46,204,113,.15);color:#fff;}
     .main-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;transition:transform .28s,box-shadow .28s;}
     .main-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(0,0,0,.13);}
     .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
@@ -27,7 +28,6 @@
     .update-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;}
     .update-item:hover{background:#F9FAFB;}
     .page{display:none;}.page.active{display:block;}
-    .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
     .report-tab{padding:9px 18px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#6B7280;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
     .report-tab.active{background:#1B3A5C;color:#fff;border-color:#1B3A5C;}
     .notif-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid transparent;}
@@ -47,14 +47,16 @@
 <div style="display:flex;flex-direction:column;min-height:100vh;">
   <th:block th:replace="navbar/topbar :: topbar"></th:block>
   <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <!-- SuperAdmin Sidebar Local -->
+    <th:block th:replace="SuperAdmin/sidebar :: sidebar"></th:block>
+
     <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
 
-      <!-- PAGE: INICIO ADMIN -->
+      <!-- PAGE: INICIO -->
       <div id="page-inicio" class="page active" style="padding:32px;">
         <div style="margin-bottom:28px;">
-          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Panel de Administración 👋</h1>
-          <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
+          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Panel SuperAdmin 👋</h1>
+          <p style="color:#6B7280;font-size:14px;">Administración y control del repositorio Recíclame</p>
         </div>
 
         <!-- Stats row -->
@@ -163,52 +165,27 @@
 
       <!-- PAGE: ESTUDIOS -->
       <div id="page-estudios" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/estudios :: estudios-content"></th:block>
+        <th:block th:replace="SuperAdmin/estudios :: estudios-content"></th:block>
       </div>
 
-      <!-- PAGE: NORMATIVO -->
+      <!-- PAGE: NORMATIVO (SuperAdmin version) -->
       <div id="page-normativo" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/normativo :: normativo-content"></th:block>
+        <th:block th:replace="SuperAdmin/normativo :: normativo-content"></th:block>
       </div>
 
-      <!-- PAGE: PERFIL -->
-      <div id="page-perfil" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/perfil :: perfil-content"></th:block>
-      </div>
-
-      <!-- PAGE: NOTIFICACIONES -->
-      <div id="page-notificaciones" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/notificaciones :: notificaciones-content"></th:block>
-      </div>
-
-      <!-- PAGE: USUARIOS -->
+      <!-- PAGE: USUARIOS (SuperAdmin version) -->
       <div id="page-usuarios" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/usuarios :: usuarios-content"></th:block>
+        <th:block th:replace="SuperAdmin/usuarios :: usuarios-content"></th:block>
       </div>
 
-      <!-- PAGE: ADMIN-DOCS -->
-      <div id="page-admin-docs" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/documentos :: documentos-content"></th:block>
+      <!-- PAGE: NOTIFICACIONES (SuperAdmin version) -->
+      <div id="page-notificaciones" class="page" style="padding:32px;">
+        <th:block th:replace="SuperAdmin/notificaciones :: notificaciones-content"></th:block>
       </div>
 
-      <!-- PAGE: TRAZABILIDAD -->
-      <div id="page-trazabilidad" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/trazabilidad :: trazabilidad-content"></th:block>
-      </div>
-
-      <!-- PAGE: REPORTES -->
-      <div id="page-reportes" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/reportes :: reportes-content"></th:block>
-      </div>
-
-      <!-- PAGE: AUDITORIA -->
-      <div id="page-auditoria" class="page" style="padding:32px;">
-        <th:block th:replace="SuperAdmin/auditoria :: auditoria-content"></th:block>
-      </div>
-
-      <!-- PAGE: IMPERSONAR -->
-      <div id="page-impersonar" class="page" style="padding:32px;">
-        <th:block th:replace="SuperAdmin/impersonar :: impersonar-content"></th:block>
+      <!-- PAGE: PERFIL (SuperAdmin version) -->
+      <div id="page-perfil" class="page" style="padding:32px;">
+        <th:block th:replace="SuperAdmin/perfil :: perfil-content"></th:block>
       </div>
 
     </main>

@@ -2,12 +2,15 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.ParametrosSistemaRequestDTO;
 import org.reciclame.demo.service.EmpresaService;
+import org.reciclame.demo.service.EstadosNormativaService;
 import org.reciclame.demo.service.EstudioService;
+import org.reciclame.demo.service.EtiquetaService;
 import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.ParametrosSistemaService;
 import org.reciclame.demo.service.RolService;
 import org.reciclame.demo.service.TematicaService;
+import org.reciclame.demo.service.TiposNormativaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +31,9 @@ public class SuperAdminController {
     private final EmpresaService empresaService;
     private final RolService rolService;
     private final TematicaService tematicaService;
+    private final EtiquetaService etiquetaService;
+    private final TiposNormativaService tiposNormativaService;
+    private final EstadosNormativaService estadosNormativaService;
     private final NotificacionService notificacionService;
     private final ParametrosSistemaService parametrosSistemaService;
 
@@ -37,6 +43,9 @@ public class SuperAdminController {
                                 EmpresaService empresaService,
                                 RolService rolService,
                                 TematicaService tematicaService,
+                                EtiquetaService etiquetaService,
+                                TiposNormativaService tiposNormativaService,
+                                EstadosNormativaService estadosNormativaService,
                                 NotificacionService notificacionService,
                                 ParametrosSistemaService parametrosSistemaService) {
         this.usuarioService = usuarioService;
@@ -45,6 +54,9 @@ public class SuperAdminController {
         this.empresaService = empresaService;
         this.rolService = rolService;
         this.tematicaService = tematicaService;
+        this.etiquetaService = etiquetaService;
+        this.tiposNormativaService = tiposNormativaService;
+        this.estadosNormativaService = estadosNormativaService;
         this.notificacionService = notificacionService;
         this.parametrosSistemaService = parametrosSistemaService;
     }
@@ -170,12 +182,58 @@ public class SuperAdminController {
         return "SuperAdmin/normativo";
     }
 
+    @GetMapping("/superadmin/normativo/crear")
+    public String normativoCrear(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("isEdit",           false);
+        model.addAttribute("tematicas",        tematicaService.listarTematicas());
+        model.addAttribute("tiposNormativa",   tiposNormativaService.listarTipos());
+        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstados());
+        model.addAttribute("etiquetas",        etiquetaService.listarEtiquetas());
+        return "SuperAdmin/normativo-form";
+    }
+
+    @GetMapping("/superadmin/normativo/editar/{id}")
+    public String normativoEditar(@PathVariable Long id, Model model,
+                                  @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("isEdit",           true);
+        model.addAttribute("normativa",        normativaService.obtenerNormativaPorId(id));
+        model.addAttribute("tematicas",        tematicaService.listarTematicas());
+        model.addAttribute("tiposNormativa",   tiposNormativaService.listarTipos());
+        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstados());
+        model.addAttribute("etiquetas",        etiquetaService.listarEtiquetas());
+        return "SuperAdmin/normativo-form";
+    }
+
     @GetMapping("/superadmin/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         return "SuperAdmin/estudios";
+    }
+
+    @GetMapping("/superadmin/estudios/crear")
+    public String estudiosCrear(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("isEdit",     false);
+        model.addAttribute("tematicas",  tematicaService.listarTematicas());
+        model.addAttribute("etiquetas",  etiquetaService.listarEtiquetas());
+        model.addAttribute("normativas", normativaService.listarNormativas());
+        return "SuperAdmin/estudios-form";
+    }
+
+    @GetMapping("/superadmin/estudios/editar/{id}")
+    public String estudiosEditar(@PathVariable Long id, Model model,
+                                 @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("isEdit",     true);
+        model.addAttribute("estudio",    estudioService.obtenerEstudioPorId(id));
+        model.addAttribute("tematicas",  tematicaService.listarTematicas());
+        model.addAttribute("etiquetas",  etiquetaService.listarEtiquetas());
+        model.addAttribute("normativas", normativaService.listarNormativas());
+        return "SuperAdmin/estudios-form";
     }
 
     @GetMapping("/superadmin/auditoria")
