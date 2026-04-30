@@ -139,17 +139,34 @@
       </div>
       <p style="color:#6B7280;font-size:13px;margin:0;margin-left:50px;">Analíticas de actividad de socios en la plataforma</p>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="period-select">
-        <i class="fas fa-calendar" style="color:#9CA3AF;font-size:13px;"></i>
-        <select>
-          <option>Enero 2026 — Marzo 2026</option>
-          <option>Oct 2025 — Dic 2025</option>
-        </select>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:600;color:#6B7280;white-space:nowrap;">Auditoría:</span>
+        <a href="/admin/reportes/export/auditoria.pdf" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="/admin/reportes/export/auditoria.xlsx" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-excel"></i> XLSX
+        </a>
       </div>
-      <button class="btn-export" onclick="exportarReportesCSV()">
-        <i class="fas fa-file-csv"></i> Exportar CSV
-      </button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:600;color:#6B7280;white-space:nowrap;">Usuarios:</span>
+        <a href="/admin/reportes/export/usuarios.pdf" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="/admin/reportes/export/usuarios.xlsx" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-excel"></i> XLSX
+        </a>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;font-weight:600;color:#6B7280;white-space:nowrap;">Normativas:</span>
+        <a href="/admin/reportes/export/normativas.pdf" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-pdf"></i> PDF
+        </a>
+        <a href="/admin/reportes/export/normativas.xlsx" class="btn-export" style="text-decoration:none;padding:8px 14px;font-size:12px;">
+          <i class="fas fa-file-excel"></i> XLSX
+        </a>
+      </div>
     </div>
   </div>
 
