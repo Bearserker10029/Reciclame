@@ -18,10 +18,22 @@ public class ReporteService {
 
     private static final short HEADER_BG = 0x006699;
 
+    private JasperReport cargarReporte(String reporte) throws JRException {
+        InputStream jasperStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
+        if (jasperStream != null) {
+            return (JasperReport) JRLoader.loadObject(jasperStream);
+        }
+        InputStream jrxmlStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jrxml");
+        if (jrxmlStream == null) {
+            throw new RuntimeException("No se encontró el reporte: " + reporte);
+        }
+        return JasperCompileManager.compileReport(jrxmlStream);
+    }
+
     public byte[] generarReport(String reporte) {
         try {
-            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
-            JasperPrint jasperPrint = JasperFillManager.fillReport(reporteStream, new java.util.HashMap<>(), new JREmptyDataSource());
+            JasperReport jasperReport = cargarReporte(reporte);
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, new java.util.HashMap<>(), new JREmptyDataSource());
             return JasperExportManager.exportReportToPdf(jasperPrint);
         } catch (JRException e) {
             throw new RuntimeException("Error generating report: " + reporte, e);
@@ -30,8 +42,7 @@ public class ReporteService {
 
     public byte[] generarReportePDF(String reporte, JRDataSource dataSource, Map<String, Object> params) {
         try {
-            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
-            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reporteStream);
+            JasperReport jasperReport = cargarReporte(reporte);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params != null ? params : new java.util.HashMap<>(), dataSource);
             return JasperExportManager.exportReportToPdf(jasperPrint);
         } catch (JRException e) {
@@ -47,8 +58,7 @@ public class ReporteService {
     public byte[] generarReportePDF(String reporte, List<?> mainData, Map<String, Object> params,
                                     JRDataSource... chartDataSources) {
         try {
-            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
-            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reporteStream);
+            JasperReport jasperReport = cargarReporte(reporte);
 
             Map<String, Object> finalParams = params != null ? params : new java.util.HashMap<>();
             for (int i = 0; i < chartDataSources.length; i++) {
