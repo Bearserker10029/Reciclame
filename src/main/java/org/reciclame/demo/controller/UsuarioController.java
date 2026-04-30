@@ -118,6 +118,17 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.toggleBloquear(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
+    // REACTIVAR USUARIO
+    // POST /api/usuarios/{id}/reactivar
+    @PostMapping("/{id}/reactivar")
+    public ResponseEntity<?> reaccionarUsuario(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails,
+            HttpServletRequest request) {
+        String[] auditor = resolverAuditor(userDetails);
+        String ipAddress = obtenerIpAddress(request);
+        String userAgent = request.getHeader("User-Agent");
+        return ResponseEntity.ok(usuarioService.reactivarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
+    }
+
     // EXPORTAR CSV
     // GET /api/usuarios/export.csv
     @GetMapping("/export.csv")
