@@ -147,7 +147,7 @@
           <option>Oct 2025 — Dic 2025</option>
         </select>
       </div>
-      <button class="btn-export">
+      <button class="btn-export" onclick="exportarReportesCSV()">
         <i class="fas fa-file-csv"></i> Exportar CSV
       </button>
     </div>
@@ -497,6 +497,41 @@
     // 4. Inicializar gráficas
     initCharts();
   });
+
+  function exportarReportesCSV() {
+    var rows = [['Métrica','Valor']];
+    rows.push(['Ingresos (mes)', document.querySelector('.kpi-val[data-count]')?.textContent || '0']);
+    var kpiVals = document.querySelectorAll('.kpi-val[data-count]');
+    var labels = ['Ingresos (mes)', 'Descargas (mes)', 'Usuarios activos', 'Docs vistos'];
+    kpiVals.forEach(function(el, i) { if (i > 0) rows.push([labels[i], el.textContent || '0']); });
+
+    rows.push(['', '']);
+    rows.push(['Top documentos descargados', '']);
+    rows.push(['Título', 'Descargas']);
+    document.querySelectorAll('#top-docs .rank-item').forEach(function(item) {
+      var titulo = item.querySelector('span[style*="font-size:13px"]')?.textContent?.trim() || '';
+      var desc   = item.querySelector('span[style*="font-weight:700"]')?.textContent?.trim() || '';
+      if (titulo) rows.push([titulo, desc]);
+    });
+
+    rows.push(['', '']);
+    rows.push(['Top usuarios más activos', '']);
+    rows.push(['Usuario', 'Empresa', 'Interacciones']);
+    document.querySelectorAll('#top-users .rank-item').forEach(function(item) {
+      var spans = item.querySelectorAll('div[style*="font-size:13px"], div[style*="font-size:11px"]');
+      var nombre = spans[0]?.textContent?.trim() || '';
+      var empresa = spans[1]?.textContent?.trim() || '';
+      var inter  = item.querySelector('span[style*="font-weight:700"]')?.textContent?.trim() || '';
+      if (nombre) rows.push([nombre, empresa, inter]);
+    });
+
+    var csv = rows.map(function(r) { return r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'reportes.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }
   </script>
 
     </main>

@@ -1,6 +1,8 @@
 package org.reciclame.demo.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstadosNormativaService;
@@ -22,6 +24,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -349,6 +354,7 @@ public class AdminController {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
             model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         return "Admin/notificaciones";
     }
 
@@ -452,5 +458,51 @@ public class AdminController {
         model.addAttribute("etiquetas",  etiquetaService.listarEtiquetas());
         model.addAttribute("normativas", normativaService.listarNormativas());
         return "Admin/estudios-form";
+    }
+
+    @GetMapping("/admin/auditoria/export.csv")
+    public void exportarAuditoriaAdminCSV(HttpServletResponse response,
+                                          @AuthenticationPrincipal UserDetails user) throws IOException {
+        response.setContentType("text/csv;charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+                .withZone(java.time.ZoneId.of("America/Lima"));
+        List<Auditoria> all = auditoriaService.listarAuditorias();
+        try (PrintWriter w = response.getWriter()) {
+            w.println("Fecha,Accion,Modulo,Estado,Usuario,IP,Descripcion");
+            for (Auditoria a : all) {
+                w.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                        a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "",
+                        esc(a.getAccion()), esc(a.getModulo()), esc(a.getEstado()),
+                        esc(a.getUsuarioNombre()), esc(a.getIpAddress()), esc(a.getDescripcion()));
+            }
+        }
+    }
+
+    @PostMapping("/admin/notificaciones/enviar")
+    public String enviarNotificacion(
+            @RequestParam String destinatario,
+            @RequestParam String titulo,
+            @RequestParam String mensaje,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if ("todos".equals(destinatario)) {
+            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
+            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
+        } else {
+            try {
+                Long id = Long.parseLong(destinatario);
+                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
+                ra.addFlashAttribute("enviado", "Notificación enviada.");
+            } catch (NumberFormatException e) {
+                ra.addFlashAttribute("error", "Destinatario inválido.");
+            }
+        }
+        return "redirect:/admin/notificaciones";
+    }
+
+    protected String esc(String s) {
+        if (s == null) return "";
+        return s.replace("\"", "\"\"");
     }
 }

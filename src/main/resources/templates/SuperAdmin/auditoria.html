@@ -253,10 +253,10 @@
               <span style="font-size:12px;font-weight:600;color:#E74C3C;"
                 th:text="${auditorias != null ? auditorias.size() + ' eventos' : '0 eventos'}">0 eventos</span>
             </div>
-            <button
-              style="padding:9px 18px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;">
-              <i class="fas fa-download"></i> Exportar CSV
-            </button>
+            <a href="/superadmin/auditoria/export.csv"
+               style="padding:9px 18px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;text-decoration:none;">
+              <i class="fas fa-file-csv"></i> Exportar CSV
+            </a>
           </div>
 
           <div th:if="${auditorias != null and !auditorias.isEmpty()}"
