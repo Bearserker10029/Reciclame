@@ -233,7 +233,7 @@
       <table class="table table-striped table-hover">
         <thead>
           <tr>
-            <th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Registro</th>
+            <th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Registro</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -250,9 +250,21 @@
             </td>
             <td style="font-size:11px;color:#9CA3AF;"
                 th:text="${usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : '—'}">—</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button th:if="${!usuario.estadoActivo}" th:onclick="|reactivarUsuario(${usuario.id})|" title="Reactivar usuario"
+                  style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
+                  <i class="fas fa-play" style="color:#2ECC71;"></i>
+                </button>
+                <button th:if="${usuario.cuentaBloqueada}" th:onclick="|toggleBloquearUsuario(${usuario.id})|" title="Desbloquear usuario"
+                  style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
+                  <i class="fas fa-unlock" style="color:#27AE60;"></i>
+                </button>
+              </div>
+            </td>
           </tr>
           <tr>
-            <td colspan="5" style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
+            <td colspan="6" style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
               <i class="fas fa-info-circle" style="margin-right:6px;"></i>
               Usuarios con estados distintos de Activo (bloqueados, inactivos, pendientes).
             </td>
@@ -760,16 +772,92 @@
       .catch(function() { alert('Error de conexión'); });
   }
 
-  // ─── Eliminar usuario (lógico) ───────────────────────────
+  // ─── Eliminar usuario (lógico) con modal ───────────────────────────
+  var idUsuarioEliminar = null;
   function eliminarUsuario(id) {
-    if (!confirm('¿Confirmas eliminar este usuario? Esta acción lo marcará como inactivo.')) return;
-    fetch('/api/usuarios/' + id, { method: 'DELETE' })
+    idUsuarioEliminar = id;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+  }
+  function cerrarModalEliminar() {
+    document.getElementById('modal-eliminar').style.display = 'none';
+    idUsuarioEliminar = null;
+  }
+  document.getElementById('btn-confirmar-eliminar').onclick = function() {
+    if (!idUsuarioEliminar) return;
+    fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
       .then(function(r) {
-        if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
-        else { alert('Error al eliminar el usuario'); }
+        cerrarModalEliminar();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else { alert('Error al eliminar el usuario'); }
       })
       .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
+
+  // ─── Reactivar usuario con modal ───────────────────────────
+  var idUsuarioReactivar = null;
+  function reactiveUsuario(id) {
+    idUsuarioReactivar = id;
+    document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.';
+    document.getElementById('modal-reactivar').style.display = 'flex';
   }
+  function cerrarModalReactivar() {
+    document.getElementById('modal-reactivar').style.display = 'none';
+    idUsuarioReactivar = null;
+  }
+  document.getElementById('btn-confirmar-reactivar').onclick = function() {
+    if (!idUsuarioReactivar) return;
+    fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
+      .then(function(r) {
+        cerrarModalReactivar();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else {
+          alert('Error al reactivar el usuario');
+        }
+      })
+      .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
+
+  // ─── Desbloquear usuario con modal ───────────────────────
+  var idUsuarioDesbloquear = null;
+  function toggleBloquearUsuario(id) {
+    idUsuarioDesbloquear = id;
+    document.getElementById('modal-desbloquear-msg').textContent = 'El usuario podrá iniciar sesión nuevamente.';
+    document.getElementById('modal-desbloquear').style.display = 'flex';
+  }
+  function cerrarModalDesbloquear() {
+    document.getElementById('modal-desbloquear').style.display = 'none';
+    idUsuarioDesbloquear = null;
+  }
+  document.getElementById('btn-confirmar-desbloquear').onclick = function() {
+    if (!idUsuarioDesbloquear) return;
+    fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
+      .then(function(r) {
+        cerrarModalDesbloquear();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else {
+          alert('Error al desbloquear el usuario');
+        }
+      })
+      .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
+
+  function cerrarModalExito() {
+    document.getElementById('modal-exito').style.display = 'none';
+    location.reload();
+  }
+  document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
 
   // ─── Cerrar modales al hacer clic fuera ───────────────────
   document.getElementById('modal-crear').addEventListener('click', function(e) {
@@ -789,6 +877,70 @@
   </script>
 
     </main>
+  </div>
+
+  <!-- Modal Reactivar Usuario -->
+  <div id="modal-reactivar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-play" style="color:#27AE60;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Reactivar Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;" id="modal-reactivar-msg">¿Estás seguro de que deseas reactivarlo?</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalReactivar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-reactivar" style="padding:12px 24px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Reactivar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Desbloquear Usuario -->
+  <div id="modal-desbloquear" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#D6EAF8,#AED6F1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-unlock" style="color:#3498DB;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Desbloquear Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;" id="modal-desbloquear-msg">¿Estás seguro de que deseas desbloquearlo?</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalDesbloquear()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-desbloquear" style="padding:12px 24px;border:none;border-radius:8px;background:#3498DB;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Desbloquear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Éxito -->
+  <div id="modal-exito" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-check" style="color:#27AE60;font-size:32px;"></i>
+      </div>
+      <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;" id="modal-exito-titulo">Operación Exitosa</h3>
+      <p style="margin:8px 0 20px 0;font-size:14px;color:#6B7280;" id="modal-exito-msg">El usuario ha sido modificado correctamente.</p>
+      <button onclick="cerrarModalExito()" style="padding:12px 32px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal Eliminar Usuario (Rojo) -->
+  <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este usuario?</p>
+        <p style="margin:8px 0 0 0;font-size:12px;color:#E74C3C;font-weight:500;">Esta acción lo marcará como inactivo.</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalEliminar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-eliminar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
+      </div>
+    </div>
   </div>
 
   <!-- ── Chatbot (fuera del main para position:fixed) ── -->
