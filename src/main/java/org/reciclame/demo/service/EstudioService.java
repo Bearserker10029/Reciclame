@@ -9,7 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +42,21 @@ public class EstudioService {
     public List<EstudioResponseDTO> listarEstudios() {
         return estudioRepository.findByEstadoActivoTrue().stream()
                 .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> agregarPorTematica() {
+        List<EstudioResponseDTO> estudios = listarEstudios();
+        return estudios.stream()
+                .filter(e -> e.getTematicaNombre() != null)
+                .collect(Collectors.groupingBy(EstudioResponseDTO::getTematicaNombre, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
                 .collect(Collectors.toList());
     }
 

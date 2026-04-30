@@ -100,7 +100,6 @@
         var msg = input.value.trim();
         if (!msg) return;
 
-        // Mensaje del usuario (escapado para seguridad)
         var userMsgHtml = '<div class="chat-msg user"><div class="bubble">' +
                           msg.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
                           '</div></div>';
@@ -108,14 +107,26 @@
         input.value = '';
         msgs.scrollTop = msgs.scrollHeight;
 
-        // Respuesta del bot (simulada en demo)
-        setTimeout(function () {
-          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' +
-                           'Gracias por tu mensaje. Estoy en modo demo.' +
-                           '</div></div>';
+        fetch('http://localhost:5678/webhook/chatbot-reciclame', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: msg })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          var content = data.choices && data.choices[0] && data.choices[0].message
+                       ? data.choices[0].message.content
+                       : data.response || '...';
+          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' + content + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
-        }, 800);
+        })
+        .catch(function() {
+          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' +
+                           'Lo siento, el asistente no está disponible.' + '</div></div>';
+          msgs.innerHTML += botMsgHtml;
+          msgs.scrollTop = msgs.scrollHeight;
+        });
       };
     }
 

@@ -36,6 +36,28 @@
       }
     }
 
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(.8)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
     @keyframes pulse {
 
       0%,
@@ -45,6 +67,38 @@
 
       50% {
         box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
       }
     }
 
@@ -60,7 +114,15 @@
       }
     }
 
-    .doc-hero {
+    .page-enter {
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-enter {
+      animation: countUp .4s ease both;
+    }
+
+    .estudios-hero {
       background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
       border-radius: 20px;
       padding: 28px 32px;
@@ -71,7 +133,7 @@
       animation: fadeUp .4s ease both;
     }
 
-    .doc-hero::before {
+    .estudios-hero::before {
       content: '';
       position: absolute;
       top: -60px;
@@ -82,7 +144,7 @@
       background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
     }
 
-    .doc-hero::after {
+    .estudios-hero::after {
       content: '';
       position: absolute;
       bottom: -80px;
@@ -91,6 +153,57 @@
       height: 200px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
     }
 
     .stat-card {
@@ -323,7 +436,7 @@
       <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
       <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
 
-        <div class="doc-hero">
+        <div class="estudios-hero">
           <div
             style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
@@ -338,29 +451,30 @@
                     repositorio</p>
                 </div>
               </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Repositorio de documentos técnicos</span>
+                </div>
+                <button class="btn-upload" style="animation:fadeUp .5s .1s ease both;" onclick="openUploadModal()">
+                  <i class="fas fa-cloud-upload-alt"></i> Subir documento
+                </button>
+              </div>
             </div>
-            <button class="btn-upload" style="animation:fadeUp .5s .1s ease both;" onclick="openUploadModal()">
-              <i class="fas fa-cloud-upload-alt"></i> Subir documento
-            </button>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
-          <div class="stat-card" style="animation-delay:.1s">
-            <div class="val" th:text="${estudios != null ? estudios.size() : 0}" style="color:inherit;text-decoration:none;cursor:default;">0</div>
-            <div class="lbl">Estudios cargados</div>
-          </div>
-          <div class="stat-card" style="animation-delay:.2s">
-            <div class="val" th:text="${normativas != null ? normativas.size() : 0}" style="color:inherit;text-decoration:none;cursor:default;">0</div>
-            <div class="lbl">Normativas indexadas</div>
-          </div>
-          <div class="stat-card" style="animation-delay:.3s">
-            <div class="val" th:text="${totalDescargas != null ? totalDescargas : 0}" style="color:inherit;text-decoration:none;cursor:default;">0</div>
-            <div class="lbl">Descargas totales</div>
-          </div>
-          <div class="stat-card" style="animation-delay:.4s">
-            <div class="val" th:text="${estudios != null ? estudios.size() : 0}" style="color:inherit;text-decoration:none;cursor:default;">0</div>
-            <div class="lbl">Documentos totales</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" id="stats-total">—</div>
+                <div class="lbl">Total</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" id="stats-pdf" style="color:#F87171;">—</div>
+                <div class="lbl">PDF</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="val" id="stats-pptx" style="color:#34D399;">—</div>
+                <div class="lbl">PPTX</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -403,9 +517,11 @@
               </tr>
             </thead>
             <tbody id="documentos-tbody">
-              <tr th:each="e : ${estudios}" class="doc-row" th:data-nombre="${e.titulo}" th:data-seccion="Estudio" th:data-categoria="${e.tematicaCodigo}">
+              <tr th:each="e : ${estudios}" class="doc-row" th:data-nombre="${e.titulo}" th:data-seccion="'Estudio'"
+                th:data-categoria="${e.tematicaCodigo}" th:data-mime="${e.archivoTipoMime}">
                 <td style="font-weight:600;color:#1B3A5C;">
-                  <span style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Estudio</span>
+                  <span
+                    style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Estudio</span>
                   <span th:text="${e.titulo}">—</span>
                 </td>
                 <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${e.descripcionBreve}">—</td>
@@ -418,14 +534,21 @@
                 <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
                 <td>
                   <div style="display:flex;gap:6px;">
-                    <a th:href="@{/superadmin/estudios/editar/{id}(id=${e.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
-                    <button th:data-tipo="estudio" th:data-id="${e.id}" th:data-titulo="${e.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+                    <a th:href="@{/superadmin/estudios/editar/{id}(id=${e.id})}"
+                      style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i
+                        class="fas fa-edit" style="color:#3498DB;"></i></a>
+                    <button th:data-tipo="estudio" th:data-id="${e.id}" th:data-titulo="${e.titulo}"
+                      onclick="confirmarEliminarBtn(this)"
+                      style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i
+                        class="fas fa-trash-alt"></i></button>
                   </div>
                 </td>
               </tr>
-              <tr th:each="n : ${normativas}" class="doc-row" th:data-nombre="${n.titulo}" th:data-seccion="Normativa" th:data-categoria="${n.tematicaCodigo}">
+              <tr th:each="n : ${normativas}" class="doc-row" th:data-nombre="${n.titulo}" th:data-seccion="'Normativa'"
+                th:data-categoria="${n.tematicaCodigo}" th:data-mime="${n.archivoTipoMime}">
                 <td style="font-weight:600;color:#1B3A5C;">
-                  <span style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Normativa</span>
+                  <span
+                    style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Normativa</span>
                   <span th:text="${n.titulo}">—</span>
                 </td>
                 <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${n.descripcionBreve}">—</td>
@@ -438,39 +561,51 @@
                 <td><span class="badge-publico"><i class="fas fa-globe" style="font-size:8px;"></i> Público</span></td>
                 <td>
                   <div style="display:flex;gap:6px;">
-                    <a th:href="@{/superadmin/normativo/editar/{id}(id=${n.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
-                    <button th:data-tipo="normativa" th:data-id="${n.id}" th:data-titulo="${n.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+                    <a th:href="@{/superadmin/normativo/editar/{id}(id=${n.id})}"
+                      style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i
+                        class="fas fa-edit" style="color:#3498DB;"></i></a>
+                    <button th:data-tipo="normativa" th:data-id="${n.id}" th:data-titulo="${n.titulo}"
+                      onclick="confirmarEliminarBtn(this)"
+                      style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i
+                        class="fas fa-trash-alt"></i></button>
                   </div>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+          <div
+            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
             <span id="conteo-documentos">Mostrando documentos</span>
             <div style="display:flex;gap:4px;" id="paginacion-documentos"></div>
           </div>
         </div>
 
         <!-- Modal Subir Documento -->
-        <div id="uploadModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-          <div style="background:#fff;border-radius:16px;padding:32px;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div id="uploadModal"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
-              <div style="width:56px;height:56px;background:linear-gradient(135deg,#2ECC71,#27AE60);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:56px;height:56px;background:linear-gradient(135deg,#2ECC71,#27AE60);border-radius:14px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-cloud-upload-alt" style="color:#fff;font-size:24px;"></i>
               </div>
               <div>
                 <h3 style="margin:0;font-size:20px;font-weight:800;color:#1B3A5C;">Subir Documento</h3>
                 <p style="margin:4px 0 0 0;font-size:13px;color:#6B7280;">Selecciona el tipo de documento a cargar</p>
               </div>
-              <button onclick="closeUploadModal()" style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+              <button onclick="closeUploadModal()"
+                style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
             </div>
             <div style="display:flex;gap:16px;">
-              <div onclick="alert('Funcionalidad de upload de Estudios')" style="flex:1;padding:24px;background:linear-gradient(135deg,#F0FFF4,#E8F8F0);border:2px dashed #2ECC71;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
+              <div onclick="alert('Funcionalidad de upload de Estudios')"
+                style="flex:1;padding:24px;background:linear-gradient(135deg,#F0FFF4,#E8F8F0);border:2px dashed #2ECC71;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
                 <i class="fas fa-file-alt" style="font-size:36px;color:#2ECC71;margin-bottom:12px;"></i>
                 <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Estudios</div>
                 <div style="font-size:12px;color:#6B7280;margin-top:4px;">Reportes, presentaciones, infografías</div>
               </div>
-              <div onclick="alert('Funcionalidad de upload de Normativas')" style="flex:1;padding:24px;background:linear-gradient(135deg,#EBF5FF,#D6E9FF);border:2px dashed #3498DB;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
+              <div onclick="alert('Funcionalidad de upload de Normativas')"
+                style="flex:1;padding:24px;background:linear-gradient(135deg,#EBF5FF,#D6E9FF);border:2px dashed #3498DB;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
                 <i class="fas fa-balance-scale" style="font-size:36px;color:#3498DB;margin-bottom:12px;"></i>
                 <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Normativas</div>
                 <div style="font-size:12px;color:#6B7280;margin-top:4px;">Leyes, reglamentos, directivas</div>
@@ -480,46 +615,63 @@
         </div>
 
         <!-- Modal Editar Documento -->
-        <div id="editModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-          <div style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div id="editModal"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
-              <div style="width:56px;height:56px;background:linear-gradient(135deg,#3498DB,#2471A3);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:56px;height:56px;background:linear-gradient(135deg,#3498DB,#2471A3);border-radius:14px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-edit" style="color:#fff;font-size:24px;"></i>
               </div>
               <div>
                 <h3 style="margin:0;font-size:20px;font-weight:800;color:#1B3A5C;">Editar Documento</h3>
                 <p style="margin:4px 0 0 0;font-size:13px;color:#6B7280;">Modifica los datos del documento</p>
               </div>
-              <button onclick="closeEditModal()" style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+              <button onclick="closeEditModal()"
+                style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
             </div>
             <div style="margin-bottom:16px;">
-              <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Título</label>
-              <input id="editTitulo" style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;" />
+              <label
+                style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Título</label>
+              <input id="editTitulo"
+                style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;" />
             </div>
             <div style="margin-bottom:20px;">
-              <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Descripción</label>
-              <textarea id="editDescripcion" style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;min-height:80px;resize:vertical;"></textarea>
+              <label
+                style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Descripción</label>
+              <textarea id="editDescripcion"
+                style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;min-height:80px;resize:vertical;"></textarea>
             </div>
             <div style="display:flex;gap:12px;justify-content:flex-end;">
-              <button onclick="closeEditModal()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
-              <button style="padding:12px 24px;border:none;border-radius:8px;background:#3498DB;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Guardar cambios</button>
+              <button onclick="closeEditModal()"
+                style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+              <button
+                style="padding:12px 24px;border:none;border-radius:8px;background:#3498DB;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Guardar
+                cambios</button>
             </div>
           </div>
         </div>
 
         <!-- Modal Eliminar Documento -->
-        <div id="deleteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-          <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div id="deleteModal"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
             <div style="text-align:center;margin-bottom:20px;">
-              <div style="width:72px;height:72px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <div
+                style="width:72px;height:72px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                 <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:32px;"></i>
               </div>
               <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Documento</h3>
-              <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este documento? Esta acción no se puede deshacer.</p>
+              <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este
+                documento? Esta acción no se puede deshacer.</p>
             </div>
             <div style="display:flex;gap:12px;justify-content:center;">
-              <button onclick="closeDeleteModal()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
-              <button id="deleteConfirmBtn" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Eliminar</button>
+              <button onclick="closeDeleteModal()"
+                style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
+              <button id="deleteConfirmBtn"
+                style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Eliminar</button>
             </div>
           </div>
         </div>
@@ -529,9 +681,31 @@
           function closeUploadModal() { document.getElementById('uploadModal').style.display = 'none'; }
           function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
           function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
-          document.getElementById('uploadModal')?.addEventListener('click', function(e) { if(e.target===this) closeUploadModal(); });
-          document.getElementById('editModal')?.addEventListener('click', function(e) { if(e.target===this) closeEditModal(); });
-          document.getElementById('deleteModal')?.addEventListener('click', function(e) { if(e.target===this) closeDeleteModal(); });
+          document.getElementById('uploadModal')?.addEventListener('click', function (e) { if (e.target === this) closeUploadModal(); });
+          document.getElementById('editModal')?.addEventListener('click', function (e) { if (e.target === this) closeEditModal(); });
+          document.getElementById('deleteModal')?.addEventListener('click', function (e) { if (e.target === this) closeDeleteModal(); });
+
+          (function () {
+            var rows = document.querySelectorAll('tr[data-nombre]');
+            var total = rows.length, pdf = 0, pptx = 0;
+            rows.forEach(function (r) {
+              var mime = (r.dataset.mime || '').toLowerCase();
+              if (mime.indexOf('pdf') > -1) pdf++; else pptx++;
+            });
+            function animateCount(id, target) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              var start = 0, dur = 800, step = 16;
+              var timer = setInterval(function () {
+                start += Math.ceil(target / (dur / step));
+                if (start >= target) { start = target; clearInterval(timer); }
+                el.textContent = start;
+              }, step);
+            }
+            animateCount('stats-total', total);
+            animateCount('stats-pdf', pdf);
+            animateCount('stats-pptx', pptx);
+          })();
 
           function confirmarEliminarBtn(btn) {
             confirmarEliminar(btn.getAttribute('data-tipo'), btn.getAttribute('data-id'), btn.getAttribute('data-titulo'));
@@ -540,15 +714,15 @@
           function confirmarEliminar(tipo, id, titulo) {
             document.querySelector('#deleteModal p').textContent = '¿Eliminar "' + titulo + '"? Esta acción no se puede deshacer.';
             document.getElementById('deleteModal').style.display = 'flex';
-            document.getElementById('deleteConfirmBtn').onclick = function() {
+            document.getElementById('deleteConfirmBtn').onclick = function () {
               var url = tipo === 'estudio' ? '/api/estudios/' + id : '/api/normativas/' + id;
               fetch(url, { method: 'DELETE' })
-                .then(function(r) {
+                .then(function (r) {
                   closeDeleteModal();
                   if (r.ok) { window.location.reload(); }
                   else { alert('Error al eliminar el documento.'); }
                 })
-                .catch(function() { closeDeleteModal(); alert('Error de conexión.'); });
+                .catch(function () { closeDeleteModal(); alert('Error de conexión.'); });
             };
           }
 
@@ -588,7 +762,7 @@
 
           function inicializarPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             paginaDocumentosActual = 1;
@@ -600,7 +774,7 @@
             var btnAnterior = document.createElement('button');
             btnAnterior.textContent = 'Anterior';
             btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnAnterior.onclick = function() { if (paginaDocumentosActual > 1) { paginaDocumentosActual--; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
+            btnAnterior.onclick = function () { if (paginaDocumentosActual > 1) { paginaDocumentosActual--; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
             paginacionDiv.appendChild(btnAnterior);
 
             for (var i = 1; i <= totalPaginas; i++) {
@@ -609,14 +783,14 @@
               btnPagina.id = 'btn-doc-pagina-' + i;
               var estaActiva = (i === paginaDocumentosActual);
               btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-              btnPagina.onclick = (function(pageNum) { return function() { paginaDocumentosActual = pageNum; mostrarPaginaDocumentos(pageNum); actualizarBotonesPaginacionDocumentos(); }; })(i);
+              btnPagina.onclick = (function (pageNum) { return function () { paginaDocumentosActual = pageNum; mostrarPaginaDocumentos(pageNum); actualizarBotonesPaginacionDocumentos(); }; })(i);
               paginacionDiv.appendChild(btnPagina);
             }
 
             var btnSiguiente = document.createElement('button');
             btnSiguiente.textContent = 'Siguiente';
             btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnSiguiente.onclick = function() { if (paginaDocumentosActual < totalPaginas) { paginaDocumentosActual++; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
+            btnSiguiente.onclick = function () { if (paginaDocumentosActual < totalPaginas) { paginaDocumentosActual++; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
             paginacionDiv.appendChild(btnSiguiente);
 
             document.getElementById('conteo-documentos').textContent = 'Mostrando ' + filasVisibles + ' documentos';
@@ -628,7 +802,7 @@
             var inicio = (numero - 1) * DOCUMENTOS_POR_PAGINA;
             var fin = inicio + DOCUMENTOS_POR_PAGINA;
             var conteo = 0;
-            filas.forEach(function(tr) {
+            filas.forEach(function (tr) {
               if (tr.style.display === 'none') { tr.style.display = 'none'; }
               else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
             });
@@ -636,7 +810,7 @@
 
           function actualizarBotonesPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             for (var i = 1; i <= totalPaginas; i++) {
