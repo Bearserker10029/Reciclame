@@ -1,147 +1,128 @@
-<jasperReport name="usuarios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
-    <style name="headerStyle" forecolor="#FFFFFF" backcolor="#1B3A5C" fontName="SansSerif" fontSize="10" bold="true"/>
-    <style name="rowStyle" fontName="SansSerif" fontSize="9"/>
-    <style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9"/>
-    <style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8"/>
-
-    <dataset name="UsuariosRolDataset">
-        <field name="label" class="java.lang.String"/>
-        <field name="value" class="java.lang.Integer"/>
-    </dataset>
-    <dataset name="UsuariosEstadoDataset">
-        <field name="label" class="java.lang.String"/>
-        <field name="value" class="java.lang.Integer"/>
-    </dataset>
-
-    <parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
-    <parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
-
-    <field name="nombreCompleto" class="java.lang.String"/>
-    <field name="dni" class="java.lang.String"/>
-    <field name="correoCorporativo" class="java.lang.String"/>
-    <field name="cargo" class="java.lang.String"/>
-    <field name="rolNombre" class="java.lang.String"/>
-    <field name="empresaNombre" class="java.lang.String"/>
-    <field name="estadoCuenta" class="java.lang.String"/>
-    <field name="ultimoLogin" class="java.time.Instant"/>
-
-    <background height="802" splitType="Stretch">
-        <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
-            <dataset kind="pie">
-                <datasetRun subDataset="UsuariosRolDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
-                </datasetRun>
-                <series>
-                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
-                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
-                </series>
-            </dataset>
-            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-                <seriesColor order="0" color="#3399FF"/>
-                <seriesColor order="1" color="#00CCFF"/>
-                <seriesColor order="2" color="#0066CC"/>
-                <seriesColor order="3" color="#6699FF"/>
-                <seriesColor order="4" color="#004A94"/>
-                <seriesColor order="5" color="#00356A"/>
-            </plot>
-        </element>
-        <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
-            <dataset kind="pie">
-                <datasetRun subDataset="UsuariosEstadoDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
-                </datasetRun>
-                <series>
-                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
-                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
-                </series>
-            </dataset>
-            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-                <seriesColor order="0" color="#3399FF"/>
-                <seriesColor order="1" color="#00CCFF"/>
-                <seriesColor order="2" color="#0066CC"/>
-                <seriesColor order="3" color="#6699FF"/>
-                <seriesColor order="4" color="#004A94"/>
-                <seriesColor order="5" color="#00356A"/>
-            </plot>
-        </element>
-    </background>
-
-    <title height="60" splitType="Stretch">
-        <element kind="staticText" x="0" y="10" width="1160" height="40" fontSize="20" bold="true" hTextAlign="Center">
-            <text><![CDATA[Reporte de Usuarios]]></text>
-        </element>
-    </title>
-
-    <columnHeader height="30" splitType="Stretch">
-        <element kind="line" x="0" y="29" width="1160" height="1">
-            <pen lineWidth="2" lineColor="#1B3A5C"/>
-        </element>
-        <element kind="staticText" x="0" y="0" width="180" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Nombre Completo]]></text>
-        </element>
-        <element kind="staticText" x="180" y="0" width="80" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[DNI]]></text>
-        </element>
-        <element kind="staticText" x="260" y="0" width="200" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Correo]]></text>
-        </element>
-        <element kind="staticText" x="460" y="0" width="140" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Cargo]]></text>
-        </element>
-        <element kind="staticText" x="600" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Rol]]></text>
-        </element>
-        <element kind="staticText" x="700" y="0" width="160" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Empresa]]></text>
-        </element>
-        <element kind="staticText" x="860" y="0" width="120" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Estado]]></text>
-        </element>
-        <element kind="staticText" x="980" y="0" width="180" height="28" style="headerStyle" hTextAlign="Center">
-            <text><![CDATA[Ultimo Login]]></text>
-        </element>
-    </columnHeader>
-
-    <detail>
-        <band height="25" splitType="Stretch">
-            <element kind="textField" x="0" y="0" width="180" height="25" style="rowAltStyle" hTextAlign="Left">
-                <expression><![CDATA[$F{nombreCompleto}]]></expression>
-            </element>
-            <element kind="textField" x="180" y="0" width="80" height="25" style="rowAltStyle" hTextAlign="Center">
-                <expression><![CDATA[$F{dni}]]></expression>
-            </element>
-            <element kind="textField" x="260" y="0" width="200" height="25" style="rowAltStyle" hTextAlign="Left">
-                <expression><![CDATA[$F{correoCorporativo}]]></expression>
-            </element>
-            <element kind="textField" x="460" y="0" width="140" height="25" style="rowAltStyle" hTextAlign="Left">
-                <expression><![CDATA[$F{cargo} != null ? $F{cargo} : "-"]]></expression>
-            </element>
-            <element kind="textField" x="600" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
-                <expression><![CDATA[$F{rolNombre}]]></expression>
-            </element>
-            <element kind="textField" x="700" y="0" width="160" height="25" style="rowAltStyle" hTextAlign="Left">
-                <expression><![CDATA[$F{empresaNombre} != null ? $F{empresaNombre} : "-"]]></expression>
-            </element>
-            <element kind="textField" x="860" y="0" width="120" height="25" style="rowAltStyle" hTextAlign="Center">
-                <expression><![CDATA[$F{estadoCuenta}]]></expression>
-            </element>
-            <element kind="textField" x="980" y="0" width="180" height="25" style="rowAltStyle" hTextAlign="Center">
-                <expression><![CDATA[$F{ultimoLogin} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(java.time.ZoneId.of("America/Lima")).format($F{ultimoLogin}) : "Nunca"]]></expression>
-            </element>
-        </band>
-    </detail>
-
-    <pageFooter height="30" splitType="Stretch">
-        <element kind="line" x="0" y="0" width="1160" height="1">
-            <pen lineWidth="1" lineColor="#1B3A5C"/>
-        </element>
-        <element kind="textField" x="0" y="5" width="400" height="20" style="footerStyle">
-            <expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
-        </element>
-        <element kind="textField" x="960" y="5" width="200" height="20" style="footerStyle" hTextAlign="Right">
-            <expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
-        </element>
-    </pageFooter>
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="usuarios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="69187499-4f96-4949-be77-3975b676cfee">
+	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#3399FF" fontName="SansSerif" fontSize="10.0" bold="true"/>
+	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
+	<style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
+	<dataset name="UsuariosRolDataset" uuid="1abd3b23-8aa8-433c-9cf1-2c27da97f991">
+		<field name="label" class="java.lang.String"/>
+		<field name="value" class="java.lang.Integer"/>
+	</dataset>
+	<dataset name="UsuariosEstadoDataset" uuid="919e2cad-06ef-4a47-8cdf-abeec4e3ba92">
+		<field name="label" class="java.lang.String"/>
+		<field name="value" class="java.lang.Integer"/>
+	</dataset>
+	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<field name="nombreCompleto" class="java.lang.String"/>
+	<field name="dni" class="java.lang.String"/>
+	<field name="correoCorporativo" class="java.lang.String"/>
+	<field name="cargo" class="java.lang.String"/>
+	<field name="rolNombre" class="java.lang.String"/>
+	<field name="empresaNombre" class="java.lang.String"/>
+	<field name="estadoCuenta" class="java.lang.String"/>
+	<field name="ultimoLogin" class="java.time.Instant"/>
+	<background height="802" splitType="Stretch">
+		<element kind="chart" chartType="pie3D" uuid="24c7f932-637e-46e8-a7d4-3a46cbfa717e" x="890" y="160" width="260" height="140" showLegend="false" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="a0fce8e3-cb50-405d-9178-d9fa71b5ba70" subDataset="UsuariosRolDataset">
+					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#3399FF"/>
+				<seriesColor order="1" color="#00CCFF"/>
+				<seriesColor order="2" color="#0066CC"/>
+				<seriesColor order="3" color="#6699FF"/>
+				<seriesColor order="4" color="#004A94"/>
+				<seriesColor order="5" color="#00356A"/>
+			</plot>
+		</element>
+		<element kind="chart" chartType="pie3D" uuid="a170b3df-3a74-4213-b0d3-e6e57d7a51f0" x="890" y="340" width="260" height="140" showLegend="false" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="bcd4e70b-da7d-4405-97f9-dafd22d58206" subDataset="UsuariosEstadoDataset">
+					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#3399FF"/>
+				<seriesColor order="1" color="#00CCFF"/>
+				<seriesColor order="2" color="#0066CC"/>
+				<seriesColor order="3" color="#6699FF"/>
+				<seriesColor order="4" color="#004A94"/>
+				<seriesColor order="5" color="#00356A"/>
+			</plot>
+		</element>
+	</background>
+	<title height="60" splitType="Stretch">
+		<element kind="staticText" uuid="bf6cc639-1826-4184-b101-9deb3fdeab9a" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Reporte de Usuarios]]></text>
+		</element>
+	</title>
+	<columnHeader height="30" splitType="Stretch">
+		<element kind="line" uuid="8eadf4d7-8151-441c-a544-53cf8b128ae5" x="0" y="29" width="889" height="1">
+			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
+		</element>
+		<element kind="staticText" uuid="db9835e4-27f3-4997-8e3f-3d68b64caa9d" mode="Opaque" x="0" y="0" width="180" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Nombre Completo]]></text>
+		</element>
+		<element kind="staticText" uuid="8e3efdc2-29d5-4ced-ab98-1abd12c98cab" mode="Opaque" x="180" y="0" width="150" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Correo]]></text>
+		</element>
+		<element kind="staticText" uuid="c6347126-1b5b-480b-8f14-771f18565cee" mode="Opaque" x="330" y="0" width="140" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Cargo]]></text>
+		</element>
+		<element kind="staticText" uuid="69ddcd47-541e-4103-bd0e-241dbe554849" mode="Opaque" x="470" y="0" width="130" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Empresa]]></text>
+		</element>
+		<element kind="staticText" uuid="c3c7abae-cfe3-4b82-a5c2-fd6374f56a7d" mode="Opaque" x="600" y="0" width="110" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Estado]]></text>
+		</element>
+		<element kind="staticText" uuid="7cfcf67a-3554-4f57-bf74-9b48baa1b1f8" mode="Opaque" x="710" y="0" width="180" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Ultimo Login]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="25" splitType="Stretch">
+			<element kind="textField" uuid="20ef0c79-71bc-41a7-917f-37d7295bcf0a" x="0" y="0" width="180" height="25" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{nombreCompleto}]]></expression>
+			</element>
+			<element kind="textField" uuid="fdbfe2f3-363e-460f-b918-5de6a90d3954" x="180" y="0" width="150" height="25" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{correoCorporativo}]]></expression>
+			</element>
+			<element kind="textField" uuid="f0488c30-aa84-41d1-bf63-b96b51fd73a3" x="330" y="0" width="140" height="25" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{cargo} != null ? $F{cargo} : "-"]]></expression>
+			</element>
+			<element kind="textField" uuid="c11c01e7-1c7e-4a46-819f-f7fc7533d466" x="470" y="0" width="130" height="25" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{empresaNombre} != null ? $F{empresaNombre} : "-"]]></expression>
+			</element>
+			<element kind="textField" uuid="49606efd-c906-436e-a3de-edf2c3f3b6c1" x="600" y="0" width="110" height="25" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{estadoCuenta}]]></expression>
+			</element>
+			<element kind="textField" uuid="d7c02827-aa71-46fe-9493-8eb87d10df4a" x="710" y="0" width="180" height="25" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{ultimoLogin} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(java.time.ZoneId.of("America/Lima")).format($F{ultimoLogin}) : "Nunca"]]></expression>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="30" splitType="Stretch">
+		<element kind="line" uuid="9702f2f6-6946-495c-900f-6963e9c9790d" x="0" y="0" width="1160" height="1">
+			<pen lineWidth="1.0" lineColor="#1B3A5C"/>
+		</element>
+		<element kind="textField" uuid="db6fc5c9-8715-4776-916d-75a458c4adc4" x="0" y="5" width="400" height="20" style="footerStyle">
+			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+		</element>
+		<element kind="textField" uuid="f18af906-7989-44e9-b5d3-0203e6628341" x="960" y="5" width="200" height="20" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+		</element>
+	</pageFooter>
 </jasperReport>

@@ -348,10 +348,8 @@ public class SuperAdminController extends AdminController {
         List<Map<String, Object>> datos = usuarios.stream().map(u -> {
             Map<String, Object> row = new java.util.HashMap<>();
             row.put("nombreCompleto", u.getNombreCompleto());
-            row.put("dni", u.getDni());
             row.put("correoCorporativo", u.getCorreoCorporativo());
             row.put("cargo", u.getCargo());
-            row.put("rolNombre", u.getRolNombre());
             row.put("empresaNombre", u.getEmpresaNombre());
             row.put("estadoCuenta", u.getEstadoCuenta());
             row.put("ultimoLogin", u.getUltimoLogin());
