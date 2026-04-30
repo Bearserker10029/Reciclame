@@ -15,210 +15,244 @@
 <body>
 
 <th:block th:fragment="estudios-content">
-  <div style="margin-bottom:20px;">
-    <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
-    <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
-    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
-      <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
-      <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo lectura — no descargables.</span>
+  <div style="margin-bottom:18px;">
+    <h1 style="font-size:30px;font-weight:800;color:#1B3A5C;line-height:1.1;margin-bottom:6px;">Estudios Reciclame</h1>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:4px 11px;">
+      <i class="fas fa-lock" style="color:#717D7E;font-size:10px;"></i>
+      <span style="font-size:10px;color:#717D7E;font-weight:700;">Todos los estudios Reciclame son de solo lectura — no descargables.</span>
     </div>
   </div>
 
-  <!-- Filters -->
-  <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-    <div style="position:relative;flex:1;min-width:220px;">
-      <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-      <input id="estudios-search" class="form-control" placeholder="Buscar estudios..." style="padding-left:36px;" oninput="applyEstudiosFilters()" />
-    </div>
-    <select id="estudios-tematica" class="form-control" style="width:auto;min-width:190px;padding:10px 36px 10px 14px;" onchange="applyEstudiosFilters()">
-      <option value="all">Todas las temáticas</option>
-      <option value="ec">EC · Economía Circular</option>
-      <option value="gr">GR · Gestión de Residuos</option>
-      <option value="ee">EE · Envases y Embalajes</option>
-      <option value="rep">REP · Resp. Ext. Productor</option>
-      <option value="otro">OTRO</option>
-    </select>
-    <select id="estudios-year-mode" class="form-control" style="width:auto;min-width:140px;padding:10px 36px 10px 14px;" onchange="toggleYearMode();applyEstudiosFilters()">
-      <option value="exact">Año exacto</option>
-      <option value="range">Rango de años</option>
-    </select>
-    <div id="year-exact-wrap">
-      <select id="estudios-year" class="form-control" style="width:auto;min-width:130px;padding:10px 36px 10px 14px;" onchange="applyEstudiosFilters()">
-        <option value="all">Todos los años</option>
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-        <option value="2025">2025</option>
-        <option value="2026">2026</option>
-      </select>
-    </div>
-    <div id="year-range-wrap" style="display:none;align-items:center;gap:8px;">
-      <select id="estudios-year-from" class="form-control" style="width:auto;min-width:110px;padding:10px 36px 10px 14px;" onchange="applyEstudiosFilters()">
-        <option value="">Desde</option>
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-        <option value="2025">2025</option>
-        <option value="2026">2026</option>
-      </select>
-      <select id="estudios-year-to" class="form-control" style="width:auto;min-width:110px;padding:10px 36px 10px 14px;" onchange="applyEstudiosFilters()">
-        <option value="">Hasta</option>
-        <option value="2020">2020</option>
-        <option value="2021">2021</option>
-        <option value="2022">2022</option>
-        <option value="2023">2023</option>
-        <option value="2024">2024</option>
-        <option value="2025">2025</option>
-        <option value="2026">2026</option>
-      </select>
-    </div>
-    <select id="estudios-format" class="form-control" style="width:auto;min-width:150px;padding:10px 36px 10px 14px;" onchange="applyEstudiosFilters()">
-      <option value="all">Todos los formatos</option>
-      <option value="pdf">PDF</option>
-      <option value="pptx">PPTX</option>
-    </select>
-    <div style="display:flex;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;">
-      <button id="view-btn-lista" type="button" onclick="setView('lista')" style="padding:9px 14px;border:none;cursor:pointer;background:#1B3A5C;color:#fff;font-size:13px;" title="Vista lista"><i class="fas fa-list"></i></button>
-      <button id="view-btn-grid" type="button" onclick="setView('grid')" style="padding:9px 14px;border:none;cursor:pointer;background:#fff;color:#6B7280;font-size:13px;" title="Vista cuadrícula"><i class="fas fa-th"></i></button>
-    </div>
-  </div>
+  <div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start;">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="display:flex;align-items:center;gap:8px;color:#1B3A5C;font-size:13px;font-weight:700;margin-bottom:10px;">
+          <i class="fas fa-history" style="color:#2ECC71;font-size:12px;"></i>
+          Ultimos accesos
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <div style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+              <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Análisis de Flujo de Materiales</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 18 min</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
+            </div>
+          </div>
+          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <div style="width:54px;height:54px;border-radius:14px;background:rgba(46,204,113,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+              <i class="fas fa-file-powerpoint" style="font-size:23px;color:#27AE60;"></i>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Informe REP Envases 2024</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 h</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
+            </div>
+          </div>
+          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <div style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+              <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Hoja de Ruta EC Perú 2030</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 1 día</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
+            </div>
+          </div>
+          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <div style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+              <i class="fas fa-file-alt" style="font-size:23px;color:#3498DB;"></i>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Gestión de residuos industriales 2025</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 días</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <!-- List view -->
-  <div id="view-lista">
-    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>Documento</th>
-            <th>Temática</th>
-            <th>Objetivo</th>
-            <th>Año</th>
-            <th>Formato</th>
-            <th>Acceso</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="estudios-table-body">
-          <tr class="estudio-row" data-title="Análisis de Flujo de Materiales" data-tematica="EC Economía Circular" data-objetivo="Evaluar el ciclo de vida de envases plásticos en Perú" data-year="2025" data-format="pdf">
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</span>
-              </div>
-            </td>
-            <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economía Circular</span></td>
-            <td style="color:#6B7280;max-width:200px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
-            <td>2025</td>
-            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-          <tr class="estudio-row" data-title="Informe REP Envases 2024" data-tematica="REP Responsabilidad Extendida del Productor" data-objetivo="Monitorear el impacto del programa REP en envases" data-year="2024" data-format="pptx">
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</span>
-              </div>
-            </td>
-            <td><span class="pill" style="background:rgba(231,76,60,.14);color:#C0392B;">REP · Resp. Ext. Productor</span></td>
-            <td style="color:#6B7280;max-width:200px;">Monitorear el impacto del programa REP en envases</td>
-            <td>2024</td>
-            <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">PPTX</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-          <tr class="estudio-row" data-title="Hoja de Ruta EC Perú 2030" data-tematica="EC Economía Circular" data-objetivo="Guía estratégica hacia la economía circular nacional" data-year="2025" data-format="pdf">
-            <td>
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:13px;"></i></div>
-                <span style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</span>
-              </div>
-            </td>
-            <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economía Circular</span></td>
-            <td style="color:#6B7280;max-width:200px;">Guía estratégica hacia la economía circular nacional</td>
-            <td>2025</td>
-            <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
-            <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
-            <td><button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;color:#2ECC71;"></i>Ver</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+      <div style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="display:flex;align-items:center;gap:8px;color:#1B3A5C;font-size:13px;font-weight:700;margin-bottom:10px;">
+          <i class="fas fa-table" style="color:#2ECC71;font-size:12px;"></i>
+          Tabla de Estudios
+        </div>
 
-  <!-- Grid view (hidden by default) -->
-  <div id="view-grid" style="display:none;grid-template-columns:repeat(3,1fr);gap:20px;">
-    <div class="estudio-card" data-title="Análisis de Flujo de Materiales" data-tematica="EC Economía Circular" data-objetivo="Evaluar el ciclo de vida de envases plásticos en el Perú." data-year="2025" data-format="pdf" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
-      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de Materiales</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de envases plásticos en el Perú.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="position:relative;flex:1;min-width:190px;">
+            <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;"></i>
+            <input id="estudios-search" class="form-control" placeholder="Buscar estudios..." style="padding-left:30px;height:34px;font-size:12px;" oninput="applyEstudiosFilters()" />
+          </div>
+          <select id="estudios-tematica" class="form-control" style="width:auto;min-width:145px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
+            <option value="all">Todas las tematicas</option>
+            <option value="ec">EC</option>
+            <option value="gr">GR</option>
+            <option value="ee">EE</option>
+            <option value="rep">REP</option>
+          </select>
+          <select id="estudios-year-mode" class="form-control" style="width:auto;min-width:118px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="toggleYearMode();applyEstudiosFilters()">
+            <option value="exact">Año Exacto</option>
+            <option value="range">Rango</option>
+          </select>
+          <div id="year-exact-wrap">
+            <select id="estudios-year" class="form-control" style="width:auto;min-width:100px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
+              <option value="all">Todos</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </div>
+          <div id="year-range-wrap" style="display:none;align-items:center;gap:8px;">
+            <select id="estudios-year-from" class="form-control" style="width:auto;min-width:92px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
+              <option value="">Inicio</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+            <select id="estudios-year-to" class="form-control" style="width:auto;min-width:84px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
+              <option value="">Fin</option>
+              <option value="2024">2024</option>
+              <option value="2025">2025</option>
+              <option value="2026">2026</option>
+            </select>
+          </div>
+          <select id="estudios-format" class="form-control" style="width:auto;min-width:120px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
+            <option value="all">Todos los formatos</option>
+            <option value="pdf">PDF</option>
+            <option value="pptx">PPTX</option>
+          </select>
+        </div>
+
+        <div style="border:1px solid #EEF1F4;border-radius:10px;overflow:hidden;">
+          <table class="table table-striped table-hover" style="margin:0;">
+              <thead>
+                <tr>
+                  <th>Documento</th>
+                  <th>Tematica</th>
+                  <th>Objetivo</th>
+                  <th>Año</th>
+                  <th>Formato</th>
+                  <th>Acceso</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="estudios-table-body">
+                <tr class="estudio-row" data-title="Análisis de Flujo de Materiales" data-tematica="EC Economía Circular" data-objetivo="Evaluar el ciclo de vida de envases plásticos en Perú" data-year="2025" data-format="pdf">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:12px;"></i></div>
+                      <span style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</span>
+                    </div>
+                  </td>
+                  <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economia Circular</span></td>
+                  <td style="color:#6B7280;max-width:200px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
+                  <td>2025</td>
+                  <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
+                  <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+                  <td><button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button></td>
+                </tr>
+                <tr class="estudio-row" data-title="Informe REP Envases 2024" data-tematica="REP Responsabilidad Extendida del Productor" data-objetivo="Monitorear el impacto del programa REP en envases" data-year="2024" data-format="pptx">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:12px;"></i></div>
+                      <span style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</span>
+                    </div>
+                  </td>
+                  <td><span class="pill" style="background:rgba(231,76,60,.14);color:#C0392B;">REP · Resp. Ext. Productor</span></td>
+                  <td style="color:#6B7280;max-width:200px;">Monitorear el impacto del programa REP en envases</td>
+                  <td>2024</td>
+                  <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">PPTX</span></td>
+                  <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+                  <td><button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button></td>
+                </tr>
+                <tr class="estudio-row" data-title="Hoja de Ruta EC Perú 2030" data-tematica="EC Economía Circular" data-objetivo="Guía estratégica hacia la economía circular nacional" data-year="2025" data-format="pdf">
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:12px;"></i></div>
+                      <span style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</span>
+                    </div>
+                  </td>
+                  <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economia Circular</span></td>
+                  <td style="color:#6B7280;max-width:200px;">Guía estratégica hacia la economía circular nacional</td>
+                  <td>2025</td>
+                  <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
+                  <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;"><i class="fas fa-eye" style="font-size:9px;"></i> Solo lectura</span></td>
+                  <td><button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button></td>
+                </tr>
+              </tbody>
+            </table>
         </div>
       </div>
     </div>
-    <div class="estudio-card" data-title="Informe REP Envases 2024" data-tematica="REP Responsabilidad Extendida del Productor" data-objetivo="Monitorear el impacto del programa REP en la gestión de envases." data-year="2024" data-format="pptx" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
-      <div style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2024</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del programa REP en la gestión de envases.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="background:#fff;border-radius:12px;padding:14px 14px 12px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="display:flex;align-items:center;gap:7px;color:#1B3A5C;font-size:12px;font-weight:700;margin-bottom:8px;">
+          <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:11px;"></i>
+          Distribucion por tematica
+        </div>
+        <div style="position:relative;height:120px;">
+          <canvas id="estudios-kpi-chart" width="230" height="120"></canvas>
+          <div style="position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);text-align:center;">
+            <div id="kpi-total-estudios" style="font-size:34px;font-weight:800;color:#1B3A5C;line-height:1;">24</div>
+            <div style="font-size:9px;color:#9CA3AF;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Documentos activos</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#27AE60;"></span>EC</span>
+            <span id="kpi-ec-percent" style="font-weight:700;color:#1B3A5C;">0%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#3498DB;"></span>GR</span>
+            <span id="kpi-gr-percent" style="font-weight:700;color:#1B3A5C;">0%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#F39C12;"></span>EE</span>
+            <span id="kpi-ee-percent" style="font-weight:700;color:#1B3A5C;">0%</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#E74C3C;"></span>REP</span>
+            <span id="kpi-rep-percent" style="font-weight:700;color:#1B3A5C;">0%</span>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="estudio-card" data-title="Hoja de Ruta EC Perú 2030" data-tematica="EC Economía Circular" data-objetivo="Guía estratégica nacional hacia la economía circular." data-year="2025" data-format="pdf" style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
-      <div style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-      <div style="padding:14px;">
-        <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
-        <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
-        <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional hacia la economía circular.</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-          <div style="display:flex;gap:4px;"><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-          <button style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>
+
+      <div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+        <div style="display:flex;align-items:center;gap:7px;color:#1B3A5C;font-size:12px;font-weight:700;margin-bottom:8px;">
+          <i class="fas fa-list-alt" style="color:#2ECC71;font-size:11px;"></i>
+          Resumen
+        </div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
+            <span style="font-size:11px;color:#6B7280;">Total estudios</span>
+            <span id="sum-total-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">24</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
+            <span style="font-size:11px;color:#6B7280;">Economia Circular</span>
+            <span id="sum-ec-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">11</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
+            <span style="font-size:11px;color:#6B7280;">Gestion de Residuos</span>
+            <span id="sum-gr-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">7</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;">
+            <span style="font-size:11px;color:#6B7280;">Actualizados 30 dias</span>
+            <span style="font-size:13px;font-weight:700;color:#F39C12;">5</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
 <script>
-let currentView = 'lista';
-
-function setView(view){
-  currentView = view;
-  document.getElementById('view-lista').style.display = view === 'lista' ? 'block' : 'none';
-  document.getElementById('view-grid').style.display = view === 'grid' ? 'grid' : 'none';
-
-  const btnLista = document.getElementById('view-btn-lista');
-  const btnGrid = document.getElementById('view-btn-grid');
-  if (btnLista && btnGrid) {
-    btnLista.style.background = view === 'lista' ? '#1B3A5C' : '#fff';
-    btnLista.style.color = view === 'lista' ? '#fff' : '#6B7280';
-    btnGrid.style.background = view === 'grid' ? '#1B3A5C' : '#fff';
-    btnGrid.style.color = view === 'grid' ? '#fff' : '#6B7280';
-  }
-
-  applyEstudiosFilters();
-}
-
-function toggleYearMode() {
-  const mode = document.getElementById('estudios-year-mode')?.value || 'exact';
-  const exactWrap = document.getElementById('year-exact-wrap');
-  const rangeWrap = document.getElementById('year-range-wrap');
-  if (exactWrap && rangeWrap) {
-    exactWrap.style.display = mode === 'exact' ? '' : 'none';
-    rangeWrap.style.display = mode === 'range' ? 'flex' : 'none';
-  }
-}
+let estudiosKpiChart = null;
 
 function matchesFilters(item, query, yearMode, year, yearFrom, yearTo, tematicaFilter, format) {
   const title = (item.dataset.title || '').toLowerCase();
@@ -234,7 +268,6 @@ function matchesFilters(item, query, yearMode, year, yearFrom, yearTo, tematicaF
     const hasTo = yearTo !== '';
     const fromValue = hasFrom ? Number(yearFrom) : null;
     const toValue = hasTo ? Number(yearTo) : null;
-
     if (hasFrom && hasTo) {
       const minYear = Math.min(fromValue, toValue);
       const maxYear = Math.max(fromValue, toValue);
@@ -247,11 +280,20 @@ function matchesFilters(item, query, yearMode, year, yearFrom, yearTo, tematicaF
   } else {
     matchesYear = year === 'all' || itemYear === Number(year);
   }
-
   const matchesTematica = tematicaFilter === 'all' || tematica.includes(tematicaFilter);
   const matchesFormat = format === 'all' || itemFormat === format;
 
   return matchesSearch && matchesYear && matchesTematica && matchesFormat;
+}
+
+function toggleYearMode() {
+  const mode = document.getElementById('estudios-year-mode')?.value || 'exact';
+  const exactWrap = document.getElementById('year-exact-wrap');
+  const rangeWrap = document.getElementById('year-range-wrap');
+  if (exactWrap && rangeWrap) {
+    exactWrap.style.display = mode === 'exact' ? '' : 'none';
+    rangeWrap.style.display = mode === 'range' ? 'flex' : 'none';
+  }
 }
 
 function applyEstudiosFilters() {
@@ -263,23 +305,105 @@ function applyEstudiosFilters() {
   const tematicaFilter = (document.getElementById('estudios-tematica')?.value || 'all').toLowerCase();
   const format = (document.getElementById('estudios-format')?.value || 'all').toLowerCase();
 
+  let tableVisible = 0;
+  let visibleEc = 0;
+  let visibleGr = 0;
+  let kpiTotal = 0;
+  let kpiEc = 0;
+  let kpiGr = 0;
+  let kpiEe = 0;
+  let kpiRep = 0;
+
   const rows = document.querySelectorAll('.estudio-row');
   rows.forEach((row) => {
-    row.style.display = matchesFilters(row, query, yearMode, year, yearFrom, yearTo, tematicaFilter, format) ? '' : 'none';
+    const matchesTableFilters = matchesFilters(row, query, yearMode, year, yearFrom, yearTo, tematicaFilter, format);
+    row.style.display = matchesTableFilters ? '' : 'none';
+
+    if (matchesTableFilters) {
+      tableVisible += 1;
+      const rowTematica = (row.dataset.tematica || '').toLowerCase();
+      if (rowTematica.includes('ec')) visibleEc += 1;
+      if (rowTematica.includes('gr')) visibleGr += 1;
+    }
+
+    // KPI: distribución de temáticas filtrando por búsqueda/año/temática.
+    const matchesKpiBase = matchesFilters(row, query, yearMode, year, yearFrom, yearTo, tematicaFilter, 'all');
+    if (matchesKpiBase) {
+      kpiTotal += 1;
+      const rowTematica = (row.dataset.tematica || '').toLowerCase();
+      if (rowTematica.includes('ec')) kpiEc += 1;
+      else if (rowTematica.includes('gr')) kpiGr += 1;
+      else if (rowTematica.includes('ee')) kpiEe += 1;
+      else if (rowTematica.includes('rep')) kpiRep += 1;
+    }
   });
 
-  const cards = document.querySelectorAll('.estudio-card');
-  cards.forEach((card) => {
-    card.style.display = matchesFilters(card, query, yearMode, year, yearFrom, yearTo, tematicaFilter, format) ? '' : 'none';
-  });
+  updateKpis(tableVisible, kpiTotal, kpiEc, kpiGr, kpiEe, kpiRep, visibleEc, visibleGr);
+}
+
+function updateKpis(tableVisible, kpiTotal, ecKpi, grKpi, eeKpi, repKpi, ecCount, grCount) {
+  const total = Math.max(kpiTotal, 1);
+  const ecPercent = Math.round((ecKpi / total) * 100);
+  const grPercent = Math.round((grKpi / total) * 100);
+  const eePercent = Math.round((eeKpi / total) * 100);
+  const repPercent = Math.round((repKpi / total) * 100);
+
+  const totalEl = document.getElementById('kpi-total-estudios');
+  const ecEl = document.getElementById('kpi-ec-percent');
+  const grEl = document.getElementById('kpi-gr-percent');
+  const eeEl = document.getElementById('kpi-ee-percent');
+  const repEl = document.getElementById('kpi-rep-percent');
+  const sumTotalEl = document.getElementById('sum-total-estudios');
+  const sumEcEl = document.getElementById('sum-ec-estudios');
+  const sumGrEl = document.getElementById('sum-gr-estudios');
+
+  if (totalEl) totalEl.textContent = String(kpiTotal);
+  if (ecEl) ecEl.textContent = `${kpiTotal ? ecPercent : 0}%`;
+  if (grEl) grEl.textContent = `${kpiTotal ? grPercent : 0}%`;
+  if (eeEl) eeEl.textContent = `${kpiTotal ? eePercent : 0}%`;
+  if (repEl) repEl.textContent = `${kpiTotal ? repPercent : 0}%`;
+  if (sumTotalEl) sumTotalEl.textContent = String(tableVisible);
+  if (sumEcEl) sumEcEl.textContent = String(ecCount);
+  if (sumGrEl) sumGrEl.textContent = String(grCount);
+
+  const chartCanvas = document.getElementById('estudios-kpi-chart');
+  if (!chartCanvas || typeof Chart === 'undefined') return;
+
+  const chartData = [ecKpi, grKpi, eeKpi, repKpi];
+  if (!estudiosKpiChart) {
+    estudiosKpiChart = new Chart(chartCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['EC', 'GR', 'EE', 'REP'],
+        datasets: [{
+          data: chartData,
+          backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: false,
+        rotation: 270,
+        circumference: 180,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: true }
+        }
+      }
+    });
+  } else {
+    estudiosKpiChart.data.datasets[0].data = chartData;
+    estudiosKpiChart.update();
+  }
 }
 function openVisor(tipo,nombre,formato,descargable){
   alert('Visor: '+nombre+' ('+formato+') — Solo lectura');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  setView('lista');
   toggleYearMode();
+  applyEstudiosFilters();
 });
 </script>
 </th:block>
