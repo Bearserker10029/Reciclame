@@ -84,27 +84,20 @@ public class AdminController {
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
 
-        // Datos para fragmento normativo
         model.addAttribute("normativas", normativaService.listarNormativas());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
-
-        // Datos para fragmento estudios
         model.addAttribute("estudios", estudioService.listarEstudios());
-
-        // Datos para fragmento usuarios
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
 
-        // Datos para fragmento notificaciones
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
             model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
 
-        // Datos para fragmento documentos
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
         int totalDescargas = estudios.stream()
@@ -113,7 +106,6 @@ public class AdminController {
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
         model.addAttribute("totalDescargas", totalDescargas);
 
-        // Datos para fragmento trazabilidad
         var auditorias = auditoriaService.listarAuditoriasPaginado(0, 50);
         model.addAttribute("auditorias", auditorias.getContent());
         model.addAttribute("currentPage", 0);
@@ -153,34 +145,25 @@ public class AdminController {
         setupCommonAttributes(model, user.getUsername());
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
-
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
                 + normativas.stream()
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
-
         model.addAttribute("estudios", estudios);
         model.addAttribute("normativas", normativas);
         model.addAttribute("totalDescargas", totalDescargas);
         return "Admin/documentos";
     }
 
-    /**
-     * Alias /admin/admin-docs → devuelve la vista dedicada Admin/admin-docs.html.
-     * Necesario porque el sidebar llama navTo('admin-docs') y en páginas standalone
-     * eso resuelve a /admin/admin-docs (no a /admin/documentos).
-     */
     @GetMapping("/admin/admin-docs")
     public String adminDocs(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
-
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
                 + normativas.stream()
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
-
         model.addAttribute("estudios", estudios);
         model.addAttribute("normativas", normativas);
         model.addAttribute("totalDescargas", totalDescargas);
@@ -191,69 +174,42 @@ public class AdminController {
     public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
 
-        // Obtener datos de estudios y normativas
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
         var auditorias = auditoriaService.listarAuditoriasPaginado(0, 1000);
 
-        // ── KPIs ──
-        // Total descargas
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
                 + normativas.stream()
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
 
-        // Total de ingresos (registros de auditoría)
-        int kpiIngresos = (int) auditorias.getTotalElements();
+        model.addAttribute("kpiIngresos", (int) auditorias.getTotalElements());
+        model.addAttribute("kpiDescargas", totalDescargas);
+        model.addAttribute("kpiUsuariosActivos", usuarioService.listarUsuariosActivos().size());
+        model.addAttribute("kpiDocsVistos", totalDescargas);
 
-        // Descargas totales
-        int kpiDescargas = totalDescargas;
-
-        // Usuarios activos
-        int kpiUsuariosActivos = usuarioService.listarUsuariosActivos().size();
-
-        // Documentos vistos (total downloads desde ambos repositorios)
-        int kpiDocsVistos = totalDescargas;
-
-        model.addAttribute("kpiIngresos", kpiIngresos);
-        model.addAttribute("kpiDescargas", kpiDescargas);
-        model.addAttribute("kpiUsuariosActivos", kpiUsuariosActivos);
-        model.addAttribute("kpiDocsVistos", kpiDocsVistos);
-
-        // ── Chart Data: Ingresos (línea temporal) ──
-        // Simular 31 días con datos agregados
         List<Integer> chartIngresosData = new ArrayList<>();
         List<String> chartIngresosLabels = new ArrayList<>();
         int auditoriaCount = auditorias.getContent().size();
         int baseValue = auditoriaCount > 0 ? auditoriaCount / 31 : 8;
         for (int i = 1; i <= 31; i++) {
-            // Generar valores variados basados en la cantidad de auditorías
-            int valor = (int) (baseValue + (Math.random() * baseValue * 0.5));
-            chartIngresosData.add(valor);
+            chartIngresosData.add((int) (baseValue + (Math.random() * baseValue * 0.5)));
             chartIngresosLabels.add(String.valueOf(i));
         }
-
         model.addAttribute("chartIngresosData", chartIngresosData);
         model.addAttribute("chartIngresosLabels", chartIngresosLabels);
 
-        // ── Chart Data: Temáticas (descargas por categoría) ──
-        // Distribuir descargas entre 4 categorías
         List<Integer> chartTematicaData = new ArrayList<>();
         List<String> chartTematicaLabels = Arrays.asList("EC", "GR", "EE", "REP");
-
         int descarPorCategoria = totalDescargas > 0 ? totalDescargas / 4 : 12;
-        chartTematicaData.add(descarPorCategoria + 15);      // EC
-        chartTematicaData.add(descarPorCategoria + 10);      // GR
-        chartTematicaData.add(descarPorCategoria + 5);       // EE
-        chartTematicaData.add(descarPorCategoria);           // REP
-
+        chartTematicaData.add(descarPorCategoria + 15);
+        chartTematicaData.add(descarPorCategoria + 10);
+        chartTematicaData.add(descarPorCategoria + 5);
+        chartTematicaData.add(descarPorCategoria);
         model.addAttribute("chartTematicaData", chartTematicaData);
         model.addAttribute("chartTematicaLabels", chartTematicaLabels);
 
-        // ── Top 5 Documentos (por descargas) ──
         List<Map<String, Object>> topDocumentos = new ArrayList<>();
-
-        // Combinar estudios y normativas, ordenar por descargas
         List<Map<String, Object>> allDocs = new ArrayList<>();
         estudios.forEach(e -> {
             Map<String, Object> doc = new HashMap<>();
@@ -269,26 +225,17 @@ public class AdminController {
             doc.put("tipo", "Normativa");
             allDocs.add(doc);
         });
-
-        // Ordenar por descargas descendente
         allDocs.sort((a, b) -> ((Integer) b.get("descargas")).compareTo((Integer) a.get("descargas")));
-
-        // Calcular porcentaje y tomar top 5
         int maxDescargas = allDocs.isEmpty() ? 1 : ((Integer) allDocs.get(0).get("descargas")).intValue();
         allDocs.stream().limit(5).forEach(doc -> {
             int descargas = ((Integer) doc.get("descargas")).intValue();
-            double porcentaje = maxDescargas > 0 ? (descargas * 100.0) / maxDescargas : 0;
-            doc.put("porcentaje", (int) porcentaje);
+            doc.put("porcentaje", (int) (maxDescargas > 0 ? (descargas * 100.0) / maxDescargas : 0));
             topDocumentos.add(doc);
         });
-
         model.addAttribute("topDocumentos", topDocumentos);
 
-        // ── Top 5 Usuarios (por interacciones/auditorías) ──
         var todosUsuarios = usuarioService.listarUsuarios();
         Map<Long, Map<String, Object>> usuariosMap = new HashMap<>();
-
-        // Contar interacciones por usuario desde auditorías
         auditorias.getContent().forEach(a -> {
             Long usuarioId = a.getUsuarioId();
             usuariosMap.computeIfAbsent(usuarioId, k -> {
@@ -297,16 +244,12 @@ public class AdminController {
                 usr.put("interacciones", 0);
                 return usr;
             });
-            int count = (Integer) usuariosMap.get(usuarioId).get("interacciones");
-            usuariosMap.get(usuarioId).put("interacciones", count + 1);
+            usuariosMap.get(usuarioId).put("interacciones", (Integer) usuariosMap.get(usuarioId).get("interacciones") + 1);
         });
-
-        // Llenar datos de usuario (nombre, empresa)
         todosUsuarios.forEach(u -> {
             if (usuariosMap.containsKey(u.getId())) {
-                Map<String, Object> usrData = usuariosMap.get(u.getId());
-                usrData.put("nombre", u.getNombreCompleto());
-                usrData.put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
+                usuariosMap.get(u.getId()).put("nombre", u.getNombreCompleto());
+                usuariosMap.get(u.getId()).put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
             } else {
                 Map<String, Object> usrData = new HashMap<>();
                 usrData.put("id", u.getId());
@@ -316,21 +259,14 @@ public class AdminController {
                 usuariosMap.put(u.getId(), usrData);
             }
         });
-
-        // Ordenar por interacciones descendente
         List<Map<String, Object>> topUsuarios = new ArrayList<>(usuariosMap.values());
         topUsuarios.sort((a, b) -> ((Integer) b.get("interacciones")).compareTo((Integer) a.get("interacciones")));
-
-        // Calcular porcentaje y tomar top 5
         int maxInteracciones = topUsuarios.isEmpty() ? 1 : ((Integer) topUsuarios.get(0).get("interacciones")).intValue();
         List<Map<String, Object>> topUsuariosFinal = new ArrayList<>();
         topUsuarios.stream().limit(5).forEach(usr -> {
-            int interacciones = (Integer) usr.get("interacciones");
-            double porcentaje = maxInteracciones > 0 ? (interacciones * 100.0) / maxInteracciones : 0;
-            usr.put("porcentaje", (int) porcentaje);
+            usr.put("porcentaje", (int) (maxInteracciones > 0 ? ((Integer) usr.get("interacciones") * 100.0) / maxInteracciones : 0));
             topUsuariosFinal.add(usr);
         });
-
         model.addAttribute("topUsuarios", topUsuariosFinal);
 
         return "Admin/reportes";
