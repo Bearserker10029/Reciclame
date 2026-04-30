@@ -33,7 +33,7 @@
         <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
             <dataset kind="pie">
                 <datasetRun subDataset="DocsTipoDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData1}]]></dataSourceExpression>
+                    <dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
                 </datasetRun>
                 <series>
                     <keyExpression><![CDATA[$F{label}]]></keyExpression>
@@ -53,7 +53,7 @@
         <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
             <dataset kind="pie">
                 <datasetRun subDataset="DocsTematicaDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData2}]]></dataSourceExpression>
+                    <dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
                 </datasetRun>
                 <series>
                     <keyExpression><![CDATA[$F{label}]]></keyExpression>
@@ -73,7 +73,7 @@
         <element kind="chart" chartType="bar3D" x="900" y="460" width="260" height="180" showLegend="false" evaluationTime="Report">
             <dataset kind="category">
                 <datasetRun subDataset="DescargasAnioDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData3}]]></dataSourceExpression>
+                    <dataSourceExpression><![CDATA[$P{chartData3} != null ? $P{chartData3} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
                 </datasetRun>
                 <series>
                     <seriesExpression><![CDATA["Descargas"]]></seriesExpression>

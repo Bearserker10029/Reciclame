@@ -241,9 +241,9 @@ public class SuperAdminController extends AdminController {
         return "redirect:/superadmin/notificaciones";
     }
 
-@GetMapping("/superadmin/auditoria/export.xlsx")
+    @GetMapping("/superadmin/auditoria/export.xlsx")
     public void exportarAuditoriaAdminXLSX(jakarta.servlet.http.HttpServletResponse response,
-                                          @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter
                 .ofPattern("dd/MM/yyyy HH:mm:ss")
                 .withZone(java.time.ZoneId.of("America/Lima"));
@@ -260,8 +260,9 @@ public class SuperAdminController extends AdminController {
             return row;
         }).toList();
 
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría", "Registro de actividades en la plataforma",
-            new String[]{"Fecha", "Acción", "Módulo", "Estado", "Usuario", "IP", "Descripción"}, datos);
+        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría",
+                "Registro de actividades en la plataforma",
+                new String[] { "Fecha", "Acción", "Módulo", "Estado", "Usuario", "IP", "Descripción" }, datos);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.xlsx\"");
         response.getOutputStream().write(xlsx);
@@ -269,7 +270,7 @@ public class SuperAdminController extends AdminController {
 
     @GetMapping("/superadmin/reportes/export/auditoria.pdf")
     public void exportarAuditoriaPDF(jakarta.servlet.http.HttpServletResponse response,
-                                     @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<Auditoria> auditorias = auditoriaService.listarAuditorias();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new java.util.HashMap<>();
@@ -292,14 +293,14 @@ public class SuperAdminController extends AdminController {
             estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
         }
 
-        List<Map<String, Object>> accionesData = new ArrayList<>();
+        List<Map<String, ?>> accionesData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : accionesCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
             row.put("value", entry.getValue());
             accionesData.add(row);
         }
-        List<Map<String, Object>> estadoData = new ArrayList<>();
+        List<Map<String, ?>> estadoData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
@@ -318,7 +319,7 @@ public class SuperAdminController extends AdminController {
 
     @GetMapping("/superadmin/reportes/export/auditoria.xlsx")
     public void exportarAuditoriaXLSX(jakarta.servlet.http.HttpServletResponse response,
-                                     @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<Auditoria> auditorias = auditoriaService.listarAuditorias();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new java.util.HashMap<>();
@@ -332,16 +333,17 @@ public class SuperAdminController extends AdminController {
             return row;
         }).toList();
 
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría", "Registro de actividades en la plataforma",
-            new String[]{"Fecha", "Accion", "Modulo", "Estado", "Usuario", "IP", "Descripcion"}, datos);
+        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría",
+                "Registro de actividades en la plataforma",
+                new String[] { "Fecha", "Accion", "Modulo", "Estado", "Usuario", "IP", "Descripcion" }, datos);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.xlsx\"");
         response.getOutputStream().write(xlsx);
     }
 
-@GetMapping("/superadmin/reportes/export/usuarios.pdf")
+    @GetMapping("/superadmin/reportes/export/usuarios.pdf")
     public void exportarUsuariosPDF(jakarta.servlet.http.HttpServletResponse response,
-                                     @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<org.reciclame.demo.dto.UsuarioResponseDTO> usuarios = usuarioService.listarUsuarios();
         List<Map<String, Object>> datos = usuarios.stream().map(u -> {
             Map<String, Object> row = new java.util.HashMap<>();
@@ -365,14 +367,14 @@ public class SuperAdminController extends AdminController {
             estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
         }
 
-        List<Map<String, Object>> rolData = new ArrayList<>();
+        List<Map<String, ?>> rolData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : rolCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
             row.put("value", entry.getValue());
             rolData.add(row);
         }
-        List<Map<String, Object>> estadoData = new ArrayList<>();
+        List<Map<String, ?>> estadoData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
@@ -391,7 +393,7 @@ public class SuperAdminController extends AdminController {
 
     @GetMapping("/superadmin/reportes/export/usuarios.xlsx")
     public void exportarUsuariosXLSX(jakarta.servlet.http.HttpServletResponse response,
-                                     @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<org.reciclame.demo.dto.UsuarioResponseDTO> usuarios = usuarioService.listarUsuarios();
         List<Map<String, Object>> datos = usuarios.stream().map(u -> {
             Map<String, Object> row = new java.util.HashMap<>();
@@ -406,16 +408,19 @@ public class SuperAdminController extends AdminController {
             return row;
         }).toList();
 
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Usuarios", "Listado de usuarios registrados en la plataforma",
-            new String[]{"Nombre Completo", "DNI", "Correo Corporativo", "Cargo", "Rol", "Empresa", "Estado", "Último Login"}, datos);
+        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Usuarios",
+                "Listado de usuarios registrados en la plataforma",
+                new String[] { "Nombre Completo", "DNI", "Correo Corporativo", "Cargo", "Rol", "Empresa", "Estado",
+                        "Último Login" },
+                datos);
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"usuarios_report.xlsx\"");
         response.getOutputStream().write(xlsx);
     }
 
-@GetMapping("/superadmin/reportes/export/normativas.pdf")
+    @GetMapping("/superadmin/reportes/export/normativas.pdf")
     public void exportarNormativasPDF(jakarta.servlet.http.HttpServletResponse response,
-                                      @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<Map<String, Object>> datos = new java.util.ArrayList<>();
         List<org.reciclame.demo.dto.NormativaResponseDTO> normativas = normativaService.listarNormativas();
         List<org.reciclame.demo.dto.EstudioResponseDTO> estudios = estudioService.listarEstudios();
@@ -430,7 +435,9 @@ public class SuperAdminController extends AdminController {
             row.put("estado", n.getEstadoNormativaNombre());
             row.put("anio", n.getAnio());
             row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
-            row.put("fechaCreacion", n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima"))) : "");
+            row.put("fechaCreacion",
+                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
+                            : "");
             datos.add(row);
         }
 
@@ -442,7 +449,9 @@ public class SuperAdminController extends AdminController {
             row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
             row.put("anio", e.getAnio());
             row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
-            row.put("fechaCreacion", e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima"))) : "");
+            row.put("fechaCreacion",
+                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
+                            : "");
             datos.add(row);
         }
 
@@ -476,21 +485,21 @@ public class SuperAdminController extends AdminController {
             descargasPorAnio.put(e.getAnio(), descargasPorAnio.getOrDefault(e.getAnio(), 0) + desc);
         }
 
-        List<Map<String, Object>> tipoData = new ArrayList<>();
+        List<Map<String, ?>> tipoData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : tipoCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
             row.put("value", entry.getValue());
             tipoData.add(row);
         }
-        List<Map<String, Object>> tematicaData = new ArrayList<>();
+        List<Map<String, ?>> tematicaData = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : tematicaCount.entrySet()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", entry.getKey());
             row.put("value", entry.getValue());
             tematicaData.add(row);
         }
-        List<Map<String, Object>> descargasData = new ArrayList<>();
+        List<Map<String, ?>> descargasData = new ArrayList<>();
         List<Integer> aniosOrdenados = new ArrayList<>(descargasPorAnio.keySet());
         aniosOrdenados.sort(Integer::compareTo);
         for (Integer anio : aniosOrdenados) {
@@ -504,15 +513,16 @@ public class SuperAdminController extends AdminController {
         JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(tematicaData);
         JRMapCollectionDataSource chartData3 = new JRMapCollectionDataSource(descargasData);
 
-        byte[] pdf = reporteService.generarReportePDF("normativas_estudios_report", datos, null, chartData1, chartData2, chartData3);
+        byte[] pdf = reporteService.generarReportePDF("normativas_estudios_report", datos, null, chartData1, chartData2,
+                chartData3);
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.pdf\"");
         response.getOutputStream().write(pdf);
     }
 
-@GetMapping("/superadmin/reportes/export/normativas.xlsx")
+    @GetMapping("/superadmin/reportes/export/normativas.xlsx")
     public void exportarNormativasXLSX(jakarta.servlet.http.HttpServletResponse response,
-                                      @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         List<Map<String, Object>> datos = new java.util.ArrayList<>();
 
         java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -525,7 +535,9 @@ public class SuperAdminController extends AdminController {
             row.put("estado", n.getEstadoNormativaNombre());
             row.put("anio", n.getAnio());
             row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
-            row.put("fechaCreacion", n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima"))) : "");
+            row.put("fechaCreacion",
+                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
+                            : "");
             datos.add(row);
         }
 
@@ -537,13 +549,18 @@ public class SuperAdminController extends AdminController {
             row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
             row.put("anio", e.getAnio());
             row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
-            row.put("fechaCreacion", e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima"))) : "");
+            row.put("fechaCreacion",
+                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
+                            : "");
             datos.add(row);
         }
 
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Normativas y Estudios", "Listado de normativas y estudios registrados",
-            new String[]{"Titulo", "Tipo", "Tematica Nombre", "Estado", "Anio", "Descargas Count", "Fecha Creacion"}, datos);
-response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Normativas y Estudios",
+                "Listado de normativas y estudios registrados",
+                new String[] { "Titulo", "Tipo", "Tematica Nombre", "Estado", "Anio", "Descargas Count",
+                        "Fecha Creacion" },
+                datos);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.xlsx\"");
         response.getOutputStream().write(xlsx);
     }
@@ -665,32 +682,29 @@ response.setContentType("application/vnd.openxmlformats-officedocument.spreadshe
 
         Usuario usuarioTarget = usuarioService.obtenerUsuarioEntityPorId(id);
 
-String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNombre() : "USUARIO";
+        String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNombre() : "USUARIO";
 
         List<GrantedAuthority> combinedAuthorities = new ArrayList<>();
         combinedAuthorities.add(new SimpleGrantedAuthority("ROLE_" + rolNombre));
         combinedAuthorities.add(new SimpleGrantedAuthority("ROLE_IMPERSONATOR"));
 
-        org.springframework.security.core.userdetails.User principal =
-            new org.springframework.security.core.userdetails.User(
+        org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
                 usuarioTarget.getCorreoCorporativo(),
                 "",
-                combinedAuthorities
-);
+                combinedAuthorities);
 
-        org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
-            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                principal, null, combinedAuthorities
-            );
+        org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                principal, null, combinedAuthorities);
 
         authToken.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
         auditoriaService.registrarAccion(null, superAdminUsername,
-            AuditoriaService.ACCION_IMPERSONAR, AuditoriaService.MODULO_USUARIOS,
-            "Impersonar usuario: " + usuarioTarget.getNombreCompleto() + " (" + usuarioTarget.getCorreoCorporativo() + ")",
-            null, null, "EXITOSO", null, null, null);
+                AuditoriaService.ACCION_IMPERSONAR, AuditoriaService.MODULO_USUARIOS,
+                "Impersonar usuario: " + usuarioTarget.getNombreCompleto() + " (" + usuarioTarget.getCorreoCorporativo()
+                        + ")",
+                null, null, "EXITOSO", null, null, null);
 
         String redirectUrl = switch (rolNombre) {
             case "ADMINISTRADOR" -> "/admin/inicio";
@@ -709,31 +723,28 @@ String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNo
 
         if (originalUser != null) {
             org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.findByCorreo(originalUser)
-                .map(u -> usuarioService.obtenerUsuarioEntityPorId(u.getId()))
-                .orElse(null);
+                    .map(u -> usuarioService.obtenerUsuarioEntityPorId(u.getId()))
+                    .orElse(null);
 
             if (usuarioOriginal != null) {
-                String rolNombre = usuarioOriginal.getRol() != null ? usuarioOriginal.getRol().getNombre() : "SUPERADMIN";
+                String rolNombre = usuarioOriginal.getRol() != null ? usuarioOriginal.getRol().getNombre()
+                        : "SUPERADMIN";
                 Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + rolNombre));
 
-                org.springframework.security.core.userdetails.User principal =
-                    new org.springframework.security.core.userdetails.User(
+                org.springframework.security.core.userdetails.User principal = new org.springframework.security.core.userdetails.User(
                         usuarioOriginal.getCorreoCorporativo(),
                         "",
-                        authorities
-                    );
+                        authorities);
 
-                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken =
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        principal, null, authorities
-                    );
+                org.springframework.security.authentication.UsernamePasswordAuthenticationToken authToken = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        principal, null, authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
                 auditoriaService.registrarAccion(null, originalUser,
-                    AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
-                    "Salir de impersonación. Usuario impersonado: " + impersonatedUser,
-                    null, null, "EXITOSO", null, null, null);
+                        AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
+                        "Salir de impersonación. Usuario impersonado: " + impersonatedUser,
+                        null, null, "EXITOSO", null, null, null);
             }
         }
 

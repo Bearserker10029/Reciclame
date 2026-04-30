@@ -28,7 +28,7 @@
         <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
             <dataset kind="pie">
                 <datasetRun subDataset="AuditoriaAccionesDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData1}]]></dataSourceExpression>
+                    <dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
                 </datasetRun>
                 <series>
                     <keyExpression><![CDATA[$F{label}]]></keyExpression>
@@ -48,7 +48,7 @@
         <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
             <dataset kind="pie">
                 <datasetRun subDataset="AuditoriaEstadoDataset">
-                    <dataSourceExpression><![CDATA[$P{chartData2}]]></dataSourceExpression>
+                    <dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
                 </datasetRun>
                 <series>
                     <keyExpression><![CDATA[$F{label}]]></keyExpression>

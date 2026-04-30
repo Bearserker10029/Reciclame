@@ -92,12 +92,22 @@
 <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-            <version>7.0.4</version>
+			<version>7.0.6</version>
         </dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports-functions</artifactId>
+			<version>7.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-pdf</artifactId>
-			<version>7.0.4</version>
+			<version>7.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.5.3</version>
 		</dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -110,6 +120,13 @@
             <version>5.2.5</version>
         </dependency>
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>jaspersoft</id>
+			<url>https://jaspersoft.jfrog.io/jaspersoft/jaspersoft-repo/</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>
