@@ -182,12 +182,12 @@
   <div id="s-app" style="display:flex;flex-direction:column;min-height:100vh;">
 
     <!-- TOPBAR -->
-    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
 
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
 
       <!-- SIDEBAR -->
-      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
 
       <!-- MAIN CONTENT -->
       <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
@@ -375,22 +375,22 @@
 
         <!-- PAGE: ESTUDIOS (placeholder) -->
         <div id="page-estudios" class="page" style="padding:32px;">
-          <th:block th:replace="Socio/estudios :: estudios-content"></th:block>
+          <th:block th:replace="~{Socio/estudios :: estudios-content}"></th:block>
         </div>
 
         <!-- PAGE: NORMATIVO (placeholder) -->
         <div id="page-normativo" class="page" style="padding:32px;">
-          <th:block th:replace="Socio/normativo :: normativo-content"></th:block>
+          <th:block th:replace="~{Socio/normativo :: normativo-content}"></th:block>
         </div>
 
         <!-- PAGE: PERFIL -->
         <div id="page-perfil" class="page" style="padding:32px;">
-          <th:block th:replace="Socio/perfil :: perfil-content"></th:block>
+          <th:block th:replace="~{Socio/perfil :: perfil-content}"></th:block>
         </div>
 
         <!-- PAGE: NOTIFICACIONES -->
         <div id="page-notificaciones" class="page" style="padding:32px;">
-          <th:block th:replace="Socio/notificaciones :: notificaciones-content"></th:block>
+          <th:block th:replace="~{Socio/notificaciones :: notificaciones-content}"></th:block>
         </div>
 
       </main>
