@@ -2,6 +2,7 @@ package org.reciclame.demo.service;
 
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+import net.sf.jasperreports.engine.util.JRLoader;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
@@ -29,8 +30,8 @@ public class ReporteService {
 
     public byte[] generarReportePDF(String reporte, JRDataSource dataSource, Map<String, Object> params) {
         try {
-            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jrxml");
-            JasperReport jasperReport = JasperCompileManager.compileReport(reporteStream);
+            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
+            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reporteStream);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params != null ? params : new java.util.HashMap<>(), dataSource);
             return JasperExportManager.exportReportToPdf(jasperPrint);
         } catch (JRException e) {
@@ -46,8 +47,8 @@ public class ReporteService {
     public byte[] generarReportePDF(String reporte, List<?> mainData, Map<String, Object> params,
                                     JRDataSource... chartDataSources) {
         try {
-            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jrxml");
-            JasperReport jasperReport = JasperCompileManager.compileReport(reporteStream);
+            InputStream reporteStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
+            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(reporteStream);
 
             Map<String, Object> finalParams = params != null ? params : new java.util.HashMap<>();
             for (int i = 0; i < chartDataSources.length; i++) {
