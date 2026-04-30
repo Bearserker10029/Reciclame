@@ -46,13 +46,13 @@ public class SocioController {
     @GetMapping("/socio")
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "socio/inicio";
+        return "Socio/inicio";
     }
 
     @GetMapping("/socio/inicio")
     public String socioInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "socio/inicio";
+        return "Socio/inicio";
     }
 
     @GetMapping("/socio/notificaciones")
@@ -62,27 +62,27 @@ public class SocioController {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
             model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
-        return "socio/notificaciones";
+        return "Socio/notificaciones";
     }
 
     @GetMapping("/socio/perfil")
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        return "socio/perfil";
+        return "Socio/perfil";
     }
 
     @GetMapping("/socio/normativo")
     public String normativo(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        return "socio/normativo";
+        return "Socio/normativo";
     }
 
     @GetMapping("/socio/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("estudios", estudioService.listarEstudios());
-        return "socio/estudios";
+        return "Socio/estudios";
     }
 
     @PostMapping("/socio/notificaciones/marcar/{id}")
