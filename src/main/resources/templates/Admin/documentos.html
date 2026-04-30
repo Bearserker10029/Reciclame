@@ -103,8 +103,8 @@
           <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
           <td>
             <div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+              <a th:href="@{/admin/estudios/editar/{id}(id=${e.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
+              <button th:data-tipo="estudio" th:data-id="${e.id}" th:data-titulo="${e.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
             </div>
           </td>
         </tr>
@@ -131,8 +131,8 @@
           </td>
           <td>
             <div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+              <a th:href="@{/admin/normativo/editar/{id}(id=${n.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
+              <button th:data-tipo="normativa" th:data-id="${n.id}" th:data-titulo="${n.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
             </div>
           </td>
         </tr>
@@ -143,13 +143,47 @@
     </table>
   </div>
 
+  <!-- Modal de confirmación para eliminar -->
+  <div id="deleteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:32px;"></i>
+        </div>
+        <h3 id="deleteModalTitle" style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Documento</h3>
+        <p id="deleteModalMsg" style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro? Esta acción no se puede deshacer.</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarDeleteModal()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
+        <button id="deleteConfirmBtn" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Script para filtrado de documentos ── -->
   <script>
-    /**
-     * filtrarDocumentos()
-     * Lee los valores de los filtros y oculta/muestra las filas de la tabla
-     * según coincidan con los criterios de búsqueda.
-     */
+    function confirmarEliminarBtn(btn) {
+      confirmarEliminar(btn.getAttribute('data-tipo'), btn.getAttribute('data-id'), btn.getAttribute('data-titulo'));
+    }
+
+    function confirmarEliminar(tipo, id, titulo) {
+      document.getElementById('deleteModalMsg').textContent = '¿Eliminar "' + titulo + '"? Esta acción no se puede deshacer.';
+      document.getElementById('deleteModal').style.display = 'flex';
+      document.getElementById('deleteConfirmBtn').onclick = function() {
+        var url = tipo === 'estudio' ? '/api/estudios/' + id : '/api/normativas/' + id;
+        fetch(url, { method: 'DELETE' })
+          .then(function(r) {
+            cerrarDeleteModal();
+            if (r.ok) { window.location.reload(); }
+            else { alert('Error al eliminar el documento. Inténtalo de nuevo.'); }
+          })
+          .catch(function() { cerrarDeleteModal(); alert('Error de conexión.'); });
+      };
+    }
+
+    function cerrarDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+    document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) cerrarDeleteModal(); });
+
     function filtrarDocumentos() {
       var texto = document.getElementById('search-docs')?.value.toLowerCase().trim() || '';
       var seccion = document.getElementById('filter-seccion')?.value.toLowerCase().trim() || '';

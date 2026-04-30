@@ -199,7 +199,56 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/notificaciones")
     public String notificaciones(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         return "SuperAdmin/notificaciones";
+    }
+
+    @Override
+    @PostMapping("/superadmin/notificaciones/enviar")
+    public String enviarNotificacion(
+            @RequestParam String destinatario,
+            @RequestParam String titulo,
+            @RequestParam String mensaje,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if ("todos".equals(destinatario)) {
+            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
+            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
+        } else {
+            try {
+                Long id = Long.parseLong(destinatario);
+                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
+                ra.addFlashAttribute("enviado", "Notificación enviada.");
+            } catch (NumberFormatException e) {
+                ra.addFlashAttribute("error", "Destinatario inválido.");
+            }
+        }
+        return "redirect:/superadmin/notificaciones";
+    }
+
+    @Override
+    @GetMapping("/superadmin/auditoria/export.csv")
+    public void exportarAuditoriaAdminCSV(jakarta.servlet.http.HttpServletResponse response,
+                                          @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+        response.setContentType("text/csv;charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
+        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter
+                .ofPattern("dd/MM/yyyy HH:mm:ss")
+                .withZone(java.time.ZoneId.of("America/Lima"));
+        java.util.List<org.reciclame.demo.model.Auditoria> all = auditoriaService.listarAuditorias();
+        try (java.io.PrintWriter w = response.getWriter()) {
+            w.println("Fecha,Accion,Modulo,Estado,Usuario,IP,Descripcion");
+            for (org.reciclame.demo.model.Auditoria a : all) {
+                w.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                        a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "",
+                        esc(a.getAccion()), esc(a.getModulo()), esc(a.getEstado()),
+                        esc(a.getUsuarioNombre()), esc(a.getIpAddress()), esc(a.getDescripcion()));
+            }
+        }
     }
 
     @Override
