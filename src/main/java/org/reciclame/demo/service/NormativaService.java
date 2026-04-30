@@ -60,6 +60,21 @@ public class NormativaService {
         return conteo;
     }
 
+    public List<Map<String, Object>> agregarPorTematica() {
+        List<Normativa> activas = normativaRepository.findByEstadoActivoTrue();
+        return activas.stream()
+                .filter(n -> n.getTematica() != null && n.getTematica().getNombre() != null)
+                .collect(Collectors.groupingBy(n -> n.getTematica().getNombre(), Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
     // ── READ ONE ──────────────────────────────────────────────
     public NormativaResponseDTO obtenerNormativaPorId(Long id) {
         return toResponseDTO(normativaRepository.findById(id)

@@ -14,7 +14,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -128,6 +130,35 @@ public class UsuarioService {
         return usuarioRepository.findAll().stream()
                 .filter(u -> "PENDIENTE".equals(u.getEstadoCuenta()))
                 .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> agregarPorEstado() {
+        List<UsuarioResponseDTO> usuarios = listarUsuarios();
+        return usuarios.stream()
+                .collect(Collectors.groupingBy(u -> u.getEstadoCuenta() != null ? u.getEstadoCuenta() : "SIN_ESTADO", Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> agregarPorRol() {
+        List<UsuarioResponseDTO> usuarios = listarUsuarios();
+        return usuarios.stream()
+                .filter(u -> u.getRolNombre() != null)
+                .collect(Collectors.groupingBy(UsuarioResponseDTO::getRolNombre, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
                 .collect(Collectors.toList());
     }
 

@@ -460,25 +460,6 @@ public class AdminController {
         return "Admin/estudios-form";
     }
 
-    @GetMapping("/admin/auditoria/export.csv")
-    public void exportarAuditoriaAdminCSV(HttpServletResponse response,
-                                          @AuthenticationPrincipal UserDetails user) throws IOException {
-        response.setContentType("text/csv;charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-                .withZone(java.time.ZoneId.of("America/Lima"));
-        List<Auditoria> all = auditoriaService.listarAuditorias();
-        try (PrintWriter w = response.getWriter()) {
-            w.println("Fecha,Accion,Modulo,Estado,Usuario,IP,Descripcion");
-            for (Auditoria a : all) {
-                w.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
-                        a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "",
-                        esc(a.getAccion()), esc(a.getModulo()), esc(a.getEstado()),
-                        esc(a.getUsuarioNombre()), esc(a.getIpAddress()), esc(a.getDescripcion()));
-            }
-        }
-    }
-
     @PostMapping("/admin/notificaciones/enviar")
     public String enviarNotificacion(
             @RequestParam String destinatario,

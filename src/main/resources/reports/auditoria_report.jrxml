@@ -1,0 +1,140 @@
+<jasperReport name="auditoria_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <style name="headerStyle" forecolor="#FFFFFF" backcolor="#1B3A5C" fontName="SansSerif" fontSize="10" bold="true"/>
+    <style name="rowStyle" fontName="SansSerif" fontSize="9"/>
+    <style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9"/>
+    <style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8"/>
+
+    <dataset name="AuditoriaAccionesDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+    <dataset name="AuditoriaEstadoDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+
+    <parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <field name="fechaAccion" class="java.time.Instant"/>
+    <field name="accion" class="java.lang.String"/>
+    <field name="modulo" class="java.lang.String"/>
+    <field name="estado" class="java.lang.String"/>
+    <field name="usuarioNombre" class="java.lang.String"/>
+    <field name="ipAddress" class="java.lang.String"/>
+    <field name="descripcion" class="java.lang.String"/>
+
+    <background height="802" splitType="Stretch">
+        <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="AuditoriaAccionesDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData1}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+        <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="AuditoriaEstadoDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData2}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+    </background>
+
+    <title height="60" splitType="Stretch">
+        <element kind="staticText" x="0" y="10" width="1160" height="40" fontSize="20" bold="true" hTextAlign="Center">
+            <text><![CDATA[Reporte de Auditoria]]></text>
+        </element>
+    </title>
+
+    <columnHeader height="30" splitType="Stretch">
+        <element kind="line" x="0" y="29" width="1160" height="1">
+            <pen lineWidth="2" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="staticText" x="0" y="0" width="120" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Fecha]]></text>
+        </element>
+        <element kind="staticText" x="120" y="0" width="120" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Accion]]></text>
+        </element>
+        <element kind="staticText" x="240" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Modulo]]></text>
+        </element>
+        <element kind="staticText" x="340" y="0" width="80" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Estado]]></text>
+        </element>
+        <element kind="staticText" x="420" y="0" width="160" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Usuario]]></text>
+        </element>
+        <element kind="staticText" x="580" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[IP]]></text>
+        </element>
+        <element kind="staticText" x="680" y="0" width="480" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Descripcion]]></text>
+        </element>
+    </columnHeader>
+
+    <detail>
+        <band height="25" splitType="Stretch">
+            <element kind="textField" x="0" y="0" width="120" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{fechaAccion} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(java.time.ZoneId.of("America/Lima")).format($F{fechaAccion}) : ""]]></expression>
+            </element>
+            <element kind="textField" x="120" y="0" width="120" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{accion}]]></expression>
+            </element>
+            <element kind="textField" x="240" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{modulo}]]></expression>
+            </element>
+            <element kind="textField" x="340" y="0" width="80" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{estado}]]></expression>
+            </element>
+            <element kind="textField" x="420" y="0" width="160" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{usuarioNombre}]]></expression>
+            </element>
+            <element kind="textField" x="580" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{ipAddress}]]></expression>
+            </element>
+            <element kind="textField" x="680" y="0" width="480" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{descripcion}]]></expression>
+            </element>
+        </band>
+    </detail>
+
+    <pageFooter height="30" splitType="Stretch">
+        <element kind="line" x="0" y="0" width="1160" height="1">
+            <pen lineWidth="1" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="textField" x="0" y="5" width="400" height="20" style="footerStyle">
+            <expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+        </element>
+        <element kind="textField" x="960" y="5" width="200" height="20" style="footerStyle" hTextAlign="Right">
+            <expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+        </element>
+    </pageFooter>
+</jasperReport>

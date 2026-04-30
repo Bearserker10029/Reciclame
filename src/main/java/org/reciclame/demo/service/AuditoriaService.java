@@ -9,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -108,6 +111,36 @@ public class AuditoriaService {
     public Page<Auditoria> listarAuditoriasPorAccionPaginado(String accion, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return auditoriaRepository.findByAccionPaginado(accion, pageable);
+    }
+
+    public List<Map<String, Object>> agregarPorModulo() {
+        List<Auditoria> auditorias = listarAuditorias();
+        return auditorias.stream()
+                .filter(a -> a.getModulo() != null)
+                .collect(Collectors.groupingBy(Auditoria::getModulo, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> agregarPorEstado() {
+        List<Auditoria> auditorias = listarAuditorias();
+        return auditorias.stream()
+                .filter(a -> a.getEstado() != null)
+                .collect(Collectors.groupingBy(Auditoria::getEstado, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Auditoria> listarAuditoriasPorFechaRango(Instant desde, Instant hasta) {

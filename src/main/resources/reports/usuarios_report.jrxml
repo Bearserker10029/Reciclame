@@ -1,0 +1,147 @@
+<jasperReport name="usuarios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <style name="headerStyle" forecolor="#FFFFFF" backcolor="#1B3A5C" fontName="SansSerif" fontSize="10" bold="true"/>
+    <style name="rowStyle" fontName="SansSerif" fontSize="9"/>
+    <style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9"/>
+    <style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8"/>
+
+    <dataset name="UsuariosRolDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+    <dataset name="UsuariosEstadoDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+
+    <parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <field name="nombreCompleto" class="java.lang.String"/>
+    <field name="dni" class="java.lang.String"/>
+    <field name="correoCorporativo" class="java.lang.String"/>
+    <field name="cargo" class="java.lang.String"/>
+    <field name="rolNombre" class="java.lang.String"/>
+    <field name="empresaNombre" class="java.lang.String"/>
+    <field name="estadoCuenta" class="java.lang.String"/>
+    <field name="ultimoLogin" class="java.time.Instant"/>
+
+    <background height="802" splitType="Stretch">
+        <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="UsuariosRolDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData1}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+        <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="UsuariosEstadoDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData2}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+    </background>
+
+    <title height="60" splitType="Stretch">
+        <element kind="staticText" x="0" y="10" width="1160" height="40" fontSize="20" bold="true" hTextAlign="Center">
+            <text><![CDATA[Reporte de Usuarios]]></text>
+        </element>
+    </title>
+
+    <columnHeader height="30" splitType="Stretch">
+        <element kind="line" x="0" y="29" width="1160" height="1">
+            <pen lineWidth="2" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="staticText" x="0" y="0" width="180" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Nombre Completo]]></text>
+        </element>
+        <element kind="staticText" x="180" y="0" width="80" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[DNI]]></text>
+        </element>
+        <element kind="staticText" x="260" y="0" width="200" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Correo]]></text>
+        </element>
+        <element kind="staticText" x="460" y="0" width="140" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Cargo]]></text>
+        </element>
+        <element kind="staticText" x="600" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Rol]]></text>
+        </element>
+        <element kind="staticText" x="700" y="0" width="160" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Empresa]]></text>
+        </element>
+        <element kind="staticText" x="860" y="0" width="120" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Estado]]></text>
+        </element>
+        <element kind="staticText" x="980" y="0" width="180" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Ultimo Login]]></text>
+        </element>
+    </columnHeader>
+
+    <detail>
+        <band height="25" splitType="Stretch">
+            <element kind="textField" x="0" y="0" width="180" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{nombreCompleto}]]></expression>
+            </element>
+            <element kind="textField" x="180" y="0" width="80" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{dni}]]></expression>
+            </element>
+            <element kind="textField" x="260" y="0" width="200" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{correoCorporativo}]]></expression>
+            </element>
+            <element kind="textField" x="460" y="0" width="140" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{cargo} != null ? $F{cargo} : "-"]]></expression>
+            </element>
+            <element kind="textField" x="600" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{rolNombre}]]></expression>
+            </element>
+            <element kind="textField" x="700" y="0" width="160" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{empresaNombre} != null ? $F{empresaNombre} : "-"]]></expression>
+            </element>
+            <element kind="textField" x="860" y="0" width="120" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{estadoCuenta}]]></expression>
+            </element>
+            <element kind="textField" x="980" y="0" width="180" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{ultimoLogin} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(java.time.ZoneId.of("America/Lima")).format($F{ultimoLogin}) : "Nunca"]]></expression>
+            </element>
+        </band>
+    </detail>
+
+    <pageFooter height="30" splitType="Stretch">
+        <element kind="line" x="0" y="0" width="1160" height="1">
+            <pen lineWidth="1" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="textField" x="0" y="5" width="400" height="20" style="footerStyle">
+            <expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+        </element>
+        <element kind="textField" x="960" y="5" width="200" height="20" style="footerStyle" hTextAlign="Right">
+            <expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+        </element>
+    </pageFooter>
+</jasperReport>

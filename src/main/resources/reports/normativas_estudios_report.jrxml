@@ -1,0 +1,165 @@
+<jasperReport name="normativas_estudios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <style name="headerStyle" forecolor="#FFFFFF" backcolor="#1B3A5C" fontName="SansSerif" fontSize="10" bold="true"/>
+    <style name="rowStyle" fontName="SansSerif" fontSize="9"/>
+    <style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9"/>
+    <style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8"/>
+
+    <dataset name="DocsTipoDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+    <dataset name="DocsTematicaDataset">
+        <field name="label" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+    <dataset name="DescargasAnioDataset">
+        <field name="category" class="java.lang.String"/>
+        <field name="value" class="java.lang.Integer"/>
+    </dataset>
+
+    <parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
+    <parameter name="chartData3" class="net.sf.jasperreports.engine.JRDataSource"/>
+
+    <field name="titulo" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="tematicaNombre" class="java.lang.String"/>
+    <field name="estado" class="java.lang.String"/>
+    <field name="anio" class="java.lang.Integer"/>
+    <field name="descargasCount" class="java.lang.Integer"/>
+    <field name="fechaCreacion" class="java.lang.String"/>
+
+    <background height="802" splitType="Stretch">
+        <element kind="chart" chartType="pie3D" x="900" y="100" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="DocsTipoDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData1}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+        <element kind="chart" chartType="pie3D" x="900" y="280" width="260" height="140" showLegend="false" evaluationTime="Report">
+            <dataset kind="pie">
+                <datasetRun subDataset="DocsTematicaDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData2}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <keyExpression><![CDATA[$F{label}]]></keyExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+        <element kind="chart" chartType="bar3D" x="900" y="460" width="260" height="180" showLegend="false" evaluationTime="Report">
+            <dataset kind="category">
+                <datasetRun subDataset="DescargasAnioDataset">
+                    <dataSourceExpression><![CDATA[$P{chartData3}]]></dataSourceExpression>
+                </datasetRun>
+                <series>
+                    <seriesExpression><![CDATA["Descargas"]]></seriesExpression>
+                    <categoryExpression><![CDATA[$F{category}]]></categoryExpression>
+                    <valueExpression><![CDATA[$F{value}]]></valueExpression>
+                </series>
+            </dataset>
+            <plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+                <seriesColor order="0" color="#3399FF"/>
+                <seriesColor order="1" color="#00CCFF"/>
+                <seriesColor order="2" color="#0066CC"/>
+                <seriesColor order="3" color="#6699FF"/>
+                <seriesColor order="4" color="#004A94"/>
+                <seriesColor order="5" color="#00356A"/>
+            </plot>
+        </element>
+    </background>
+
+    <title height="60" splitType="Stretch">
+        <element kind="staticText" x="0" y="10" width="1160" height="40" fontSize="20" bold="true" hTextAlign="Center">
+            <text><![CDATA[Reporte de Normativas y Estudios]]></text>
+        </element>
+    </title>
+
+    <columnHeader height="30" splitType="Stretch">
+        <element kind="line" x="0" y="29" width="1160" height="1">
+            <pen lineWidth="2" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="staticText" x="0" y="0" width="400" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Titulo]]></text>
+        </element>
+        <element kind="staticText" x="400" y="0" width="80" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Tipo]]></text>
+        </element>
+        <element kind="staticText" x="480" y="0" width="120" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Tematica]]></text>
+        </element>
+        <element kind="staticText" x="600" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Anio]]></text>
+        </element>
+        <element kind="staticText" x="700" y="0" width="80" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Estado]]></text>
+        </element>
+        <element kind="staticText" x="780" y="0" width="100" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Descargas]]></text>
+        </element>
+        <element kind="staticText" x="880" y="0" width="280" height="28" style="headerStyle" hTextAlign="Center">
+            <text><![CDATA[Fecha Creacion]]></text>
+        </element>
+    </columnHeader>
+
+    <detail>
+        <band height="25" splitType="Stretch">
+            <element kind="textField" x="0" y="0" width="400" height="25" style="rowAltStyle" hTextAlign="Left">
+                <expression><![CDATA[$F{titulo}]]></expression>
+            </element>
+            <element kind="textField" x="400" y="0" width="80" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{tipo}]]></expression>
+            </element>
+            <element kind="textField" x="480" y="0" width="120" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{tematicaNombre}]]></expression>
+            </element>
+            <element kind="textField" x="600" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{anio} != null ? $F{anio}.toString() : "-"]]></expression>
+            </element>
+            <element kind="textField" x="700" y="0" width="80" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{estado}]]></expression>
+            </element>
+            <element kind="textField" x="780" y="0" width="100" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{descargasCount} != null ? $F{descargasCount}.toString() : "0"]]></expression>
+            </element>
+            <element kind="textField" x="880" y="0" width="280" height="25" style="rowAltStyle" hTextAlign="Center">
+                <expression><![CDATA[$F{fechaCreacion}]]></expression>
+            </element>
+        </band>
+    </detail>
+
+    <pageFooter height="30" splitType="Stretch">
+        <element kind="line" x="0" y="0" width="1160" height="1">
+            <pen lineWidth="1" lineColor="#1B3A5C"/>
+        </element>
+        <element kind="textField" x="0" y="5" width="400" height="20" style="footerStyle">
+            <expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+        </element>
+        <element kind="textField" x="960" y="5" width="200" height="20" style="footerStyle" hTextAlign="Right">
+            <expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+        </element>
+    </pageFooter>
+</jasperReport>
