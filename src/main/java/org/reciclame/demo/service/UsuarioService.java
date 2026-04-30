@@ -221,6 +221,31 @@ public class UsuarioService {
         eliminarUsuario(id, null, "Sistema", null, null);
     }
 
+    // ── REACTIVAR usuario eliminado ─────────────────────────────
+    @Transactional
+    public UsuarioResponseDTO reactivarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        
+        usuario.setEstadoActivo(true);
+        usuario.setEstadoCuenta("ACTIVO");
+        usuario.setUpdatedAt(Instant.now());
+        Usuario usuarioGuardado = usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_REACTIVAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+            "Reactivar usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        return toResponseDTO(usuarioGuardado);
+    }
+
+    // ── REACTIVAR (overload sin auditoría) ─────────────────────────
+    @Transactional
+    public UsuarioResponseDTO reactivarUsuario(Long id) {
+        return reactivarUsuario(id, null, "Sistema", null, null);
+    }
+
     // ── APROBAR solicitud pendiente ───────────────────────────
     @Transactional
     public UsuarioResponseDTO aprobarUsuario(Long id, Long rolId, Long empresaId, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
