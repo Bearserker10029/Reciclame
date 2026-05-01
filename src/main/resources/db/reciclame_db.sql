@@ -228,7 +228,7 @@ CREATE TABLE `estudios` (
   `fecha_estudio` date DEFAULT NULL,
   `anio` int DEFAULT NULL,
   `archivo_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `archivo_tipo_mime` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `archivo_tipo_mime` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `normativa_relacionada_id` bigint DEFAULT NULL,
   `subida_por_id` bigint NOT NULL,
   `validado_por_id` bigint DEFAULT NULL,
