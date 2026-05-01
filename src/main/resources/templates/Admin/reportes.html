@@ -123,9 +123,9 @@
 </head>
 <body>
 <div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
   <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
     <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
 
   <!-- ══ PAGE HEADER ══ -->
@@ -282,21 +282,13 @@
           <div class="rank-item"
                th:each="doc, iterStat : ${topDocumentos}"
                th:style="${iterStat.last} ? 'animation-delay:' + ${iterStat.index * 50} + 'ms;border-bottom:none;' : 'animation-delay:' + ${iterStat.index * 50} + 'ms;'">
-            <div class="rank-badge" th:style="${iterStat.index == 0} ? 'background:#1B3A5C;color:#fff;' :
-                                                 ${iterStat.index == 1} ? 'background:#374151;color:#fff;' :
-                                                 ${iterStat.index == 2} ? 'background:#6B7280;color:#fff;' :
-                                                 ${iterStat.index == 3} ? 'background:#9CA3AF;color:#fff;' :
-                                                 'background:#D1D5DB;color:#6B7280;'">
+            <div class="rank-badge" th:style="${iterStat.index == 0} ? 'background:#1B3A5C;color:#fff;' : (${iterStat.index == 1} ? 'background:#374151;color:#fff;' : (${iterStat.index == 2} ? 'background:#6B7280;color:#fff;' : (${iterStat.index == 3} ? 'background:#9CA3AF;color:#fff;' : 'background:#D1D5DB;color:#6B7280;')))">
               <span th:text="${iterStat.index + 1}">1</span>
             </div>
             <span style="flex:1;font-size:13px;color:#374151;font-weight:500;" th:text="${doc.titulo}">Documento</span>
             <div class="rank-bar-wrap">
-              <div class="rank-bar"
-                   th:style="${iterStat.index == 0} ? 'background:linear-gradient(90deg,#2ECC71,#27AE60);' :
-                              ${iterStat.index == 1} ? 'background:linear-gradient(90deg,#3498DB,#2980B9);' :
-                              ${iterStat.index == 2} ? 'background:linear-gradient(90deg,#F39C12,#D68910);' :
-                              ${iterStat.index == 3} ? 'background:linear-gradient(90deg,#E74C3C,#C0392B);' :
-                              'background:linear-gradient(90deg,#8B5CF6,#7C3AED);'"
+<div class="rank-bar"
+                    th:style="${iterStat.index == 0} ? 'background:linear-gradient(90deg,#2ECC71,#27AE60);' : (${iterStat.index == 1} ? 'background:linear-gradient(90deg,#3498DB,#2980B9);' : (${iterStat.index == 2} ? 'background:linear-gradient(90deg,#F39C12,#D68910);' : (${iterStat.index == 3} ? 'background:linear-gradient(90deg,#E74C3C,#C0392B);' : 'background:linear-gradient(90deg,#8B5CF6,#7C3AED);')))"
                    th:attr="data-w=${doc.porcentaje != null ? doc.porcentaje + '%' : '50%'}"></div>
             </div>
             <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;" th:text="${doc.descargas}">0</span>

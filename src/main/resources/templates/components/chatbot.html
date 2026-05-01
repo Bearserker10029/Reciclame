@@ -112,11 +112,15 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })
         })
-        .then(function(res) { return res.json(); })
+        .then(function(res) { return res.text(); })
         .then(function(data) {
-          var content = data.choices && data.choices[0] && data.choices[0].message
-                       ? data.choices[0].message.content
-                       : data.response || '...';
+          var content = data;
+          try {
+            var json = JSON.parse(data);
+            content = (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content)
+                     ? json.choices[0].message.content
+                     : (json.response || content);
+          } catch (e) {}
           var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' + content + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
