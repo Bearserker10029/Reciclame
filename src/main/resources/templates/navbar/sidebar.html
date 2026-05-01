@@ -21,11 +21,11 @@
         <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
       </div>
       <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
-        <div class="nav-subitem" onclick="window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
+        <div class="nav-subitem" id="nav-nacional" onclick="window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
           <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Nacional</span>
         </div>
-        <div class="nav-subitem" onclick="window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
+        <div class="nav-subitem" id="nav-internacional" onclick="window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
           <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Internacional</span>
         </div>
@@ -61,18 +61,31 @@
             <div class="nav-item" id="nav-reportes" onclick="navTo('reportes')">
                 <i class="fas fa-chart-bar"></i><span>Reportes</span>
             </div>
+            <div class="nav-item" id="nav-diccionarios" onclick="navTo('diccionarios')">
+                <i class="fas fa-tags"></i><span>Diccionarios</span>
+            </div>
         </div>
 
       <!-- SuperAdmin section - solo visible para SUPERADMIN -->
       <th:block th:if="${rol == 'SUPERADMIN'}">
         <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
-        <div class="nav-item" id="nav-auditoria"
-             th:class="${rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
-             onclick="navTo('auditoria')">
+        <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
+          Super Admin
+        </div>
+        <div class="nav-item" id="nav-auditoria" onclick="navTo('auditoria')">
           <i class="fas fa-shield-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Auditoría Global</span>
         </div>
+        <div class="nav-item" id="nav-parametros" onclick="window.location.href='/superadmin/parametros'">
+          <i class="fas fa-sliders-h" style="width:18px;text-align:center;font-size:15px;"></i><span>Parámetros</span>
+        </div>
+        <div class="nav-item" id="nav-backups" onclick="window.location.href='/superadmin/backups'">
+          <i class="fas fa-database" style="width:18px;text-align:center;font-size:15px;"></i><span>Backups</span>
+        </div>
+        <div class="nav-item" id="nav-empresas" onclick="navTo('empresas')">
+          <i class="fas fa-building" style="width:18px;text-align:center;font-size:15px;"></i><span>Empresas</span>
+        </div>
         <div class="nav-item" id="nav-impersonar" onclick="navTo('impersonar')">
-          <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonar Usuario</span>
+          <i class="fas fa-user-secret" style="width:18px;text-align:center;font-size:15px;"></i><span>Impersonación</span>
         </div>
       </th:block>
     </div>
@@ -82,6 +95,98 @@
       </div>
     </div>
   </aside>
+
+  <!-- Script para marcar el nav-item activo basado en la URL actual -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var currentPath = window.location.pathname;
+      var navMap = {
+        '/admin': 'nav-inicio',
+        '/admin/inicio': 'nav-inicio',
+        '/admin/estudios': 'nav-estudios',
+        '/admin/estudios/crear': 'nav-estudios',
+        '/admin/normativo': 'nav-normativo',
+        '/admin/normativo/crear': 'nav-normativo',
+        '/admin/perfil': 'nav-perfil',
+        '/admin/notificaciones': 'nav-notificaciones',
+        '/admin/usuarios': 'nav-usuarios',
+        '/admin/documentos': 'nav-admin-docs',
+        '/admin/trazabilidad': 'nav-trazabilidad',
+        '/admin/reportes': 'nav-reportes',
+        '/admin/diccionarios': 'nav-diccionarios',
+        '/admin/auditoria': 'nav-auditoria',
+        '/superadmin': 'nav-inicio',
+        '/superadmin/inicio': 'nav-inicio',
+        '/superadmin/estudios': 'nav-estudios',
+        '/superadmin/normativo': 'nav-normativo',
+        '/superadmin/perfil': 'nav-perfil',
+        '/superadmin/notificaciones': 'nav-notificaciones',
+        '/superadmin/usuarios': 'nav-usuarios',
+        '/superadmin/documentos': 'nav-admin-docs',
+        '/superadmin/trazabilidad': 'nav-trazabilidad',
+        '/superadmin/reportes': 'nav-reportes',
+        '/superadmin/diccionarios': 'nav-diccionarios',
+        '/superadmin/auditoria': 'nav-auditoria',
+        '/superadmin/impersonar': 'nav-impersonar',
+        '/superadmin/parametros': 'nav-parametros',
+        '/superadmin/backups': 'nav-backups'
+      };
+
+      // Eliminar clase 'active' de todos los nav-items y nav-subitems
+      document.querySelectorAll('.nav-item, .nav-subitem').forEach(function(item) {
+        item.classList.remove('active');
+      });
+
+      // Agregar clase 'active' al nav-item que corresponde a la página actual
+      var activeNavId = navMap[currentPath];
+      // Prefix fallback for dynamic paths (editar/{id})
+      if (!activeNavId) {
+        if (currentPath.startsWith('/admin/normativo/editar/')) activeNavId = 'nav-normativo';
+        else if (currentPath.startsWith('/admin/estudios/editar/')) activeNavId = 'nav-estudios';
+      }
+      if (activeNavId) {
+        var activeNav = document.getElementById(activeNavId);
+        if (activeNav) {
+          activeNav.classList.add('active');
+        }
+      }
+
+      // Casos especiales para subitems (Nacional e Internacional)
+      if (currentPath === '/admin/normativo') {
+        // Si estamos en normativo, revisar qué subitem debe estar activo
+        var normativoTab = window.__normativoTab || 'todos';
+        if (normativoTab === 'nacional') {
+          var navNacional = document.getElementById('nav-nacional');
+          if (navNacional) {
+            navNacional.classList.add('active');
+          }
+        } else if (normativoTab === 'internacional') {
+          var navInternacional = document.getElementById('nav-internacional');
+          if (navInternacional) {
+            navInternacional.classList.add('active');
+          }
+        }
+      }
+    });
+
+    // Monitorear cambios en __normativoTab para actualizar el sidebar
+    var observer = setInterval(function() {
+      if (window.location.pathname === '/admin/normativo') {
+        document.querySelectorAll('.nav-subitem').forEach(function(item) {
+          item.classList.remove('active');
+        });
+
+        var normativoTab = window.__normativoTab || 'todos';
+        if (normativoTab === 'nacional') {
+          var navNacional = document.getElementById('nav-nacional');
+          if (navNacional) navNacional.classList.add('active');
+        } else if (normativoTab === 'internacional') {
+          var navInternacional = document.getElementById('nav-internacional');
+          if (navInternacional) navInternacional.classList.add('active');
+        }
+      }
+    }, 100);
+  </script>
 </th:block>
 </body>
 </html>

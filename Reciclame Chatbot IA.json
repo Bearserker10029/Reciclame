@@ -1,0 +1,183 @@
+{
+  "name": "Reciclame Chatbot IA",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatbot-reciclame",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "051df03c-9630-445a-90ca-a6971d940cd3",
+      "name": "Chat Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        160
+      ],
+      "webhookId": "chatbot-reciclame"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SHOW TABLES"
+      },
+      "id": "efd421a4-c9d7-4339-9c0d-b1c57fb96740",
+      "name": "MySQL List Tables",
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 1,
+      "position": [
+        32,
+        144
+      ],
+      "credentials": {
+        "mySql": {
+          "id": "N6WfXgkBMys26cPX",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "puede usar MySQL Execute para consultas SELECT y COUNT"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -288,
+        64
+      ],
+      "id": "e7da85e0-9ab9-4dc9-be0b-94369c2e044b",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatMinimax",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        272
+      ],
+      "id": "26c2f393-2550-43eb-abf7-7dd109819c17",
+      "name": "MiniMax Chat Model",
+      "credentials": {
+        "minimaxApi": {
+          "id": "8BsfKrVrMgFCa6pj",
+          "name": "MiniMax account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('query', '', 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySqlTool",
+      "typeVersion": 2.5,
+      "position": [
+        -128,
+        304
+      ],
+      "id": "688cbad8-824d-4e11-a1c7-8eff3b0da545",
+      "name": "Execute a SQL query in MySQL",
+      "credentials": {
+        "mySql": {
+          "id": "N6WfXgkBMys26cPX",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        48,
+        -32
+      ],
+      "id": "56b3411f-4bc5-420d-bcf4-5f0d38a56eac",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "MiniMax Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "MySQL List Tables",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in MySQL": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "bf28cde4-7c2f-48ac-9528-10168bd17aea",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "acf55694e0d874a64ecad315f2b4a3aa45eb553609ca47da13d196bb98f5d0b0"
+  },
+  "id": "fzELBkyuaTESUTu4",
+  "tags": []
+}

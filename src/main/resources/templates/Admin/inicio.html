@@ -8,343 +8,342 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
-    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
-    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
-    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
-    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .main-card{background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;transition:transform .28s,box-shadow .28s;}
-    .main-card:hover{transform:translateY(-5px);box-shadow:0 12px 32px rgba(0,0,0,.13);}
-    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
-    .tag{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;}
-    .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-    .update-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s;}
-    .update-item:hover{background:#F9FAFB;}
-    .page{display:none;}.page.active{display:block;}
-    .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-    .report-tab{padding:9px 18px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#6B7280;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
-    .report-tab.active{background:#1B3A5C;color:#fff;border-color:#1B3A5C;}
-    .notif-card{display:flex;align-items:flex-start;gap:14px;padding:16px;background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid transparent;}
-    .notif-card.unread{border-left-color:#E74C3C;background:#FFFBFB;}
-    .notif-card.read{border-left-color:#E5E7EB;}
-    .notif-icon span{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .notif-badge-unread{background:#FEE2E2;color:#DC2626;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap;}
-    .btn-mark-read{margin-top:8px;padding:5px 12px;border-radius:6px;border:1px solid #2ECC71;background:rgba(46,204,113,.07);color:#27AE60;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;}
-    .credential-card{background:linear-gradient(135deg,#1B3A5C 0%,#27AE60 100%);border-radius:16px;padding:24px;color:#fff;box-shadow:0 8px 32px rgba(43,59,92,.2);display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;}
-    .credential-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(255,255,255,.1) 0%,transparent 50%);pointer-events:none;}
-    .credential-content{position:relative;z-index:1;}
-    .qr-container{background:#fff;padding:16px;border-radius:12px;display:flex;align-items:center;justify-content:center;width:220px;height:220px;margin:8px 0;}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F5F6FA; }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 11px 16px;
+      border-radius: 8px; cursor: pointer; color: rgba(255,255,255,.65);
+      font-size: 14px; font-weight: 500; transition: background .18s;
+      border-left: 3px solid transparent; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+    .nav-item.active { background: rgba(46,204,113,.18); color: #fff; border-left-color: #2ECC71; }
+
+    .nav-sublist { margin: 4px 0 6px 34px; display: flex; flex-direction: column; gap: 6px; }
+    .nav-subitem {
+      display: flex; align-items: center; gap: 10px; padding: 8px 12px;
+      border-radius: 6px; cursor: pointer; color: rgba(255,255,255,.65);
+      font-size: 13px; font-weight: 500; transition: background .15s, color .15s;
+    }
+    .nav-subitem:hover { background: rgba(255,255,255,.07); color: #fff; }
+
+    .main-card {
+      background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden; cursor: pointer; transition: transform .28s, box-shadow .28s;
+    }
+    .main-card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(0,0,0,.13); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    }
+    .stat-card {
+      background: #fff; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+    .update-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      border-radius: 8px; cursor: pointer; transition: background .15s;
+    }
+    .update-item:hover { background: #F9FAFB; }
   </style>
 </head>
 <body>
 
 <div style="display:flex;flex-direction:column;min-height:100vh;">
   <th:block th:replace="navbar/topbar :: topbar"></th:block>
+
   <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
     <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-    <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
 
-      <!-- PAGE: INICIO ADMIN -->
-      <div id="page-inicio" class="page active" style="padding:32px;">
-        <div style="margin-bottom:24px;">
-          <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Administración</h1>
-          <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
-        </div>
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
 
-        <!-- ═══ HERO BANNERS ═══ -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
-
-          <!-- Banner Estudios -->
-          <div onclick="navTo('estudios')" style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
-               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
-            <!-- Decorative circles -->
-            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
-            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-folder-open" style="color:#fff;font-size:22px;"></i>
-              </div>
-              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
-            </div>
-            <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Estudios</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Reportes, infografías y ayudas memoria del equipo técnico Recíclame.</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="display:flex;gap:8px;">
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PDF</span>
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
-                <span style="background:rgba(231,76,60,.2);color:#FCA5A5;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-eye" style="font-size:9px;margin-right:3px;"></i>Solo lectura</span>
-              </div>
-              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
-              </div>
-            </div>
+      <div th:if="${session.ORIGINAL_USER != null}" style="background:linear-gradient(135deg,#FEF3C7 0%,#FDE68A 100%);border:1px solid #F59E0B;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(245,158,11,.2);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:40px;height:40px;background:#F59E0B;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-user-shield" style="color:#fff;font-size:18px;"></i>
           </div>
-
-          <!-- Banner Normativo -->
-          <div onclick="navTo('normativo')" style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
-               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
-               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
-            <!-- Decorative circles -->
-            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
-            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-balance-scale" style="color:#fff;font-size:22px;"></i>
-              </div>
-              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
-            </div>
-            <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Repositorio Normativo</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Acceso a la base de datos legal de economía circular: nacional e internacional.</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="display:flex;gap:8px;">
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-flag" style="font-size:9px;margin-right:3px;"></i>Nacional</span>
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional</span>
-                <span style="background:rgba(46,204,113,.25);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">138 normas</span>
-              </div>
-              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /hero banners -->
-
-        <!-- Stats row -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-users" style="color:#2ECC71;font-size:18px;"></i></div>
-              <span class="pill" style="background:rgba(39,174,96,.12);color:#27AE60;">+3 hoy</span>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">42</div>
-            <div style="font-size:12px;color:#6B7280;">Usuarios activos</div>
-          </div>
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-clock" style="color:#F39C12;font-size:18px;"></i></div>
-              <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;">Pendiente</span>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">3</div>
-            <div style="font-size:12px;color:#6B7280;">Solicitudes nuevas</div>
-          </div>
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-alt" style="color:#3498DB;font-size:18px;"></i></div>
-              <span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">+2</span>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">24</div>
-            <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
-          </div>
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-chart-bar" style="color:#9B59B6;font-size:18px;"></i></div>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">891</div>
-            <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
+          <div>
+            <div style="font-weight:700;color:#92400E;font-size:14px;">Modo Soporte - Sesión Impersonada</div>
+            <div style="font-size:12px;color:#B45309;">Estás siendo operado por el SuperAdmin: <span th:text="${session.ORIGINAL_USER}">SuperAdmin</span></div>
           </div>
         </div>
+        <form th:action="@{/superadmin/impersonar/salir}" method="post">
+          <button type="submit" style="background:#F59E0B;border:none;padding:10px 18px;border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-sign-out-alt"></i> SuperAdmin vuelve
+          </button>
+        </form>
+      </div>
 
-        <!-- Donut + charts -->
-        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:28px;display:flex;align-items:center;gap:32px;">
-          <div style="flex-shrink:0;"><canvas id="donut-admin" width="140" height="140"></canvas></div>
-          <div style="flex:1;">
-            <div style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:14px;"><i class="fas fa-chart-pie" style="color:#2ECC71;margin-right:8px;"></i>Distribución de normativas por temática</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#27AE60;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EC — Economía Circular</div><div style="font-size:11px;color:#6B7280;">52 normativas · 38%</div></div></div>
-              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(52,152,219,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#3498DB;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">GR — Gestión de Residuos</div><div style="font-size:11px;color:#6B7280;">34 normativas · 25%</div></div></div>
-              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(243,156,18,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#F39C12;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EE — Envases y Embalajes</div><div style="font-size:11px;color:#6B7280;">28 normativas · 20%</div></div></div>
-              <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(231,76,60,.07);border-radius:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#E74C3C;flex-shrink:0;"></div><div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">REP — Responsabilidad Ext.</div><div style="font-size:11px;color:#6B7280;">16 normativas · 12%</div></div></div>
+      <!-- ─── DASHBOARD INICIO ─── -->
+      <div style="margin-bottom:24px;">
+        <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Administración</h1>
+        <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
+      </div>
+
+      <!-- ═══ HERO BANNERS ═══ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
+
+        <!-- Banner Estudios -->
+        <div onclick="navTo('estudios')"
+             style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
+             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
+          <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
+          <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+            <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-folder-open" style="color:#fff;font-size:22px;"></i>
+            </div>
+            <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
+          </div>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Estudios</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Reportes, infografías y ayudas memoria del equipo técnico Recíclame.</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:8px;">
+              <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PDF</span>
+              <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
+              <span style="background:rgba(231,76,60,.2);color:#FCA5A5;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-eye" style="font-size:9px;margin-right:3px;"></i>Solo lectura</span>
+            </div>
+            <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
             </div>
           </div>
         </div>
 
-        <!-- Two columns: recent activity + pending requests -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-          <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-              <div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-clock" style="color:#2ECC71;font-size:15px;"></i><span style="font-weight:700;font-size:15px;color:#1B3A5C;">Actividad reciente</span></div>
+        <!-- Banner Normativo -->
+        <div onclick="navTo('normativo')"
+             style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
+             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
+             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
+          <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
+          <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
+            <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-balance-scale" style="color:#fff;font-size:22px;"></i>
             </div>
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <div class="update-item">
-                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(39,174,96,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-user-plus" style="color:#27AE60;font-size:14px;"></i></div>
-                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nuevo usuario aprobado: Ana Sánchez</div><div style="font-size:11px;color:#9CA3AF;">Gestión de usuarios · hace 30 min</div></div>
-              </div>
-              <div class="update-item">
-                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:14px;"></i></div>
-                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Análisis de Flujo de Materiales 2025 cargado</div><div style="font-size:11px;color:#9CA3AF;">Documentos · hace 2 horas</div></div>
-              </div>
-              <div class="update-item">
-                <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-download" style="color:#3498DB;font-size:14px;"></i></div>
-                <div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">María López descargó D.L. 1278</div><div style="font-size:11px;color:#9CA3AF;">Trazabilidad · hace 4 horas</div></div>
-              </div>
-            </div>
+            <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;">Módulo</span>
           </div>
-          <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-              <div style="display:flex;align-items:center;gap:8px;"><i class="fas fa-user-clock" style="color:#F39C12;font-size:15px;"></i><span style="font-weight:700;font-size:15px;color:#1B3A5C;">Solicitudes pendientes</span></div>
-              <span style="background:#E74C3C;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">3 nuevas</span>
+          <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Repositorio Normativo</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Acceso a la base de datos legal de economía circular: nacional e internacional.</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:8px;">
+              <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-flag" style="font-size:9px;margin-right:3px;"></i>Nacional</span>
+              <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional</span>
+              <span style="background:rgba(46,204,113,.25);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">138 normas</span>
             </div>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
-                <div style="width:36px;height:36px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">AS</div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Ana Sánchez</div>
-                  <div style="font-size:11px;color:#9CA3AF;">Grupo Gloria S.A. · hace 2h</div>
-                </div>
-                <div style="display:flex;gap:4px;">
-                  <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
-                  <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
-              <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
-                <div style="width:36px;height:36px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">LR</div>
-                <div style="flex:1;min-width:0;">
-                  <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Luis Rodríguez</div>
-                  <div style="font-size:11px;color:#9CA3AF;">Cartavio S.A.A. · hace 1 día</div>
-                </div>
-                <div style="display:flex;gap:4px;">
-                  <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
-                  <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
-                </div>
-              </div>
+            <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
             </div>
-            <button onclick="navTo('usuarios')" style="margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Ver todas las solicitudes</button>
           </div>
         </div>
-      </div>
 
-      <!-- PAGE: ESTUDIOS -->
-      <div id="page-estudios" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/estudios :: estudios-content"></th:block>
-      </div>
+      </div><!-- /hero banners -->
 
-      <!-- PAGE: NORMATIVO -->
-      <div id="page-normativo" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/normativo :: normativo-content"></th:block>
-      </div>
+      <!-- ═══ STATS ROW ═══ -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
 
-      <!-- PAGE: PERFIL -->
-      <div id="page-perfil" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/perfil :: perfil-content"></th:block>
-      </div>
+        <div class="stat-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-users" style="color:#2ECC71;font-size:18px;"></i>
+            </div>
+            <span class="pill" style="background:rgba(39,174,96,.12);color:#27AE60;">+3 hoy</span>
+          </div>
+          <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">42</div>
+          <div style="font-size:12px;color:#6B7280;">Usuarios activos</div>
+        </div>
 
-      <!-- PAGE: NOTIFICACIONES -->
-      <div id="page-notificaciones" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/notificaciones :: notificaciones-content"></th:block>
-      </div>
+        <div class="stat-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-user-clock" style="color:#F39C12;font-size:18px;"></i>
+            </div>
+            <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;">Pendiente</span>
+          </div>
+          <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">3</div>
+          <div style="font-size:12px;color:#6B7280;">Solicitudes nuevas</div>
+        </div>
 
-      <!-- PAGE: USUARIOS -->
-      <div id="page-usuarios" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/usuarios :: usuarios-content"></th:block>
-      </div>
+        <div class="stat-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-file-alt" style="color:#3498DB;font-size:18px;"></i>
+            </div>
+            <span class="pill" style="background:rgba(52,152,219,.12);color:#2471A3;">+2</span>
+          </div>
+          <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">24</div>
+          <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
+        </div>
 
-      <!-- PAGE: ADMIN-DOCS -->
-      <div id="page-admin-docs" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/documentos :: documentos-content"></th:block>
-      </div>
+        <div class="stat-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-chart-bar" style="color:#9B59B6;font-size:18px;"></i>
+            </div>
+          </div>
+          <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">891</div>
+          <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
+        </div>
 
-      <!-- PAGE: TRAZABILIDAD -->
-      <div id="page-trazabilidad" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/trazabilidad :: trazabilidad-content"></th:block>
-      </div>
+      </div><!-- /stats row -->
 
-      <!-- PAGE: REPORTES -->
-      <div id="page-reportes" class="page" style="padding:32px;">
-        <th:block th:replace="Admin/reportes :: reportes-content"></th:block>
-      </div>
+      <!-- ═══ DONUT CHART ═══ -->
+      <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:28px;display:flex;align-items:center;gap:32px;">
+        <div style="flex-shrink:0;"><canvas id="donut-admin" width="140" height="140"></canvas></div>
+        <div style="flex:1;">
+          <div style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:14px;">
+            <i class="fas fa-chart-pie" style="color:#2ECC71;margin-right:8px;"></i>Distribución de normativas por temática
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(39,174,96,.07);border-radius:8px;">
+              <div style="width:12px;height:12px;border-radius:3px;background:#27AE60;flex-shrink:0;"></div>
+              <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EC — Economía Circular</div><div style="font-size:11px;color:#6B7280;">52 normativas · 38%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(52,152,219,.07);border-radius:8px;">
+              <div style="width:12px;height:12px;border-radius:3px;background:#3498DB;flex-shrink:0;"></div>
+              <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">GR — Gestión de Residuos</div><div style="font-size:11px;color:#6B7280;">34 normativas · 25%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(243,156,18,.07);border-radius:8px;">
+              <div style="width:12px;height:12px;border-radius:3px;background:#F39C12;flex-shrink:0;"></div>
+              <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">EE — Envases y Embalajes</div><div style="font-size:11px;color:#6B7280;">28 normativas · 20%</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(231,76,60,.07);border-radius:8px;">
+              <div style="width:12px;height:12px;border-radius:3px;background:#E74C3C;flex-shrink:0;"></div>
+              <div><div style="font-size:12px;font-weight:700;color:#1B3A5C;">REP — Responsabilidad Ext.</div><div style="font-size:11px;color:#6B7280;">16 normativas · 12%</div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /donut -->
+
+      <!-- ═══ ACTIVIDAD RECIENTE + SOLICITUDES PENDIENTES ═══ -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+
+        <!-- Actividad reciente -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
+            <i class="fas fa-clock" style="color:#2ECC71;font-size:15px;"></i>
+            <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Actividad reciente</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(39,174,96,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-user-plus" style="color:#27AE60;font-size:14px;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Nuevo usuario aprobado: Ana Sánchez</div>
+                <div style="font-size:11px;color:#9CA3AF;">Gestión de usuarios · hace 30 min</div>
+              </div>
+            </div>
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-file-pdf" style="color:#E74C3C;font-size:14px;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Análisis de Flujo de Materiales 2025 cargado</div>
+                <div style="font-size:11px;color:#9CA3AF;">Documentos · hace 2 horas</div>
+              </div>
+            </div>
+            <div class="update-item">
+              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-download" style="color:#3498DB;font-size:14px;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">María López descargó D.L. 1278</div>
+                <div style="font-size:11px;color:#9CA3AF;">Trazabilidad · hace 4 horas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Solicitudes pendientes -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-user-clock" style="color:#F39C12;font-size:15px;"></i>
+              <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Solicitudes pendientes</span>
+            </div>
+            <span style="background:#E74C3C;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">3 nuevas</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">AS</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Ana Sánchez</div>
+                <div style="font-size:11px;color:#9CA3AF;">Grupo Gloria S.A. · hace 2h</div>
+              </div>
+              <div style="display:flex;gap:4px;">
+                <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
+                <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div style="padding:12px;background:#F9FAFB;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#9B59B6;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">LR</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Luis Rodríguez</div>
+                <div style="font-size:11px;color:#9CA3AF;">Cartavio S.A.A. · hace 1 día</div>
+              </div>
+              <div style="display:flex;gap:4px;">
+                <button style="padding:5px 10px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:11px;cursor:pointer;"><i class="fas fa-check"></i></button>
+                <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;cursor:pointer;"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+          </div>
+          <button onclick="navTo('usuarios')"
+                  style="margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">
+            Ver todas las solicitudes
+          </button>
+        </div>
+
+      </div><!-- /two-col -->
 
     </main>
   </div>
 
-  <!-- Chatbot Mascota -->
-  <button id="chatbot-bubble" onclick="toggleChatbot()">
-    <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
-  </button>
+  <!-- ── Chatbot extraído a fragmento reutilizable ── -->
+  <th:block th:replace="components/chatbot :: chatbot"></th:block>
 
-  <div id="chatbot-panel">
-    <div class="chat-header">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
-        <div>
-          <div class="chat-title">La Buena Cajita</div>
-          <div class="chat-status"><span style="display:inline-block;width:6px;height:6px;background:#2ECC71;border-radius:50%;margin-right:4px;"></span>En línea</div>
-        </div>
-      </div>
-      <button class="chat-close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="chat-messages" id="chat-messages">
-      <div class="chat-msg bot">
-        <div class="bubble">¡Hola! Soy La Buena Cajita, tu asistente de Recíclame. ¿En qué puedo ayudarte hoy?</div>
-      </div>
-    </div>
-    <div class="chat-input-area">
-      <input type="text" class="chat-input" id="chat-input" placeholder="Pregúntame sobre normativas o economía circular..." onkeypress="if(event.key==='Enter')sendChatMessage()" />
-      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-    </div>
-  </div>
 </div>
 
 <script>
-function navTo(page){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  var nav=document.getElementById('nav-'+page);
-  if(nav)nav.classList.add('active');
-  window.scrollTo(0,0);
-}
-function goLogin(){window.location.href='/login';}
-
-function toggleChatbot(){
-  var panel=document.getElementById('chatbot-panel');
-  var bubble=document.getElementById('chatbot-bubble');
-  if(panel.style.display==='flex'){
-    panel.style.display='none';
-    bubble.style.display='flex';
-  }else{
-    panel.style.display='flex';
-    bubble.style.display='none';
-  }
+/**
+ * navTo(page)
+ * Redirige al controlador MPA correspondiente bajo /admin/.
+ * El mapa admin-docs → documentos cubre el alias usado en el sidebar.
+ */
+function navTo(page) {
+  var map = { 'admin-docs': 'documentos' };
+  window.location.href = '/admin/' + (map[page] || page);
 }
 
-function sendChatMessage(){
-  var input=document.getElementById('chat-input');
-  var message=input.value.trim();
-  if(!message)return;
-  var messagesDiv=document.getElementById('chat-messages');
-  var userMsg=document.createElement('div');
-  userMsg.className='chat-msg user';
-  userMsg.innerHTML='<div class="bubble">'+message+'</div>';
-  messagesDiv.appendChild(userMsg);
-  input.value='';
-  messagesDiv.scrollTop=messagesDiv.scrollHeight;
-  setTimeout(function(){
-    var botMsg=document.createElement('div');
-    botMsg.className='chat-msg bot';
-    botMsg.innerHTML='<div class="bubble">Gracias por tu mensaje. Estoy en modo demo, pero en producción me conectaré a un sistema RAG con IA para responder tus preguntas sobre normativas y economía circular.</div>';
-    messagesDiv.appendChild(botMsg);
-    messagesDiv.scrollTop=messagesDiv.scrollHeight;
-  },800);
-}
+function goLogin() { window.location.href = '/login'; }
 
-const ctx=document.getElementById('donut-admin');
-if(ctx){
-  new Chart(ctx,{
-    type:'doughnut',
-    data:{labels:['EC','GR','EE','REP','Otro'],datasets:[{data:[52,34,28,16,8],backgroundColor:['#27AE60','#3498DB','#F39C12','#E74C3C','#95A5A6'],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:false,cutout:'65%',plugins:{legend:{display:false}}}
-  });
-}
-
-// Mostrar bubble de chatbot
-document.getElementById('chatbot-bubble').style.display='flex';
+  // Donut chart — distribución de normativas
+  (function () {
+    var ctx = document.getElementById('donut-admin');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['EC', 'GR', 'EE', 'REP', 'Otro'],
+        datasets: [{
+          data: [52, 34, 28, 16, 8],
+          backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'],
+          borderWidth: 0,
+          hoverOffset: 4
+        }]
+      },
+      options: {
+        responsive: false,
+        cutout: '65%',
+        animation: { duration: 1200, easing: 'easeInOutQuart' },
+        plugins: { legend: { display: false } }
+      }
+    });
+  })();
 </script>
+
 </body>
 </html>

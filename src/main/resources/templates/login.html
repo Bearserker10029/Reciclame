@@ -742,20 +742,20 @@
             <label class="field-label">Correo corporativo</label>
             <div style="position:relative;">
               <i class="fas fa-envelope field-icon"></i>
-              <input id="inp-email" name="username" class="glass-input form-control" type="email" placeholder="usuario@empresa.com" required />
+              <input id="login-email" name="username" class="glass-input form-control" th:classappend="${param.error} ? 'input-error'" type="email" placeholder="usuario@empresa.com" oninput="clearLoginError()" required />
             </div>
           </div>
           <div style="margin-bottom:10px;">
             <label class="field-label">Contraseña</label>
             <div style="position:relative;">
               <i class="fas fa-lock field-icon"></i>
-              <input id="inp-pass" name="password" class="glass-input form-control" type="password" placeholder="••••••••"
-                style="padding-right:44px;" required />
-              <button type="button" class="btn eye-btn" onclick="togglePass('inp-pass',this)"><i
+              <input id="login-pass" name="password" class="glass-input form-control" th:classappend="${param.error} ? 'input-error'" type="password" placeholder="••••••••"
+                style="padding-right:44px;" oninput="clearLoginError()" required />
+              <button type="button" class="btn eye-btn" onclick="togglePass('login-pass',this)"><i
                   class="fas fa-eye"></i></button>
             </div>
           </div>
-          <div th:if="${param.error}" class="field-error show" style="display:flex;margin-bottom:10px;">
+          <div id="login-error" class="field-error" th:classappend="${param.error} ? 'show'" style="margin-bottom:10px;">
             <i class="fas fa-exclamation-circle"></i> Correo o contraseña incorrectos
           </div>
           <div th:if="${param.logout}" style="display:flex;align-items:center;gap:8px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;min-height:44px;box-sizing:border-box;">
@@ -1030,6 +1030,16 @@
       const icon = btn.querySelector('i');
       inp.type = inp.type === 'password' ? 'text' : 'password';
       icon.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+    }
+
+    function clearLoginError() {
+      const emailInput = document.getElementById('login-email');
+      const passInput = document.getElementById('login-pass');
+      const errorDiv = document.getElementById('login-error');
+
+      emailInput.classList.remove('input-error');
+      passInput.classList.remove('input-error');
+      errorDiv.classList.remove('show');
     }
     function handleLogin(e) {
       e.preventDefault();
