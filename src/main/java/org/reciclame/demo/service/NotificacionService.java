@@ -43,6 +43,39 @@ public class NotificacionService {
         return notificacionRepository.countByUsuarioIdAndLeidaFalseAndEstadoActivoTrue(usuarioId);
     }
 
+    // ── CREAR / ENVIAR ────────────────────────────────────────
+    @Transactional
+    public void crearNotificacion(Long usuarioId, String titulo, String mensaje, String tipo) {
+        Usuario u = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioId));
+        Notificacione n = new Notificacione();
+        n.setUsuario(u);
+        n.setTipo(tipo != null ? tipo : "MENSAJE_ADMIN");
+        n.setTitulo(titulo);
+        n.setMensaje(mensaje);
+        n.setLeida(false);
+        n.setEstadoActivo(true);
+        n.setCreatedAt(Instant.now());
+        notificacionRepository.save(n);
+    }
+
+    @Transactional
+    public int enviarNotificacionGlobal(String titulo, String mensaje, String tipo) {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        for (Usuario u : usuarios) {
+            Notificacione n = new Notificacione();
+            n.setUsuario(u);
+            n.setTipo(tipo != null ? tipo : "MENSAJE_ADMIN");
+            n.setTitulo(titulo);
+            n.setMensaje(mensaje);
+            n.setLeida(false);
+            n.setEstadoActivo(true);
+            n.setCreatedAt(Instant.now());
+            notificacionRepository.save(n);
+        }
+        return usuarios.size();
+    }
+
     // ── MARCAR COMO LEÍDA ─────────────────────────────────────
     public void marcarComoLeida(Long id) {
         Notificacione notif = notificacionRepository.findById(id)

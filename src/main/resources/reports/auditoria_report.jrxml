@@ -1,0 +1,147 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="auditoria_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="26858bcc-3dff-4298-bb2d-700e02f758d9">
+	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#3399FF" fontName="SansSerif" fontSize="10.0" bold="true"/>
+	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
+	<style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
+	<dataset name="AuditoriaAccionesDataset" uuid="bbd5a2f4-f248-410a-93d2-74a3bac10458">
+		<field name="label" class="java.lang.String"/>
+		<field name="value" class="java.lang.Integer"/>
+	</dataset>
+	<dataset name="AuditoriaEstadoDataset" uuid="7d130af2-164d-4195-8d44-4e30b1f8cf4c">
+		<field name="label" class="java.lang.String"/>
+		<field name="value" class="java.lang.Integer"/>
+	</dataset>
+	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
+	<field name="fechaAccion" class="java.time.Instant"/>
+	<field name="accion" class="java.lang.String"/>
+	<field name="modulo" class="java.lang.String"/>
+	<field name="estado" class="java.lang.String"/>
+	<field name="usuarioNombre" class="java.lang.String"/>
+	<field name="ipAddress" class="java.lang.String"/>
+	<field name="descripcion" class="java.lang.String"/>
+	<background height="802" splitType="Stretch">
+		<element kind="chart" chartType="pie3D" uuid="277d0843-a323-42d6-a649-03b09bb8535a" x="900" y="160" width="260" height="140" showLegend="false" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="d8807f7a-b314-4f28-8368-cf3063acc64f" subDataset="AuditoriaAccionesDataset">
+					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#3399FF"/>
+				<seriesColor order="1" color="#00CCFF"/>
+				<seriesColor order="2" color="#0066CC"/>
+				<seriesColor order="3" color="#6699FF"/>
+				<seriesColor order="4" color="#004A94"/>
+				<seriesColor order="5" color="#00356A"/>
+			</plot>
+		</element>
+		<element kind="chart" chartType="pie3D" uuid="04465ecb-7367-42eb-a919-0acd189a84bb" x="900" y="340" width="260" height="140" showLegend="false" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="a9812903-39cf-4068-922b-e9c09740dab5" subDataset="AuditoriaEstadoDataset">
+					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#3399FF"/>
+				<seriesColor order="1" color="#00CCFF"/>
+				<seriesColor order="2" color="#0066CC"/>
+				<seriesColor order="3" color="#6699FF"/>
+				<seriesColor order="4" color="#004A94"/>
+				<seriesColor order="5" color="#00356A"/>
+			</plot>
+		</element>
+	</background>
+	<title height="60" splitType="Stretch">
+		<element kind="staticText" uuid="79df661a-4126-4b1e-9f2f-0add2423432d" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Reporte de Auditoria]]></text>
+		</element>
+	</title>
+	<columnHeader height="30" splitType="Stretch">
+		<element kind="line" uuid="f54f68d3-520e-4af3-a185-791ee52f854c" x="0" y="28" width="898" height="2">
+			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
+		</element>
+		<element kind="staticText" uuid="8771a276-1041-4635-97c9-d281de57b457" mode="Opaque" x="-1" y="0" width="120" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Fecha]]></text>
+		</element>
+		<element kind="staticText" uuid="cd20aa17-0a07-4fa5-94e7-89bbc4210a5c" mode="Opaque" x="239" y="0" width="100" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Modulo]]></text>
+		</element>
+		<element kind="staticText" uuid="23a26540-5bbf-481b-994b-2455550e2405" mode="Opaque" x="339" y="0" width="80" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Estado]]></text>
+		</element>
+		<element kind="staticText" uuid="59491418-1006-4068-9cbb-fa6641b8082f" mode="Opaque" x="419" y="0" width="160" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Usuario]]></text>
+		</element>
+		<element kind="staticText" uuid="e440c51f-6ec3-4956-880e-c38abd17a166" mode="Opaque" x="579" y="0" width="100" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[IP]]></text>
+		</element>
+		<element kind="staticText" uuid="29832f9a-a956-4b71-85b6-976fc1935d58" mode="Opaque" x="679" y="0" width="219" height="28" backcolor="#244771" fontName="SansSerif" bold="true" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Descripcion]]></text>
+			<box style="headerStyle">
+				<pen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="034a5f30-8df0-4569-bdb2-ec455b5f7e14" mode="Opaque" x="119" y="0" width="120" height="28" backcolor="#244771" fontName="SansSerif" bold="true" hTextAlign="Center" style="headerStyle">
+			<text><![CDATA[Accion]]></text>
+			<box style="headerStyle">
+				<pen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="40" splitType="Stretch">
+			<element kind="textField" uuid="fb887d24-2c4a-480e-a27d-919ba1eedb8f" x="0" y="0" width="119" height="40" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{fechaAccion} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(java.time.ZoneId.of("America/Lima")).format($F{fechaAccion}) : ""]]></expression>
+			</element>
+			<element kind="textField" uuid="bca1933f-5a77-45e3-863d-82e84bfc51ed" x="120" y="0" width="119" height="40" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{accion}]]></expression>
+			</element>
+			<element kind="textField" uuid="bd66ba90-4217-41f4-806a-c2753e2f8ac3" x="240" y="0" width="99" height="40" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{modulo}]]></expression>
+			</element>
+			<element kind="textField" uuid="028dad47-e360-4a56-bc8e-7d1729f4fbbc" x="340" y="0" width="79" height="40" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{estado}]]></expression>
+			</element>
+			<element kind="textField" uuid="4388aadc-7a6a-4965-bbf4-065559abf332" x="420" y="0" width="159" height="40" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{usuarioNombre}]]></expression>
+			</element>
+			<element kind="textField" uuid="4e58df8a-1961-4690-9142-2aaf87579242" x="580" y="0" width="99" height="40" hTextAlign="Center" style="rowAltStyle">
+				<expression><![CDATA[$F{ipAddress}]]></expression>
+			</element>
+			<element kind="textField" uuid="9004cf00-6ff5-41ae-9af3-7d45b6520f1b" x="679" y="0" width="219" height="40" hTextAlign="Left" style="rowAltStyle">
+				<expression><![CDATA[$F{descripcion}]]></expression>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="25" splitType="Stretch">
+		<element kind="line" uuid="877081f0-3c58-40a8-b80e-05050444e30d" x="0" y="0" width="1160" height="1">
+			<pen lineWidth="1.0" lineColor="#1B3A5C"/>
+		</element>
+		<element kind="textField" uuid="f800fbb3-73ab-48ca-9daf-37c8f65b024e" x="0" y="5" width="400" height="20" style="footerStyle">
+			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+		</element>
+		<element kind="textField" uuid="7c15b697-eea5-4eb5-bd77-d8443c9e50e8" x="960" y="5" width="200" height="20" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+		</element>
+	</pageFooter>
+</jasperReport>

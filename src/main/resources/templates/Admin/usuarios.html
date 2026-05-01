@@ -7,14 +7,39 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Solo define navTo si no existe ya (evita sobreescribir el SPA de inicio.html)
+    if (typeof navTo === 'undefined') {
+      function navTo(page) {
+        var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin';
+        window.location.href = base + '/' + page;
+      }
+    }
+  </script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
+    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
+    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
+    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+    .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;}
+    .report-tab{padding:9px 18px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:#6B7280;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s;}
+    .report-tab.active{background:#1B3A5C;color:#fff;border-color:#1B3A5C;}
   </style>
 </head>
 <body>
 
-<th:block th:fragment="usuarios-content">
+<!-- ═══ LAYOUT COMPLETO (visible en standalone /admin/usuarios) ═══ -->
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+
   <!-- ═══ CABECERA ═══ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
     <div>
@@ -29,17 +54,17 @@
 
   <!-- ═══ TABS ═══ -->
   <div style="display:flex;border-bottom:2px solid #E5E7EB;margin-bottom:20px;gap:0;">
-    <button id="tab-usuarios-activos" class="report-tab active">
+    <button id="tab-usuarios-activos" class="report-tab active" onclick="switchUsuarioTab('activos')">
       <i class="fas fa-users"></i> Usuarios activos
       <span style="background:rgba(27,58,92,.1);color:#1B3A5C;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;"
             th:text="${#lists.size(usuariosActivos)}">0</span>
     </button>
-    <button id="tab-usuarios-pendientes" class="report-tab">
+    <button id="tab-usuarios-pendientes" class="report-tab" onclick="switchUsuarioTab('pendientes')">
       <i class="fas fa-user-clock"></i> Solicitudes pendientes
       <span style="background:#E74C3C;color:#fff;font-size:10px;padding:2px 7px;border-radius:999px;margin-left:6px;"
             th:text="${#lists.size(usuariosPendientes)}">0</span>
     </button>
-    <button id="tab-usuarios-historial" class="report-tab">
+    <button id="tab-usuarios-historial" class="report-tab" onclick="switchUsuarioTab('historial')">
       <i class="fas fa-history"></i> Historial
     </button>
   </div>
@@ -51,13 +76,13 @@
       <div style="position:relative;flex:1;min-width:200px;">
         <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
         <input id="buscar-usuario" class="form-control" placeholder="Buscar por nombre o correo..."
-               style="padding-left:36px;" />
+               style="padding-left:36px;" oninput="filtrarUsuarios()" />
       </div>
-      <select id="filtro-rol" class="form-control" style="width:auto;padding:10px 14px;">
+      <select id="filtro-rol" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarUsuarios()">
         <option value="">Rol: Todos</option>
         <option th:each="r : ${roles}" th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
       </select>
-      <select id="filtro-estado" class="form-control" style="width:auto;padding:10px 14px;">
+      <select id="filtro-estado" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarUsuarios()">
         <option value="">Estado: Todos</option>
         <option value="activo">Activo</option>
         <option value="bloqueado">Bloqueado</option>
@@ -129,6 +154,12 @@
                         style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                   <i th:class="${usuario.cuentaBloqueada ? 'fas fa-unlock' : 'fas fa-ban'}"
                      th:style="${usuario.cuentaBloqueada ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
+                </button>
+                <!-- Eliminar -->
+                <button th:onclick="|eliminarUsuario(${usuario.id})|"
+                        title="Eliminar usuario"
+                        style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
+                  <i class="fas fa-trash" style="color:#E74C3C;"></i>
                 </button>
               </div>
             </td>
@@ -202,7 +233,7 @@
       <table class="table table-striped table-hover">
         <thead>
           <tr>
-            <th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Registro</th>
+            <th>Usuario</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Registro</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -219,9 +250,21 @@
             </td>
             <td style="font-size:11px;color:#9CA3AF;"
                 th:text="${usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : '—'}">—</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button th:if="${!usuario.estadoActivo}" th:onclick="|reactivarUsuario(${usuario.id})|" title="Reactivar usuario"
+                  style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
+                  <i class="fas fa-play" style="color:#2ECC71;"></i>
+                </button>
+                <button th:if="${usuario.cuentaBloqueada}" th:onclick="|toggleBloquearUsuario(${usuario.id})|" title="Desbloquear usuario"
+                  style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
+                  <i class="fas fa-unlock" style="color:#27AE60;"></i>
+                </button>
+              </div>
+            </td>
           </tr>
           <tr>
-            <td colspan="5" style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
+            <td colspan="6" style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
               <i class="fas fa-info-circle" style="margin-right:6px;"></i>
               Usuarios con estados distintos de Activo (bloqueados, inactivos, pendientes).
             </td>
@@ -374,6 +417,29 @@
 
   <!-- ═══ SCRIPTS (dentro del fragment para que funcionen en SPA) ═══ -->
   <script>
+  // ─── URL base (admin o superadmin) ───────────────────────
+  function getBaseUrl() {
+    var path = window.location.pathname;
+    if (path.startsWith('/superadmin')) return '/superadmin';
+    return '/admin';
+  }
+
+  // ─── Cambiar pestaña usuarios ─────────────────────────────
+  function switchUsuarioTab(tab) {
+    var tabs = ['activos', 'pendientes', 'historial'];
+    tabs.forEach(function(t) {
+      var btn = document.getElementById('tab-usuarios-' + t);
+      var panel = document.getElementById('utab-' + t);
+      if (t === tab) {
+        if (btn) { btn.classList.add('active'); btn.style.background='#1B3A5C'; btn.style.color='#fff'; btn.style.borderColor='#1B3A5C'; }
+        if (panel) panel.style.display = '';
+      } else {
+        if (btn) { btn.classList.remove('active'); btn.style.background='#fff'; btn.style.color='#6B7280'; btn.style.borderColor='#E5E7EB'; }
+        if (panel) panel.style.display = 'none';
+      }
+    });
+  }
+
   // ─── Configuración paginación ─────────────────────────────
   const USUARIOS_POR_PAGINA = 10;
   let paginaActual = 1;
@@ -482,6 +548,40 @@
     }
   }
 
+  // ─── Filtrar usuarios ──────────────────────────────────
+  function filtrarUsuarios() {
+    var q = document.getElementById('buscar-usuario').value.toLowerCase().trim();
+    var rol = document.getElementById('filtro-rol').value.toLowerCase().trim();
+    var estado = document.getElementById('filtro-estado').value.toLowerCase().trim();
+
+    var sinResultados = true;
+    document.querySelectorAll('#tbody-activos tr[data-nombre]').forEach(function(tr) {
+      var nombre = (tr.dataset.nombre || '').toLowerCase();
+      var correo = (tr.dataset.correo || '').toLowerCase();
+      var rowRol = (tr.dataset.rol || '').toLowerCase();
+      var rowEstado = (tr.dataset.estado || '').toLowerCase();
+
+      var matchQ = !q || nombre.includes(q) || correo.includes(q);
+      var matchRol = !rol || rowRol === rol;
+      var matchEstado = !estado || rowEstado === estado;
+
+      if (matchQ && matchRol && matchEstado) {
+        tr.style.display = '';
+        sinResultados = false;
+      } else {
+        tr.style.display = 'none';
+      }
+    });
+
+    var sinResultadosRow = document.getElementById('fila-sin-resultados');
+    if (sinResultadosRow) {
+      sinResultadosRow.style.display = sinResultados ? '' : 'none';
+    }
+
+    inicializarPaginacion();
+    mostrarPagina(1);
+  }
+
   // ─── Toggle checkboxes ─────────────────────────────────
   function toggleCheckAll(master) {
     document.querySelectorAll('.row-check').forEach(function(cb) {
@@ -549,7 +649,7 @@
     }).then(function(r) {
       if (r.ok) {
         cerrarModalCrear();
-        location.href = '/admin/usuarios';
+        location.href = getBaseUrl() + '/usuarios';
       } else {
         r.text().then(function(msg) {
           errorEl.textContent = msg || 'Error al crear el usuario';
@@ -616,7 +716,7 @@
     }).then(function(r) {
       if (r.ok) {
         cerrarModalEditar();
-        location.href = '/admin/usuarios';
+        location.href = getBaseUrl() + '/usuarios';
       } else {
         r.text().then(function(msg) {
           errorEl.textContent = msg || 'Error al actualizar el usuario';
@@ -637,7 +737,7 @@
     if (!confirm('¿Confirmas ' + accion + ' este usuario?')) return;
     fetch('/api/usuarios/' + id + '/bloquear', { method: 'POST' })
       .then(function(r) {
-        if (r.ok) { location.reload(); }
+        if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
         else { alert('Error al ' + accion + ' el usuario'); }
       })
       .catch(function() { alert('Error de conexión'); });
@@ -655,7 +755,7 @@
     if (empId) url += '&empresaId=' + empId;
     fetch(url, { method: 'POST' })
       .then(function(r) {
-        if (r.ok) { location.reload(); }
+        if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
         else { alert('Error al aprobar la solicitud'); }
       })
       .catch(function() { alert('Error de conexión'); });
@@ -666,11 +766,98 @@
     if (!confirm('¿Confirmas rechazar esta solicitud?')) return;
     fetch('/api/usuarios/' + id + '/rechazar', { method: 'POST' })
       .then(function(r) {
-        if (r.ok) { location.reload(); }
+        if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
         else { alert('Error al rechazar la solicitud'); }
       })
       .catch(function() { alert('Error de conexión'); });
   }
+
+  // ─── Eliminar usuario (lógico) con modal ───────────────────────────
+  var idUsuarioEliminar = null;
+  function eliminarUsuario(id) {
+    idUsuarioEliminar = id;
+    document.getElementById('modal-eliminar').style.display = 'flex';
+  }
+  function cerrarModalEliminar() {
+    document.getElementById('modal-eliminar').style.display = 'none';
+    idUsuarioEliminar = null;
+  }
+  document.getElementById('btn-confirmar-eliminar').onclick = function() {
+    if (!idUsuarioEliminar) return;
+    fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
+      .then(function(r) {
+        cerrarModalEliminar();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else { alert('Error al eliminar el usuario'); }
+      })
+      .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
+
+  // ─── Reactivar usuario con modal ───────────────────────────
+  var idUsuarioReactivar = null;
+  function reactiveUsuario(id) {
+    idUsuarioReactivar = id;
+    document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.';
+    document.getElementById('modal-reactivar').style.display = 'flex';
+  }
+  function cerrarModalReactivar() {
+    document.getElementById('modal-reactivar').style.display = 'none';
+    idUsuarioReactivar = null;
+  }
+  document.getElementById('btn-confirmar-reactivar').onclick = function() {
+    if (!idUsuarioReactivar) return;
+    fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
+      .then(function(r) {
+        cerrarModalReactivar();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else {
+          alert('Error al reactivar el usuario');
+        }
+      })
+      .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
+
+  // ─── Desbloquear usuario con modal ───────────────────────
+  var idUsuarioDesbloquear = null;
+  function toggleBloquearUsuario(id) {
+    idUsuarioDesbloquear = id;
+    document.getElementById('modal-desbloquear-msg').textContent = 'El usuario podrá iniciar sesión nuevamente.';
+    document.getElementById('modal-desbloquear').style.display = 'flex';
+  }
+  function cerrarModalDesbloquear() {
+    document.getElementById('modal-desbloquear').style.display = 'none';
+    idUsuarioDesbloquear = null;
+  }
+  document.getElementById('btn-confirmar-desbloquear').onclick = function() {
+    if (!idUsuarioDesbloquear) return;
+    fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
+      .then(function(r) {
+        cerrarModalDesbloquear();
+        if (r.ok) {
+          document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
+          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
+          document.getElementById('modal-exito').style.display = 'flex';
+        } else {
+          alert('Error al desbloquear el usuario');
+        }
+      })
+      .catch(function() { alert('Error de conexión'); });
+  };
+  document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
+
+  function cerrarModalExito() {
+    document.getElementById('modal-exito').style.display = 'none';
+    location.reload();
+  }
+  document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
 
   // ─── Cerrar modales al hacer clic fuera ───────────────────
   document.getElementById('modal-crear').addEventListener('click', function(e) {
@@ -688,7 +875,77 @@
     }, 100);
   });
   </script>
-</th:block>
+
+    </main>
+  </div>
+
+  <!-- Modal Reactivar Usuario -->
+  <div id="modal-reactivar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-play" style="color:#27AE60;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Reactivar Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;" id="modal-reactivar-msg">¿Estás seguro de que deseas reactivarlo?</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalReactivar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-reactivar" style="padding:12px 24px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Reactivar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Desbloquear Usuario -->
+  <div id="modal-desbloquear" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#D6EAF8,#AED6F1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-unlock" style="color:#3498DB;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Desbloquear Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;" id="modal-desbloquear-msg">¿Estás seguro de que deseas desbloquearlo?</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalDesbloquear()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-desbloquear" style="padding:12px 24px;border:none;border-radius:8px;background:#3498DB;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Desbloquear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Éxito -->
+  <div id="modal-exito" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-check" style="color:#27AE60;font-size:32px;"></i>
+      </div>
+      <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;" id="modal-exito-titulo">Operación Exitosa</h3>
+      <p style="margin:8px 0 20px 0;font-size:14px;color:#6B7280;" id="modal-exito-msg">El usuario ha sido modificado correctamente.</p>
+      <button onclick="cerrarModalExito()" style="padding:12px 32px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Aceptar</button>
+    </div>
+  </div>
+
+  <!-- Modal Eliminar Usuario (Rojo) -->
+  <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Usuario</h3>
+        <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este usuario?</p>
+        <p style="margin:8px 0 0 0;font-size:12px;color:#E74C3C;font-weight:500;">Esta acción lo marcará como inactivo.</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalEliminar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-eliminar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Chatbot (fuera del main para position:fixed) ── -->
+  <th:block th:replace="components/chatbot :: chatbot"></th:block>
+</div>
 
 </body>
 </html>

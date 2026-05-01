@@ -7,14 +7,20 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Inter',sans-serif;background:#F5F6FA;}
   </style>
+  <script>if(typeof navTo==='undefined'){function navTo(p){window.location.href='/admin/'+p;}}</script>
 </head>
 <body>
+<div style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
 
-<th:block th:fragment="documentos-content">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
     <div>
       <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Documentos</h1>
@@ -49,15 +55,21 @@
   <div style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <div style="position:relative;flex:1;min-width:200px;">
       <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-      <input class="form-control" placeholder="Buscar documentos..." style="padding-left:36px;" />
+      <input id="search-docs" class="form-control" placeholder="Buscar documentos..." style="padding-left:36px;" oninput="filtrarDocumentos()" />
     </div>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Sección: Todas</option><option>Estudios</option><option>Repositorio Normativo</option>
+    <select id="filter-seccion" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarDocumentos()">
+      <option value="">Sección: Todas</option>
+      <option value="Estudio">Estudios</option>
+      <option value="Normativa">Repositorio Normativo</option>
     </select>
-    <select class="form-control" style="width:auto;padding:10px 14px;">
-      <option>Categoría: Todas</option><option>EC</option><option>GR</option><option>EE</option><option>REP</option>
+    <select id="filter-categoria" class="form-control" style="width:auto;padding:10px 14px;" onchange="filtrarDocumentos()">
+      <option value="">Categoría: Todas</option>
+      <option value="EC">EC</option>
+      <option value="GR">GR</option>
+      <option value="EE">EE</option>
+      <option value="REP">REP</option>
     </select>
-    <button style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Limpiar filtros</button>
+    <button onclick="limpiarFiltrosDocumentos()" style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Limpiar filtros</button>
   </div>
 
   <!-- Table -->
@@ -70,7 +82,11 @@
       </thead>
       <tbody>
         <!-- Estudios -->
-        <tr th:each="e : ${estudios}">
+        <tr class="doc-row"
+            th:each="e : ${estudios}"
+            th:data-nombre="${e.titulo}"
+            th:data-seccion="Estudio"
+            th:data-categoria="">
           <td style="font-weight:600;color:#1B3A5C;">
             <span class="tag" style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;">Estudio</span>
             <span th:text="${e.titulo}">—</span>
@@ -87,13 +103,17 @@
           <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
           <td>
             <div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+              <a th:href="@{/admin/estudios/editar/{id}(id=${e.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
+              <button th:data-tipo="estudio" th:data-id="${e.id}" th:data-titulo="${e.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
             </div>
           </td>
         </tr>
         <!-- Normativas -->
-        <tr th:each="n : ${normativas}">
+        <tr class="doc-row"
+            th:each="n : ${normativas}"
+            th:data-nombre="${n.titulo}"
+            th:data-seccion="Normativa"
+            th:data-categoria="">
           <td style="font-weight:600;color:#1B3A5C;">
             <span class="tag" style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;">Normativa</span>
             <span th:text="${n.titulo}">—</span>
@@ -111,8 +131,8 @@
           </td>
           <td>
             <div style="display:flex;gap:6px;">
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;"><i class="fas fa-edit" style="color:#3498DB;"></i></button>
-              <button style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
+              <a th:href="@{/admin/normativo/editar/{id}(id=${n.id})}" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;text-decoration:none;"><i class="fas fa-edit" style="color:#3498DB;"></i></a>
+              <button th:data-tipo="normativa" th:data-id="${n.id}" th:data-titulo="${n.titulo}" onclick="confirmarEliminarBtn(this)" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#E74C3C;font-family:inherit;"><i class="fas fa-trash-alt"></i></button>
             </div>
           </td>
         </tr>
@@ -122,7 +142,90 @@
       </tbody>
     </table>
   </div>
-</th:block>
+
+  <!-- Modal de confirmación para eliminar -->
+  <div id="deleteModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:72px;height:72px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:32px;"></i>
+        </div>
+        <h3 id="deleteModalTitle" style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Documento</h3>
+        <p id="deleteModalMsg" style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro? Esta acción no se puede deshacer.</p>
+      </div>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarDeleteModal()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
+        <button id="deleteConfirmBtn" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Eliminar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Script para filtrado de documentos ── -->
+  <script>
+    function confirmarEliminarBtn(btn) {
+      confirmarEliminar(btn.getAttribute('data-tipo'), btn.getAttribute('data-id'), btn.getAttribute('data-titulo'));
+    }
+
+    function confirmarEliminar(tipo, id, titulo) {
+      document.getElementById('deleteModalMsg').textContent = '¿Eliminar "' + titulo + '"? Esta acción no se puede deshacer.';
+      document.getElementById('deleteModal').style.display = 'flex';
+      document.getElementById('deleteConfirmBtn').onclick = function() {
+        var url = tipo === 'estudio' ? '/api/estudios/' + id : '/api/normativas/' + id;
+        fetch(url, { method: 'DELETE' })
+          .then(function(r) {
+            cerrarDeleteModal();
+            if (r.ok) { window.location.reload(); }
+            else { alert('Error al eliminar el documento. Inténtalo de nuevo.'); }
+          })
+          .catch(function() { cerrarDeleteModal(); alert('Error de conexión.'); });
+      };
+    }
+
+    function cerrarDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+    document.getElementById('deleteModal').addEventListener('click', function(e) { if (e.target === this) cerrarDeleteModal(); });
+
+    function filtrarDocumentos() {
+      var texto = document.getElementById('search-docs')?.value.toLowerCase().trim() || '';
+      var seccion = document.getElementById('filter-seccion')?.value.toLowerCase().trim() || '';
+      var categoria = document.getElementById('filter-categoria')?.value.toLowerCase().trim() || '';
+
+      document.querySelectorAll('.doc-row').forEach(function(row) {
+        var nombre = (row.dataset.nombre || '').toLowerCase();
+        var rowSeccion = (row.dataset.seccion || '').toLowerCase();
+        var rowCategoria = (row.dataset.categoria || '').toLowerCase();
+
+        // Criterios de coincidencia
+        var matchTexto = !texto || nombre.includes(texto);
+        var matchSeccion = !seccion || rowSeccion === seccion;
+        var matchCategoria = !categoria || rowCategoria === categoria;
+
+        // Mostrar/ocultar según coincidan todos los criterios
+        if (matchTexto && matchSeccion && matchCategoria) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    /**
+     * limpiarFiltrosDocumentos()
+     * Restablece todos los filtros y muestra la tabla completa.
+     */
+    function limpiarFiltrosDocumentos() {
+      document.getElementById('search-docs').value = '';
+      document.getElementById('filter-seccion').value = '';
+      document.getElementById('filter-categoria').value = '';
+      filtrarDocumentos();
+    }
+  </script>
+
+    </main>
+  </div>
+
+  <!-- ── Chatbot (fuera del main para position:fixed) ── -->
+  <th:block th:replace="components/chatbot :: chatbot"></th:block>
+</div>
 
 </body>
 </html>

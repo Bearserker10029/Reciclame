@@ -1,46 +1,206 @@
 package org.reciclame.demo.service;
 
+import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
-import org.reciclame.demo.model.Estudio;
-import org.reciclame.demo.repository.EstudioRepository;
+import org.reciclame.demo.model.*;
+import org.reciclame.demo.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class EstudioService {
 
-    private final EstudioRepository estudioRepository;
+    private final EstudioRepository           estudioRepository;
+    private final EstudiosEtiquetaRepository  estudiosEtiquetaRepository;
+    private final TematicaRepository          tematicaRepository;
+    private final EtiquetaRepository          etiquetaRepository;
+    private final NormativaRepository         normativaRepository;
+    private final UsuarioRepository           usuarioRepository;
+    private final MinioStorageService         minioStorageService;
 
-    public EstudioService(EstudioRepository estudioRepository) {
-        this.estudioRepository = estudioRepository;
+    public EstudioService(EstudioRepository estudioRepository,
+                          EstudiosEtiquetaRepository estudiosEtiquetaRepository,
+                          TematicaRepository tematicaRepository,
+                          EtiquetaRepository etiquetaRepository,
+                          NormativaRepository normativaRepository,
+                          UsuarioRepository usuarioRepository,
+                          MinioStorageService minioStorageService) {
+        this.estudioRepository          = estudioRepository;
+        this.estudiosEtiquetaRepository = estudiosEtiquetaRepository;
+        this.tematicaRepository         = tematicaRepository;
+        this.etiquetaRepository         = etiquetaRepository;
+        this.normativaRepository        = normativaRepository;
+        this.usuarioRepository          = usuarioRepository;
+        this.minioStorageService        = minioStorageService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
     public List<EstudioResponseDTO> listarEstudios() {
-        return estudioRepository.findByEstadoActivoTrue()
-                .stream()
+        return estudioRepository.findAll().stream()
                 .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> agregarPorTematica() {
+        List<EstudioResponseDTO> estudios = listarEstudios();
+        return estudios.stream()
+                .filter(e -> e.getTematicaNombre() != null)
+                .collect(Collectors.groupingBy(EstudioResponseDTO::getTematicaNombre, Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("label", e.getKey());
+                    item.put("value", e.getValue().intValue());
+                    return item;
+                })
                 .collect(Collectors.toList());
     }
 
     // ── READ ONE ──────────────────────────────────────────────
     public EstudioResponseDTO obtenerEstudioPorId(Long id) {
-        Estudio estudio = estudioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
-        return toResponseDTO(estudio);
+        return toResponseDTO(estudioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id)));
     }
 
-    // ── DELETE lógico ─────────────────────────────────────────
-    public void eliminarEstudio(Long id) {
-        Estudio estudio = estudioRepository.findById(id)
+    // ── CREATE ────────────────────────────────────────────────
+    @Transactional
+    public EstudioResponseDTO crearEstudio(EstudioRequestDTO dto,
+                                           String archivoUrl,
+                                           String archivoTipoMime,
+                                           String correoAutor) {
+        Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
+                .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
+
+        Usuario subidaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        Estudio e = new Estudio();
+        mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        e.setSubidaPor(subidaPor);
+        e.setEstadoActivo(true);
+        e.setVisualizacionesCount(0);
+        e.setDescargasCount(0);
+        e.setCreatedAt(Instant.now());
+        e.setUpdatedAt(Instant.now());
+
+        Estudio saved = estudioRepository.save(e);
+        guardarEtiquetas(saved, dto.getEtiquetasIds());
+        return toResponseDTO(saved);
+    }
+
+    // ── UPDATE ────────────────────────────────────────────────
+    @Transactional
+    public EstudioResponseDTO actualizarEstudio(Long id,
+                                                EstudioRequestDTO dto,
+                                                String archivoUrl,
+                                                String archivoTipoMime) {
+        Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
-        estudio.setEstadoActivo(false);
+
+        Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
+                .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
+
+        mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        e.setUpdatedAt(Instant.now());
+
+        Estudio saved = estudioRepository.save(e);
+
+        // Reemplazar etiquetas solo si se envió la lista (incluso vacía)
+        if (dto.getEtiquetasIds() != null) {
+            estudiosEtiquetaRepository.deleteByEstudioId(saved.getId());
+            guardarEtiquetas(saved, dto.getEtiquetasIds());
+        }
+
+        return toResponseDTO(saved);
+    }
+
+    // ── VISUALIZACIONES ───────────────────────────────────────
+    @Transactional
+    public int incrementarVisualizaciones(Long id) {
+        Estudio estudio = estudioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudio no encontrado: " + id));
+        int nuevo = (estudio.getVisualizacionesCount() != null ? estudio.getVisualizacionesCount() : 0) + 1;
+        estudio.setVisualizacionesCount(nuevo);
         estudioRepository.save(estudio);
+        return nuevo;
     }
 
-    // ── HELPER ────────────────────────────────────────────────
+    public EstudioResponseDTO obtenerEstudioPublicoPorId(Long id) {
+        EstudioResponseDTO dto = obtenerEstudioPorId(id);
+        if (!Boolean.TRUE.equals(dto.getEsPublico())) {
+            throw new RuntimeException("Este estudio no está disponible públicamente.");
+        }
+        return dto;
+    }
+
+    // ── DELETE físico ─────────────────────────────────────────
+    @Transactional
+    public void eliminarEstudio(Long id) {
+        Estudio e = estudioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
+        String archivoUrl = e.getArchivoUrl();
+
+        // Eliminar etiquetas de la tabla intermedia antes de borrar el registro
+        estudiosEtiquetaRepository.deleteByEstudioId(id);
+        estudioRepository.deleteById(id);
+
+        // Eliminar archivo de MinIO (fuera de la transacción JPA, no revierte el DELETE)
+        minioStorageService.eliminarArchivo(archivoUrl);
+    }
+
+    // ── HELPERS ───────────────────────────────────────────────
+
+    private void mapDtoToEntity(EstudioRequestDTO dto, Estudio e,
+                                Tematica tematica,
+                                String archivoUrl, String archivoTipoMime) {
+        e.setTitulo(dto.getTitulo());
+        e.setDescripcionBreve(dto.getDescripcionBreve());
+        e.setResumen(dto.getResumen());
+        e.setTematica(tematica);
+        e.setAutor(dto.getAutor());
+        e.setFechaEstudio(dto.getFechaEstudio());
+        e.setAnio(dto.getAnio());
+        e.setEsPublico(Boolean.TRUE.equals(dto.getEsPublico()));
+
+        // Archivo: solo sobrescribir si se recibió uno nuevo
+        if (archivoUrl != null) {
+            e.setArchivoUrl(archivoUrl);
+            e.setArchivoTipoMime(archivoTipoMime);
+        }
+
+        // Normativa relacionada (opcional)
+        if (dto.getNormativaRelacionadaId() != null) {
+            normativaRepository.findById(dto.getNormativaRelacionadaId())
+                    .ifPresent(e::setNormativaRelacionada);
+        } else {
+            e.setNormativaRelacionada(null);
+        }
+    }
+
+    private void guardarEtiquetas(Estudio estudio, List<Long> etiquetasIds) {
+        if (etiquetasIds == null || etiquetasIds.isEmpty()) return;
+        for (Long etiquetaId : etiquetasIds) {
+            etiquetaRepository.findById(etiquetaId).ifPresent(etiqueta -> {
+                EstudiosEtiquetaId pk = new EstudiosEtiquetaId();
+                pk.setEstudioId(estudio.getId());
+                pk.setEtiquetaId(etiqueta.getId());
+
+                EstudiosEtiqueta relacion = new EstudiosEtiqueta();
+                relacion.setId(pk);
+                relacion.setEstudio(estudio);
+                relacion.setEtiqueta(etiqueta);
+                estudiosEtiquetaRepository.save(relacion);
+            });
+        }
+    }
+
     private EstudioResponseDTO toResponseDTO(Estudio e) {
         EstudioResponseDTO dto = new EstudioResponseDTO();
         dto.setId(e.getId());
@@ -59,10 +219,24 @@ public class EstudioService {
         dto.setCreatedAt(e.getCreatedAt());
 
         if (e.getTematica() != null) {
+            dto.setTematicaId(e.getTematica().getId());
             dto.setTematicaNombre(e.getTematica().getNombre());
             dto.setTematicaCodigo(e.getTematica().getCodigo());
             dto.setTematicaColor(e.getTematica().getColorHex());
         }
+        if (e.getNormativaRelacionada() != null) {
+            dto.setNormativaRelacionadaId(e.getNormativaRelacionada().getId());
+            dto.setNormativaRelacionadaTitulo(e.getNormativaRelacionada().getTitulo());
+        }
+
+        // Etiquetas
+        List<EstudiosEtiqueta> relaciones = estudiosEtiquetaRepository.findByEstudioId(e.getId());
+        dto.setEtiquetasIds(relaciones.stream()
+                .map(r -> r.getEtiqueta().getId())
+                .collect(Collectors.toList()));
+        dto.setEtiquetasNombres(relaciones.stream()
+                .map(r -> r.getEtiqueta().getNombre())
+                .collect(Collectors.toList()));
 
         return dto;
     }

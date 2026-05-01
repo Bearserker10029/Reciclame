@@ -4,12 +4,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recíclame — Mi Perfil</title>
+  <title>Recíclame — Perfil</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -18,251 +21,710 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
+      background: #F0F4F8;
     }
 
-    .credential-card {
-      background: linear-gradient(135deg, #1B3A5C 0%, #27AE60 100%);
-      border-radius: 16px;
-      padding: 24px;
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes pulseAvatar {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4)
+      }
+
+      60% {
+        box-shadow: 0 0 0 12px rgba(46, 204, 113, 0)
+      }
+    }
+
+    @keyframes shimmerCard {
+      0% {
+        background-position: -200% center
+      }
+
+      100% {
+        background-position: 200% center
+      }
+    }
+
+    @keyframes floatCard {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-6px)
+      }
+    }
+
+    @keyframes ringFill {
+      from {
+        stroke-dashoffset: var(--total)
+      }
+
+      to {
+        stroke-dashoffset: var(--offset)
+      }
+    }
+
+    .perfil-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 55%, #1a4a30 100%);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 48px rgba(27, 58, 92, .4);
+      animation: fadeUp .4s ease both;
+    }
+
+    .perfil-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -60px;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+    }
+
+    .perfil-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 40%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
+    }
+
+    .avatar-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2ECC71, #1B3A5C);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
       color: #fff;
-      box-shadow: 0 8px 32px rgba(43, 59, 92, .2);
+      flex-shrink: 0;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, .15);
+      animation: pulseAvatar 3s ease infinite;
+      cursor: default;
+      transition: transform .3s ease;
+    }
+
+    .avatar-ring:hover {
+      transform: scale(1.08) rotate(-5deg);
+    }
+
+    .form-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+      animation: fadeUp .45s ease both;
+      transition: box-shadow .3s;
+    }
+
+    .form-card:hover {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .1);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title .icon-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .form-group {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #9CA3AF;
+    }
+
+    .form-group input {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      transition: all .2s ease;
+      background: #fff;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .form-group input:disabled {
+      background: #F9FAFB;
+      color: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    .btn-save {
+      padding: 11px 24px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      box-shadow: 0 4px 16px rgba(46, 204, 113, .3);
       position: relative;
       overflow: hidden;
     }
 
-    .credential-card::before {
+    .btn-save::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, .1) 0%, transparent 50%);
-      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .2), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s;
     }
 
-    .credential-content {
-      position: relative;
-      z-index: 1;
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(46, 204, 113, .45);
     }
 
-    .credential-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 8px;
+    .btn-save:hover::after {
+      transform: translateX(100%);
     }
 
-    .credential-label {
-      font-size: 11px;
+    .btn-save:active {
+      transform: translateY(0);
+    }
+
+    .btn-pwd {
+      padding: 11px 24px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #1B3A5C, #2c5282);
+      color: #fff;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      opacity: .85;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      box-shadow: 0 4px 16px rgba(27, 58, 92, .25);
     }
 
-    .credential-badge {
-      background: rgba(255, 255, 255, .2);
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 11px;
+    .btn-pwd:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(27, 58, 92, .4);
+    }
+
+    .btn-pwd:active {
+      transform: translateY(0);
+    }
+
+    .btn-cancel {
+      padding: 11px 20px;
+      border-radius: 12px;
+      border: 1.5px solid #E5E7EB;
+      background: #fff;
+      color: #6B7280;
+      font-size: 13px;
       font-weight: 600;
-      backdrop-filter: blur(4px);
+      cursor: pointer;
+      transition: all .2s;
+    }
+
+    .btn-cancel:hover {
+      background: #F3F4F6;
+      border-color: #D1D5DB;
+    }
+
+    .cred-card {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 50%, #1a4a30 100%);
+      border-radius: 18px;
+      padding: 22px;
+      color: #fff;
+      box-shadow: 0 12px 40px rgba(27, 58, 92, .35);
+      position: relative;
+      overflow: hidden;
+      animation: floatCard 4s ease infinite;
+      cursor: default;
+    }
+
+    .cred-card::before {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -30px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+    }
+
+    .cred-card::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: 10px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
     }
 
     .qr-container {
       background: #fff;
-      padding: 16px;
       border-radius: 12px;
+      padding: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 220px;
-      height: 220px;
-      margin: 8px 0;
-      position: relative;
+      width: 180px;
+      height: 180px;
+      margin: 12px 0;
     }
 
-    .pill {
-      display: inline-flex;
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid #F3F4F6;
+      animation: fadeUp .4s ease both;
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-bar-wrap {
+      width: 80px;
+      height: 5px;
+      background: #F0F4F8;
       border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
+      overflow: hidden;
+      margin-left: 12px;
+    }
+
+    .stat-bar {
+      height: 100%;
+      border-radius: 999px;
+      width: 0;
+      transition: width 1.2s cubic-bezier(.22, .61, .36, 1);
+    }
+
+    .act-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #F9FAFB;
+      border-left: 3px solid;
+      margin-bottom: 8px;
+      transition: all .25s ease;
+      cursor: default;
+      animation: fadeUp .4s ease both;
+    }
+
+    .act-item:hover {
+      transform: translateX(4px);
+      background: #F0F4F8;
+    }
+
+    .act-item:last-child {
+      margin-bottom: 0;
     }
   </style>
 </head>
 
 <body>
 
-  <th:block th:fragment="perfil-content">
-    <div style="margin-bottom:24px;">
-      <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Mi Perfil</h1>
-      <p style="color:#6B7280;font-size:13px;">Gestiona tu información personal y credencial</p>
-    </div>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+      <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
 
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;">
-      <!-- Left: Form -->
-      <div style="display:flex;flex-direction:column;gap:20px;">
-        <!-- Basic info -->
-        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-user"
-              style="color:#2ECC71;margin-right:8px;"></i>Información personal</h2>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nombre
-                completo</label>
-              <input class="form-control" type="text" value="Juan Pérez Torres" />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">DNI</label>
-              <input class="form-control" type="text" value="74521836" disabled />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Correo
-                corporativo</label>
-              <input class="form-control" type="email" value="jperez@tetrapak.com" />
-            </div>
-            <div>
-              <label
-                style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Empresa</label>
-              <input class="form-control" type="text" value="Tetra Pak Perú S.A.C." />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Rol</label>
-              <input class="form-control" type="text" value="Socio" disabled />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Fecha de
-                registro</label>
-              <input class="form-control" type="text" value="12/01/2026" disabled />
-            </div>
-          </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;">
-            <button
-              style="padding:9px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:13px;color:#374151;font-family:inherit;">Cancelar</button>
-            <button
-              style="padding:9px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Guardar
-              cambios</button>
-          </div>
-        </div>
-
-        <!-- Change password -->
-        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-lock"
-              style="color:#2ECC71;margin-right:8px;"></i>Cambiar contraseña</h2>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Contraseña
-                actual</label>
-              <input class="form-control" type="password" placeholder="••••••••" />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Nueva
-                contraseña</label>
-              <input class="form-control" type="password" placeholder="••••••••" />
-            </div>
-            <div>
-              <label style="display:block;font-size:12px;font-weight:600;color:#6B7280;margin-bottom:6px;">Confirmar
-                nueva contraseña</label>
-              <input class="form-control" type="password" placeholder="••••••••" />
-            </div>
-            <div style="display:flex;justify-content:flex-end;">
-              <button
-                style="padding:9px 20px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Actualizar
-                contraseña</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Activity -->
-        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-history"
-              style="color:#3498DB;margin-right:8px;"></i>Actividad reciente</h3>
-          <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;">
-            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #2ECC71;">
-              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Documentos descargados</div>
-              <div style="color:#9CA3AF;">3 normativas · Hace 4h</div>
-            </div>
-            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #3498DB;">
-              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Búsquedas realizadas</div>
-              <div style="color:#9CA3AF;">5 consultas · Hace 1 día</div>
-            </div>
-            <div style="padding:10px;background:#F9FAFB;border-radius:6px;border-left:3px solid #F39C12;">
-              <div style="font-weight:600;color:#1B3A5C;margin-bottom:2px;">Perfil actualizado</div>
-              <div style="color:#9CA3AF;">Cambio de foto · Hace 3 días</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right: Credential card -->
-      <div style="display:flex;flex-direction:column;gap:20px;">
-        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-id-card"
-              style="color:#2ECC71;margin-right:8px;"></i>Credencial de socio</h3>
-          <div class="credential-card">
-            <div class="credential-content">
-              <div class="credential-header">
-                <span class="credential-label">Repositorio Circular</span>
-                <span class="credential-badge">Socio</span>
+        <div class="perfil-hero">
+          <div style="position:relative;z-index:1;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div class="avatar-ring"
+              th:text="${usuario != null and usuario.nombreCompleto != null and #strings.length(usuario.nombreCompleto) > 0 ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, 1)) : 'U'}">
+              U</div>
+            <div style="flex:1;">
+              <div
+                style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:4px;">
+                Mi Perfil</div>
+              <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;min-height:28px;"
+                th:text="${usuario != null ? usuario.nombreCompleto : 'Perfil del usuario'}">Perfil del usuario</h1>
+              <div style="font-size:13px;color:rgba(255,255,255,.7);margin-top:4px;min-height:18px;">
+                <span th:if="${usuario != null}" th:text="${usuario.correoCorporativo}"></span>
+                <span th:if="${usuario != null and usuario.empresaNombre != null}"> · <span
+                    th:text="${usuario.empresaNombre}"></span></span>
+                <span th:if="${usuario == null}">—</span>
               </div>
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                <span
+                  style="background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.3);color:#34D399;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;"
+                  th:text="${rolNombre}"><i class="fas fa-shield-alt" style="margin-right:4px;"></i>—</span>
+                <span
+                  style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;">
+                  <i class="fas fa-calendar" style="margin-right:4px;"></i>Miembro
+                </span>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;">
+              <div
+                style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:14px 20px;text-align:center;">
+                <div class="kpi-val" style="font-size:26px;font-weight:800;color:#fff;" th:text="0">0</div>
                 <div
-                  style="width:48px;height:48px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;flex-shrink:0;">
-                  JP</div>
-                <div>
-                  <div style="font-size:16px;font-weight:700;">Juan Pérez Torres</div>
-                  <div style="font-size:12px;opacity:.75;">jperez@tetrapak.com</div>
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.6);">
+                  Descargas</div>
+              </div>
+              <div
+                style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:14px 20px;text-align:center;">
+                <div class="kpi-val" style="font-size:26px;font-weight:800;color:#fff;"
+                  th:text="${usuario != null ? 0 : 0}">0</div>
+                <div
+                  style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(255,255,255,.6);">
+                  Búsquedas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;min-height:600px;">
+
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <div class="form-card" style="animation-delay:.05s">
+              <div class="section-title">
+                <div class="icon-dot" style="background:rgba(46,204,113,.12);">
+                  <i class="fas fa-user" style="color:#2ECC71;font-size:13px;"></i>
+                </div>
+                Información personal
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div class="form-group">
+                  <label>Nombre completo</label>
+                  <input type="text" th:value="${usuario != null ? usuario.nombreCompleto : 'N/A'}"
+                    value="Juan Pérez Torres" />
+                </div>
+                <div class="form-group">
+                  <label>DNI</label>
+                  <input type="text" th:value="${usuario != null ? usuario.dni : 'N/A'}" value="74521836" disabled />
+                </div>
+                <div class="form-group">
+                  <label>Correo corporativo</label>
+                  <input type="email" th:value="${usuario != null ? usuario.correoCorporativo : 'N/A'}"
+                    value="jperez@tetrapak.com" />
+                </div>
+                <div class="form-group">
+                  <label>Empresa</label>
+                  <input type="text"
+                    th:value="${usuario != null and usuario.empresaNombre != null ? usuario.empresaNombre : 'N/A'}"
+                    value="Tetra Pak Perú S.A.C." />
+                </div>
+                <div class="form-group">
+                  <label>Rol</label>
+                  <input type="text" th:value="${rolNombre != null ? rolNombre : 'Usuario'}" value="Socio" disabled />
+                </div>
+                <div class="form-group">
+                  <label>Fecha de registro</label>
+                  <input type="text"
+                    th:value="${usuario != null and usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : 'N/A'}"
+                    value="12/01/2026" disabled />
                 </div>
               </div>
-              <div id="qr-code" class="qr-container"></div>
-              <div style="font-size:11px;opacity:.75;text-align:center;">Escanea para verificar credencial</div>
-              <div class="credential-footer"
-                style="border-top:1px solid rgba(255,255,255,.2);padding-top:12px;margin-top:4px;">
-                <i class="fas fa-shield-alt" style="font-size:11px;"></i>
-                <span style="font-size:11px;">Recíclame Perú</span>
+              <div
+                style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #F3F4F6;">
+                <button class="btn-cancel">Cancelar</button>
+                <button class="btn-save"><i class="fas fa-save" style="margin-right:6px;"></i>Guardar cambios</button>
+              </div>
+            </div>
+
+            <div class="form-card" style="animation-delay:.1s">
+              <div class="section-title">
+                <div class="icon-dot" style="background:rgba(27,58,92,.1);">
+                  <i class="fas fa-lock" style="color:#1B3A5C;font-size:13px;"></i>
+                </div>
+                Cambiar contraseña
+              </div>
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="form-group">
+                  <label>Contraseña actual</label>
+                  <input type="password" id="currentPassword" placeholder="••••••••" />
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                  <div class="form-group">
+                    <label>Nueva contraseña</label>
+                    <input type="password" id="newPassword" placeholder="••••••••" />
+                  </div>
+                  <div class="form-group">
+                    <label>Confirmar contraseña</label>
+                    <input type="password" id="confirmPassword" placeholder="••••••••" />
+                  </div>
+                </div>
+              </div>
+              <div
+                style="display:flex;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid #F3F4F6;">
+                <button class="btn-pwd" onclick="togglePassword()"><i class="fas fa-key"
+                    style="margin-right:6px;"></i>Actualizar contraseña</button>
+              </div>
+            </div>
+
+            <div class="form-card" style="animation-delay:.15s">
+              <div class="section-title">
+                <div class="icon-dot" style="background:rgba(52,152,219,.1);">
+                  <i class="fas fa-history" style="color:#3498DB;font-size:13px;"></i>
+                </div>
+                Actividad reciente
+              </div>
+              <div class="act-item" style="border-color:#2ECC71;animation-delay:.1s">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-weight:600;color:#1B3A5C;font-size:13px;margin-bottom:2px;"><i
+                        class="fas fa-download" style="color:#2ECC71;margin-right:6px;font-size:11px;"></i>Documentos
+                      descargados</div>
+                    <div style="color:#9CA3AF;font-size:12px;">3 normativas descargadas</div>
+                  </div>
+                  <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">Hace 4h</span>
+                </div>
+              </div>
+              <div class="act-item" style="border-color:#3498DB;animation-delay:.15s">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-weight:600;color:#1B3A5C;font-size:13px;margin-bottom:2px;"><i
+                        class="fas fa-search" style="color:#3498DB;margin-right:6px;font-size:11px;"></i>Búsquedas
+                      realizadas</div>
+                    <div style="color:#9CA3AF;font-size:12px;">5 consultas en el repositorio</div>
+                  </div>
+                  <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">Hace 1 día</span>
+                </div>
+              </div>
+              <div class="act-item" style="border-color:#F39C12;animation-delay:.2s">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div>
+                    <div style="font-weight:600;color:#1B3A5C;font-size:13px;margin-bottom:2px;"><i
+                        class="fas fa-user-edit" style="color:#F39C12;margin-right:6px;font-size:11px;"></i>Perfil
+                      actualizado</div>
+                    <div style="color:#9CA3AF;font-size:12px;">Cambio de información personal</div>
+                  </div>
+                  <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;">Hace 3 días</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px;">
+
+            <div class="form-card" style="animation-delay:.2s;">
+              <div class="section-title">
+                <div class="icon-dot" style="background:rgba(46,204,113,.12);">
+                  <i class="fas fa-id-card" style="color:#2ECC71;font-size:13px;"></i>
+                </div>
+                Credencial de socio
+              </div>
+              <div class="cred-card">
+                <div style="position:relative;z-index:1;">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+                    <div>
+                      <div
+                        style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.65);">
+                        Repositorio Circular</div>
+                      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;">Recíclame Perú</div>
+                    </div>
+                    <span
+                      style="background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.3);color:#34D399;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;"
+                      th:text="${rolNombre != null ? rolNombre : 'Usuario'}">Socio</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <div
+                      style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2ECC71,#27AE60);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;"
+                      th:text="${usuario != null and usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : 'SA'}">
+                      JP</div>
+                    <div>
+                      <div style="font-size:15px;font-weight:700;color:#fff;min-height:18px;"
+                        th:text="${usuario != null ? usuario.nombreCompleto : 'Socio'}">Juan
+                        Pérez Torres</div>
+                      <div style="font-size:11px;color:rgba(255,255,255,.65);min-height:14px;"
+                        th:text="${usuario != null ? usuario.correoCorporativo : 'correo@empresa.com'}">
+                        jperez@tetrapak.com</div>
+                    </div>
+                  </div>
+                  <div class="qr-container">
+                    <div id="qr-code"></div>
+                  </div>
+                  <div style="font-size:10px;color:rgba(255,255,255,.5);text-align:center;margin-top:4px;">
+                    <i class="fas fa-qrcode" style="margin-right:4px;"></i>Escanea para verificar credencial
+                  </div>
+                  <div
+                    style="border-top:1px solid rgba(255,255,255,.15);padding-top:12px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:11px;color:rgba(255,255,255,.6);"><i class="fas fa-shield-alt"
+                        style="margin-right:4px;"></i>Verificado</span>
+                    <span style="font-size:11px;color:rgba(255,255,255,.6);">2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-card" style="animation-delay:.25s">
+              <div class="section-title">
+                <div class="icon-dot" style="background:rgba(52,152,219,.1);">
+                  <i class="fas fa-chart-bar" style="color:#3498DB;font-size:13px;"></i>
+                </div>
+                Estadísticas de uso
+              </div>
+              <div class="stat-row" style="animation-delay:.1s">
+                <span style="font-size:12px;color:#6B7280;">Documentos vistos</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="stat-bar-wrap">
+                    <div class="stat-bar" style="background:linear-gradient(90deg,#2ECC71,#27AE60);" data-w="85%"></div>
+                  </div>
+                  <span style="font-size:14px;font-weight:700;color:#1B3A5C;min-width:36px;text-align:right;">127</span>
+                </div>
+              </div>
+              <div class="stat-row" style="animation-delay:.15s">
+                <span style="font-size:12px;color:#6B7280;">Búsquedas totales</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="stat-bar-wrap">
+                    <div class="stat-bar" style="background:linear-gradient(90deg,#3498DB,#2980B9);" data-w="55%"></div>
+                  </div>
+                  <span style="font-size:14px;font-weight:700;color:#1B3A5C;min-width:36px;text-align:right;">45</span>
+                </div>
+              </div>
+              <div class="stat-row" style="animation-delay:.2s">
+                <span style="font-size:12px;color:#6B7280;">Normativas consultadas</span>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="stat-bar-wrap">
+                    <div class="stat-bar" style="background:linear-gradient(90deg,#F39C12,#D68910);" data-w="63%"></div>
+                  </div>
+                  <span style="font-size:14px;font-weight:700;color:#1B3A5C;min-width:36px;text-align:right;">38</span>
+                </div>
+              </div>
+              <div class="stat-row" style="animation-delay:.25s">
+                <span style="font-size:12px;color:#6B7280;">Último acceso</span>
+                <span style="font-size:12px;color:#6B7280;font-style:italic;">Hace 2 horas</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6;">
-              <span style="font-size:12px;color:#6B7280;">Documentos vistos</span>
-              <span style="font-size:14px;font-weight:700;color:#1B3A5C;">127</span>
-            </div>
-            <div
-              style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F3F4F6;">
-              <span style="font-size:12px;color:#6B7280;">Búsquedas</span>
-              <span style="font-size:14px;font-weight:700;color:#1B3A5C;">45</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;">
-              <span style="font-size:12px;color:#6B7280;">Último acceso</span>
-              <span style="font-size:12px;color:#6B7280;">Hace 2h</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </th:block>
+        <script>
+          document.addEventListener('DOMContentLoaded', function () {
+            try {
+              document.querySelectorAll('.kpi-val[data-count]').forEach(function (el) {
+                var target = parseInt(el.dataset.count), start = 0, dur = 1000, step = 16;
+                var timer = setInterval(function () {
+                  start += Math.ceil(target / (dur / step));
+                  if (start >= target) { start = target; clearInterval(timer); }
+                  el.textContent = start;
+                }, step);
+              });
+            } catch (e) { console.error('Error animando KPI:', e); }
 
-  <script>
-    new QRCode(document.getElementById('qr-code'), {
-      text: 'RECICLAME-2026-JP-74521836',
-      width: 188,
-      height: 188,
-      colorDark: '#1B3A5C',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-  </script>
+            setTimeout(function () {
+              try {
+                document.querySelectorAll('.stat-bar[data-w]').forEach(function (b) { b.style.width = b.dataset.w; });
+              } catch (e) { console.error('Error animando stat-bar:', e); }
+            }, 500);
+
+            try {
+              if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
+                new QRCode(document.getElementById('qr-code'), {
+                  text: 'RECICLAME-2026-' + (document.querySelector('.cred-card [style*="16px"]')?.textContent || 'USER') + '-' + (document.querySelector('input[disabled][value]')?.value || '00000000'),
+                  width: 152, height: 152,
+                  colorDark: '#1B3A5C', colorLight: '#ffffff',
+                  correctLevel: QRCode.CorrectLevel.M
+                });
+              }
+            } catch (e) { console.error('Error generando QR:', e); }
+          });
+
+          function togglePassword() {
+            var pwd = document.getElementById('currentPassword');
+            var newPwd = document.getElementById('newPassword');
+            var confirmPwd = document.getElementById('confirmPassword');
+            [pwd, newPwd, confirmPwd].forEach(function (input) {
+              if (input) {
+                input.type = input.type === 'password' ? 'text' : 'password';
+              }
+            });
+          }
+          function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function () {
+              alert('Texto copiado al portapapeles');
+            });
+          }
+          function generateQR(text) {
+            if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
+              document.getElementById('qr-code').innerHTML = '';
+              new QRCode(document.getElementById('qr-code'), {
+                text: text,
+                width: 152, height: 152,
+                colorDark: '#1B3A5C', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+              });
+            }
+          }
+        </script>
+
+      </main>
+    </div>
+    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+  </div>
 </body>
 
 </html>
