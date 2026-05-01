@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
 import org.reciclame.demo.service.EstudioService;
+import org.reciclame.demo.service.MinioStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,11 @@ import java.util.Map;
 public class EstudioRestController {
 
     private final EstudioService estudioService;
+    private final MinioStorageService minioStorageService;
 
-    public EstudioRestController(EstudioService estudioService) {
+    public EstudioRestController(EstudioService estudioService, MinioStorageService minioStorageService) {
         this.estudioService = estudioService;
+        this.minioStorageService = minioStorageService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -99,12 +102,19 @@ public class EstudioRestController {
         }
     }
 
-    // ── Stub subida (reemplazar con S3/GCP) ───────────────────
+    // ── Registrar visualización ───────────────────────────────
+    @PostMapping("/{id}/visualizar")
+    public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id) {
+        try {
+            int nuevoCuenta = estudioService.incrementarVisualizaciones(id);
+            return ResponseEntity.ok(Map.of("visualizacionesCount", nuevoCuenta));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        }
+    }
+
+    // ── Subida a MinIO ────────────────────────────────────────
     private String simularSubida(MultipartFile archivo) {
-        String nombre = archivo.getOriginalFilename() != null
-                ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
-                : "documento";
-        return "https://storage.googleapis.com/reciclame-docs/"
-                + System.currentTimeMillis() + "_" + nombre;
+        return minioStorageService.subirArchivo(archivo);
     }
 }

@@ -23,24 +23,27 @@ public class EstudioService {
     private final EtiquetaRepository          etiquetaRepository;
     private final NormativaRepository         normativaRepository;
     private final UsuarioRepository           usuarioRepository;
+    private final MinioStorageService         minioStorageService;
 
     public EstudioService(EstudioRepository estudioRepository,
                           EstudiosEtiquetaRepository estudiosEtiquetaRepository,
                           TematicaRepository tematicaRepository,
                           EtiquetaRepository etiquetaRepository,
                           NormativaRepository normativaRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          MinioStorageService minioStorageService) {
         this.estudioRepository          = estudioRepository;
         this.estudiosEtiquetaRepository = estudiosEtiquetaRepository;
         this.tematicaRepository         = tematicaRepository;
         this.etiquetaRepository         = etiquetaRepository;
         this.normativaRepository        = normativaRepository;
         this.usuarioRepository          = usuarioRepository;
+        this.minioStorageService        = minioStorageService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
     public List<EstudioResponseDTO> listarEstudios() {
-        return estudioRepository.findByEstadoActivoTrue().stream()
+        return estudioRepository.findAll().stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -118,13 +121,38 @@ public class EstudioService {
         return toResponseDTO(saved);
     }
 
-    // ── DELETE lógico ─────────────────────────────────────────
+    // ── VISUALIZACIONES ───────────────────────────────────────
+    @Transactional
+    public int incrementarVisualizaciones(Long id) {
+        Estudio estudio = estudioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudio no encontrado: " + id));
+        int nuevo = (estudio.getVisualizacionesCount() != null ? estudio.getVisualizacionesCount() : 0) + 1;
+        estudio.setVisualizacionesCount(nuevo);
+        estudioRepository.save(estudio);
+        return nuevo;
+    }
+
+    public EstudioResponseDTO obtenerEstudioPublicoPorId(Long id) {
+        EstudioResponseDTO dto = obtenerEstudioPorId(id);
+        if (!Boolean.TRUE.equals(dto.getEsPublico())) {
+            throw new RuntimeException("Este estudio no está disponible públicamente.");
+        }
+        return dto;
+    }
+
+    // ── DELETE físico ─────────────────────────────────────────
+    @Transactional
     public void eliminarEstudio(Long id) {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
-        e.setEstadoActivo(false);
-        e.setUpdatedAt(Instant.now());
-        estudioRepository.save(e);
+        String archivoUrl = e.getArchivoUrl();
+
+        // Eliminar etiquetas de la tabla intermedia antes de borrar el registro
+        estudiosEtiquetaRepository.deleteByEstudioId(id);
+        estudioRepository.deleteById(id);
+
+        // Eliminar archivo de MinIO (fuera de la transacción JPA, no revierte el DELETE)
+        minioStorageService.eliminarArchivo(archivoUrl);
     }
 
     // ── HELPERS ───────────────────────────────────────────────
