@@ -65,11 +65,19 @@
       font-size: 13px;
       font-weight: 500;
       transition: background .15s, color .15s;
+      border-left: 3px solid transparent;
+      box-sizing: border-box;
     }
 
     .nav-subitem:hover {
       background: rgba(255, 255, 255, .07);
       color: #fff;
+    }
+
+    .nav-subitem.active {
+      background: rgba(46, 204, 113, .18);
+      color: #fff;
+      border-left-color: #2ECC71;
     }
 
     .main-card {

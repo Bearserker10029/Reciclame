@@ -129,8 +129,40 @@
         '/superadmin/auditoria': 'nav-auditoria',
         '/superadmin/impersonar': 'nav-impersonar',
         '/superadmin/parametros': 'nav-parametros',
-        '/superadmin/backups': 'nav-backups'
+        '/superadmin/backups': 'nav-backups',
+        '/socio': 'nav-inicio',
+        '/socio/inicio': 'nav-inicio',
+        '/socio/estudios': 'nav-estudios',
+        '/socio/normativo': 'nav-normativo',
+        '/socio/perfil': 'nav-perfil',
+        '/socio/notificaciones': 'nav-notificaciones',
+        '/socio/notificaciones/configuracion': 'nav-notificaciones'
       };
+
+      function normativoVistaActiva() {
+        var p = window.location.pathname;
+        if (p === '/admin/normativo' || p === '/socio/normativo') return true;
+        var sp = document.getElementById('page-normativo');
+        if (sp && sp.classList.contains('active')) return true;
+        return false;
+      }
+
+      function sincronizarSubnavNormativo() {
+        document.querySelectorAll('.nav-subitem').forEach(function(item) {
+          item.classList.remove('active');
+        });
+        if (!normativoVistaActiva()) return;
+        var normativoTab = window.__normativoTab || 'todos';
+        if (normativoTab === 'nacional') {
+          var navNacional = document.getElementById('nav-nacional');
+          if (navNacional) navNacional.classList.add('active');
+        } else if (normativoTab === 'internacional') {
+          var navInternacional = document.getElementById('nav-internacional');
+          if (navInternacional) navInternacional.classList.add('active');
+        }
+      }
+
+      window.sincronizarSubnavNormativo = sincronizarSubnavNormativo;
 
       // Eliminar clase 'active' de todos los nav-items y nav-subitems
       document.querySelectorAll('.nav-item, .nav-subitem').forEach(function(item) {
@@ -143,6 +175,7 @@
       if (!activeNavId) {
         if (currentPath.startsWith('/admin/normativo/editar/')) activeNavId = 'nav-normativo';
         else if (currentPath.startsWith('/admin/estudios/editar/')) activeNavId = 'nav-estudios';
+        else if (currentPath.startsWith('/socio/estudios/')) activeNavId = 'nav-estudios';
       }
       if (activeNavId) {
         var activeNav = document.getElementById(activeNavId);
@@ -151,39 +184,13 @@
         }
       }
 
-      // Casos especiales para subitems (Nacional e Internacional)
-      if (currentPath === '/admin/normativo') {
-        // Si estamos en normativo, revisar qué subitem debe estar activo
-        var normativoTab = window.__normativoTab || 'todos';
-        if (normativoTab === 'nacional') {
-          var navNacional = document.getElementById('nav-nacional');
-          if (navNacional) {
-            navNacional.classList.add('active');
-          }
-        } else if (normativoTab === 'internacional') {
-          var navInternacional = document.getElementById('nav-internacional');
-          if (navInternacional) {
-            navInternacional.classList.add('active');
-          }
-        }
-      }
+      sincronizarSubnavNormativo();
     });
 
-    // Monitorear cambios en __normativoTab para actualizar el sidebar
-    var observer = setInterval(function() {
-      if (window.location.pathname === '/admin/normativo') {
-        document.querySelectorAll('.nav-subitem').forEach(function(item) {
-          item.classList.remove('active');
-        });
-
-        var normativoTab = window.__normativoTab || 'todos';
-        if (normativoTab === 'nacional') {
-          var navNacional = document.getElementById('nav-nacional');
-          if (navNacional) navNacional.classList.add('active');
-        } else if (normativoTab === 'internacional') {
-          var navInternacional = document.getElementById('nav-internacional');
-          if (navInternacional) navInternacional.classList.add('active');
-        }
+    // Nacional / Internacional: también en SPA Socio (/socio/inicio + #page-normativo)
+    setInterval(function() {
+      if (typeof window.sincronizarSubnavNormativo === 'function') {
+        window.sincronizarSubnavNormativo();
       }
     }, 100);
   </script>
