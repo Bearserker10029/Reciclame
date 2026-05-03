@@ -8,6 +8,7 @@ import org.reciclame.demo.service.MinioStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,14 @@ public class EstudioRestController {
     }
 
     // ── READ ALL ──────────────────────────────────────────────
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<EstudioResponseDTO>> listar() {
         return ResponseEntity.ok(estudioService.listarEstudios());
     }
 
     // ── READ ONE ──────────────────────────────────────────────
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
         try {
@@ -50,6 +53,7 @@ public class EstudioRestController {
     // Content-Type: application/json → Spring deserializa + valida.
     // Si falla la validación, MethodArgumentNotValidException es lanzada
     // ANTES de entrar al método → GlobalExceptionHandler la captura.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
             @RequestPart("estudio") @Valid EstudioRequestDTO dto,
@@ -71,6 +75,7 @@ public class EstudioRestController {
     }
 
     // ── UPDATE ────────────────────────────────────────────────
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
@@ -92,6 +97,7 @@ public class EstudioRestController {
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         try {
@@ -103,6 +109,7 @@ public class EstudioRestController {
     }
 
     // ── Registrar visualización ───────────────────────────────
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/visualizar")
     public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id) {
         try {

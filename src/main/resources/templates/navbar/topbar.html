@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <title>Topbar</title>
@@ -23,11 +24,11 @@
       <span style="color:rgba(255,255,255,.4);font-size:12px;margin-left:4px;">Repositorio Circular</span>
       <span id="role-badge"
         style="background:rgba(243,156,18,.2);color:#F39C12;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;"
-        th:text="${rol}">ADMIN</span>
+        th:text="${session.usuarioSesion?.rolNombre}">ADMIN</span>
     </div>
     <div style="flex:1"></div>
     <div style="display:flex;align-items:center;gap:20px;">
-<th:block th:if="${rol != 'VISUALIZADOR'}">
+<th:block sec:authorize="!hasRole('VISUALIZADOR')">
        <div onclick="navTo('notificaciones')"
          style="position:relative;cursor:pointer;display:flex;align-items:center;">
          <i class="fas fa-bell" style="color:rgba(255,255,255,.75);font-size:17px;"></i>
@@ -40,10 +41,10 @@
         onclick="navTo('perfil')">
         <div id="avatar-circle"
           style="width:32px;height:32px;border-radius:50%;background:#2ECC71;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;"
-          th:text="${usuarioNombre != null ? #strings.substring(usuarioNombre, 0, 2).toUpperCase() : 'US'}">AG</div>
+          th:text="${session.usuarioSesion != null ? #strings.substring(session.usuarioSesion.nombreCompleto, 0, 2).toUpperCase() : 'US'}">AG</div>
         <div>
-          <div id="user-name" style="color:#fff;font-size:13px;font-weight:600;line-height:1.2;" th:text="${usuarioNombre}">Admin General</div>
-          <div id="user-role" style="color:rgba(255,255,255,.45);font-size:11px;" th:text="${rolNombre}">Administrador</div>
+          <div id="user-name" style="color:#fff;font-size:13px;font-weight:600;line-height:1.2;" th:text="${session.usuarioSesion?.nombreCompleto}">Admin General</div>
+          <div id="user-role" style="color:rgba(255,255,255,.45);font-size:11px;" th:text="${session.usuarioSesion?.rolNombre}">Administrador</div>
         </div>
         <i class="fas fa-chevron-down" style="color:rgba(255,255,255,.4);font-size:11px;margin-left:2px;"></i>
       </div>

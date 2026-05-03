@@ -8,6 +8,7 @@ import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.EmpresaRepository;
 import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,14 +28,17 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final EmpresaRepository empresaRepository;
     private final AuditoriaService auditoriaService;
+    private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
 
     public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository,
-                         EmpresaRepository empresaRepository, AuditoriaService auditoriaService) {
+                         EmpresaRepository empresaRepository, AuditoriaService auditoriaService,
+                         PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.empresaRepository = empresaRepository;
         this.auditoriaService = auditoriaService;
+        this.passwordEncoder = passwordEncoder;
 
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -403,8 +407,7 @@ public class UsuarioService {
     }
 
     private String hashPassword(String password) {
-        // NoOpPasswordEncoder compara en texto plano — guardamos sin transformar
-        return password;
+        return passwordEncoder.encode(password);
     }
 
     private String escapeCsv(String val) {

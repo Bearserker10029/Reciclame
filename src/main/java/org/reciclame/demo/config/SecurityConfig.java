@@ -3,15 +3,17 @@ package org.reciclame.demo.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
@@ -30,13 +32,15 @@ public class SecurityConfig {
                         .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
+                        // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
+                        .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
+                        // Impersonación: solo SUPERADMIN o IMPERSONATOR
                         .requestMatchers("/superadmin/impersonar/**").hasAnyRole("SUPERADMIN", "IMPERSONATOR")
-                        .requestMatchers("/socio/**").hasAnyRole("SOCIO", "IMPERSONATOR")
-                        .requestMatchers("/visualizador/**").hasAnyRole("VISUALIZADOR", "IMPERSONATOR")
+                        // Rutas de vistas por rol
                         .requestMatchers("/admin/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/socio/**").hasRole("SOCIO")
-                        .requestMatchers("/visualizador/**").hasRole("VISUALIZADOR")
+                        .requestMatchers("/socio/**").hasAnyRole("SOCIO", "IMPERSONATOR")
+                        .requestMatchers("/visualizador/**").hasAnyRole("VISUALIZADOR", "IMPERSONATOR")
                         .anyRequest().authenticated()
                 )
                 .userDetailsService(userDetailsService)
@@ -50,6 +54,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
+                        .deleteCookies("JSESSIONID")
+                        .invalidateHttpSession(true)
                         .permitAll()
                 )
                 .csrf(csrf -> csrf.disable());
@@ -57,9 +63,8 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @SuppressWarnings("deprecation")
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 }
