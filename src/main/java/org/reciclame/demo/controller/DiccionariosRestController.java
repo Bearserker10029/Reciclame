@@ -7,6 +7,7 @@ import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.TiposNormativaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,11 +36,13 @@ public class DiccionariosRestController {
     //  TEMÁTICAS
     // ══════════════════════════════════════════════════════════════
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/tematicas")
     public ResponseEntity<List<TematicaResponseDTO>> listarTematicas() {
         return ResponseEntity.ok(tematicaService.listarTematicasTodas());
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/tematicas")
     public ResponseEntity<?> crearTematica(@RequestBody TematicaRequestDTO dto) {
         try {
@@ -49,6 +52,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/tematicas/{id}")
     public ResponseEntity<?> actualizarTematica(@PathVariable Long id, @RequestBody TematicaRequestDTO dto) {
         try {
@@ -58,6 +62,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/tematicas/{id}")
     public ResponseEntity<?> eliminarTematica(@PathVariable Long id) {
         try {
@@ -72,11 +77,13 @@ public class DiccionariosRestController {
     //  ETIQUETAS
     // ══════════════════════════════════════════════════════════════
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/etiquetas")
     public ResponseEntity<List<EtiquetaResponseDTO>> listarEtiquetas() {
         return ResponseEntity.ok(etiquetaService.listarEtiquetasTodas());
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/etiquetas")
     public ResponseEntity<?> crearEtiqueta(@RequestBody EtiquetaRequestDTO dto) {
         try {
@@ -86,6 +93,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/etiquetas/{id}")
     public ResponseEntity<?> actualizarEtiqueta(@PathVariable Long id, @RequestBody EtiquetaRequestDTO dto) {
         try {
@@ -95,6 +103,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/etiquetas/{id}")
     public ResponseEntity<?> eliminarEtiqueta(@PathVariable Long id) {
         try {
@@ -109,11 +118,13 @@ public class DiccionariosRestController {
     //  TIPOS DE NORMATIVA
     // ══════════════════════════════════════════════════════════════
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/tipos-normativa")
     public ResponseEntity<List<TiposNormativaResponseDTO>> listarTipos() {
         return ResponseEntity.ok(tiposNormativaService.listarTiposTodos());
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/tipos-normativa")
     public ResponseEntity<?> crearTipo(@RequestBody TiposNormativaRequestDTO dto) {
         try {
@@ -123,6 +134,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/tipos-normativa/{id}")
     public ResponseEntity<?> actualizarTipo(@PathVariable Long id, @RequestBody TiposNormativaRequestDTO dto) {
         try {
@@ -132,6 +144,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/tipos-normativa/{id}")
     public ResponseEntity<?> eliminarTipo(@PathVariable Long id) {
         try {
@@ -146,11 +159,13 @@ public class DiccionariosRestController {
     //  ESTADOS DE NORMATIVA
     // ══════════════════════════════════════════════════════════════
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/estados-normativa")
     public ResponseEntity<List<EstadosNormativaResponseDTO>> listarEstados() {
         return ResponseEntity.ok(estadosNormativaService.listarEstadosTodos());
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/estados-normativa")
     public ResponseEntity<?> crearEstado(@RequestBody EstadosNormativaRequestDTO dto) {
         try {
@@ -160,6 +175,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/estados-normativa/{id}")
     public ResponseEntity<?> actualizarEstado(@PathVariable Long id, @RequestBody EstadosNormativaRequestDTO dto) {
         try {
@@ -169,6 +185,7 @@ public class DiccionariosRestController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/estados-normativa/{id}")
     public ResponseEntity<?> eliminarEstado(@PathVariable Long id) {
         try {
