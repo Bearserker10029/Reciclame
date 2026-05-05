@@ -51,6 +51,11 @@
             <p style="color:#6B7280;font-size:13px;">Mantente al día con las actualizaciones del repositorio</p>
           </div>
           <div style="display:flex;gap:8px;align-items:center;">
+            <button onclick="marcarTodasLeidas()"
+                    th:if="${noLeidasCount > 0}"
+                    style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;color:#374151;cursor:pointer;font-family:inherit;">
+              <i class="fas fa-check-double"></i> Marcar todas como leídas
+            </button>
             <button onclick="document.getElementById('modalNotif').style.display='flex'"
                     style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
               <i class="fas fa-paper-plane"></i> Nueva notificación
@@ -104,44 +109,92 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:10px;">
-          <div th:each="n : ${notificaciones}" th:class="${!n.leida} ? 'notif-card unread' : 'notif-card read'">
+          <div th:each="n : ${notificaciones}"
+               th:class="${!n.leida} ? 'notif-card unread' : 'notif-card read'"
+               th:data-id="${n.id}"
+               th:data-titulo="${n.titulo}"
+               th:data-mensaje="${n.mensaje}"
+               th:data-tiempo="${n.tiempoRelativo}"
+               th:data-tipo="${n.tipo}"
+               th:data-leida="${n.leida}"
+               onclick="abrirDetalleNotif(this)"
+               style="cursor:pointer;">
 
             <div class="notif-icon" th:switch="${n.tipo}">
-              <span th:case="'NUEVO_ESTUDIO'" style="background:rgba(46,204,113,.12);">
+              <span th:case="'NUEVO_ESTUDIO'"      style="background:rgba(46,204,113,.12);">
                 <i class="fas fa-file-alt" style="color:#2ECC71;font-size:16px;"></i></span>
-              <span th:case="'NUEVA_NORMATIVA'" style="background:rgba(52,152,219,.12);">
+              <span th:case="'NUEVA_NORMATIVA'"    style="background:rgba(52,152,219,.12);">
                 <i class="fas fa-balance-scale" style="color:#3498DB;font-size:16px;"></i></span>
               <span th:case="'DOCUMENTO_VALIDADO'" style="background:rgba(46,204,113,.12);">
                 <i class="fas fa-check-circle" style="color:#2ECC71;font-size:16px;"></i></span>
-              <span th:case="'MENSAJE_ADMIN'" style="background:#F3F4F6;">
-                <i class="fas fa-user-shield" style="color:#9CA3AF;font-size:16px;"></i></span>
-              <span th:case="*" style="background:rgba(243,156,18,.12);">
+              <span th:case="'MENSAJE_ADMIN'"      style="background:#F0F4F8;">
+                <i class="fas fa-user-shield" style="color:#64748B;font-size:16px;"></i></span>
+              <span th:case="*"                    style="background:rgba(243,156,18,.12);">
                 <i class="fas fa-bell" style="color:#F39C12;font-size:16px;"></i></span>
             </div>
 
             <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
-                <span style="font-size:13px;font-weight:600;color:#1B3A5C;" th:text="${n.titulo}">Título</span>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:2px;">
+                <div>
+                  <span th:switch="${n.tipo}">
+                    <span th:case="'NUEVA_NORMATIVA'"    class="notif-type-label" style="background:rgba(52,152,219,.1);color:#1a6fa8;">Normativa</span>
+                    <span th:case="'NUEVO_ESTUDIO'"      class="notif-type-label" style="background:rgba(46,204,113,.1);color:#1a7a42;">Estudio</span>
+                    <span th:case="'DOCUMENTO_VALIDADO'" class="notif-type-label" style="background:rgba(20,184,166,.1);color:#0f766e;">Validado</span>
+                    <span th:case="'MENSAJE_ADMIN'"      class="notif-type-label" style="background:#F1F5F9;color:#475569;">Admin</span>
+                    <span th:case="*"                    class="notif-type-label" style="background:rgba(243,156,18,.1);color:#b45309;">Aviso</span>
+                  </span>
+                </div>
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
                   <span th:if="${!n.leida}" class="notif-badge-unread">No leída</span>
                   <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;" th:text="${n.tiempoRelativo}">—</span>
                 </div>
               </div>
-              <p style="font-size:12px;color:#6B7280;line-height:1.5;" th:text="${n.mensaje}">Mensaje</p>
-              <form th:if="${!n.leida}" method="post" th:action="@{/superadmin/notificaciones/marcar/{id}(id=${n.id})}"
-                style="display:inline;">
-                <button type="submit" class="btn-mark-read">
-                  <i class="fas fa-check" style="margin-right:4px;"></i>Marcar como leída
+              <p style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:3px;" th:text="${n.titulo}">Título</p>
+              <p style="font-size:12px;color:#6B7280;line-height:1.5;margin:0;" th:text="${n.mensaje}">Mensaje</p>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:10px;" onclick="event.stopPropagation();">
+                <form th:if="${!n.leida}" method="post" th:action="@{/superadmin/notificaciones/marcar/{id}(id=${n.id})}" style="display:inline;">
+                  <button type="submit" class="btn-mark-read">
+                    <i class="fas fa-check" style="margin-right:4px;"></i>Marcar leída
+                  </button>
+                </form>
+                <button th:attr="data-notif-id=${n.id}" onclick="event.stopPropagation();eliminarNotificacion(this.dataset.notifId)"
+                        style="padding:5px 10px;border:none;background:#FEE2E2;color:#DC2626;font-size:11px;font-weight:600;border-radius:6px;cursor:pointer;transition:background .15s;"
+                        onmouseover="this.style.background='#FECACA'" onmouseout="this.style.background='#FEE2E2'">
+                  <i class="fas fa-trash" style="margin-right:3px;"></i>Eliminar
                 </button>
-              </form>
+              </div>
             </div>
 
           </div>
 
           <div th:if="${#lists.isEmpty(notificaciones)}"
-            style="text-align:center;padding:48px;background:#fff;border-radius:12px;color:#9CA3AF;">
-            <i class="fas fa-bell-slash" style="font-size:32px;margin-bottom:12px;display:block;"></i>
-            No tienes notificaciones por el momento.
+               style="text-align:center;padding:64px 48px;background:#fff;border-radius:16px;color:#9CA3AF;box-shadow:0 1px 3px rgba(0,0,0,.05);">
+            <div style="width:64px;height:64px;background:#F3F4F6;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+              <i class="fas fa-bell-slash" style="font-size:24px;color:#D1D5DB;"></i>
+            </div>
+            <p style="font-size:15px;font-weight:600;color:#374151;margin-bottom:4px;">Sin notificaciones</p>
+            <p style="font-size:13px;color:#9CA3AF;">No tienes notificaciones por el momento.</p>
+          </div>
+        </div>
+
+        <!-- Modal detalle notificación -->
+        <div id="modalDetalleNotif" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+          <div style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+              <div id="detalleNotifIcon" style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;"></div>
+              <div style="flex:1;">
+                <h3 id="detalleNotifTitulo" style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;"></h3>
+                <p id="detalleNotifTiempo" style="margin:4px 0 0;font-size:12px;color:#6B7280;"></p>
+              </div>
+              <button onclick="cerrarDetalleNotif()" style="padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+            </div>
+            <div style="background:#F9FAFB;padding:16px;border-radius:12px;margin-bottom:20px;">
+              <p id="detalleNotifMensaje" style="margin:0;font-size:14px;color:#374151;line-height:1.6;"></p>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;">
+              <button onclick="cerrarDetalleNotif()" style="padding:10px 20px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Cerrar</button>
+              <button id="detalleNotifBtnLeida" onclick="" style="padding:10px 20px;border:none;border-radius:8px;background:#1B3A5C;color:#fff;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Marcar como leída</button>
+            </div>
           </div>
         </div>
 
@@ -179,6 +232,63 @@
   </div>
 
   <script>
+    var TIPO_CONFIG = {
+      'NUEVO_ESTUDIO':      { bg: 'rgba(46,204,113,.12)',  icon: 'fas fa-file-alt',      color: '#2ECC71' },
+      'NUEVA_NORMATIVA':    { bg: 'rgba(52,152,219,.12)',  icon: 'fas fa-balance-scale',  color: '#3498DB' },
+      'DOCUMENTO_VALIDADO': { bg: 'rgba(20,184,166,.12)',  icon: 'fas fa-check-circle',   color: '#14B8A6' },
+      'MENSAJE_ADMIN':      { bg: '#F0F4F8',               icon: 'fas fa-user-shield',    color: '#64748B' }
+    };
+
+    function abrirDetalleNotif(el) {
+      var id     = el.dataset.id;
+      var titulo = el.dataset.titulo;
+      var mensaje= el.dataset.mensaje;
+      var tiempo = el.dataset.tiempo;
+      var tipo   = el.dataset.tipo;
+      var leida  = el.dataset.leida === 'true';
+
+      document.getElementById('detalleNotifTitulo').textContent = titulo;
+      document.getElementById('detalleNotifMensaje').textContent = mensaje;
+      document.getElementById('detalleNotifTiempo').textContent = tiempo;
+
+      var cfg = TIPO_CONFIG[tipo] || { bg: 'rgba(243,156,18,.12)', icon: 'fas fa-bell', color: '#F39C12' };
+      var iconContainer = document.getElementById('detalleNotifIcon');
+      iconContainer.style.background = cfg.bg;
+      iconContainer.innerHTML = '<i class="' + cfg.icon + '" style="font-size:20px;color:' + cfg.color + ';"></i>';
+
+      var btnLeida = document.getElementById('detalleNotifBtnLeida');
+      if (leida) {
+        btnLeida.style.display = 'none';
+      } else {
+        btnLeida.style.display = 'inline-flex';
+        btnLeida.onclick = function() {
+          fetch('/api/notificaciones/' + id + '/leer', { method: 'POST' })
+            .then(function() { window.location.reload(); });
+        };
+      }
+
+      document.getElementById('modalDetalleNotif').style.display = 'flex';
+    }
+
+    function cerrarDetalleNotif() {
+      document.getElementById('modalDetalleNotif').style.display = 'none';
+    }
+
+    document.getElementById('modalDetalleNotif').addEventListener('click', function(e) {
+      if (e.target === this) cerrarDetalleNotif();
+    });
+
+    function eliminarNotificacion(id) {
+      if (!confirm('¿Eliminar esta notificación?')) return;
+      fetch('/api/notificaciones/' + id, { method: 'DELETE' })
+        .then(function(r) { if (r.ok || r.status === 204) window.location.reload(); });
+    }
+
+    function marcarTodasLeidas() {
+      fetch('/api/notificaciones/leer-todas', { method: 'POST' })
+        .then(function() { window.location.reload(); });
+    }
+
     if (typeof navTo === 'undefined') {
       function navTo(page) {
         var map = { 'admin-docs': 'documentos' };

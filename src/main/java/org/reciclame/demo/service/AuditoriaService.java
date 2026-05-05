@@ -167,10 +167,17 @@ public class AuditoriaService {
     public static final String ACCION_SALIR_IMPERSONACION = "SALIR_IMPERSONACION";
     public static final String ACCION_REACTIVAR_USUARIO = "REACTIVAR_USUARIO";
 
+    public static final String ACCION_DESCARGAR_ESTUDIO   = "DESCARGAR_ESTUDIO";
+    public static final String ACCION_DESCARGAR_NORMATIVA  = "DESCARGAR_NORMATIVA";
+    public static final String ACCION_VER_ESTUDIO          = "VER_ESTUDIO";
+    public static final String ACCION_VER_NORMATIVA        = "VER_NORMATIVA";
+    public static final String ACCION_ACTUALIZAR_PERFIL    = "ACTUALIZAR_PERFIL";
+
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";
     public static final String MODULO_ESTUDIOS = "ESTUDIOS";
     public static final String MODULO_EMPRESAS = "EMPRESAS";
     public static final String MODULO_SISTEMA = "SISTEMA";
     public static final String MODULO_SEGURIDAD = "SEGURIDAD";
+    public static final String MODULO_PERFIL   = "PERFIL";
 }

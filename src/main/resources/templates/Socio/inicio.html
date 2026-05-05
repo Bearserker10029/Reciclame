@@ -433,9 +433,19 @@
   </div>
 
   <script>
+    var spaPages = ['inicio', 'estudios', 'normativo', 'perfil', 'notificaciones'];
     function navTo(page) {
+      if (!spaPages.includes(page)) {
+        window.location.href = '/socio/' + page;
+        return;
+      }
+      var targetPage = document.getElementById('page-' + page);
+      if (!targetPage) {
+        window.location.href = '/socio/' + page;
+        return;
+      }
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById('page-' + page).classList.add('active');
+      targetPage.classList.add('active');
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       var nav = document.getElementById('nav-' + page);
       if (nav) nav.classList.add('active');

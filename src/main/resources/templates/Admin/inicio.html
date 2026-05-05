@@ -345,5 +345,12 @@ function goLogin() { window.location.href = '/login'; }
   })();
 </script>
 
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.notificacionesNoLeidasCount = /*[[${noLeidasCount != null ? noLeidasCount : 0}]]*/ 0;
+  /*]]>*/
+</script>
+<script th:src="@{/js/notificaciones-badge.js}"></script>
+
 </body>
 </html>

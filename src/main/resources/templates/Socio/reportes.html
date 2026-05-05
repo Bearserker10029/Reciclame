@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Mis Reportes</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
+    .stat-card{background:#fff;border-radius:12px;padding:20px 24px;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;align-items:center;gap:16px;}
+    .stat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .bar-container{background:#F3F4F6;border-radius:999px;height:8px;overflow:hidden;flex:1;}
+    .bar-fill{height:100%;border-radius:999px;transition:width .4s ease;}
+    .accion-chip{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;}
+  </style>
+</head>
+<body>
+<div id="s-app" style="display:flex;flex-direction:column;min-height:100vh;">
+
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div>
+          <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Mis Reportes</h1>
+          <p style="color:#6B7280;font-size:13px;">Estadísticas de tu actividad personal en el repositorio</p>
+        </div>
+        <a th:href="@{/socio/historial}" href="/socio/historial"
+           style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;color:#374151;font-weight:600;text-decoration:none;">
+          <i class="fas fa-history" style="color:#3498DB;"></i>Ver historial
+        </a>
+      </div>
+
+      <!-- KPI cards -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(52,152,219,.12);">
+            <i class="fas fa-download" style="color:#3498DB;font-size:20px;"></i>
+          </div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#1B3A5C;" th:text="${totalDescargas ?: 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Total descargas</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(46,204,113,.12);">
+            <i class="fas fa-eye" style="color:#2ECC71;font-size:20px;"></i>
+          </div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#1B3A5C;" th:text="${totalVisualizaciones ?: 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Documentos vistos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(243,156,18,.12);">
+            <i class="fas fa-file-alt" style="color:#F39C12;font-size:20px;"></i>
+          </div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#1B3A5C;" th:text="${descargasEstudios ?: 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Estudios descargados</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(155,89,182,.12);">
+            <i class="fas fa-balance-scale" style="color:#9B59B6;font-size:20px;"></i>
+          </div>
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#1B3A5C;" th:text="${descargasNormativas ?: 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px;">Normativas descargadas</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;">
+
+        <!-- Actividad por módulo -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+          <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;">
+            <i class="fas fa-chart-bar" style="color:#2ECC71;margin-right:8px;"></i>Actividad por módulo
+          </h2>
+
+          <div th:if="${porModulo == null or porModulo.isEmpty()}"
+               style="text-align:center;padding:40px;color:#9CA3AF;">
+            <i class="fas fa-chart-bar" style="font-size:28px;display:block;margin-bottom:10px;color:#D1D5DB;"></i>
+            <p style="font-size:13px;">Aún no tienes actividad registrada.</p>
+          </div>
+
+          <div th:if="${porModulo != null and !porModulo.isEmpty()}"
+               style="display:flex;flex-direction:column;gap:14px;">
+            <div th:each="entry : ${porModulo}" style="display:flex;align-items:center;gap:12px;">
+              <span style="font-size:12px;color:#374151;font-weight:600;width:110px;flex-shrink:0;"
+                    th:text="${entry.key}">Módulo</span>
+              <div class="bar-container">
+                <div class="bar-fill"
+                     th:style="'width:' + (${entry.value * 100 / totalAcciones}) + '%;background:#2ECC71;'"></div>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:#1B3A5C;width:32px;text-align:right;flex-shrink:0;"
+                    th:text="${entry.value}">0</span>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:#6B7280;">Total acciones registradas</span>
+            <span style="font-size:16px;font-weight:800;color:#1B3A5C;" th:text="${totalAcciones ?: 0}">0</span>
+          </div>
+        </div>
+
+        <!-- Últimas acciones -->
+        <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 3px rgba(0,0,0,.06);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;">
+              <i class="fas fa-clock" style="color:#3498DB;margin-right:8px;"></i>Últimas acciones
+            </h2>
+            <a th:href="@{/socio/historial}" href="/socio/historial"
+               style="font-size:12px;color:#2ECC71;font-weight:600;text-decoration:none;">Ver todas →</a>
+          </div>
+
+          <div th:if="${#lists.isEmpty(ultimasAcciones)}"
+               style="text-align:center;padding:32px;color:#9CA3AF;font-size:13px;">
+            Sin actividad aún
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div th:each="a : ${ultimasAcciones}"
+                 style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#F9FAFB;border-radius:8px;">
+              <div th:switch="${a.accion}">
+                <i th:case="'DESCARGAR_ESTUDIO'"   class="fas fa-download" style="color:#3498DB;font-size:13px;margin-top:2px;"></i>
+                <i th:case="'DESCARGAR_NORMATIVA'" class="fas fa-download" style="color:#3498DB;font-size:13px;margin-top:2px;"></i>
+                <i th:case="'VER_ESTUDIO'"         class="fas fa-eye"      style="color:#2ECC71;font-size:13px;margin-top:2px;"></i>
+                <i th:case="'VER_NORMATIVA'"       class="fas fa-eye"      style="color:#2ECC71;font-size:13px;margin-top:2px;"></i>
+                <i th:case="'LOGIN'"               class="fas fa-sign-in-alt" style="color:#64748B;font-size:13px;margin-top:2px;"></i>
+                <i th:case="*"                     class="fas fa-circle"   style="color:#D1D5DB;font-size:10px;margin-top:4px;"></i>
+              </div>
+              <div style="flex:1;min-width:0;">
+                <p style="font-size:12px;font-weight:600;color:#1B3A5C;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                   th:text="${a.descripcion}">—</p>
+                <p style="font-size:11px;color:#9CA3AF;margin:2px 0 0;"
+                   th:text="${#temporals.format(a.fechaAccion, 'dd/MM/yyyy HH:mm')}">—</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <button id="chatbot-bubble" onclick="toggleChatbot()">
+    <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+  </button>
+  <div id="chatbot-panel">
+    <div class="chat-header">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
+        <div>
+          <div class="chat-title">La Buena Cajita</div>
+          <div class="chat-status"><span style="display:inline-block;width:6px;height:6px;background:#2ECC71;border-radius:50%;margin-right:4px;"></span>En línea</div>
+        </div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot"><div class="bubble">¡Hola! Soy La Buena Cajita, tu asistente de Recíclame. ¿En qué puedo ayudarte hoy?</div></div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Pregúntame sobre normativas o economía circular..." onkeypress="if(event.key==='Enter')sendChatMessage()" />
+      <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function navTo(page) {
+  window.location.href = '/socio/' + page;
+}
+function toggleChatbot() {
+  var panel = document.getElementById('chatbot-panel');
+  var bubble = document.getElementById('chatbot-bubble');
+  if (panel.style.display === 'flex') { panel.style.display = 'none'; bubble.style.display = 'flex'; }
+  else { panel.style.display = 'flex'; bubble.style.display = 'none'; }
+}
+function sendChatMessage() {
+  var input = document.getElementById('chat-input');
+  var msg = input.value.trim();
+  if (!msg) return;
+  var div = document.getElementById('chat-messages');
+  div.innerHTML += '<div class="chat-msg user"><div class="bubble">' + msg + '</div></div>';
+  input.value = '';
+  div.scrollTop = div.scrollHeight;
+  setTimeout(function() {
+    div.innerHTML += '<div class="chat-msg bot"><div class="bubble">Gracias por tu mensaje. Estoy en modo demo.</div></div>';
+    div.scrollTop = div.scrollHeight;
+  }, 800);
+}
+document.getElementById('chatbot-bubble').style.display = 'flex';
+window.__baseRole = 'socio';
+</script>
+</body>
+</html>

@@ -115,6 +115,36 @@ public class UsuarioService {
         return usuarioRepository.findByCorreoCorporativo(correo).map(this::toResponseDTO);
     }
 
+    // ── CAMBIAR CONTRASEÑA ────────────────────────────────────
+    @Transactional
+    public void cambiarPassword(Long usuarioId, String passwordActual, String nuevoPassword) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (!passwordEncoder.matches(passwordActual, usuario.getPasswordHash())) {
+            throw new RuntimeException("La contraseña actual no es correcta");
+        }
+        usuario.setPasswordHash(passwordEncoder.encode(nuevoPassword));
+        usuario.setUpdatedAt(Instant.now());
+        usuarioRepository.save(usuario);
+        auditoriaService.registrarAccion(usuarioId, usuario.getNombreCompleto(),
+                AuditoriaService.ACCION_CAMBIAR_PASSWORD, AuditoriaService.MODULO_SEGURIDAD,
+                "Usuario cambió su contraseña");
+    }
+
+    // ── ACTUALIZAR PERFIL PROPIO ──────────────────────────────
+    @Transactional
+    public void actualizarPerfilPropio(Long usuarioId, String nombreCompleto, String cargo) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        if (nombreCompleto != null && !nombreCompleto.isBlank()) usuario.setNombreCompleto(nombreCompleto);
+        if (cargo != null) usuario.setCargo(cargo);
+        usuario.setUpdatedAt(Instant.now());
+        usuarioRepository.save(usuario);
+        auditoriaService.registrarAccion(usuarioId, usuario.getNombreCompleto(),
+                AuditoriaService.ACCION_ACTUALIZAR_PERFIL, AuditoriaService.MODULO_PERFIL,
+                "Usuario actualizó su perfil");
+    }
+
     // ── READ ALL ──────────────────────────────────────────────
     public List<UsuarioResponseDTO> listarUsuarios() {
         return usuarioRepository.findAll()
