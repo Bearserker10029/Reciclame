@@ -3,8 +3,11 @@ package org.reciclame.demo.controller;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
+import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
+import org.reciclame.demo.service.NotificacionService;
+import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +26,18 @@ public class EstudioRestController {
 
     private final EstudioService estudioService;
     private final MinioStorageService minioStorageService;
+    private final NotificacionService notificacionService;
+    private final AuditoriaService auditoriaService;
+    private final UsuarioService usuarioService;
 
-    public EstudioRestController(EstudioService estudioService, MinioStorageService minioStorageService) {
+    public EstudioRestController(EstudioService estudioService, MinioStorageService minioStorageService,
+                                  NotificacionService notificacionService, AuditoriaService auditoriaService,
+                                  UsuarioService usuarioService) {
         this.estudioService = estudioService;
         this.minioStorageService = minioStorageService;
+        this.notificacionService = notificacionService;
+        this.auditoriaService = auditoriaService;
+        this.usuarioService = usuarioService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -68,6 +79,9 @@ public class EstudioRestController {
             }
             EstudioResponseDTO resultado = estudioService.crearEstudio(
                     dto, archivoUrl, archivoTipoMime, user.getUsername());
+            String titulo = "Nuevo Estudio Publicado";
+            String mensaje = "Se ha publicado un nuevo estudio: " + dto.getTitulo();
+            notificacionService.enviarNotificacionGlobal(titulo, mensaje, "NUEVO_ESTUDIO");
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
@@ -111,10 +125,32 @@ public class EstudioRestController {
     // ── Registrar visualización ───────────────────────────────
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/visualizar")
-    public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id) {
+    public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id,
+                                                     @AuthenticationPrincipal UserDetails user) {
         try {
             int nuevoCuenta = estudioService.incrementarVisualizaciones(id);
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                auditoriaService.registrarAccion(u.getId(), u.getNombreCompleto(),
+                    AuditoriaService.ACCION_VER_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                    "Visualizó estudio id=" + id));
             return ResponseEntity.ok(Map.of("visualizacionesCount", nuevoCuenta));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        }
+    }
+
+    // ── Registrar descarga ────────────────────────────────────
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/{id}/descargar")
+    public ResponseEntity<?> registrarDescarga(@PathVariable Long id,
+                                                @AuthenticationPrincipal UserDetails user) {
+        try {
+            int nuevoCuenta = estudioService.incrementarDescargas(id);
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                auditoriaService.registrarAccion(u.getId(), u.getNombreCompleto(),
+                    AuditoriaService.ACCION_DESCARGAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                    "Descargó estudio id=" + id));
+            return ResponseEntity.ok(Map.of("descargasCount", nuevoCuenta));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }

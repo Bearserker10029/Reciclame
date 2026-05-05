@@ -93,6 +93,32 @@ public class NotificacionService {
         notificacionRepository.save(notif);
     }
 
+    // ── MARCAR TODAS COMO LEÍDAS ───────────────────────────────
+    @Transactional
+    public void marcarTodasComoLeidas(Long usuarioId) {
+        List<Notificacione> notificaciones = notificacionRepository
+                .findByUsuarioIdAndEstadoActivoTrueOrderByCreatedAtDesc(usuarioId);
+        Instant now = Instant.now();
+        for (Notificacione n : notificaciones) {
+            if (!n.getLeida()) {
+                n.setLeida(true);
+                n.setFechaLectura(now);
+                notificacionRepository.save(n);
+            }
+        }
+    }
+
+    // ── ELIMINAR TODAS ─────────────────────────────────────────
+    @Transactional
+    public void eliminarTodas(Long usuarioId) {
+        List<Notificacione> notificaciones = notificacionRepository
+                .findByUsuarioIdAndEstadoActivoTrueOrderByCreatedAtDesc(usuarioId);
+        for (Notificacione n : notificaciones) {
+            n.setEstadoActivo(false);
+            notificacionRepository.save(n);
+        }
+    }
+
     // ── PREFERENCIAS ──────────────────────────────────────────
     public PreferenciasNotificacion obtenerOCrearPreferencias(Long usuarioId) {
         return preferenciasRepository.findByUsuarioId(usuarioId)

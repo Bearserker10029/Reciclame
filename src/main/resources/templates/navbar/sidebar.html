@@ -35,14 +35,24 @@
       <div class="nav-item" id="nav-perfil" onclick="navTo('perfil')">
         <i class="fas fa-user" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Perfil</span>
       </div>
-<div class="nav-item" id="nav-notificaciones"
-         onclick="navTo('notificaciones')"
-         style="position:relative;cursor:pointer;">
-       <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
-       <span>Notificaciones</span>
-       <span
-         style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
-     </div>
+      <div class="nav-item" id="nav-notificaciones"
+           onclick="navTo('notificaciones')"
+           style="position:relative;cursor:pointer;">
+        <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
+        <span>Notificaciones</span>
+        <span id="sidebar-notif-badge"
+          style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 3px;border-radius:50%;display:none;align-items:center;justify-content:center;"></span>
+      </div>
+
+      <!-- Sección Socio: Historial y Reportes — ocultos para Admin/SuperAdmin -->
+      <th:block sec:authorize="hasRole('SOCIO')">
+        <div class="nav-item" id="nav-historial" onclick="navTo('historial')">
+          <i class="fas fa-history" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Historial</span>
+        </div>
+        <div class="nav-item" id="nav-reportes-socio" onclick="navTo('reportes')">
+          <i class="fas fa-chart-pie" style="width:18px;text-align:center;font-size:15px;"></i><span>Mis Reportes</span>
+        </div>
+      </th:block>
 
       <!-- Admin section - visible solo para ADMINISTRADOR y SUPERADMIN -->
       <div sec:authorize="hasAnyRole('ADMINISTRADOR','SUPERADMIN')">
@@ -137,7 +147,9 @@
         '/socio/normativo': 'nav-normativo',
         '/socio/perfil': 'nav-perfil',
         '/socio/notificaciones': 'nav-notificaciones',
-        '/socio/notificaciones/configuracion': 'nav-notificaciones'
+        '/socio/notificaciones/configuracion': 'nav-notificaciones',
+        '/socio/historial': 'nav-historial',
+        '/socio/reportes': 'nav-reportes-socio'
       };
 
       function normativoVistaActiva() {
