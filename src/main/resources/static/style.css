@@ -8,6 +8,11 @@
   --navy: #1B3A5C;
 }
 
+/* Misma tipografía base en todo el shell (sidebar/topbar); evita salto al pasar p. ej. de Normativo a Estudios cuando solo una plantilla definía body { font-family }. */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
 /* Fix default link styles */
 a {
   color: inherit;
