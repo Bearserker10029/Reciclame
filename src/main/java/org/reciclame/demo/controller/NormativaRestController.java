@@ -3,10 +3,7 @@ package org.reciclame.demo.controller;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
-import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.NormativaService;
-import org.reciclame.demo.service.NotificacionService;
-import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +21,9 @@ import java.util.Map;
 public class NormativaRestController {
 
     private final NormativaService normativaService;
-    private final NotificacionService notificacionService;
-    private final AuditoriaService auditoriaService;
-    private final UsuarioService usuarioService;
 
-    public NormativaRestController(NormativaService normativaService, NotificacionService notificacionService,
-                                    AuditoriaService auditoriaService, UsuarioService usuarioService) {
+    public NormativaRestController(NormativaService normativaService) {
         this.normativaService = normativaService;
-        this.notificacionService = notificacionService;
-        this.auditoriaService = auditoriaService;
-        this.usuarioService = usuarioService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -71,9 +61,6 @@ public class NormativaRestController {
             }
             NormativaResponseDTO resultado = normativaService.crearNormativa(
                     dto, archivoUrl, archivoTipoMime, user.getUsername());
-            String titulo = "Nueva Normativa Publicada";
-            String mensaje = "Se ha publicado una nueva normativa: " + dto.getTitulo();
-            notificacionService.enviarNotificacionGlobal(titulo, mensaje, "NUEVA_NORMATIVA");
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
@@ -109,40 +96,6 @@ public class NormativaRestController {
         try {
             normativaService.eliminarNormativa(id);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
-        }
-    }
-
-    // ── Registrar visualización ───────────────────────────────
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{id}/visualizar")
-    public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id,
-                                                     @AuthenticationPrincipal UserDetails user) {
-        try {
-            int nuevoCuenta = normativaService.incrementarVisualizaciones(id);
-            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
-                auditoriaService.registrarAccion(u.getId(), u.getNombreCompleto(),
-                    AuditoriaService.ACCION_VER_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
-                    "Visualizó normativa id=" + id));
-            return ResponseEntity.ok(Map.of("visualizacionesCount", nuevoCuenta));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
-        }
-    }
-
-    // ── Registrar descarga ────────────────────────────────────
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/{id}/descargar")
-    public ResponseEntity<?> registrarDescarga(@PathVariable Long id,
-                                                @AuthenticationPrincipal UserDetails user) {
-        try {
-            int nuevoCuenta = normativaService.incrementarDescargas(id);
-            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
-                auditoriaService.registrarAccion(u.getId(), u.getNombreCompleto(),
-                    AuditoriaService.ACCION_DESCARGAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
-                    "Descargó normativa id=" + id));
-            return ResponseEntity.ok(Map.of("descargasCount", nuevoCuenta));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }

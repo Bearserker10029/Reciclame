@@ -132,16 +132,6 @@ public class EstudioService {
         return nuevo;
     }
 
-    @Transactional
-    public int incrementarDescargas(Long id) {
-        Estudio estudio = estudioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estudio no encontrado: " + id));
-        int nuevo = (estudio.getDescargasCount() != null ? estudio.getDescargasCount() : 0) + 1;
-        estudio.setDescargasCount(nuevo);
-        estudioRepository.save(estudio);
-        return nuevo;
-    }
-
     public EstudioResponseDTO obtenerEstudioPublicoPorId(Long id) {
         EstudioResponseDTO dto = obtenerEstudioPorId(id);
         if (!Boolean.TRUE.equals(dto.getEsPublico())) {
