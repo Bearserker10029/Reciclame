@@ -126,27 +126,6 @@ public class NormativaService {
         return toResponseDTO(saved);
     }
 
-    // ── VISUALIZACIONES / DESCARGAS ───────────────────────────
-    @Transactional
-    public int incrementarVisualizaciones(Long id) {
-        Normativa normativa = normativaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Normativa no encontrada: " + id));
-        int nuevo = (normativa.getVisualizacionesCount() != null ? normativa.getVisualizacionesCount() : 0) + 1;
-        normativa.setVisualizacionesCount(nuevo);
-        normativaRepository.save(normativa);
-        return nuevo;
-    }
-
-    @Transactional
-    public int incrementarDescargas(Long id) {
-        Normativa normativa = normativaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Normativa no encontrada: " + id));
-        int nuevo = (normativa.getDescargasCount() != null ? normativa.getDescargasCount() : 0) + 1;
-        normativa.setDescargasCount(nuevo);
-        normativaRepository.save(normativa);
-        return nuevo;
-    }
-
     // ── DELETE lógico ─────────────────────────────────────────
     public void eliminarNormativa(Long id) {
         Normativa n = normativaRepository.findById(id)
