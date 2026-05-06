@@ -912,36 +912,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
---
--- Mi Unidad (carpetas e ítems por socio) — ejecutar si aún no existen
---
-CREATE TABLE IF NOT EXISTS `unidad_carpetas` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `usuario_id` bigint NOT NULL,
-  `parent_id` bigint DEFAULT NULL,
-  `nombre` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `sort_order` int NOT NULL DEFAULT '0',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_unidad_carpeta_usuario` (`usuario_id`),
-  KEY `idx_unidad_carpeta_parent` (`parent_id`),
-  CONSTRAINT `fk_unidad_carpeta_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_unidad_carpeta_parent` FOREIGN KEY (`parent_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS `unidad_items` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `usuario_id` bigint NOT NULL,
-  `carpeta_id` bigint DEFAULT NULL,
-  `documento_tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'NORMATIVA, ESTUDIO',
-  `documento_id` bigint NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  KEY `idx_unidad_item_usuario` (`usuario_id`),
-  KEY `idx_unidad_item_carpeta` (`carpeta_id`),
-  KEY `idx_unidad_item_doc` (`documento_tipo`,`documento_id`),
-  CONSTRAINT `fk_unidad_item_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_unidad_item_carpeta` FOREIGN KEY (`carpeta_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- Dump completed on 2026-04-28 21:13:19
