@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <title>Sidebar</title>
@@ -51,8 +52,8 @@
          style="margin-left:auto;background:#E74C3C;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;">3</span>
      </div>
 
-      <!-- Admin section - siempre visible, activo según rol -->
-      <div th:if="${rol == 'ADMIN' or rol == 'SUPERADMIN'}">
+      <!-- Admin section - visible solo para ADMINISTRADOR y SUPERADMIN -->
+      <div sec:authorize="hasAnyRole('ADMINISTRADOR','SUPERADMIN')">
             <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
             <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
                 Administración
@@ -75,7 +76,7 @@
         </div>
 
       <!-- SuperAdmin section - solo visible para SUPERADMIN -->
-      <th:block th:if="${rol == 'SUPERADMIN'}">
+      <th:block sec:authorize="hasRole('SUPERADMIN')">
         <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
         <div style="color:rgba(255,255,255,.3);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 16px;margin-bottom:4px;">
           Super Admin
