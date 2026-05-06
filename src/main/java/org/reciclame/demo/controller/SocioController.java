@@ -3,7 +3,6 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.NotificacionService;
-import org.reciclame.demo.service.SocioReportesService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,18 +21,15 @@ public class SocioController {
     private final EstudioService estudioService;
     private final NormativaService normativaService;
     private final NotificacionService notificacionService;
-    private final SocioReportesService socioReportesService;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
                           NormativaService normativaService,
-                          NotificacionService notificacionService,
-                          SocioReportesService socioReportesService) {
+                          NotificacionService notificacionService) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
         this.notificacionService = notificacionService;
-        this.socioReportesService = socioReportesService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -50,14 +46,12 @@ public class SocioController {
     @GetMapping("/socio")
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("normativas", normativaService.listarNormativas());
         return "Socio/inicio";
     }
 
     @GetMapping("/socio/inicio")
     public String socioInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("normativas", normativaService.listarNormativas());
         return "Socio/inicio";
     }
 
@@ -89,19 +83,6 @@ public class SocioController {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("estudios", estudioService.listarEstudios());
         return "Socio/estudios";
-    }
-
-    /**
-     * Reportes personales del socio. Datos de demostración en plantilla hasta conectar KPIs reales.
-     */
-    @GetMapping("/socio/reportes")
-    public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        usuarioService.findByCorreo(user.getUsername()).ifPresentOrElse(
-                u -> model.addAttribute("reporte", socioReportesService.construir(u.getId())),
-                () -> model.addAttribute("reporte", socioReportesService.construir(null))
-        );
-        return "Socio/reportes";
     }
 
     @PostMapping("/socio/notificaciones/marcar/{id}")

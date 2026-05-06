@@ -23,7 +23,7 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
     @Query("SELECT a FROM Auditoria a WHERE a.fechaAccion >= :desde AND a.fechaAccion <= :hasta AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     List<Auditoria> findByFechaRango(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
 
-    @Query("SELECT a FROM Auditoria a WHERE a.usuarioId = :usuarioId AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")    
+    @Query("SELECT a FROM Auditoria a WHERE a.usuarioId = :usuarioId AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findByUsuarioIdPaginado(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
     @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true ORDER BY a.fechaAccion DESC")

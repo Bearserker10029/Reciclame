@@ -1,8 +1,6 @@
 package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.EstudioResponseDTO;
-import org.reciclame.demo.model.MiUnidadItem;
-import org.reciclame.demo.service.DocumentosRecientesService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.UsuarioService;
@@ -24,19 +22,16 @@ public class EstudioVisorController {
     private final EstudioService estudioService;
     private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
-    private final DocumentosRecientesService documentosRecientesService;
 
     @Value("${kkfileview.url}")
     private String kkfileviewUrl;
 
     public EstudioVisorController(EstudioService estudioService,
                                    MinioStorageService minioStorageService,
-                                   UsuarioService usuarioService,
-                                   DocumentosRecientesService documentosRecientesService) {
+                                   UsuarioService usuarioService) {
         this.estudioService = estudioService;
         this.minioStorageService = minioStorageService;
         this.usuarioService = usuarioService;
-        this.documentosRecientesService = documentosRecientesService;
     }
 
     // ── Admin ─────────────────────────────────────────────────
@@ -60,8 +55,6 @@ public class EstudioVisorController {
     public String verEstudioSocio(@PathVariable Long id, Model model,
                                    @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
-        usuarioService.findByCorreo(user.getUsername())
-                .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
         return cargarVisorPublico(id, model, "Socio/estudios-visor", "/socio/estudios");
     }
 
