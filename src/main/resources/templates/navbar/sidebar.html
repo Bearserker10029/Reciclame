@@ -18,18 +18,26 @@
       <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
         <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
       </div>
-      <div class="nav-item" id="nav-normativo" onclick="window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
+      <div class="nav-item" id="nav-normativo" onclick="try{sessionStorage.setItem('reciclameNormativoTab','todos');}catch(e){}window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
         <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
       </div>
       <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
-        <div class="nav-subitem" id="nav-nacional" onclick="window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
+        <div class="nav-subitem" id="nav-nacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','nacional');}catch(e){}window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
           <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Nacional</span>
         </div>
-        <div class="nav-subitem" id="nav-internacional" onclick="window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
+        <div class="nav-subitem" id="nav-internacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','internacional');}catch(e){}window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
           <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Internacional</span>
         </div>
+      </div>
+      <div class="nav-item" id="nav-mi-unidad" th:if="${rol == 'SOCIO'}"
+           onclick="window.location.href='/socio/mi-unidad'">
+        <i class="fas fa-cloud" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Unidad</span>
+      </div>
+      <div class="nav-item" id="nav-reportes-socio" th:if="${rol == 'SOCIO'}"
+           onclick="window.location.href='/socio/reportes'">
+        <i class="fas fa-chart-pie" style="width:18px;text-align:center;font-size:15px;"></i><span>Reportes</span>
       </div>
       <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
       <div class="nav-item" id="nav-perfil" onclick="navTo('perfil')">
@@ -101,6 +109,14 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       var currentPath = window.location.pathname;
+      try {
+        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo') {
+          var storedTab = sessionStorage.getItem('reciclameNormativoTab');
+          if (storedTab === 'todos' || storedTab === 'nacional' || storedTab === 'internacional') {
+            window.__normativoTab = storedTab;
+          }
+        }
+      } catch (e) { /* ignore */ }
       var navMap = {
         '/admin': 'nav-inicio',
         '/admin/inicio': 'nav-inicio',
@@ -137,7 +153,9 @@
         '/socio/normativo': 'nav-normativo',
         '/socio/perfil': 'nav-perfil',
         '/socio/notificaciones': 'nav-notificaciones',
-        '/socio/notificaciones/configuracion': 'nav-notificaciones'
+        '/socio/notificaciones/configuracion': 'nav-notificaciones',
+        '/socio/mi-unidad': 'nav-mi-unidad',
+        '/socio/reportes': 'nav-reportes-socio'
       };
 
       function normativoVistaActiva() {
