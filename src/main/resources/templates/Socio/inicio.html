@@ -9,6 +9,7 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -17,7 +18,6 @@
     }
 
     body {
-      font-family: 'Inter', sans-serif;
       background: #F5F6FA;
     }
 
@@ -383,17 +383,17 @@
 
         <!-- PAGE: ESTUDIOS (placeholder) -->
         <div id="page-estudios" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/estudios :: estudios-content}"></th:block>
+          <th:block th:replace="~{Socio/estudios-content :: estudios-content}"></th:block>
         </div>
 
         <!-- PAGE: NORMATIVO (placeholder) -->
         <div id="page-normativo" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/normativo :: normativo-content}"></th:block>
+          <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
         </div>
 
         <!-- PAGE: PERFIL -->
         <div id="page-perfil" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/perfil :: perfil-content}"></th:block>
+          <th:block th:replace="~{Socio/perfil-content :: perfil-content}"></th:block>
         </div>
 
         <!-- PAGE: NOTIFICACIONES -->
