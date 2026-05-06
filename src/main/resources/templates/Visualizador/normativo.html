@@ -557,16 +557,16 @@
                   <th:block th:if="${normativas != null and !normativas.isEmpty()}">
                     <tr th:each="n : ${normativas}" class="norm-row"
                         th:with="clasifFiltro=${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'no vinculante' : 'vinculante'}"
-                        th:attr="data-documento-id=${n.id},
-                          data-full-titulo=${n.titulo},
-                          data-anio=${n.anio},
-                          data-archivo-mime=${n.archivoTipoMime},
-                          data-titulo=${#strings.toLowerCase(n.titulo)},
-                          data-tipo=${#strings.toLowerCase(n.tipoNormativaNombre != null ? n.tipoNormativaNombre : '')},
-                          data-estado=${#strings.toLowerCase(n.estadoNormativaNombre != null ? n.estadoNormativaNombre : '')},
-                          data-ambito=${n.ambito},
-                          data-clasif=${clasifFiltro},
-                          data-tema=${#strings.toLowerCase(n.tematicaCodigo != null ? n.tematicaCodigo : '')}">
+                        th:data-documento-id="${n.id}"
+                        th:data-full-titulo="${n.titulo}"
+                        th:data-anio="${n.anio}"
+                        th:data-archivo-mime="${n.archivoTipoMime}"
+                        th:data-titulo="${n.titulo != null ? #strings.toLowerCase(n.titulo) : ''}"
+                        th:data-tipo="${n.tipoNormativaNombre != null ? #strings.toLowerCase(n.tipoNormativaNombre) : ''}"
+                        th:data-estado="${n.estadoNormativaNombre != null ? #strings.toLowerCase(n.estadoNormativaNombre) : ''}"
+                        th:data-ambito="${n.ambito}"
+                        th:data-clasif="${clasifFiltro}"
+                        th:data-tema="${n.tematicaCodigo != null ? #strings.toLowerCase(n.tematicaCodigo) : ''}">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;" th:text="${n.titulo}">Título</div>
                       </td>
