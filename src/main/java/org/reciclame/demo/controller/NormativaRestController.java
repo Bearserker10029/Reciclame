@@ -7,6 +7,7 @@ import org.reciclame.demo.service.NormativaService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -26,12 +27,14 @@ public class NormativaRestController {
     }
 
     // ── READ ALL ──────────────────────────────────────────────
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<List<NormativaResponseDTO>> listar() {
         return ResponseEntity.ok(normativaService.listarNormativas());
     }
 
     // ── READ ONE ──────────────────────────────────────────────
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
         try {
@@ -43,6 +46,7 @@ public class NormativaRestController {
     }
 
     // ── CREATE ────────────────────────────────────────────────
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
             @RequestPart("normativa") @Valid NormativaRequestDTO dto,
@@ -64,6 +68,7 @@ public class NormativaRestController {
     }
 
     // ── UPDATE ────────────────────────────────────────────────
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
             @PathVariable Long id,
@@ -85,6 +90,7 @@ public class NormativaRestController {
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id) {
         try {
