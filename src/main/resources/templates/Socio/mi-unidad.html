@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Mi Unidad</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Tipografía base: style.css (misma pila que Normativo/Estudios); no forzar solo 'Inter', sans-serif aquí. */
+    body { background: #F5F6FA; }
+    .mu-card { background: #fff; border-radius: 12px; padding: 20px 22px; box-shadow: 0 2px 8px rgba(0,0,0,.08); margin-bottom: 18px; }
+    /* Ruta + tabla en una sola card (mismo criterio que Normativo / tabla de estudios). */
+    .mu-drive-shell {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .mu-drive-shell-head {
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid #eef1f4;
+    }
+    .mu-drive-shell-head .mu-top-bar { margin-bottom: 0; }
+    .mu-top-bar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .mu-view-toggle {
+      display: flex;
+      background: #F3F4F6;
+      border-radius: 8px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .mu-view-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all .18s;
+      background: transparent;
+      color: #6B7280;
+      font-family: inherit;
+    }
+    .mu-view-btn.active {
+      background: #fff;
+      color: #1B3A5C;
+      box-shadow: 0 1px 4px rgba(0,0,0,.1);
+    }
+    .mu-drive-grid-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      padding: 12px 16px 16px;
+    }
+    .mu-grid-card {
+      border: 1px solid #E9EDF3;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      min-height: 140px;
+    }
+    .mu-folder-card { cursor: default; }
+    .mu-doc-card { cursor: grab; }
+    .mu-doc-card:active { cursor: grabbing; }
+    .mu-grid-card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1B3A5C;
+      line-height: 1.35;
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    a.mu-grid-card-title:hover { color: #2ECC71; }
+    .mu-grid-card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: auto; padding-top: 12px; }
+    .mu-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .mu-breadcrumb-strip {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    .mu-path-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0;
+      min-width: 0;
+    }
+    .mu-path-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 4px;
+      font-size: 15px;
+      line-height: 1.5;
+      min-width: 0;
+    }
+    .mu-path-sep {
+      color: #9CA3AF;
+      font-weight: 700;
+      user-select: none;
+      font-size: 13px;
+    }
+    .mu-path-link {
+      color: #1B3A5C;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 4px;
+      padding: 2px 4px;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mu-path-link:hover { color: #2ECC71; text-decoration: underline; }
+    .mu-drop-breadcrumb.mu-drag-over {
+      outline: 2px solid #2ECC71;
+      outline-offset: 2px;
+      border-radius: 6px;
+      background: rgba(46,204,113,.14);
+      text-decoration: none !important;
+    }
+    .mu-path-current {
+      color: #1B3A5C;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      max-width: min(360px, 55vw);
+    }
+    /* Encabezado de página: mismo criterio que Repositorio Normativo (fragment normativo-content) */
+    .mu-page-head { margin-bottom: 18px; }
+    .mu-page-head-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+    .mu-page-head-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, #1B3A5C, #2C5F8A);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .mu-page-head-icon i { color: #fff; font-size: 14px; }
+    .mu-page-head h1 { font-size: 21px; font-weight: 800; color: #1B3A5C; margin: 0; line-height: 1.2; }
+    .mu-page-head-sub { color: #6B7280; font-size: 12px; margin: 0 0 18px 44px; line-height: 1.45; }
+    .alert-flash { border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; }
+    .alert-ok { background: rgba(46,204,113,.12); border: 1px solid rgba(46,204,113,.35); color: #1F9D55; }
+    .alert-err { background: rgba(231,76,60,.1); border: 1px solid rgba(231,76,60,.3); color: #C0392B; }
+    .mu-table-card { padding: 0; overflow: hidden; }
+    .mu-table-wrap {
+      overflow-x: auto;
+      border: 1px solid #EEF1F4;
+      border-radius: 10px;
+      background: #fff;
+    }
+    .mu-drive-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+    }
+    .mu-drive-table thead th {
+      background: #F8FAFB;
+      color: #6B7280;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 10px 12px;
+      border-bottom: 2px solid #EEF0F3;
+      text-align: left;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+    .mu-drive-table tbody td {
+      padding: 12px 12px;
+      border-bottom: 1px solid #F0F2F5;
+      vertical-align: middle;
+      color: #374151;
+      background: #fff;
+      transition: background .12s;
+    }
+    .mu-drive-table tbody tr:hover td { background: #F6FAF8; }
+    .mu-drive-table tbody tr:last-child td { border-bottom: none; }
+    .mu-drive-table tbody tr.mu-dragging { opacity: 0.55; }
+    .mu-td-name { display: inline-flex; align-items: center; gap: 12px; font-weight: 700; color: #1B3A5C; text-decoration: none; max-width: 420px; }
+    .mu-td-name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mu-td-name:hover { color: #2ECC71; }
+    .mu-file-ico { font-size: 20px; flex-shrink: 0; width: 24px; text-align: center; }
+    .mu-th-sort {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      letter-spacing: inherit;
+      text-transform: inherit;
+      color: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0;
+    }
+    .mu-th-sort:hover { color: #1B3A5C; }
+    .mu-col-sort-head { width: 120px; text-align: center; }
+    .mu-col-actions { text-align: center; white-space: nowrap; }
+    .mu-tr-doc { cursor: grab; }
+    .mu-tr-doc:active { cursor: grabbing; }
+    .mu-drop-folder.mu-drag-over td { background: rgba(46,204,113,.12) !important; box-shadow: inset 0 0 0 2px #2ECC71; }
+    .mu-grid-card.mu-drop-folder.mu-drag-over {
+      background: rgba(46,204,113,.12) !important;
+      box-shadow: inset 0 0 0 2px #2ECC71;
+    }
+    .mu-drag-hint-cell { color: #D1D5DB; text-align: center; width: 36px; }
+    .mu-prop-cell { color: #5f6368; max-width: 240px; overflow: hidden; text-overflow: ellipsis; }
+    .badge-tipo { font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: .04em; }
+    .badge-norm { background: rgba(52,152,219,.15); color: #2471A3; }
+    .badge-est { background: rgba(46,204,113,.15); color: #1F9D55; }
+    .mu-actions { display: inline-flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn-mu { border-radius: 8px; font-size: 12px; font-weight: 600; padding: 6px 12px; cursor: pointer; font-family: inherit; border: 1px solid #E5E7EB; background: #fff; color: #374151; }
+    .btn-mu-primary { border-color: #2ECC71; color: #1F9D55; background: rgba(46,204,113,.08); }
+    .btn-mu-danger { border-color: #E74C3C; color: #C0392B; background: rgba(231,76,60,.06); }
+    .mu-btn-crear-carpeta {
+      flex-shrink: 0;
+      display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px;
+      border-radius: 10px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer;
+      border: 1px solid rgba(46,204,113,.5); background: rgba(46,204,113,.1); color: #1F9D55;
+    }
+    .mu-btn-crear-carpeta:hover { background: rgba(46,204,113,.18); border-color: #2ECC71; }
+    .mu-modal {
+      border: none;
+      border-radius: 14px;
+      padding: 0;
+      max-width: 440px;
+      width: calc(100vw - 40px);
+      box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    }
+    /* Sin esto, algunos CSS globales (p. ej. Bootstrap) hacen visible el <dialog> aunque esté cerrado. */
+    dialog.mu-modal:not([open]) {
+      display: none !important;
+    }
+    /* Centrado en el viewport (toda la pantalla), no solo en la columna del main. */
+    dialog.mu-modal[open] {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      right: auto;
+      bottom: auto;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      max-height: min(90vh, 720px);
+      overflow: auto;
+    }
+    .mu-modal::backdrop { background: rgba(15,23,42,.5); }
+    .mu-modal-panel { padding: 22px 24px 20px; }
+    .mu-modal-panel h2 { font-size: 17px; font-weight: 800; color: #1B3A5C; margin: 0 0 16px; display: flex; align-items: center; gap: 10px; }
+    .mu-modal-panel label { display: block; font-size: 12px; font-weight: 700; color: #6B7280; margin-bottom: 6px; }
+    .mu-modal-panel input[type="text"] { width: 100%; height: 42px; border-radius: 10px; border: 1px solid #E5E7EB; padding: 0 14px; font-size: 14px; font-family: inherit; box-sizing: border-box; }
+    .mu-modal-panel input[type="text"]:focus { outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46,204,113,.2); }
+    .mu-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; padding-top: 16px; border-top: 1px solid #f1f3f4; }
+    .mu-modal-actions button { height: 40px; padding: 0 18px; border-radius: 10px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .mu-modal-cancel { border: 1px solid #E5E7EB; background: #fff; color: #374151; }
+    .mu-modal-cancel:hover { background: #f9fafb; }
+    .mu-modal-submit { border: 1px solid #2ECC71; background: rgba(46,204,113,.12); color: #1F9D55; }
+    .mu-modal-submit:hover { background: rgba(46,204,113,.22); }
+
+    /* Últimos accesos: misma card + rejilla que Repositorio Normativo / Estudios */
+    .mu-rec-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 1100px) {
+      .mu-rec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 560px) {
+      .mu-rec-grid { grid-template-columns: 1fr; }
+    }
+    .mu-rec-doc-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1B3A5C;
+      line-height: 1.35;
+      min-height: 34px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .mu-rec-btn-link {
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      font-size: 12px;
+      color: #4B5563;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .mu-rec-btn-link:hover { background: #f9fafb; color: #1B3A5C; border-color: #D1D5DB; }
+  </style>
+</head>
+<body>
+<div id="s-app" style="display:flex;flex-direction:column;min-height:100vh;">
+  <th:block th:replace="navbar/topbar :: topbar"></th:block>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
+    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:28px 32px;">
+      <div th:if="${ok}" class="alert-flash alert-ok" th:text="${ok}">OK</div>
+      <div th:if="${error}" class="alert-flash alert-err" th:text="${error}">Error</div>
+
+      <header class="mu-page-head">
+        <div class="mu-page-head-title-row">
+          <div class="mu-page-head-icon" aria-hidden="true">
+            <i class="fas fa-cloud"></i>
+          </div>
+          <h1>Mi Unidad</h1>
+        </div>
+        <p class="mu-page-head-sub">Organiza normativas y estudios como en un explorador: ruta arriba, tabla abajo. Añade desde Normativo o Estudios y <strong>arrastra</strong> documentos a carpetas o a la ruta.</p>
+      </header>
+
+      <section aria-label="Ultimos accesos"
+        style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;color:#1B3A5C;font-size:13px;font-weight:700;margin-bottom:10px;">
+          <i class="fas fa-history" style="color:#2ECC71;font-size:12px;" aria-hidden="true"></i>
+          Ultimos accesos
+        </div>
+        <div th:if="${#lists.isEmpty(ultimosAccesos)}" style="font-size:13px;color:#9CA3AF;padding:4px 0 8px;">
+          Cuando abras un documento en Normativo, Estudios o Mi Unidad, aparecerá aquí.
+        </div>
+        <div class="mu-rec-grid" th:if="${!#lists.isEmpty(ultimosAccesos)}">
+          <div th:each="acc : ${ultimosAccesos}"
+            style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <th:block th:switch="${acc.iconVariant}">
+              <div th:case="'pdf'" style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
+              </div>
+              <div th:case="'doc'" style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-word" style="font-size:23px;color:#3498DB;"></i>
+              </div>
+              <div th:case="'sheet'" style="width:54px;height:54px;border-radius:14px;background:rgba(46,204,113,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-excel" style="font-size:23px;color:#27AE60;"></i>
+              </div>
+              <div th:case="'slide'" style="width:54px;height:54px;border-radius:14px;background:rgba(243,156,18,.10);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-powerpoint" style="font-size:23px;color:#F39C12;"></i>
+              </div>
+              <div th:case="*" style="width:54px;height:54px;border-radius:14px;background:rgba(107,114,128,.1);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-alt" style="font-size:23px;color:#6B7280;"></i>
+              </div>
+            </th:block>
+            <div class="mu-rec-doc-title" th:text="${acc.titulo}">Título</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · <span th:text="${acc.tiempoRelativo}">hace 20 min</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <a class="mu-rec-btn-link" th:href="${acc.urlVer}">Ver</a>
+              <a class="mu-rec-btn-link" th:href="${acc.urlDescarga}" target="_blank" rel="noopener noreferrer">Desc.</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <dialog id="muModalNuevaCarpeta" class="mu-modal" aria-labelledby="muModalCarpetaTitulo">
+        <form th:action="@{/socio/mi-unidad/carpeta/crear}" method="post" class="mu-modal-panel">
+          <input type="hidden" name="parentId" th:value="${carpetaId}" />
+          <h2 id="muModalCarpetaTitulo">
+            <span style="width:36px;height:36px;border-radius:10px;background:rgba(46,204,113,.15);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-folder-plus" style="color:#2ECC71;"></i>
+            </span>
+            Nueva carpeta
+          </h2>
+          <label for="mu-modal-nombre-carpeta">Nombre</label>
+          <input id="mu-modal-nombre-carpeta" name="nombre" type="text" required maxlength="255" placeholder="Ej. Proyectos 2026" autocomplete="off" />
+          <div class="mu-modal-actions">
+            <button type="button" class="mu-modal-cancel" id="muModalCarpetaCerrar">Cancelar</button>
+            <button type="submit" class="mu-modal-submit">Crear carpeta</button>
+          </div>
+        </form>
+      </dialog>
+
+      <div class="mu-drive-shell">
+        <div class="mu-drive-shell-head">
+      <div class="mu-top-bar">
+        <div class="mu-breadcrumb-strip">
+          <div class="mu-path-header">
+            <nav class="mu-path-nav" aria-label="Ruta de carpetas">
+              <th:block th:each="bc, iterStat : ${breadcrumb}">
+                <span th:if="${!iterStat.first}" class="mu-path-sep" aria-hidden="true">-&gt;</span>
+                <th:block th:if="${!iterStat.last}">
+                  <a class="mu-path-link mu-drop-breadcrumb"
+                     th:href="${bc.carpetaId == null} ? @{/socio/mi-unidad} : @{/socio/mi-unidad(carpeta=${bc.carpetaId})}"
+                     th:attr="data-drop-carpeta=${bc.carpetaId == null ? '' : bc.carpetaId}"
+                     th:text="${bc.carpetaId == null} ? 'Principal' : ${bc.nombre}"
+                     th:title="${bc.carpetaId == null} ? 'Ir a la raíz · Soltar aquí un documento para moverlo a la raíz' : |Ir a ${bc.nombre} · Soltar aquí un documento para moverlo a esta carpeta|">Principal</a>
+                </th:block>
+                <span th:if="${iterStat.last}" class="mu-path-current"
+                      th:text="${bc.carpetaId == null} ? 'Principal' : ${bc.nombre}"
+                      th:title="${bc.carpetaId == null} ? 'Principal' : ${bc.nombre}">Principal</span>
+              </th:block>
+            </nav>
+          </div>
+        </div>
+        <div class="mu-top-bar-actions">
+          <div class="mu-view-toggle">
+            <button type="button" id="mu-btn-list" class="mu-view-btn active" onclick="setMuDriveView('list')" aria-label="Vista lista"><i class="fas fa-list"></i></button>
+            <button type="button" id="mu-btn-grid" class="mu-view-btn" onclick="setMuDriveView('grid')" aria-label="Vista cuadricula"><i class="fas fa-th-large"></i></button>
+          </div>
+          <button type="button" class="mu-btn-crear-carpeta" id="muBtnAbrirModalCarpeta" aria-haspopup="dialog" aria-controls="muModalNuevaCarpeta">
+            <i class="fas fa-folder-plus"></i> Crear carpeta
+          </button>
+        </div>
+      </div>
+        </div>
+
+        <div id="mu-view-list">
+        <div class="mu-table-wrap">
+          <table class="mu-drive-table" id="muDriveTable">
+            <thead>
+              <tr>
+                <th class="mu-col-name">
+                  <button type="button" class="mu-th-sort" data-sort-col="nombre" title="Ordenar por nombre">Nombre <i class="fas fa-sort"></i></button>
+                </th>
+                <th>Propietario</th>
+                <th class="mu-col-date" title="Fecha de publicación en el repositorio">
+                  <button type="button" class="mu-th-sort" data-sort-col="fecha" title="Ordenar por fecha de publicación">Fecha de modificación <i class="fas fa-sort"></i></button>
+                </th>
+                <th>Tamaño de la carpeta o archivo</th>
+                <th class="mu-col-sort-head" title="Arrastrar documentos / acciones">Ordenar</th>
+              </tr>
+            </thead>
+            <tbody id="muDriveTbody">
+              <tr th:if="${#lists.isEmpty(contenidoFilas)}">
+                <td colspan="5" style="text-align:center;padding:40px;color:#9CA3AF;">
+                  <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:10px;opacity:.5;"></i>
+                  Esta carpeta está vacía. Crea una subcarpeta o añade documentos desde <strong>Normativo</strong> o <strong>Estudios</strong>.
+                </td>
+              </tr>
+              <th:block th:each="row : ${contenidoFilas}">
+                <tr th:if="${row.esCarpeta}" class="mu-tr-folder mu-drop-folder"
+                    th:attr="data-folder-id=${row.carpetaId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                  <td>
+                    <a class="mu-td-name" th:href="@{/socio/mi-unidad(carpeta=${row.carpetaId})}" draggable="false">
+                      <i class="fas fa-folder mu-file-ico" style="color:#F5A623;"></i>
+                      <span th:text="${row.nombre}">Carpeta</span>
+                    </a>
+                  </td>
+                  <td class="mu-prop-cell" th:text="${row.propietario}">Recíclame</td>
+                  <td th:text="${row.fechaPublicacion}">—</td>
+                  <td th:text="${row.tamanoEtiqueta}">—</td>
+                  <td class="mu-col-actions">
+                    <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post" style="margin:0;display:inline;"
+                          onsubmit="return confirm('¿Eliminar esta carpeta y todo su contenido?');">
+                      <input type="hidden" name="id" th:value="${row.carpetaId}" />
+                      <input type="hidden" name="parentId" th:value="${carpetaId}" />
+                      <button type="submit" class="btn-mu btn-mu-danger" style="padding:4px 10px;font-size:11px;" draggable="false"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                  </td>
+                </tr>
+                <tr th:unless="${row.esCarpeta}" class="mu-tr-doc mu-draggable-doc" draggable="true"
+                    th:attr="data-item-id=${row.itemId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                  <td>
+                    <span class="mu-td-name" style="pointer-events:none;">
+                      <i th:class="${row.documentoTipo == 'ESTUDIO'} ? 'fas fa-file-powerpoint mu-file-ico' : 'fas fa-file-pdf mu-file-ico'"
+                         th:style="${row.documentoTipo == 'ESTUDIO'} ? 'color:#27AE60;' : 'color:#E74C3C;'"></i>
+                      <span th:text="${row.nombre}">Doc</span>
+                    </span>
+                    <div style="font-size:11px;color:#9CA3AF;margin-top:4px;padding-left:36px;">
+                      <span th:class="${row.documentoTipo == 'ESTUDIO'} ? 'badge-tipo badge-est' : 'badge-tipo badge-norm'"
+                            th:text="${row.documentoTipo == 'ESTUDIO'} ? 'Estudio' : 'Normativa'">Tipo</span>
+                      <span style="margin-left:8px;">ID <span th:text="${row.documentoId}">0</span></span>
+                    </div>
+                  </td>
+                  <td class="mu-prop-cell" th:text="${row.propietario}" th:title="${row.propietario}">Recíclame</td>
+                  <td th:text="${row.fechaPublicacion}">—</td>
+                  <td th:text="${row.tamanoEtiqueta}">—</td>
+                  <td class="mu-col-actions mu-drag-hint-cell" title="Arrastrar fila">
+                    <span style="cursor:grab;"><i class="fas fa-grip-vertical"></i></span>
+                    <a th:if="${row.documentoTipo == 'ESTUDIO'}"
+                       th:href="@{/socio/estudios/{id}/ver(id=${row.documentoId})}"
+                       class="btn-mu btn-mu-primary" style="text-decoration:none;padding:4px 10px;font-size:11px;margin-left:6px;"
+                       draggable="false"><i class="fas fa-eye"></i></a>
+                    <a th:if="${row.documentoTipo == 'NORMATIVA'}"
+                       th:href="@{/socio/normativo}"
+                       class="btn-mu btn-mu-primary" style="text-decoration:none;padding:4px 10px;font-size:11px;margin-left:6px;"
+                       draggable="false"><i class="fas fa-external-link-alt"></i></a>
+                    <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
+                          onsubmit="return confirm('¿Quitar este documento de Mi Unidad?');">
+                      <input type="hidden" name="itemId" th:value="${row.itemId}" />
+                      <input type="hidden" name="carpetaId" th:value="${carpetaId}" />
+                      <button type="submit" class="btn-mu btn-mu-danger" style="padding:4px 10px;font-size:11px;margin-left:4px;" draggable="false"><i class="fas fa-times"></i></button>
+                    </form>
+                  </td>
+                </tr>
+              </th:block>
+            </tbody>
+          </table>
+        </div>
+        </div>
+
+        <div id="mu-view-grid" style="display:none;">
+          <div id="mu-drive-grid" class="mu-drive-grid-wrap">
+            <div th:if="${#lists.isEmpty(contenidoFilas)}" style="grid-column:1/-1;text-align:center;padding:40px;color:#9CA3AF;">
+              <i class="fas fa-inbox" style="font-size:32px;display:block;margin-bottom:10px;opacity:.5;"></i>
+              Esta carpeta está vacía. Crea una subcarpeta o añade documentos desde <strong>Normativo</strong> o <strong>Estudios</strong>.
+            </div>
+            <th:block th:each="row : ${contenidoFilas}">
+              <div th:if="${row.esCarpeta}" class="mu-grid-card mu-folder-card mu-drop-folder"
+                   th:attr="data-folder-id=${row.carpetaId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                <div style="width:54px;height:54px;border-radius:14px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                  <i class="fas fa-folder" style="font-size:28px;color:#F5A623;"></i>
+                </div>
+                <a class="mu-grid-card-title" th:href="@{/socio/mi-unidad(carpeta=${row.carpetaId})}" th:text="${row.nombre}">Carpeta</a>
+                <div style="font-size:11px;color:#9CA3AF;margin-top:8px;line-height:1.45;">
+                  <span th:text="${row.propietario}">Recíclame</span> · <span th:text="${row.fechaPublicacion}">—</span><br/>
+                  <span th:text="${row.tamanoEtiqueta}">—</span>
+                </div>
+                <div class="mu-grid-card-actions">
+                  <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post" style="margin:0;"
+                        onsubmit="return confirm('¿Eliminar esta carpeta y todo su contenido?');">
+                    <input type="hidden" name="id" th:value="${row.carpetaId}" />
+                    <input type="hidden" name="parentId" th:value="${carpetaId}" />
+                    <button type="submit" class="btn-mu btn-mu-danger" style="padding:6px 12px;font-size:11px;"><i class="fas fa-trash-alt"></i></button>
+                  </form>
+                </div>
+              </div>
+              <div th:unless="${row.esCarpeta}" class="mu-grid-card mu-doc-card mu-draggable-doc" draggable="true"
+                   th:attr="data-item-id=${row.itemId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                <div th:style="${row.documentoTipo == 'ESTUDIO'} ? 'width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;background:rgba(46,204,113,.1);' : 'width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;background:rgba(231,76,60,.1);'">
+                  <i th:class="${row.documentoTipo == 'ESTUDIO'} ? 'fas fa-file-powerpoint' : 'fas fa-file-pdf'"
+                     th:style="${row.documentoTipo == 'ESTUDIO'} ? 'font-size:26px;color:#27AE60;' : 'font-size:26px;color:#E74C3C;'"></i>
+                </div>
+                <div class="mu-grid-card-title" th:text="${row.nombre}">Doc</div>
+                <div style="font-size:10px;margin-top:6px;">
+                  <span th:class="${row.documentoTipo == 'ESTUDIO'} ? 'badge-tipo badge-est' : 'badge-tipo badge-norm'"
+                        th:text="${row.documentoTipo == 'ESTUDIO'} ? 'Estudio' : 'Normativa'">Tipo</span>
+                  <span style="color:#9CA3AF;margin-left:6px;">ID <span th:text="${row.documentoId}">0</span></span>
+                </div>
+                <div style="font-size:11px;color:#9CA3AF;margin-top:6px;line-height:1.45;">
+                  <span th:text="${row.propietario}">Recíclame</span> · <span th:text="${row.fechaPublicacion}">—</span><br/>
+                  <span th:text="${row.tamanoEtiqueta}">—</span>
+                </div>
+                <div class="mu-grid-card-actions">
+                  <span style="cursor:grab;color:#D1D5DB;" title="Arrastrar"><i class="fas fa-grip-vertical"></i></span>
+                  <a th:if="${row.documentoTipo == 'ESTUDIO'}"
+                     th:href="@{/socio/estudios/{id}/ver(id=${row.documentoId})}"
+                     class="btn-mu btn-mu-primary" style="text-decoration:none;padding:6px 10px;font-size:11px;"><i class="fas fa-eye"></i></a>
+                  <a th:if="${row.documentoTipo == 'NORMATIVA'}"
+                     th:href="@{/socio/normativo}"
+                     class="btn-mu btn-mu-primary" style="text-decoration:none;padding:6px 10px;font-size:11px;"><i class="fas fa-external-link-alt"></i></a>
+                  <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
+                        onsubmit="return confirm('¿Quitar este documento de Mi Unidad?');">
+                    <input type="hidden" name="itemId" th:value="${row.itemId}" />
+                    <input type="hidden" name="carpetaId" th:value="${carpetaId}" />
+                    <button type="submit" class="btn-mu btn-mu-danger" style="padding:6px 10px;font-size:11px;"><i class="fas fa-times"></i></button>
+                  </form>
+                </div>
+              </div>
+            </th:block>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  window.__muCarpetaId = /*[[${carpetaId}]]*/ null;
+  /*]]>*/
+</script>
+<script>
+  if (typeof navTo === 'undefined') {
+    function navTo(page) {
+      var map = {'admin-docs': 'documentos'};
+      var target = map[page] || page;
+      window.location.href = '/' + (window.__baseRole || 'socio') + '/' + target;
+    }
+  }
+  window.__baseRole = 'socio';
+
+  (function () {
+    function muSubmitMove(itemId, nuevaCarpetaId) {
+      var f = document.createElement('form');
+      f.method = 'POST';
+      f.action = '/socio/mi-unidad/item/mover';
+      function add(name, val) {
+        var i = document.createElement('input');
+        i.type = 'hidden';
+        i.name = name;
+        i.value = val === undefined || val === null ? '' : String(val);
+        f.appendChild(i);
+      }
+      add('itemId', itemId);
+      add('carpetaId', window.__muCarpetaId != null ? window.__muCarpetaId : '');
+      add('nuevaCarpetaId', nuevaCarpetaId);
+      document.body.appendChild(f);
+      f.submit();
+    }
+
+    function clearDragOver() {
+      document.querySelectorAll('.mu-drag-over').forEach(function (n) { n.classList.remove('mu-drag-over'); });
+    }
+
+    document.addEventListener('dragend', function () {
+      document.querySelectorAll('.mu-dragging').forEach(function (n) { n.classList.remove('mu-dragging'); });
+      clearDragOver();
+    });
+
+    var muDriveShell = document.querySelector('.mu-drive-shell');
+    if (muDriveShell) {
+      muDriveShell.addEventListener('dragstart', function (e) {
+        var el = e.target.closest('tr.mu-draggable-doc') || e.target.closest('.mu-grid-card.mu-draggable-doc');
+        if (!el) return;
+        var id = el.getAttribute('data-item-id');
+        if (!id) return;
+        e.dataTransfer.setData('text/plain', id);
+        e.dataTransfer.effectAllowed = 'move';
+        el.classList.add('mu-dragging');
+      });
+    }
+
+    function allowDropThroughChildren(el) {
+      el.querySelectorAll('*').forEach(function (child) {
+        child.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        });
+      });
+    }
+
+    function bindDrop(el, nuevaCarpetaId) {
+      allowDropThroughChildren(el);
+      el.addEventListener('dragenter', function (e) {
+        e.preventDefault();
+        el.classList.add('mu-drag-over');
+      });
+      el.addEventListener('dragover', function (e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        el.classList.add('mu-drag-over');
+      });
+      el.addEventListener('dragleave', function (e) {
+        if (el.contains(e.relatedTarget)) return;
+        el.classList.remove('mu-drag-over');
+      });
+      el.addEventListener('drop', function (e) {
+        e.preventDefault();
+        clearDragOver();
+        var itemId = e.dataTransfer.getData('text/plain');
+        if (!itemId) return;
+        var cur = window.__muCarpetaId != null ? String(window.__muCarpetaId) : '';
+        var dest = nuevaCarpetaId === '' || nuevaCarpetaId === undefined ? '' : String(nuevaCarpetaId);
+        if (dest !== '' && cur === dest) return;
+        muSubmitMove(itemId, dest);
+      });
+    }
+
+    document.querySelectorAll('.mu-drop-folder').forEach(function (el) {
+      var fid = el.getAttribute('data-folder-id');
+      if (fid) bindDrop(el, fid);
+    });
+
+    document.querySelectorAll('.mu-drop-breadcrumb').forEach(function (el) {
+      var raw = el.getAttribute('data-drop-carpeta');
+      var dest = raw === null || raw === '' ? '' : raw;
+      bindDrop(el, dest);
+    });
+  })();
+
+  (function () {
+    var tbody = document.getElementById('muDriveTbody');
+    if (!tbody) return;
+    var sortCol = 'nombre';
+    var sortAsc = true;
+    function numAttr(el, key) {
+      var v = el.getAttribute(key);
+      var n = parseInt(v, 10);
+      return isNaN(n) ? 0 : n;
+    }
+    function sortRows() {
+      var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr.mu-tr-folder, tr.mu-tr-doc'));
+      rows.sort(function (a, b) {
+        if (sortCol === 'fecha') {
+          var da = numAttr(a, 'data-sort-fecha');
+          var db = numAttr(b, 'data-sort-fecha');
+          return sortAsc ? da - db : db - da;
+        }
+        var na = (a.getAttribute('data-sort-nombre') || '').localeCompare(b.getAttribute('data-sort-nombre') || '', 'es');
+        return sortAsc ? na : -na;
+      });
+      rows.forEach(function (r) { tbody.appendChild(r); });
+      var grid = document.getElementById('mu-drive-grid');
+      if (grid) {
+        var cards = Array.prototype.slice.call(grid.querySelectorAll('.mu-grid-card'));
+        cards.sort(function (a, b) {
+          if (sortCol === 'fecha') {
+            var da = numAttr(a, 'data-sort-fecha');
+            var db = numAttr(b, 'data-sort-fecha');
+            return sortAsc ? da - db : db - da;
+          }
+          var na = (a.getAttribute('data-sort-nombre') || '').localeCompare(b.getAttribute('data-sort-nombre') || '', 'es');
+          return sortAsc ? na : -na;
+        });
+        cards.forEach(function (c) { grid.appendChild(c); });
+      }
+    }
+    document.querySelectorAll('.mu-th-sort').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var col = btn.getAttribute('data-sort-col');
+        if (col === sortCol) {
+          sortAsc = !sortAsc;
+        } else {
+          sortCol = col;
+          sortAsc = col === 'nombre';
+        }
+        sortRows();
+      });
+    });
+  })();
+
+  (function () {
+    var dlg = document.getElementById('muModalNuevaCarpeta');
+    var btnOpen = document.getElementById('muBtnAbrirModalCarpeta');
+    var btnClose = document.getElementById('muModalCarpetaCerrar');
+    var input = document.getElementById('mu-modal-nombre-carpeta');
+    if (!dlg || !btnOpen) return;
+    btnOpen.addEventListener('click', function () {
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      if (typeof dlg.showModal === 'function') {
+        dlg.showModal();
+      }
+    });
+    if (btnClose) {
+      btnClose.addEventListener('click', function () {
+        dlg.close();
+      });
+    }
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) {
+        dlg.close();
+      }
+    });
+  })();
+
+  function setMuDriveView(v) {
+    var list = document.getElementById('mu-view-list');
+    var grid = document.getElementById('mu-view-grid');
+    var bL = document.getElementById('mu-btn-list');
+    var bG = document.getElementById('mu-btn-grid');
+    if (v === 'list') {
+      if (list) list.style.display = '';
+      if (grid) grid.style.display = 'none';
+      if (bL) bL.classList.add('active');
+      if (bG) bG.classList.remove('active');
+    } else {
+      if (list) list.style.display = 'none';
+      if (grid) grid.style.display = '';
+      if (bL) bL.classList.remove('active');
+      if (bG) bG.classList.add('active');
+    }
+  }
+</script>
+</body>
+</html>

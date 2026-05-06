@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="miUnidadAddSubmenu">
+  <style>
+    .drive-dropdown { overflow: visible !important; }
+    td:has(.drive-row-actions),
+    td:has(.drive-add-entry) {
+      overflow: visible !important;
+    }
+    .drive-add-entry {
+      position: relative;
+      width: 100%;
+    }
+    .drive-add-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+    }
+    .drive-add-trigger:hover { background: #F3F4F6; }
+    .drive-add-trigger .fa-chevron-right { transform: rotate(180deg); }
+    /* Contenedor: [columnas nivel…] [submenú principal] — cada subnivel es una columna nueva a la izquierda. */
+    .drive-add-cols-wrap {
+      display: none;
+      position: absolute;
+      right: calc(100% - 4px);
+      left: auto;
+      top: -6px;
+      flex-direction: row;
+      align-items: flex-start;
+      z-index: 10060;
+    }
+    .drive-add-cols-wrap.drive-add-flyout--visible {
+      display: flex;
+    }
+    .drive-add-column-stack {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 4px;
+      margin-right: 4px;
+    }
+    .drive-add-level-col {
+      min-width: 220px;
+      max-width: min(260px, 42vw);
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #E8ECF0;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .12);
+      padding: 6px 0;
+      max-height: min(360px, 72vh);
+      overflow-y: auto;
+      overflow-x: visible;
+    }
+    .drive-add-submenu {
+      position: relative;
+      right: auto;
+      top: auto;
+      min-width: 232px;
+      max-width: min(280px, 92vw);
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .16);
+      border: 1px solid #E8ECF0;
+      padding: 6px 0;
+      overflow: visible;
+      flex-shrink: 0;
+    }
+    .drive-add-root {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #1B3A5C;
+      font-family: inherit;
+      font-weight: 600;
+      text-align: left;
+    }
+    .drive-add-root:hover { background: #EEFDF4; }
+    .drive-add-tree-ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .drive-add-tree-li { margin: 0; padding: 0; }
+    .drive-add-row {
+      display: flex;
+      align-items: stretch;
+      width: 100%;
+      border-top: 1px solid #f1f3f4;
+    }
+    .drive-add-row.drive-add-row--hover-drill:hover { background: rgba(52, 152, 219, .06); }
+    .drive-add-here {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+      min-width: 0;
+    }
+    .drive-add-here:hover { background: #F3F4F6; }
+    .drive-add-branch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      flex-shrink: 0;
+      color: #9CA3AF;
+      user-select: none;
+      pointer-events: none;
+    }
+    .drive-add-branch .fa-chevron-right { transform: rotate(180deg); font-size: 11px; }
+    .drive-add-empty {
+      padding: 12px 14px;
+      font-size: 12px;
+      color: #9CA3AF;
+    }
+
+    #mu-toast-host {
+      position: fixed;
+      top: 72px;
+      right: 16px;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .mu-add-toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      line-height: 1.35;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #a7f3d0;
+      background: #ecfdf5;
+      color: #166534;
+      max-width: min(340px, 92vw);
+      pointer-events: auto;
+      opacity: 0;
+      transform: translateX(120%);
+      transition: opacity .25s ease, transform .32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .mu-add-toast i { flex-shrink: 0; margin-top: 2px; }
+    .mu-add-toast.mu-add-toast--in {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    .mu-add-toast.mu-add-toast--out {
+      opacity: 0;
+      transform: translateX(120%);
+      transition: opacity .2s ease, transform .25s ease;
+    }
+    .mu-add-toast.mu-add-toast--err {
+      border-color: #fecaca;
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+  </style>
+  <script>
+    (function () {
+      var ARBOL_URL = '/socio/mi-unidad/api/carpetas-arbol';
+      var arbolPromise = null;
+      window.__muInvalidateCarpetasArbol = function () {
+        arbolPromise = null;
+      };
+
+      function escapeHtml(s) {
+        if (s == null) return '';
+        var d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+      }
+
+      window.showMuAddToast = function (message, isError) {
+        var host = document.getElementById('mu-toast-host');
+        if (!host) {
+          host = document.createElement('div');
+          host.id = 'mu-toast-host';
+          document.body.appendChild(host);
+        }
+        var el = document.createElement('div');
+        el.className = 'mu-add-toast' + (isError ? ' mu-add-toast--err' : '');
+        el.setAttribute('role', 'status');
+        el.innerHTML = '<i class="fas ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') + '"></i><span>' + escapeHtml(message) + '</span>';
+        host.appendChild(el);
+        requestAnimationFrame(function () {
+          el.classList.add('mu-add-toast--in');
+        });
+        setTimeout(function () {
+          el.classList.remove('mu-add-toast--in');
+          el.classList.add('mu-add-toast--out');
+          setTimeout(function () {
+            el.remove();
+          }, 280);
+        }, 4200);
+      };
+
+      window.submitMuItemAgregar = function (documentoTipo, documentoId, documentoTitulo, carpetaId) {
+        var params = new URLSearchParams();
+        params.set('documentoTipo', documentoTipo);
+        params.set('documentoId', String(documentoId));
+        if (carpetaId != null && carpetaId !== '') {
+          params.set('carpetaId', String(carpetaId));
+        }
+        if (documentoTitulo != null && String(documentoTitulo).trim() !== '') {
+          params.set('documentoTitulo', String(documentoTitulo).trim());
+        }
+        fetch('/socio/mi-unidad/api/item/agregar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+          body: params.toString()
+        })
+          .then(function (r) {
+            return r.text().then(function (t) {
+              var j = {};
+              if (t) {
+                try {
+                  j = JSON.parse(t);
+                } catch (e) {
+                  j = { ok: false, message: 'Respuesta no válida.' };
+                }
+              }
+              return { httpOk: r.ok, j: j };
+            });
+          })
+          .then(function (res) {
+            if (typeof window.closeAllDriveDropdowns === 'function') {
+              window.closeAllDriveDropdowns();
+            }
+            if (res.httpOk && res.j && res.j.ok) {
+              if (typeof window.__muInvalidateCarpetasArbol === 'function') {
+                window.__muInvalidateCarpetasArbol();
+              }
+              window.showMuAddToast(res.j.message || 'Se añadió correctamente.', false);
+            } else {
+              var msg = (res.j && res.j.message) ? res.j.message : 'No se pudo añadir.';
+              window.showMuAddToast(msg, true);
+            }
+          })
+          .catch(function () {
+            if (typeof window.closeAllDriveDropdowns === 'function') {
+              window.closeAllDriveDropdowns();
+            }
+            window.showMuAddToast('Error de red. Inténtalo de nuevo.', true);
+          });
+      };
+
+      function loadArbol() {
+        if (!arbolPromise) {
+          arbolPromise = fetch(ARBOL_URL).then(function (r) {
+            if (!r.ok) throw new Error('arbol');
+            return r.json();
+          }).catch(function () {
+            arbolPromise = null;
+            return null;
+          });
+        }
+        return arbolPromise;
+      }
+
+      function ensureFlyout(entry) {
+        var submenu = entry.querySelector('.drive-add-submenu');
+        if (!submenu || (submenu.parentElement && submenu.parentElement.classList.contains('drive-add-cols-wrap'))) {
+          return;
+        }
+        var wrap = document.createElement('div');
+        wrap.className = 'drive-add-cols-wrap';
+        var stackEl = document.createElement('div');
+        stackEl.className = 'drive-add-column-stack';
+        submenu.parentNode.insertBefore(wrap, submenu);
+        wrap.appendChild(stackEl);
+        wrap.appendChild(submenu);
+      }
+
+      function getStackEl(submenu) {
+        var w = submenu.closest('.drive-add-cols-wrap');
+        return w ? w.querySelector('.drive-add-column-stack') : null;
+      }
+
+      function clearColumnsFromDepth(stackEl, minDepth) {
+        if (!stackEl) return;
+        stackEl.querySelectorAll('.drive-add-level-col').forEach(function (col) {
+          var d = parseInt(col.getAttribute('data-depth'), 10);
+          if (!isNaN(d) && d >= minDepth) {
+            col.remove();
+          }
+        });
+      }
+
+      function clearAllColumns(stackEl) {
+        clearColumnsFromDepth(stackEl, 1);
+      }
+
+      function addLevelColumn(depth, parentNode, stackEl, docTipo, docId, docTitulo) {
+        if (!stackEl) return;
+        clearColumnsFromDepth(stackEl, depth);
+        var col = document.createElement('div');
+        col.className = 'drive-add-level-col';
+        col.setAttribute('data-depth', String(depth));
+        var ch = parentNode.children || [];
+        if (!ch.length) {
+          var empty = document.createElement('div');
+          empty.className = 'drive-add-empty';
+          empty.textContent = 'Carpeta vacía.';
+          col.appendChild(empty);
+          var addHere = document.createElement('button');
+          addHere.type = 'button';
+          addHere.className = 'drive-add-here';
+          addHere.style.width = '100%';
+          addHere.style.boxSizing = 'border-box';
+          addHere.innerHTML = '<i class="fas fa-folder-plus" style="color:#2ECC71;width:18px;"></i> Añadir aquí';
+          addHere.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
+            window.submitMuItemAgregar(docTipo, docId, docTitulo, parentNode.id);
+          });
+          col.appendChild(addHere);
+          stackEl.insertBefore(col, stackEl.firstChild);
+          return;
+        }
+        var ul = document.createElement('ul');
+        ul.className = 'drive-add-tree-ul';
+        ch.forEach(function (child) {
+          var hasCh = child.children && child.children.length > 0;
+          var li = document.createElement('li');
+          li.className = 'drive-add-tree-li';
+          var row = document.createElement('div');
+          row.className = 'drive-add-row' + (hasCh ? ' drive-add-row--hover-drill' : '');
+          var pick = document.createElement('button');
+          pick.type = 'button';
+          pick.className = 'drive-add-here';
+          pick.innerHTML = '<i class="fas fa-folder" style="color:#F5A623;width:18px;text-align:center;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(child.nombre) + '</span>';
+          pick.addEventListener('click', function (e) {
+            e.stopPropagation();
+            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
+            window.submitMuItemAgregar(docTipo, docId, docTitulo, child.id);
+          });
+          row.appendChild(pick);
+          if (hasCh) {
+            var branch = document.createElement('div');
+            branch.className = 'drive-add-branch';
+            branch.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            row.appendChild(branch);
+            row.addEventListener('mouseenter', function () {
+              addLevelColumn(depth + 1, child, stackEl, docTipo, docId, docTitulo);
+            });
+          }
+          li.appendChild(row);
+          ul.appendChild(li);
+        });
+        col.appendChild(ul);
+        stackEl.insertBefore(col, stackEl.firstChild);
+      }
+
+      function fillSubmenu(submenu, docTipo, docId, docTitulo, onDone) {
+        var entry = submenu.closest('.drive-add-entry');
+        if (entry) ensureFlyout(entry);
+        var stackEl = getStackEl(submenu);
+
+        function resetColumns() {
+          clearAllColumns(stackEl);
+        }
+        submenu._muResetDrill = resetColumns;
+
+        submenu.innerHTML = '';
+
+        loadArbol().then(function (tree) {
+          if (!tree) {
+            var err = document.createElement('div');
+            err.className = 'drive-add-empty';
+            err.textContent = 'No se pudo cargar Mi Unidad.';
+            submenu.appendChild(err);
+            if (onDone) onDone();
+            return;
+          }
+
+          var rootBtn = document.createElement('button');
+          rootBtn.type = 'button';
+          rootBtn.className = 'drive-add-root';
+          rootBtn.innerHTML = '<i class="fas fa-house" style="width:18px;text-align:center;color:#2ECC71;"></i> Mi Unidad <span style="font-weight:500;color:#6B7280;">(raíz)</span>';
+          rootBtn.addEventListener('click', function () {
+            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
+            window.submitMuItemAgregar(docTipo, docId, docTitulo, null);
+          });
+          rootBtn.addEventListener('mouseenter', function () {
+            resetColumns();
+          });
+          submenu.appendChild(rootBtn);
+
+          if (!tree.children || !tree.children.length) {
+            var empty = document.createElement('div');
+            empty.className = 'drive-add-empty';
+            empty.textContent = 'No hay carpetas. Puedes crearlas en Mi Unidad.';
+            submenu.appendChild(empty);
+            if (onDone) onDone();
+            return;
+          }
+
+          var ul = document.createElement('ul');
+          ul.className = 'drive-add-tree-ul';
+          tree.children.forEach(function (n) {
+            var li = document.createElement('li');
+            li.className = 'drive-add-tree-li';
+            var hasCh = n.children && n.children.length > 0;
+            var row = document.createElement('div');
+            row.className = 'drive-add-row' + (hasCh ? ' drive-add-row--hover-drill' : '');
+            var pick = document.createElement('button');
+            pick.type = 'button';
+            pick.className = 'drive-add-here';
+            pick.innerHTML = '<i class="fas fa-folder" style="color:#F5A623;width:18px;text-align:center;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(n.nombre) + '</span>';
+            pick.addEventListener('click', function (e) {
+              e.stopPropagation();
+              if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
+              window.submitMuItemAgregar(docTipo, docId, docTitulo, n.id);
+            });
+            row.appendChild(pick);
+            if (hasCh) {
+              var branch = document.createElement('div');
+              branch.className = 'drive-add-branch';
+              branch.innerHTML = '<i class="fas fa-chevron-right"></i>';
+              row.appendChild(branch);
+              row.addEventListener('mouseenter', function () {
+                resetColumns();
+                addLevelColumn(1, n, stackEl, docTipo, docId, docTitulo);
+              });
+            } else {
+              li.addEventListener('mouseenter', function () {
+                resetColumns();
+              });
+            }
+            li.appendChild(row);
+            ul.appendChild(li);
+          });
+          submenu.appendChild(ul);
+          if (onDone) onDone();
+        });
+      }
+
+      function wireEntry(entry) {
+        ensureFlyout(entry);
+        var trigger = entry.querySelector('.drive-add-trigger');
+        var submenu = entry.querySelector('.drive-add-submenu');
+        var fly = submenu ? submenu.closest('.drive-add-cols-wrap') : null;
+        if (!trigger || !submenu || !fly) return;
+        var docTipo = entry.getAttribute('data-mu-tipo') || '';
+        var docId = entry.getAttribute('data-mu-id') || '';
+        var docTitulo = entry.getAttribute('data-mu-titulo') || '';
+        var showTimer = null;
+        var hideTimer = null;
+        function show() {
+          if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
+          if (showTimer) return;
+          showTimer = setTimeout(function () {
+            showTimer = null;
+            fly.classList.add('drive-add-flyout--visible');
+            if (submenu.dataset.ready === '1') return;
+            if (submenu.dataset.loading === '1') return;
+            submenu.dataset.loading = '1';
+            fillSubmenu(submenu, docTipo, docId, docTitulo, function () {
+              submenu.dataset.ready = '1';
+              submenu.dataset.loading = '0';
+            });
+          }, 120);
+        }
+        function hide() {
+          if (showTimer) { clearTimeout(showTimer); showTimer = null; }
+          hideTimer = setTimeout(function () {
+            hideTimer = null;
+            fly.classList.remove('drive-add-flyout--visible');
+            submenu.dataset.loading = '0';
+            if (typeof submenu._muResetDrill === 'function') submenu._muResetDrill();
+          }, 220);
+        }
+        entry.addEventListener('mouseenter', show);
+        entry.addEventListener('mouseleave', hide);
+        trigger.addEventListener('focus', show);
+        entry.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') hide();
+        });
+      }
+
+      function patchCloseAll() {
+        var prev = window.closeAllDriveDropdowns;
+        window.closeAllDriveDropdowns = function () {
+          document.querySelectorAll('.drive-add-cols-wrap').forEach(function (fly) {
+            fly.classList.remove('drive-add-flyout--visible');
+            var sub = fly.querySelector('.drive-add-submenu');
+            if (sub) {
+              sub.dataset.loading = '0';
+              if (typeof sub._muResetDrill === 'function') sub._muResetDrill();
+            }
+          });
+          if (typeof prev === 'function') prev();
+        };
+      }
+
+      document.addEventListener('DOMContentLoaded', function () {
+        patchCloseAll();
+        document.querySelectorAll('.drive-add-entry').forEach(wireEntry);
+      });
+    })();
+  </script>
+</th:block>
+</body>
+</html>
