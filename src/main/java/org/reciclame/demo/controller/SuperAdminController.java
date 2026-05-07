@@ -176,6 +176,8 @@ public class SuperAdminController extends AdminController {
         return "SuperAdmin/documentos";
     }
 
+
+
     @Override
     @GetMapping("/superadmin/reportes")
     public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
@@ -893,4 +895,5 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("estadosNormativa", estadosNormativaService.listarEstadosTodos());
         return "SuperAdmin/diccionarios";
     }
+
 }

@@ -231,17 +231,27 @@
       right: 13px;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
-      border: none;
+      background: none !important;
+      border: none !important;
       color: rgba(255, 255, 255, .35);
       cursor: pointer;
       font-size: 13px;
       padding: 0;
       transition: color .15s;
+      outline: none !important;
+      box-shadow: none !important;
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
     }
 
-    .eye-btn:hover {
-      color: rgba(255, 255, 255, .7);
+    .eye-btn:hover,
+    .eye-btn:focus,
+    .eye-btn:active {
+      color: rgba(255, 255, 255, .7) !important;
+      background: transparent !important;
+      outline: none !important;
+      box-shadow: none !important;
     }
 
     /* FORGOT */
@@ -1059,10 +1069,24 @@
     }
     function handleRecovery(e) {
       e.preventDefault();
-      if (!document.getElementById('inp-recovery-email').value.trim()) return;
+      const correo = document.getElementById('inp-recovery-email').value.trim();
+      if (!correo) return;
       const btn = e.target.querySelector('button[type="submit"]');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...'; btn.disabled = true;
-      setTimeout(() => { e.target.style.display = 'none'; document.getElementById('recovery-success').classList.add('show'); }, 1200);
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+      btn.disabled = true;
+      fetch('/auth/recuperar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ correo: correo })
+      })
+      .then(() => {
+        e.target.style.display = 'none';
+        document.getElementById('recovery-success').classList.add('show');
+      })
+      .catch(() => {
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar enlace';
+        btn.disabled = false;
+      });
     }
     var CORP_DOMAIN_RE = /^[a-zA-Z0-9._%+\-]+@reciclame\.org$/;
 

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Restablecer Contraseña</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:      #1B3A5C;
+      --navy-dark: #0F2236;
+      --green:     #2ECC71;
+      --green-dk:  #27AE60;
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px;
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.4);
+    }
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .logo-icon {
+      width: 56px; height: 56px;
+      background: var(--green);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      margin: 0 auto 12px;
+    }
+    .logo-text { color: #fff; font-size: 22px; font-weight: 700; }
+    .logo-sub  { color: rgba(255,255,255,.45); font-size: 13px; margin-top: 4px; }
+
+    h1 { color: #fff; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { color: rgba(255,255,255,.5); font-size: 13px; margin-bottom: 28px; line-height: 1.5; }
+
+    .field-wrap  { margin-bottom: 18px; }
+    .field-label { display: block; color: rgba(255,255,255,.7); font-size: 13px;
+                   font-weight: 600; margin-bottom: 7px; }
+    .input-wrap  { position: relative; }
+    .input-icon  { position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+                   color: rgba(255,255,255,.35); font-size: 14px; }
+    .field-input {
+      width: 100%; padding: 12px 14px 12px 40px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px; color: #fff; font-size: 15px;
+      font-family: inherit; transition: border-color .2s, background .2s;
+      outline: none;
+    }
+    .field-input:focus { border-color: var(--green); background: rgba(255,255,255,.11); }
+    .field-input::placeholder { color: rgba(255,255,255,.25); }
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: rgba(255,255,255,.35); cursor: pointer; font-size: 14px;
+      background: none; border: none; padding: 0;
+    }
+
+    .strength-bar {
+      height: 4px; border-radius: 2px; background: rgba(255,255,255,.1);
+      margin-top: 8px; overflow: hidden;
+    }
+    .strength-fill { height: 100%; border-radius: 2px; width: 0; transition: width .3s, background .3s; }
+
+    .hint { font-size: 12px; color: rgba(255,255,255,.35); margin-top: 6px; }
+
+    .btn-submit {
+      width: 100%; padding: 13px;
+      background: var(--green); color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 15px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: background .2s, transform .1s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover  { background: var(--green-dk); }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+    .alert {
+      border-radius: 10px; padding: 12px 16px;
+      font-size: 13px; font-weight: 600; margin-bottom: 20px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .alert-error   { background: rgba(231,76,60,.15);  border: 1px solid rgba(231,76,60,.35); color: #ff6b6b; }
+    .alert-success { background: rgba(46,204,113,.15); border: 1px solid rgba(46,204,113,.35); color: #2ECC71; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 22px;
+      color: rgba(255,255,255,.45); font-size: 13px; text-decoration: none;
+    }
+    .back-link:hover { color: var(--green); }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <!-- Logo -->
+    <div class="logo">
+      <div class="logo-icon">♻️</div>
+      <div class="logo-text">Recíclame</div>
+      <div class="logo-sub">Plataforma de Gestión Ambiental</div>
+    </div>
+
+    <h1>Nueva contraseña</h1>
+    <p class="subtitle">Elige una contraseña segura de al menos 8 caracteres.</p>
+
+    <!-- Alertas -->
+    <div th:if="${error}" class="alert alert-error">
+      <i class="fas fa-circle-exclamation"></i>
+      <span th:text="${error}">Error</span>
+    </div>
+
+    <!-- Formulario -->
+    <form th:action="@{/auth/restablecer}" method="post" id="resetForm" novalidate>
+      <input type="hidden" name="token" th:value="${token}" />
+
+      <div class="field-wrap">
+        <label class="field-label" for="password">Nueva contraseña</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock input-icon"></i>
+          <input id="password" name="password" type="password" class="field-input"
+                 placeholder="Mínimo 8 caracteres" autocomplete="new-password" required />
+          <button type="button" class="toggle-pass" onclick="toggle('password', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="hint" id="strengthLabel">Escribe tu contraseña</div>
+      </div>
+
+      <div class="field-wrap">
+        <label class="field-label" for="confirmPassword">Confirmar contraseña</label>
+        <div class="input-wrap">
+          <i class="fas fa-lock-open input-icon"></i>
+          <input id="confirmPassword" name="confirmPassword" type="password" class="field-input"
+                 placeholder="Repite la contraseña" autocomplete="new-password" required />
+          <button type="button" class="toggle-pass" onclick="toggle('confirmPassword', this)">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
+        <div class="hint" id="matchHint"></div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submitBtn">
+        <i class="fas fa-check"></i> Guardar nueva contraseña
+      </button>
+    </form>
+
+    <a href="/login" class="back-link"><i class="fas fa-arrow-left"></i> Volver al inicio de sesión</a>
+  </div>
+
+  <script>
+    function toggle(fieldId, btn) {
+      const inp = document.getElementById(fieldId);
+      const icon = btn.querySelector('i');
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        inp.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    const pwd  = document.getElementById('password');
+    const conf = document.getElementById('confirmPassword');
+    const fill = document.getElementById('strengthFill');
+    const lbl  = document.getElementById('strengthLabel');
+    const mHint = document.getElementById('matchHint');
+    const btn  = document.getElementById('submitBtn');
+
+    const levels = [
+      { max: 0,  color: '',        label: 'Escribe tu contraseña' },
+      { max: 25, color: '#E74C3C', label: 'Muy débil' },
+      { max: 50, color: '#E67E22', label: 'Débil' },
+      { max: 75, color: '#F1C40F', label: 'Aceptable' },
+      { max: 100,color: '#2ECC71', label: 'Fuerte' },
+    ];
+
+    function calcStrength(v) {
+      let s = 0;
+      if (v.length >= 8)  s += 25;
+      if (v.length >= 12) s += 25;
+      if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s += 25;
+      if (/[0-9]/.test(v)) s += 15;
+      if (/[^a-zA-Z0-9]/.test(v)) s += 10;
+      return Math.min(s, 100);
+    }
+
+    pwd.addEventListener('input', () => {
+      const s = calcStrength(pwd.value);
+      fill.style.width = s + '%';
+      const lvl = s === 0 ? levels[0] : levels.find(l => s <= l.max) || levels[4];
+      fill.style.background = lvl.color;
+      lbl.textContent = lvl.label;
+      checkMatch();
+    });
+
+    conf.addEventListener('input', checkMatch);
+
+    function checkMatch() {
+      if (!conf.value) { mHint.textContent = ''; return; }
+      if (pwd.value === conf.value) {
+        mHint.style.color = '#2ECC71';
+        mHint.textContent = '✓ Las contraseñas coinciden';
+      } else {
+        mHint.style.color = '#E74C3C';
+        mHint.textContent = '✗ No coinciden';
+      }
+    }
+
+    document.getElementById('resetForm').addEventListener('submit', e => {
+      if (pwd.value.length < 8) {
+        e.preventDefault();
+        lbl.style.color = '#E74C3C';
+        lbl.textContent = 'Mínimo 8 caracteres';
+        pwd.focus();
+        return;
+      }
+      if (pwd.value !== conf.value) {
+        e.preventDefault();
+        mHint.style.color = '#E74C3C';
+        mHint.textContent = '✗ Las contraseñas no coinciden';
+        conf.focus();
+        return;
+      }
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+    });
+  </script>
+</body>
+</html>

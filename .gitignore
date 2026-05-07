@@ -42,3 +42,6 @@ Thumbs.db
 # Skills y locks
 .agents/skills/frontend-design/LICENSE.txt
 skills-lock.json
+
+# Claude Code (worktrees y archivos internos)
+.claude/
