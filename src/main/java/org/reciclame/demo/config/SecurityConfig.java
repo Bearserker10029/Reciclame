@@ -30,6 +30,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN

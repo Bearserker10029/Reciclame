@@ -672,56 +672,27 @@ function eliminarUsuario(id) {
             document.getElementById('modal-eliminar').style.display = 'flex';
           }
 
-          // Funciones con modales
+          // Variables compartidas entre funciones de modales
           var idUsuarioReactivar = null;
           var idUsuarioDesbloquear = null;
           var idUsuarioEliminar = null;
 
+          // Declaraciones de funciones (accesibles desde onclick en el HTML)
           function cerrarModalEliminar() {
             document.getElementById('modal-eliminar').style.display = 'none';
             idUsuarioEliminar = null;
           }
 
-          document.getElementById('btn-confirmar-eliminar').onclick = function() {
-            if (!idUsuarioEliminar) return;
-            fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
-              .then(function(r) {
-                cerrarModalEliminar();
-                if (r.ok) {
-                  document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
-                  document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
-                  document.getElementById('modal-exito').style.display = 'flex';
-                } else { alert('Error al eliminar el usuario'); }
-              })
-              .catch(function() { alert('Error de conexión'); });
-          };
-          document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
-
-          function reactiveUsuario(id) { 
-            idUsuarioReactivar = id; 
-            document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.'; 
-            document.getElementById('modal-reactivar').style.display = 'flex'; 
-          }
-          
-          function cerrarModalReactivar() { 
-            document.getElementById('modal-reactivar').style.display = 'none'; 
-            idUsuarioReactivar = null; 
+          function reactivarUsuario(id) {
+            idUsuarioReactivar = id;
+            document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.';
+            document.getElementById('modal-reactivar').style.display = 'flex';
           }
 
-          document.getElementById('btn-confirmar-reactivar').onclick = function() {
-            if (!idUsuarioReactivar) return;
-            fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
-              .then(function(r) {
-                cerrarModalReactivar();
-                if (r.ok) {
-                  document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
-                  document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
-                  document.getElementById('modal-exito').style.display = 'flex';
-                } else { alert('Error al reactivar el usuario'); }
-              })
-              .catch(function() { alert('Error de conexión'); });
-          };
-          document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
+          function cerrarModalReactivar() {
+            document.getElementById('modal-reactivar').style.display = 'none';
+            idUsuarioReactivar = null;
+          }
 
           function toggleBloquearUsuario(id) {
             idUsuarioDesbloquear = id;
@@ -734,32 +705,61 @@ function eliminarUsuario(id) {
             idUsuarioDesbloquear = null;
           }
 
-          document.getElementById('btn-confirmar-desbloquear').onclick = function() {
-            if (!idUsuarioDesbloquear) return;
-            fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
-              .then(function(r) {
-                cerrarModalDesbloquear();
-                if (r.ok) {
-                  document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
-                  document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
-                  document.getElementById('modal-exito').style.display = 'flex';
-                } else { alert('Error al desbloquear el usuario'); }
-              })
-              .catch(function() { alert('Error de conexión'); });
-          };
-          document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
-
           function cerrarModalExito() {
             document.getElementById('modal-exito').style.display = 'none';
             location.reload();
           }
-          document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
-          function cerrarModalReactivar() { document.getElementById('modal-reactivar').style.display = 'none'; idUsuarioReactivar = null; }
-          
-          function-reactive Usuario(id) { idUsuarioReactivar = id; document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.'; document.getElementById('modal-reactivar').style.display = 'flex'; }
-          document.getElementById('modal-crear').addEventListener('click', function (e) { if (e.target === this) cerrarModalCrear(); });
-          document.getElementById('modal-editar').addEventListener('click', function (e) { if (e.target === this) cerrarModalEditar(); });
+
+          // Setup de event listeners después de que todo el DOM esté listo
           window.addEventListener('load', function () {
+            document.getElementById('btn-confirmar-eliminar').onclick = function() {
+              if (!idUsuarioEliminar) return;
+              fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
+                .then(function(r) {
+                  cerrarModalEliminar();
+                  if (r.ok) {
+                    document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
+                    document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
+                    document.getElementById('modal-exito').style.display = 'flex';
+                  } else { alert('Error al eliminar el usuario'); }
+                })
+                .catch(function() { alert('Error de conexión'); });
+            };
+            document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
+
+            document.getElementById('btn-confirmar-reactivar').onclick = function() {
+              if (!idUsuarioReactivar) return;
+              fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
+                .then(function(r) {
+                  cerrarModalReactivar();
+                  if (r.ok) {
+                    document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
+                    document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
+                    document.getElementById('modal-exito').style.display = 'flex';
+                  } else { alert('Error al reactivar el usuario'); }
+                })
+                .catch(function() { alert('Error de conexión'); });
+            };
+            document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
+
+            document.getElementById('btn-confirmar-desbloquear').onclick = function() {
+              if (!idUsuarioDesbloquear) return;
+              fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
+                .then(function(r) {
+                  cerrarModalDesbloquear();
+                  if (r.ok) {
+                    document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
+                    document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
+                    document.getElementById('modal-exito').style.display = 'flex';
+                  } else { alert('Error al desbloquear el usuario'); }
+                })
+                .catch(function() { alert('Error de conexión'); });
+            };
+            document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
+            document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
+            document.getElementById('modal-crear').addEventListener('click', function(e) { if(e.target===this) cerrarModalCrear(); });
+            document.getElementById('modal-editar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEditar(); });
+
             var buscador = document.getElementById('buscar-usuario');
             buscador.value = '';
             buscador.focus();
