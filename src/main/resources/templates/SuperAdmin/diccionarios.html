@@ -245,6 +245,10 @@
             </tbody>
           </table>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+          <span id="conteo-tematicas" style="font-size:12px;color:#6B7280;"></span>
+          <div id="paginacion-tematicas"></div>
+        </div>
       </div>
     </div>
 
@@ -306,6 +310,10 @@
             </tbody>
           </table>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+          <span id="conteo-etiquetas" style="font-size:12px;color:#6B7280;"></span>
+          <div id="paginacion-etiquetas"></div>
+        </div>
       </div>
     </div>
 
@@ -359,6 +367,10 @@
             </tbody>
           </table>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+          <span id="conteo-tipos" style="font-size:12px;color:#6B7280;"></span>
+          <div id="paginacion-tipos"></div>
+        </div>
       </div>
     </div>
 
@@ -411,6 +423,10 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+          <span id="conteo-estados" style="font-size:12px;color:#6B7280;"></span>
+          <div id="paginacion-estados"></div>
         </div>
       </div>
     </div>
@@ -960,6 +976,137 @@ async function eliminarEstado(id) {
     showToast(e.message, 'error');
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+//  PAGINACIÓN — fábrica genérica para las 4 tablas
+// ══════════════════════════════════════════════════════════════
+var ITEMS_POR_PAGINA = 5;
+
+function crearPaginacion(cfg) {
+  // cfg = { tbodyId, conteoId, paginacionId }
+  var paginaActual = 1;
+
+  function getFilasActivas() {
+    return Array.from(document.querySelectorAll('#' + cfg.tbodyId + ' tr.dic-row'))
+      .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+  }
+
+  function actualizarBotones(total) {
+    for (var i = 1; i <= total; i++) {
+      var btn = document.getElementById(cfg.paginacionId + '-btn-' + i);
+      if (btn) {
+        btn.style.background   = (i === paginaActual) ? '#2ECC71' : '#fff';
+        btn.style.borderColor  = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+        btn.style.color        = (i === paginaActual) ? '#fff'    : '#6B7280';
+      }
+    }
+  }
+
+  function mostrarPagina(numero) {
+    paginaActual = numero;
+    var filas  = document.querySelectorAll('#' + cfg.tbodyId + ' tr.dic-row');
+    var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+    var fin    = inicio + ITEMS_POR_PAGINA;
+    var conteo = 0;
+    filas.forEach(function(tr) {
+      if (tr.dataset.filtrado === '0') {
+        tr.style.display = 'none';
+      } else {
+        tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+        conteo++;
+      }
+    });
+    var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+    actualizarBotones(total);
+  }
+
+  function inicializar() {
+    var filasActivas  = getFilasActivas();
+    var totalPaginas  = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+    if (totalPaginas < 1) totalPaginas = 1;
+    paginaActual = 1;
+
+    var conteoEl = document.getElementById(cfg.conteoId);
+    if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+    var paginacionDiv = document.getElementById(cfg.paginacionId);
+    paginacionDiv.innerHTML = '';
+    if (totalPaginas <= 1) { mostrarPagina(1); return; }
+
+    var estiloBase = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+
+    var btnAnt = document.createElement('button');
+    btnAnt.textContent = '← Ant';
+    btnAnt.style.cssText = estiloBase;
+    btnAnt.onclick = function() {
+      if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+    };
+    paginacionDiv.appendChild(btnAnt);
+
+    for (var i = 1; i <= totalPaginas; i++) {
+      (function(pageNum) {
+        var btn = document.createElement('button');
+        btn.textContent = pageNum;
+        btn.id = cfg.paginacionId + '-btn-' + pageNum;
+        btn.style.cssText = (pageNum === 1)
+          ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+          : estiloBase;
+        btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+        paginacionDiv.appendChild(btn);
+      })(i);
+    }
+
+    var btnSig = document.createElement('button');
+    btnSig.textContent = 'Sig →';
+    btnSig.style.cssText = estiloBase;
+    btnSig.onclick = function() {
+      var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+      if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+    };
+    paginacionDiv.appendChild(btnSig);
+
+    mostrarPagina(1);
+  }
+
+  return { inicializar: inicializar, mostrarPagina: mostrarPagina };
+}
+
+// ─── Instancias por tabla ─────────────────────────────────────
+var paginacionTematicas = crearPaginacion({
+  tbodyId:      'tbody-tematicas',
+  conteoId:     'conteo-tematicas',
+  paginacionId: 'paginacion-tematicas'
+});
+var paginacionEtiquetas = crearPaginacion({
+  tbodyId:      'tbody-etiquetas',
+  conteoId:     'conteo-etiquetas',
+  paginacionId: 'paginacion-etiquetas'
+});
+var paginacionTipos = crearPaginacion({
+  tbodyId:      'tbody-tipos',
+  conteoId:     'conteo-tipos',
+  paginacionId: 'paginacion-tipos'
+});
+var paginacionEstados = crearPaginacion({
+  tbodyId:      'tbody-estados',
+  conteoId:     'conteo-estados',
+  paginacionId: 'paginacion-estados'
+});
+
+// ─── Inicialización al cargar ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  // Marcar todas las filas como visibles
+  ['tbody-tematicas', 'tbody-etiquetas', 'tbody-tipos', 'tbody-estados'].forEach(function(id) {
+    document.querySelectorAll('#' + id + ' tr.dic-row').forEach(function(tr) {
+      tr.dataset.filtrado = '1';
+    });
+  });
+
+  paginacionTematicas.inicializar();
+  paginacionEtiquetas.inicializar();
+  paginacionTipos.inicializar();
+  paginacionEstados.inicializar();
+});
 </script>
 
 </body>
