@@ -14,4 +14,6 @@ public interface NormativaRepository extends JpaRepository<Normativa, Long> {
     List<Normativa> findByAmbito(String ambito);
 
     List<Normativa> findByClasificacion(String clasificacion);
+
+    List<Normativa> findTop100ByOrderByCreatedAtDesc();
 }

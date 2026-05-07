@@ -26,7 +26,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -74,7 +76,8 @@ public class SuperAdminController extends AdminController {
             ReporteService reporteService) {
         super(usuarioService, normativaService, estudioService, empresaService,
                 rolService, tematicaService, etiquetaService,
-                tiposNormativaService, estadosNormativaService, notificacionService, auditoriaService);
+                tiposNormativaService, estadosNormativaService, notificacionService, 
+                auditoriaService, reporteService);
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -149,15 +152,24 @@ public class SuperAdminController extends AdminController {
     }
 
     @Override
-    @GetMapping("/superadmin/usuarios")
-    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
-        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
-        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
-        model.addAttribute("empresas", empresaService.listarEmpresas());
-        model.addAttribute("roles", rolService.listarRoles());
-        return "SuperAdmin/usuarios";
+    
+    // Kent,FullStack Developer https://github.com/Bearserker10029
+    // Si no se muestra los usuarios, este es el culpable:
+    
+    /*  ⠀⠀        MEGA KIRBY                  */    @GetMapping("/superadmin/usuarios")
+    /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠶⠦⡄⠀⠀⠀⠀⠀⠀⡴⠀⠀⠀     */    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
+    /*⠀⢀⣀⠀⠀⠀⣀⠤⠖⠒⠋⡉⠙⢲⣺⢅⡀⠀⠹⡀⠀⠀⠀⢀⡜⠁⠀     */        setupCommonAttributes(model, user.getUsername());
+    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+    /*⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⡀⠄⠠⢀⠈⢣⡀⠀⠁⠀⢀⡤⠊⠀⠀  */          model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+    /*⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⠎⠀⠀⠀⠘⡇⠀⢧⠀⠐⠊⠁⠀⠀⠀⠀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+    /*⠀⢸⠳⣄⠀⠀⠀⠀⠀⠀⠀⠈⢺⠀⠀⠀⠀⠀⡇⠀⢸⠀⠀⠀⠀⢀⣀⣀⡀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+    /*⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣆⠠⠄⢀⡀⢇⠀⢸⡀⠀⡀⠀⠀⠀⠀⠀  */          model.addAttribute("empresas", empresaService.listarEmpresas());
+    /*⠀⠘⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢃⠀⠀⠀⠈⠙⠆⡼⠛⢦⡀⠑⠢⣄⠀⠀  */          model.addAttribute("roles", rolService.listarRoles());
+    /*⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⡌⠢⣀⠀⢀⡴⡰⠁⠀⢀⡇⠀⠀⠈⠑⠀  */          return "SuperAdmin/usuarios";
+    /*⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠗⠒⠚⠉⠀⠀⠀⠀⠀⠀  */
+    /*⠀⠀⠀⡜⠀⠉⠢⢄⣀⠀⠀⠀⠀⠀⣀⡤⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
+    /*⠀⠀⠀⡇⠀⠀⠀⠀⣨⠟⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
+    /*⠀⠀⠀⠙⠂⠴⠒⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
     }
 
     @Override
@@ -240,330 +252,10 @@ public class SuperAdminController extends AdminController {
                 ra.addFlashAttribute("error", "Destinatario inválido.");
             }
         }
-        return "redirect:/superadmin/notificaciones";
+return "redirect:/superadmin/notificaciones";
     }
 
-    @GetMapping("/superadmin/auditoria/export.xlsx")
-    public void exportarAuditoriaAdminXLSX(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter
-                .ofPattern("dd/MM/yyyy HH:mm:ss")
-                .withZone(java.time.ZoneId.of("America/Lima"));
-        java.util.List<Auditoria> all = auditoriaService.listarAuditorias();
-        List<Map<String, Object>> datos = all.stream().map(a -> {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("fechaAccion", a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "");
-            row.put("accion", a.getAccion());
-            row.put("modulo", a.getModulo());
-            row.put("estado", a.getEstado());
-            row.put("usuarioNombre", a.getUsuarioNombre());
-            row.put("ipAddress", a.getIpAddress());
-            row.put("descripcion", a.getDescripcion());
-            return row;
-        }).toList();
-
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría",
-                "Registro de actividades en la plataforma",
-                new String[] { "Fecha", "Acción", "Módulo", "Estado", "Usuario", "IP", "Descripción" }, datos);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.xlsx\"");
-        response.getOutputStream().write(xlsx);
-    }
-
-    @GetMapping("/superadmin/reportes/export/auditoria.pdf")
-    public void exportarAuditoriaPDF(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<Auditoria> auditorias = auditoriaService.listarAuditorias();
-        List<Map<String, Object>> datos = auditorias.stream().map(a -> {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("fechaAccion", a.getFechaAccion());
-            row.put("accion", a.getAccion());
-            row.put("modulo", a.getModulo());
-            row.put("estado", a.getEstado());
-            row.put("usuarioNombre", a.getUsuarioNombre());
-            row.put("ipAddress", a.getIpAddress());
-            row.put("descripcion", a.getDescripcion());
-            return row;
-        }).toList();
-
-        Map<String, Integer> accionesCount = new LinkedHashMap<>();
-        Map<String, Integer> estadoCount = new LinkedHashMap<>();
-        for (Auditoria a : auditorias) {
-            String accionKey = a.getAccion() != null ? a.getAccion() : "SIN_ACCION";
-            accionesCount.put(accionKey, accionesCount.getOrDefault(accionKey, 0) + 1);
-            String estadoKey = a.getEstado() != null ? a.getEstado() : "SIN_ESTADO";
-            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
-        }
-
-        List<Map<String, ?>> accionesData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : accionesCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            accionesData.add(row);
-        }
-        List<Map<String, ?>> estadoData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            estadoData.add(row);
-        }
-
-        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(accionesData);
-        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(estadoData);
-
-        byte[] pdf = reporteService.generarReportePDF("auditoria_report", datos, null, chartData1, chartData2);
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.pdf\"");
-        response.getOutputStream().write(pdf);
-    }
-
-    @GetMapping("/superadmin/reportes/export/auditoria.xlsx")
-    public void exportarAuditoriaXLSX(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<Auditoria> auditorias = auditoriaService.listarAuditorias();
-        List<Map<String, Object>> datos = auditorias.stream().map(a -> {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("fecha", a.getFechaAccion() != null ? a.getFechaAccion().toString() : "");
-            row.put("accion", a.getAccion());
-            row.put("modulo", a.getModulo());
-            row.put("estado", a.getEstado());
-            row.put("usuario", a.getUsuarioNombre());
-            row.put("ip", a.getIpAddress());
-            row.put("descripcion", a.getDescripcion());
-            return row;
-        }).toList();
-
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Auditoría",
-                "Registro de actividades en la plataforma",
-                new String[] { "Fecha", "Accion", "Modulo", "Estado", "Usuario", "IP", "Descripcion" }, datos);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.xlsx\"");
-        response.getOutputStream().write(xlsx);
-    }
-
-    @GetMapping("/superadmin/reportes/export/usuarios.pdf")
-    public void exportarUsuariosPDF(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<org.reciclame.demo.dto.UsuarioResponseDTO> usuarios = usuarioService.listarUsuarios();
-        List<Map<String, Object>> datos = usuarios.stream().map(u -> {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("nombreCompleto", u.getNombreCompleto());
-            row.put("correoCorporativo", u.getCorreoCorporativo());
-            row.put("cargo", u.getCargo());
-            row.put("empresaNombre", u.getEmpresaNombre());
-            row.put("estadoCuenta", u.getEstadoCuenta());
-            row.put("ultimoLogin", u.getUltimoLogin());
-            return row;
-        }).toList();
-
-        Map<String, Integer> rolCount = new LinkedHashMap<>();
-        Map<String, Integer> estadoCount = new LinkedHashMap<>();
-        for (org.reciclame.demo.dto.UsuarioResponseDTO u : usuarios) {
-            String rolKey = u.getRolNombre() != null ? u.getRolNombre() : "SIN_ROL";
-            rolCount.put(rolKey, rolCount.getOrDefault(rolKey, 0) + 1);
-            String estadoKey = u.getEstadoCuenta() != null ? u.getEstadoCuenta() : "SIN_ESTADO";
-            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
-        }
-
-        List<Map<String, ?>> rolData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : rolCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            rolData.add(row);
-        }
-        List<Map<String, ?>> estadoData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            estadoData.add(row);
-        }
-
-        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(rolData);
-        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(estadoData);
-
-        byte[] pdf = reporteService.generarReportePDF("usuarios_report", datos, null, chartData1, chartData2);
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=\"usuarios_report.pdf\"");
-        response.getOutputStream().write(pdf);
-    }
-
-    @GetMapping("/superadmin/reportes/export/usuarios.xlsx")
-    public void exportarUsuariosXLSX(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<org.reciclame.demo.dto.UsuarioResponseDTO> usuarios = usuarioService.listarUsuarios();
-        List<Map<String, Object>> datos = usuarios.stream().map(u -> {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("nombreCompleto", u.getNombreCompleto());
-            row.put("dni", u.getDni());
-            row.put("correoCorporativo", u.getCorreoCorporativo());
-            row.put("cargo", u.getCargo());
-            row.put("rol", u.getRolNombre());
-            row.put("empresa", u.getEmpresaNombre());
-            row.put("estado", u.getEstadoCuenta());
-            row.put("ultimoLogin", u.getUltimoLogin() != null ? u.getUltimoLogin().toString() : "");
-            return row;
-        }).toList();
-
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Usuarios",
-                "Listado de usuarios registrados en la plataforma",
-                new String[] { "Nombre Completo", "DNI", "Correo Corporativo", "Cargo", "Rol", "Empresa", "Estado",
-                        "Último Login" },
-                datos);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=\"usuarios_report.xlsx\"");
-        response.getOutputStream().write(xlsx);
-    }
-
-    @GetMapping("/superadmin/reportes/export/normativas.pdf")
-    public void exportarNormativasPDF(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<Map<String, Object>> datos = new java.util.ArrayList<>();
-        List<org.reciclame.demo.dto.NormativaResponseDTO> normativas = normativaService.listarNormativas();
-        List<org.reciclame.demo.dto.EstudioResponseDTO> estudios = estudioService.listarEstudios();
-
-        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-        for (org.reciclame.demo.dto.NormativaResponseDTO n : normativas) {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("titulo", n.getTitulo());
-            row.put("tipo", "Normativa");
-            row.put("tematicaNombre", n.getTematicaNombre());
-            row.put("estado", n.getEstadoNormativaNombre());
-            row.put("anio", n.getAnio());
-            row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
-            row.put("fechaCreacion",
-                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
-                            : "");
-            datos.add(row);
-        }
-
-        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("titulo", e.getTitulo());
-            row.put("tipo", "Estudio");
-            row.put("tematicaNombre", e.getTematicaNombre());
-            row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
-            row.put("anio", e.getAnio());
-            row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
-            row.put("fechaCreacion",
-                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
-                            : "");
-            datos.add(row);
-        }
-
-        Map<String, Integer> tipoCount = new LinkedHashMap<>();
-        tipoCount.put("Normativa", normativas.size());
-        tipoCount.put("Estudio", estudios.size());
-
-        Map<String, Integer> tematicaCount = new LinkedHashMap<>();
-        for (org.reciclame.demo.dto.NormativaResponseDTO n : normativas) {
-            String key = n.getTematicaNombre() != null ? n.getTematicaNombre() : "SIN_TEMATICA";
-            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
-        }
-        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
-            String key = e.getTematicaNombre() != null ? e.getTematicaNombre() : "SIN_TEMATICA";
-            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
-        }
-
-        Map<Integer, Integer> descargasPorAnio = new LinkedHashMap<>();
-        for (org.reciclame.demo.dto.NormativaResponseDTO n : normativas) {
-            if (n.getAnio() == null) {
-                continue;
-            }
-            int desc = n.getDescargasCount() != null ? n.getDescargasCount() : 0;
-            descargasPorAnio.put(n.getAnio(), descargasPorAnio.getOrDefault(n.getAnio(), 0) + desc);
-        }
-        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
-            if (e.getAnio() == null) {
-                continue;
-            }
-            int desc = e.getDescargasCount() != null ? e.getDescargasCount() : 0;
-            descargasPorAnio.put(e.getAnio(), descargasPorAnio.getOrDefault(e.getAnio(), 0) + desc);
-        }
-
-        List<Map<String, ?>> tipoData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : tipoCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            tipoData.add(row);
-        }
-        List<Map<String, ?>> tematicaData = new ArrayList<>();
-        for (Map.Entry<String, Integer> entry : tematicaCount.entrySet()) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("label", entry.getKey());
-            row.put("value", entry.getValue());
-            tematicaData.add(row);
-        }
-        List<Map<String, ?>> descargasData = new ArrayList<>();
-        List<Integer> aniosOrdenados = new ArrayList<>(descargasPorAnio.keySet());
-        aniosOrdenados.sort(Integer::compareTo);
-        for (Integer anio : aniosOrdenados) {
-            Map<String, Object> row = new HashMap<>();
-            row.put("category", anio.toString());
-            row.put("value", descargasPorAnio.get(anio));
-            descargasData.add(row);
-        }
-
-        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(tipoData);
-        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(tematicaData);
-        JRMapCollectionDataSource chartData3 = new JRMapCollectionDataSource(descargasData);
-
-        byte[] pdf = reporteService.generarReportePDF("normativas_estudios_report", datos, null, chartData1, chartData2,
-                chartData3);
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.pdf\"");
-        response.getOutputStream().write(pdf);
-    }
-
-    @GetMapping("/superadmin/reportes/export/normativas.xlsx")
-    public void exportarNormativasXLSX(jakarta.servlet.http.HttpServletResponse response,
-            @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
-        List<Map<String, Object>> datos = new java.util.ArrayList<>();
-
-        java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-        for (org.reciclame.demo.dto.NormativaResponseDTO n : normativaService.listarNormativas()) {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("titulo", n.getTitulo());
-            row.put("tipo", "Normativa");
-            row.put("tematicaNombre", n.getTematicaNombre());
-            row.put("estado", n.getEstadoNormativaNombre());
-            row.put("anio", n.getAnio());
-            row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
-            row.put("fechaCreacion",
-                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
-                            : "");
-            datos.add(row);
-        }
-
-        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudioService.listarEstudios()) {
-            Map<String, Object> row = new java.util.HashMap<>();
-            row.put("titulo", e.getTitulo());
-            row.put("tipo", "Estudio");
-            row.put("tematicaNombre", e.getTematicaNombre());
-            row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
-            row.put("anio", e.getAnio());
-            row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
-            row.put("fechaCreacion",
-                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(java.time.ZoneId.of("America/Lima")))
-                            : "");
-            datos.add(row);
-        }
-
-        byte[] xlsx = reporteService.generarReporteExcel("Reporte de Normativas y Estudios",
-                "Listado de normativas y estudios registrados",
-                new String[] { "Titulo", "Tipo", "Tematica Nombre", "Estado", "Anio", "Descargas Count",
-                        "Fecha Creacion" },
-                datos);
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.xlsx\"");
-        response.getOutputStream().write(xlsx);
-    }
+    
 
     @Override
     @PostMapping("/superadmin/notificaciones/marcar/{id}")
@@ -884,6 +576,48 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/admin-docs")
     public String adminDocs(Model model, @AuthenticationPrincipal UserDetails user) {
         return "redirect:/superadmin/documentos";
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/auditoria.pdf")
+    protected void exportarAuditoriaPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarAuditoriaPDF(response, user);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/auditoria.xlsx")
+    protected void exportarAuditoriaXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarAuditoriaXLSX(response, user);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/usuarios.pdf")
+    protected void exportarUsuariosPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarUsuariosPDF(response, user);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/usuarios.xlsx")
+    protected void exportarUsuariosXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarUsuariosXLSX(response, user);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/normativas.pdf")
+    protected void exportarNormativasPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarNormativasPDF(response, user);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/normativas.xlsx")
+    protected void exportarNormativasXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        super.exportarNormativasXLSX(response, user);
     }
 
     @GetMapping("/superadmin/diccionarios")
