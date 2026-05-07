@@ -34,4 +34,7 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
 
     @Query("SELECT a FROM Auditoria a WHERE a.accion = :accion AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findByAccionPaginado(@Param("accion") String accion, Pageable pageable);
+
+    @Query(value = "SELECT a FROM Auditoria a WHERE a.estadoActivo = true ORDER BY a.fechaAccion DESC LIMIT 100")
+    List<Auditoria> findTop100ByOrderByFechaAccionDesc();
 }

@@ -1,5 +1,6 @@
 -- Tabla para tokens de recuperación de contraseña
 -- Ejecutar en reciclame_db antes de levantar la aplicación
+USE reciclame_db;
 
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,

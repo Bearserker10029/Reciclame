@@ -123,6 +123,13 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponseDTO> listarUsuariosUltimos100() {
+        return usuarioRepository.findTop100ByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<UsuarioResponseDTO> listarUsuariosActivos() {
         return usuarioRepository.findAll().stream()
                 .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()) && "ACTIVO".equals(u.getEstadoCuenta()))

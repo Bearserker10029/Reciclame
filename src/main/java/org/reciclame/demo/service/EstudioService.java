@@ -48,6 +48,13 @@ public class EstudioService {
                 .collect(Collectors.toList());
     }
 
+    public List<EstudioResponseDTO> listarEstudiosUltimos100() {
+        return estudioRepository.findTop100ByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<Map<String, Object>> agregarPorTematica() {
         List<EstudioResponseDTO> estudios = listarEstudios();
         return estudios.stream()

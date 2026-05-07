@@ -48,6 +48,13 @@ public class NormativaService {
                 .collect(Collectors.toList());
     }
 
+    public List<NormativaResponseDTO> listarNormativasUltimas100() {
+        return normativaRepository.findTop100ByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public Map<String, Long> contarPorTematica() {
         Map<String, Long> conteo = new HashMap<>();
         List<Normativa> activas = normativaRepository.findByEstadoActivoTrue();
