@@ -740,13 +740,10 @@
               var matchSeccion = !seccion || rowSeccion === seccion;
               var matchCategoria = !categoria || rowCategoria === categoria;
 
-              if (matchTexto && matchSeccion && matchCategoria) {
-                row.style.display = '';
-              } else {
-                row.style.display = 'none';
-              }
+              row.dataset.filtrado = (matchTexto && matchSeccion && matchCategoria) ? '1' : '0';
             });
             inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
           }
 
           function limpiarFiltrosDocumentos() {
@@ -762,14 +759,13 @@
 
           function inicializarPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             paginaDocumentosActual = 1;
 
             var paginacionDiv = document.getElementById('paginacion-documentos');
             paginacionDiv.innerHTML = '';
-            if (totalPaginas <= 1) return;
 
             var btnAnterior = document.createElement('button');
             btnAnterior.textContent = 'Anterior';
@@ -794,7 +790,6 @@
             paginacionDiv.appendChild(btnSiguiente);
 
             document.getElementById('conteo-documentos').textContent = 'Mostrando ' + filasVisibles + ' documentos';
-            mostrarPaginaDocumentos(1);
           }
 
           function mostrarPaginaDocumentos(numero) {
@@ -803,14 +798,18 @@
             var fin = inicio + DOCUMENTOS_POR_PAGINA;
             var conteo = 0;
             filas.forEach(function (tr) {
-              if (tr.style.display === 'none') { tr.style.display = 'none'; }
-              else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
             });
           }
 
           function actualizarBotonesPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             for (var i = 1; i <= totalPaginas; i++) {
@@ -820,7 +819,13 @@
           }
 
           // Inicializar paginación al cargar
-          setTimeout(inicializarPaginacionDocumentos, 100);
+          window.addEventListener('load', function () {
+            document.querySelectorAll('#documentos-tbody tr.doc-row').forEach(function (tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
+          });
         </script>
 
       </main>

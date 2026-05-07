@@ -381,6 +381,11 @@
             <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
             <p style="color:#9CA3AF;font-size:13px;">No se encontraron normativas con los filtros actuales.</p>
           </div>
+          <!-- Paginación -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+            <span id="conteo-normas" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+            <div id="paginacion-normas" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+          </div>
         </div>
       </div>
 
@@ -626,6 +631,90 @@
     window.showNormativoTab = showNormativoTab;
 
     // ════════════════════════════════════════════════════════
+    //  PAGINACIÓN
+    // ════════════════════════════════════════════════════════
+    var ITEMS_POR_PAGINA = 5;
+    var paginaActual = 1;
+
+    function getFilasActivas() {
+      return Array.from(document.querySelectorAll('.norm-row'))
+        .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+    }
+
+    function inicializarPaginacion() {
+      var filasActivas = getFilasActivas();
+      var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+      if (totalPaginas < 1) totalPaginas = 1;
+      paginaActual = 1;
+
+      var conteoEl = document.getElementById('conteo-normas');
+      if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+      var paginacionDiv = document.getElementById('paginacion-normas');
+      paginacionDiv.innerHTML = '';
+      if (totalPaginas <= 1) return;
+
+      var btnAnterior = document.createElement('button');
+      btnAnterior.textContent = '← Ant';
+      btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+      btnAnterior.onclick = function() {
+        if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnAnterior);
+
+      for (var i = 1; i <= totalPaginas; i++) {
+        (function(pageNum) {
+          var btn = document.createElement('button');
+          btn.textContent = pageNum;
+          btn.id = 'btn-pagina-' + pageNum;
+          btn.style.cssText = (pageNum === 1)
+            ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+            : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+          btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+          paginacionDiv.appendChild(btn);
+        })(i);
+      }
+
+      var btnSiguiente = document.createElement('button');
+      btnSiguiente.textContent = 'Sig →';
+      btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+      btnSiguiente.onclick = function() {
+        var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+        if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnSiguiente);
+    }
+
+    function mostrarPagina(numero) {
+      paginaActual = numero;
+      var filas = document.querySelectorAll('.norm-row');
+      var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+      var fin = inicio + ITEMS_POR_PAGINA;
+      var conteo = 0;
+      filas.forEach(function(tr) {
+        if (tr.dataset.filtrado === '0') {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+          conteo++;
+        }
+      });
+      actualizarBotonesPaginacion();
+    }
+
+    function actualizarBotonesPaginacion() {
+      var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+      for (var i = 1; i <= total; i++) {
+        var btn = document.getElementById('btn-pagina-' + i);
+        if (btn) {
+          btn.style.background   = (i === paginaActual) ? '#2ECC71' : '#fff';
+          btn.style.borderColor  = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+          btn.style.color        = (i === paginaActual) ? '#fff'    : '#6B7280';
+        }
+      }
+    }
+
+    // ════════════════════════════════════════════════════════
     //  FILTRO COMBINADO: pestaña (ámbito) + columnas
     //  Lee atributos data-* en lugar de textContent → más preciso
     // ════════════════════════════════════════════════════════
@@ -654,13 +743,16 @@
         var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
         var matchTema   = !tema   || rTema   === tema;
 
-        var show = matchTab && matchQ && matchClasif && matchEstado && matchTema;
-        row.style.display = show ? '' : 'none';
-        if (show) visibles++;
+        var match = matchTab && matchQ && matchClasif && matchEstado && matchTema;
+        row.dataset.filtrado = match ? '1' : '0';
+        if (match) visibles++;
       });
 
       var noRes = document.getElementById('no-results-norm');
       if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
+
+      inicializarPaginacion();
+      mostrarPagina(1);
     }
 
     function clearNormFilters() {
@@ -682,7 +774,8 @@
     }
 
     // Limpieza preventiva al cargar la vista (por si el chatbot dejó backdrop)
-    document.addEventListener('DOMContentLoaded', limpiarModales);
+    // El script está al final del body: el DOM ya está listo, llamamos directamente.
+    limpiarModales();
 
     // ════════════════════════════════════════════════════════
     //  VISOR MODAL — instancia única en caché
@@ -753,7 +846,10 @@
       }
     }
 
-    // ── Estado inicial: pestaña "Todos" con todos los filtros limpios ──
+    // ── Estado inicial: marca todas las filas y aplica filtro/paginación ──
+    document.querySelectorAll('.norm-row').forEach(function(tr) {
+      tr.dataset.filtrado = '1';
+    });
     applyNormFilter();
     </script>
 

@@ -549,7 +549,7 @@
         </div>
 
         <div class="table-card">
-          <div style="overflow-x:auto;max-height:400px;overflow-y:auto;">
+          <div style="overflow-x:auto;">
             <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
               <thead>
                 <tr>
@@ -635,11 +635,13 @@
                 </tr>
               </tbody>
             </table>
-            <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
-              <span id="conteo-estudios">Mostrando estudios</span>
-              <div style="display:flex;gap:4px;" id="paginacion-estudios"></div>
-            </div>
           </div>
+        </div>
+
+        <!-- ══ PAGINACIÓN ══ -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px;">
+          <span id="conteo-estudios" style="font-size:12px;color:#6B7280;font-family:inherit;"></span>
+          <div id="paginacion-estudios" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"></div>
         </div>
 
         <div class="modal fade" id="modal-estudio" tabindex="-1">
@@ -746,6 +748,88 @@
             animateCount('stats-otros', otros);
           })();
 
+          /* ── Paginación ── */
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.estudio-row'))
+              .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-estudios');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-estudios');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = '← Ant';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.onclick = function() {
+              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function(pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Sig →';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function() {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSiguiente);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.estudio-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function(tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+              }
+            }
+          }
+
           function filtrarEstudios() {
             var q = (document.getElementById('search-estudios').value || '').toLowerCase();
             var fmt = (document.getElementById('filter-formato').value || '').toLowerCase();
@@ -755,10 +839,21 @@
               var tipo = row.dataset.tipo || '';
               var matchQ = !q || titulo.includes(q) || desc.includes(q);
               var matchF = !fmt || tipo === fmt;
-              row.style.display = (matchQ && matchF) ? '' : 'none';
+              row.dataset.filtrado = (matchQ && matchF) ? '1' : '0';
             });
+            inicializarPaginacion();
+            mostrarPagina(1);
           }
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
+
+          /* ── Inicializar al cargar ── */
+          window.addEventListener('load', function() {
+            document.querySelectorAll('.estudio-row').forEach(function(tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
 
           function openModalFromRow(btn) {
             var row = btn.closest('tr');
@@ -863,72 +958,6 @@
               alert('Error: ' + e.message);
             }
           }
-
-          // Paginación de Estudios (5 por página)
-          const ESTUDIOS_POR_PAGINA = 5;
-          let paginaEstudiosActual = 1;
-
-          function inicializarPaginacionEstudios() {
-            var filas = document.querySelectorAll('#table-body tr.estudio-row');
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
-            var totalPaginas = Math.ceil(filasVisibles / ESTUDIOS_POR_PAGINA);
-            if (totalPaginas < 1) totalPaginas = 1;
-            paginaEstudiosActual = 1;
-
-            var paginacionDiv = document.getElementById('paginacion-estudios');
-            paginacionDiv.innerHTML = '';
-            if (totalPaginas <= 1) return;
-
-            var btnAnterior = document.createElement('button');
-            btnAnterior.textContent = 'Anterior';
-            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnAnterior.onclick = function() { if (paginaEstudiosActual > 1) { paginaEstudiosActual--; mostrarPaginaEstudios(paginaEstudiosActual); actualizarBotonesPaginacionEstudios(); } };
-            paginacionDiv.appendChild(btnAnterior);
-
-            for (var i = 1; i <= totalPaginas; i++) {
-              var btnPagina = document.createElement('button');
-              btnPagina.textContent = i;
-              btnPagina.id = 'btn-est-pagina-' + i;
-              var estaActiva = (i === paginaEstudiosActual);
-              btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-              btnPagina.onclick = (function(pageNum) { return function() { paginaEstudiosActual = pageNum; mostrarPaginaEstudios(pageNum); actualizarBotonesPaginacionEstudios(); }; })(i);
-              paginacionDiv.appendChild(btnPagina);
-            }
-
-            var btnSiguiente = document.createElement('button');
-            btnSiguiente.textContent = 'Siguiente';
-            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnSiguiente.onclick = function() { if (paginaEstudiosActual < totalPaginas) { paginaEstudiosActual++; mostrarPaginaEstudios(paginaEstudiosActual); actualizarBotonesPaginacionEstudios(); } };
-            paginacionDiv.appendChild(btnSiguiente);
-
-            document.getElementById('conteo-estudios').textContent = 'Mostrando ' + filasVisibles + ' estudios';
-            mostrarPaginaEstudios(1);
-          }
-
-          function mostrarPaginaEstudios(numero) {
-            var filas = document.querySelectorAll('#table-body tr.estudio-row');
-            var inicio = (numero - 1) * ESTUDIOS_POR_PAGINA;
-            var fin = inicio + ESTUDIOS_POR_PAGINA;
-            var conteo = 0;
-            filas.forEach(function(tr) {
-              if (tr.style.display === 'none') { tr.style.display = 'none'; }
-              else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
-            });
-          }
-
-          function actualizarBotonesPaginacionEstudios() {
-            var filas = document.querySelectorAll('#table-body tr.estudio-row');
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
-            var totalPaginas = Math.ceil(filasVisibles / ESTUDIOS_POR_PAGINA);
-            if (totalPaginas < 1) totalPaginas = 1;
-            for (var i = 1; i <= totalPaginas; i++) {
-              var btn = document.getElementById('btn-est-pagina-' + i);
-              if (btn) { btn.style.background = (i === paginaEstudiosActual) ? '#2ECC71' : '#fff'; btn.style.borderColor = (i === paginaEstudiosActual) ? '#2ECC71' : '#E5E7EB'; btn.style.color = (i === paginaEstudiosActual) ? '#fff' : '#6B7280'; }
-            }
-          }
-
-          // Inicializar paginación al cargar
-          setTimeout(inicializarPaginacionEstudios, 100);
         </script>
 
       </main>

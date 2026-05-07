@@ -124,7 +124,7 @@
           <div style="display:flex;align-items:center;gap:8px;">
             <i class="fas fa-table" style="color:#2ECC71;font-size:13px;"></i>
             <span style="font-weight:700;font-size:14px;color:#1B3A5C;">Todos los documentos</span>
-            <span style="background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;"
+            <span id="conteo-docs" style="background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;"
                   th:text="${#lists.size(estudios) + #lists.size(normativas)} + ' registros'">0 registros</span>
           </div>
         </div>
@@ -220,6 +220,10 @@
             </tr>
           </tbody>
         </table>
+        <!-- ══ Paginación ══ -->
+        <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:flex-end;">
+          <div id="paginacion-docs"></div>
+        </div>
       </div>
 
     </main>
@@ -251,17 +255,101 @@
     window.location.href = map[page] || ('/admin/' + page);
   }
 
-  /* Filtrado client-side de la tabla */
+  /* ══ Paginación ══ */
+  var ITEMS_POR_PAGINA = 5;
+  var paginaActual = 1;
+
+  function getFilasActivas() {
+    return Array.from(document.querySelectorAll('.doc-row'))
+      .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+  }
+
+  function inicializarPaginacion() {
+    var filasActivas = getFilasActivas();
+    var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+    if (totalPaginas < 1) totalPaginas = 1;
+    paginaActual = 1;
+
+    var conteoEl = document.getElementById('conteo-docs');
+    if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+    var paginacionDiv = document.getElementById('paginacion-docs');
+    paginacionDiv.innerHTML = '';
+    if (totalPaginas <= 1) return;
+
+    var btnAnterior = document.createElement('button');
+    btnAnterior.textContent = '← Ant';
+    btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+    btnAnterior.onclick = function() {
+      if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+    };
+    paginacionDiv.appendChild(btnAnterior);
+
+    for (var i = 1; i <= totalPaginas; i++) {
+      (function(pageNum) {
+        var btn = document.createElement('button');
+        btn.textContent = pageNum;
+        btn.id = 'btn-pagina-' + pageNum;
+        btn.style.cssText = (pageNum === 1)
+          ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+          : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+        btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+        paginacionDiv.appendChild(btn);
+      })(i);
+    }
+
+    var btnSiguiente = document.createElement('button');
+    btnSiguiente.textContent = 'Sig →';
+    btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+    btnSiguiente.onclick = function() {
+      var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+      if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+    };
+    paginacionDiv.appendChild(btnSiguiente);
+  }
+
+  function mostrarPagina(numero) {
+    paginaActual = numero;
+    var filas = document.querySelectorAll('.doc-row');
+    var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+    var fin = inicio + ITEMS_POR_PAGINA;
+    var conteo = 0;
+    filas.forEach(function(tr) {
+      if (tr.dataset.filtrado === '0') {
+        tr.style.display = 'none';
+      } else {
+        tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+        conteo++;
+      }
+    });
+    actualizarBotonesPaginacion();
+  }
+
+  function actualizarBotonesPaginacion() {
+    var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+    for (var i = 1; i <= total; i++) {
+      var btn = document.getElementById('btn-pagina-' + i);
+      if (btn) {
+        btn.style.background  = (i === paginaActual) ? '#2ECC71' : '#fff';
+        btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+        btn.style.color       = (i === paginaActual) ? '#fff'    : '#6B7280';
+      }
+    }
+  }
+
+  /* Filtrado client-side de la tabla — ahora usa dataset.filtrado */
   function filtrarDocumentos() {
     try {
-      var texto   = (document.getElementById('search-docs').value  || '').toLowerCase().trim();
+      var texto   = (document.getElementById('search-docs').value   || '').toLowerCase().trim();
       var seccion = (document.getElementById('filter-seccion').value || '').toLowerCase().trim();
       document.querySelectorAll('.doc-row').forEach(function(row) {
         var nombre     = (row.dataset.nombre  || '').toLowerCase();
         var rowSeccion = (row.dataset.seccion || '').toLowerCase();
-        var visible = (!texto || nombre.includes(texto)) && (!seccion || rowSeccion === seccion);
-        row.style.display = visible ? '' : 'none';
+        var match = (!texto || nombre.includes(texto)) && (!seccion || rowSeccion === seccion);
+        row.dataset.filtrado = match ? '1' : '0';
       });
+      inicializarPaginacion();
+      mostrarPagina(1);
     } catch(e) { console.error('filtrarDocumentos:', e); }
   }
 
@@ -271,12 +359,20 @@
     filtrarDocumentos();
   }
 
-  /* Limpiar artefactos Bootstrap al entrar a la página */
+  /* Inicialización al cargar */
   document.addEventListener('DOMContentLoaded', function() {
+    /* Limpiar artefactos Bootstrap */
     document.body.classList.remove('modal-open');
     document.querySelectorAll('.modal-backdrop').forEach(function(el) { el.remove(); });
     document.body.style.overflow     = '';
     document.body.style.paddingRight = '';
+
+    /* Marcar todas las filas como visibles e iniciar paginación */
+    document.querySelectorAll('.doc-row').forEach(function(tr) {
+      tr.dataset.filtrado = '1';
+    });
+    inicializarPaginacion();
+    mostrarPagina(1);
   });
 </script>
 </body>

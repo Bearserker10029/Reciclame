@@ -242,6 +242,12 @@
             </table>
           </div>
 
+          <!-- Paginación -->
+          <div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span id="conteo-traza" style="font-size:12px;color:#6B7280;"></span>
+            <div id="paginacion-traza" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"></div>
+          </div>
+
           <div class="traza-footer">
             <div style="display:flex;align-items:center;gap:6px;">
               <span class="live-dot" style="width:8px;height:8px;"></span>
@@ -254,6 +260,87 @@
         </div>
 
         <script>
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.audit-row'))
+              .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-traza');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-traza');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = '← Ant';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.onclick = function() {
+              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function(pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Sig →';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function() {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSiguiente);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.audit-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function(tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+              }
+            }
+          }
+
           document.getElementById('searchTraza')?.addEventListener('input', filtrarTraza);
           document.getElementById('filterAccionTraza')?.addEventListener('change', filtrarTraza);
           document.getElementById('filterEstadoTraza')?.addEventListener('change', filtrarTraza);
@@ -266,15 +353,26 @@
               var ok = (!texto || (row.dataset.texto || '').toLowerCase().includes(texto))
                     && (!accion || (row.dataset.accion || '').toLowerCase().includes(accion))
                     && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
-              row.style.display = ok ? '' : 'none';
+              row.dataset.filtrado = ok ? '1' : '0';
             });
+            inicializarPaginacion();
+            mostrarPagina(1);
           }
+
           function limpiarFiltrosTraza() {
             document.getElementById('searchTraza').value = '';
             document.getElementById('filterAccionTraza').value = '';
             document.getElementById('filterEstadoTraza').value = '';
             filtrarTraza();
           }
+
+          window.addEventListener('load', function() {
+            document.querySelectorAll('.audit-row').forEach(function(tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
         </script>
 
     </main>

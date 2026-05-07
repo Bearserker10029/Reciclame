@@ -1015,14 +1015,16 @@
               var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
               var matchTema = !tema || rTema === tema;
 
-              var show = matchTab && matchQ && matchClasif && matchEstado && matchTema;
-              row.style.display = show ? '' : 'none';
-              if (show) visibles++;
+              var match = matchTab && matchQ && matchClasif && matchEstado && matchTema;
+              row.dataset.filtrado = match ? '1' : '0';
+              if (match) visibles++;
             });
 
             var noRes = document.getElementById('no-results-norm');
             if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
-            inicializarPaginacionNormativas();
+
+            inicializarPaginacion();
+            mostrarPagina(1);
           }
 
           function clearNormFilters() {
@@ -1115,86 +1117,96 @@
             }
           }
 
-          // ── Estado inicial: pestaña "Todos" con todos los filtros limpios ──
-          applyNormFilter();
-
           // ════════════════════════════════════════════════════════
-          //  PAGINACIÓN DE NORMATIVAS (5 por página)
+          //  PAGINACIÓN (5 por página) — patrón idéntico al Admin
           // ════════════════════════════════════════════════════════
-          const NORMATIVAS_POR_PAGINA = 5;
-          let paginaNormativaActual = 1;
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
 
-          function inicializarPaginacionNormativas() {
-            var filas = document.querySelectorAll('.norm-row[style=""]');
-            if (filas.length === 0) {
-              filas = document.querySelectorAll('.norm-row');
-            }
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
-            var totalPaginas = Math.ceil(filasVisibles / NORMATIVAS_POR_PAGINA);
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.norm-row'))
+              .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
-            paginaNormativaActual = 1;
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-normativas');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
 
             var paginacionDiv = document.getElementById('paginacion-normativas');
             paginacionDiv.innerHTML = '';
             if (totalPaginas <= 1) return;
 
             var btnAnterior = document.createElement('button');
-            btnAnterior.textContent = 'Anterior';
-            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnAnterior.onclick = function() { if (paginaNormativaActual > 1) { paginaNormativaActual--; mostrarPaginaNormativas(paginaNormativaActual); actualizarBotonesPaginacionNormativas(); } };
+            btnAnterior.textContent = '← Ant';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.onclick = function() {
+              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+            };
             paginacionDiv.appendChild(btnAnterior);
 
             for (var i = 1; i <= totalPaginas; i++) {
-              var btnPagina = document.createElement('button');
-              btnPagina.textContent = i;
-              btnPagina.id = 'btn-norm-pagina-' + i;
-              var estaActiva = (i === paginaNormativaActual);
-              btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-              btnPagina.onclick = (function(pageNum) { return function() { paginaNormativaActual = pageNum; mostrarPaginaNormativas(pageNum); actualizarBotonesPaginacionNormativas(); }; })(i);
-              paginacionDiv.appendChild(btnPagina);
+              (function(pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
             }
 
             var btnSiguiente = document.createElement('button');
-            btnSiguiente.textContent = 'Siguiente';
+            btnSiguiente.textContent = 'Sig →';
             btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnSiguiente.onclick = function() { if (paginaNormativaActual < totalPaginas) { paginaNormativaActual++; mostrarPaginaNormativas(paginaNormativaActual); actualizarBotonesPaginacionNormativas(); } };
+            btnSiguiente.onclick = function() {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
             paginacionDiv.appendChild(btnSiguiente);
-
-            document.getElementById('conteo-normativas').textContent = 'Mostrando ' + filasVisibles + ' normativas';
-            mostrarPaginaNormativas(1);
           }
 
-          function mostrarPaginaNormativas(numero) {
+          function mostrarPagina(numero) {
+            paginaActual = numero;
             var filas = document.querySelectorAll('.norm-row');
-            var inicio = (numero - 1) * NORMATIVAS_POR_PAGINA;
-            var fin = inicio + NORMATIVAS_POR_PAGINA;
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
             var conteo = 0;
             filas.forEach(function(tr) {
-              if (tr.style.display === 'none') {
+              if (tr.dataset.filtrado === '0') {
                 tr.style.display = 'none';
               } else {
                 tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
                 conteo++;
               }
             });
+            actualizarBotonesPaginacion();
           }
 
-          function actualizarBotonesPaginacionNormativas() {
-            var filas = document.querySelectorAll('.norm-row');
-            var filasVisibles = Array.from(filas).filter(function(tr) { return tr.style.display !== 'none'; }).length;
-            var totalPaginas = Math.ceil(filasVisibles / NORMATIVAS_POR_PAGINA);
-            if (totalPaginas < 1) totalPaginas = 1;
-            for (var i = 1; i <= totalPaginas; i++) {
-              var btn = document.getElementById('btn-norm-pagina-' + i);
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
               if (btn) {
-                if (i === paginaNormativaActual) { btn.style.background = '#2ECC71'; btn.style.borderColor = '#2ECC71'; btn.style.color = '#fff'; }
-                else { btn.style.background = '#fff'; btn.style.borderColor = '#E5E7EB'; btn.style.color = '#6B7280'; }
+                btn.style.background  = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color       = (i === paginaActual) ? '#fff'    : '#6B7280';
               }
             }
           }
 
-          // Inicializar paginación después de aplicar filtros
-          setTimeout(inicializarPaginacionNormativas, 100);
+          // ── Estado inicial: marca todas las filas y aplica filtro/paginación ──
+          document.querySelectorAll('.norm-row').forEach(function(tr) {
+            tr.dataset.filtrado = '1';
+          });
+          inicializarPaginacion();
+          mostrarPagina(1);
         </script>
 
       </main>

@@ -331,12 +331,108 @@
               </tr>
             </tbody>
           </table>
+          <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+            <span id="conteo-auditoria">Mostrando registros</span>
+            <div style="display:flex;gap:4px;" id="paginacion-auditoria"></div>
+          </div>
         </div>
 
       </main>
     </div>
     <th:block th:replace="components/chatbot :: chatbot"></th:block>
   </div>
+
+<script>
+const ITEMS_POR_PAGINA = 5;
+let paginaActual = 1;
+
+function getFilasActivas() {
+  return Array.from(document.querySelectorAll('#tabla-auditoria tr'))
+    .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+}
+
+function inicializarPaginacion() {
+  var filasActivas = getFilasActivas();
+  var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+  if (totalPaginas < 1) totalPaginas = 1;
+  paginaActual = 1;
+
+  var conteoEl = document.getElementById('conteo-auditoria');
+  if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+  var paginacionDiv = document.getElementById('paginacion-auditoria');
+  paginacionDiv.innerHTML = '';
+  if (totalPaginas <= 1) return;
+
+  var btnAnterior = document.createElement('button');
+  btnAnterior.textContent = '← Ant';
+  btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+  btnAnterior.onclick = function() {
+    if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+  };
+  paginacionDiv.appendChild(btnAnterior);
+
+  for (var i = 1; i <= totalPaginas; i++) {
+    (function(pageNum) {
+      var btn = document.createElement('button');
+      btn.textContent = pageNum;
+      btn.id = 'btn-pagina-' + pageNum;
+      btn.style.cssText = (pageNum === 1)
+        ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+        : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+      btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+      paginacionDiv.appendChild(btn);
+    })(i);
+  }
+
+  var btnSiguiente = document.createElement('button');
+  btnSiguiente.textContent = 'Sig →';
+  btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+  btnSiguiente.onclick = function() {
+    var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+    if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+  };
+  paginacionDiv.appendChild(btnSiguiente);
+}
+
+function mostrarPagina(numero) {
+  paginaActual = numero;
+  var filas = document.querySelectorAll('#tabla-auditoria tr');
+  var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+  var fin = inicio + ITEMS_POR_PAGINA;
+  var conteo = 0;
+  filas.forEach(function(tr) {
+    if (tr.dataset.filtrado === '0') {
+      tr.style.display = 'none';
+    } else {
+      tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+      conteo++;
+    }
+  });
+  actualizarBotonesPaginacion();
+}
+
+function actualizarBotonesPaginacion() {
+  var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+  for (var i = 1; i <= total; i++) {
+    var btn = document.getElementById('btn-pagina-' + i);
+    if (btn) {
+      btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+      btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+      btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+    }
+  }
+}
+
+window.addEventListener('load', function() {
+  document.querySelectorAll('#tabla-auditoria tr').forEach(function(tr) {
+    tr.dataset.filtrado = '1';
+  });
+  inicializarPaginacion();
+  mostrarPagina(1);
+});
+</script>
+
 </body>
 
 </html>

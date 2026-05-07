@@ -441,109 +441,85 @@
   }
 
   // ─── Configuración paginación ─────────────────────────────
-  const USUARIOS_POR_PAGINA = 10;
+  const USUARIOS_POR_PAGINA = 5;
   let paginaActual = 1;
+
+  function getFilasActivas() {
+    return Array.from(document.querySelectorAll('#tbody-activos tr[data-nombre]'))
+      .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+  }
 
   // ─── Inicializar paginación ───────────────────────────────
   function inicializarPaginacion() {
-    var filas = document.querySelectorAll('#tbody-activos tr[data-nombre]');
-    var filasVisibles = Array.from(filas).filter(function(tr) {
-      return tr.style.display !== 'none';
-    }).length;
-    var totalPaginas = Math.ceil(filasVisibles / USUARIOS_POR_PAGINA);
+    var filasActivas = getFilasActivas();
+    var totalPaginas = Math.ceil(filasActivas.length / USUARIOS_POR_PAGINA);
     if (totalPaginas < 1) totalPaginas = 1;
     paginaActual = 1;
+
+    var conteoEl = document.getElementById('conteo-usuarios');
+    if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' usuarios';
 
     var paginacionDiv = document.getElementById('paginacion-usuarios');
     paginacionDiv.innerHTML = '';
 
     if (totalPaginas <= 1) return;
 
-    // Botón anterior
     var btnAnterior = document.createElement('button');
-    btnAnterior.textContent = 'Anterior';
+    btnAnterior.textContent = '← Ant';
     btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
     btnAnterior.onclick = function() {
-      if (paginaActual > 1) {
-        paginaActual--;
-        mostrarPagina(paginaActual);
-        actualizarBotonesPaginacion();
-      }
+      if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
     };
     paginacionDiv.appendChild(btnAnterior);
 
-    // Números de página
     for (var i = 1; i <= totalPaginas; i++) {
-      var btnPagina = document.createElement('button');
-      btnPagina.textContent = i;
-      btnPagina.id = 'btn-pagina-' + i;
-      var estaActiva = (i === paginaActual);
-      btnPagina.style.cssText = estaActiva
-        ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;'
-        : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-      btnPagina.onclick = (function(pageNum) {
-        return function() {
-          paginaActual = pageNum;
-          mostrarPagina(pageNum);
-          actualizarBotonesPaginacion();
-        };
+      (function(pageNum) {
+        var btnPagina = document.createElement('button');
+        btnPagina.textContent = pageNum;
+        btnPagina.id = 'btn-pagina-' + pageNum;
+        btnPagina.style.cssText = (pageNum === 1)
+          ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;'
+          : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+        btnPagina.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+        paginacionDiv.appendChild(btnPagina);
       })(i);
-      paginacionDiv.appendChild(btnPagina);
     }
 
-    // Botón siguiente
     var btnSiguiente = document.createElement('button');
-    btnSiguiente.textContent = 'Siguiente';
+    btnSiguiente.textContent = 'Sig →';
     btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
     btnSiguiente.onclick = function() {
-      if (paginaActual < totalPaginas) {
-        paginaActual++;
-        mostrarPagina(paginaActual);
-        actualizarBotonesPaginacion();
-      }
+      var total = Math.ceil(getFilasActivas().length / USUARIOS_POR_PAGINA);
+      if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
     };
     paginacionDiv.appendChild(btnSiguiente);
   }
 
   function mostrarPagina(numero) {
+    paginaActual = numero;
     var filas = document.querySelectorAll('#tbody-activos tr[data-nombre]');
     var inicio = (numero - 1) * USUARIOS_POR_PAGINA;
     var fin = inicio + USUARIOS_POR_PAGINA;
     var conteo = 0;
-    filas.forEach(function(tr, idx) {
-      if (tr.style.display === 'none') {
+    filas.forEach(function(tr) {
+      if (tr.dataset.filtrado === '0') {
         tr.style.display = 'none';
       } else {
-        if (conteo >= inicio && conteo < fin) {
-          tr.style.display = '';
-        } else {
-          tr.style.display = 'none';
-        }
+        tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
         conteo++;
       }
     });
+    actualizarBotonesPaginacion();
   }
 
   function actualizarBotonesPaginacion() {
-    var filas = document.querySelectorAll('#tbody-activos tr[data-nombre]');
-    var filasVisibles = Array.from(filas).filter(function(tr) {
-      return tr.style.display !== 'none';
-    }).length;
-    var totalPaginas = Math.ceil(filasVisibles / USUARIOS_POR_PAGINA);
-    if (totalPaginas < 1) totalPaginas = 1;
-
-    for (var i = 1; i <= totalPaginas; i++) {
+    var total = Math.ceil(getFilasActivas().length / USUARIOS_POR_PAGINA);
+    for (var i = 1; i <= total; i++) {
       var btn = document.getElementById('btn-pagina-' + i);
       if (btn) {
-        if (i === paginaActual) {
-          btn.style.background = '#2ECC71';
-          btn.style.borderColor = '#2ECC71';
-          btn.style.color = '#fff';
-        } else {
-          btn.style.background = '#fff';
-          btn.style.borderColor = '#E5E7EB';
-          btn.style.color = '#6B7280';
-        }
+        btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+        btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+        btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
       }
     }
   }
@@ -553,30 +529,22 @@
     var q = document.getElementById('buscar-usuario').value.toLowerCase().trim();
     var rol = document.getElementById('filtro-rol').value.toLowerCase().trim();
     var estado = document.getElementById('filtro-estado').value.toLowerCase().trim();
-
     var sinResultados = true;
+
     document.querySelectorAll('#tbody-activos tr[data-nombre]').forEach(function(tr) {
       var nombre = (tr.dataset.nombre || '').toLowerCase();
       var correo = (tr.dataset.correo || '').toLowerCase();
       var rowRol = (tr.dataset.rol || '').toLowerCase();
       var rowEstado = (tr.dataset.estado || '').toLowerCase();
-
-      var matchQ = !q || nombre.includes(q) || correo.includes(q);
-      var matchRol = !rol || rowRol === rol;
-      var matchEstado = !estado || rowEstado === estado;
-
-      if (matchQ && matchRol && matchEstado) {
-        tr.style.display = '';
-        sinResultados = false;
-      } else {
-        tr.style.display = 'none';
-      }
+      var match = (!q || nombre.includes(q) || correo.includes(q))
+               && (!rol || rowRol === rol)
+               && (!estado || rowEstado === estado);
+      tr.dataset.filtrado = match ? '1' : '0';
+      if (match) sinResultados = false;
     });
 
     var sinResultadosRow = document.getElementById('fila-sin-resultados');
-    if (sinResultadosRow) {
-      sinResultadosRow.style.display = sinResultados ? '' : 'none';
-    }
+    if (sinResultadosRow) sinResultadosRow.style.display = sinResultados ? '' : 'none';
 
     inicializarPaginacion();
     mostrarPagina(1);
@@ -772,8 +740,11 @@
       .catch(function() { alert('Error de conexión'); });
   }
 
-  // ─── Eliminar usuario (lógico) con modal ───────────────────────────
+  // ─── Variables modales ────────────────────────────────────
   var idUsuarioEliminar = null;
+  var idUsuarioReactivar = null;
+  var idUsuarioDesbloquear = null;
+
   function eliminarUsuario(id) {
     idUsuarioEliminar = id;
     document.getElementById('modal-eliminar').style.display = 'flex';
@@ -782,24 +753,7 @@
     document.getElementById('modal-eliminar').style.display = 'none';
     idUsuarioEliminar = null;
   }
-  document.getElementById('btn-confirmar-eliminar').onclick = function() {
-    if (!idUsuarioEliminar) return;
-    fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
-      .then(function(r) {
-        cerrarModalEliminar();
-        if (r.ok) {
-          document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
-          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
-          document.getElementById('modal-exito').style.display = 'flex';
-        } else { alert('Error al eliminar el usuario'); }
-      })
-      .catch(function() { alert('Error de conexión'); });
-  };
-  document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
-
-  // ─── Reactivar usuario con modal ───────────────────────────
-  var idUsuarioReactivar = null;
-  function reactiveUsuario(id) {
+  function reactivarUsuario(id) {
     idUsuarioReactivar = id;
     document.getElementById('modal-reactivar-msg').textContent = 'El usuario podrá acceder al sistema nuevamente.';
     document.getElementById('modal-reactivar').style.display = 'flex';
@@ -808,25 +762,6 @@
     document.getElementById('modal-reactivar').style.display = 'none';
     idUsuarioReactivar = null;
   }
-  document.getElementById('btn-confirmar-reactivar').onclick = function() {
-    if (!idUsuarioReactivar) return;
-    fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
-      .then(function(r) {
-        cerrarModalReactivar();
-        if (r.ok) {
-          document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
-          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
-          document.getElementById('modal-exito').style.display = 'flex';
-        } else {
-          alert('Error al reactivar el usuario');
-        }
-      })
-      .catch(function() { alert('Error de conexión'); });
-  };
-  document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
-
-  // ─── Desbloquear usuario con modal ───────────────────────
-  var idUsuarioDesbloquear = null;
   function toggleBloquearUsuario(id) {
     idUsuarioDesbloquear = id;
     document.getElementById('modal-desbloquear-msg').textContent = 'El usuario podrá iniciar sesión nuevamente.';
@@ -836,43 +771,65 @@
     document.getElementById('modal-desbloquear').style.display = 'none';
     idUsuarioDesbloquear = null;
   }
-  document.getElementById('btn-confirmar-desbloquear').onclick = function() {
-    if (!idUsuarioDesbloquear) return;
-    fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
-      .then(function(r) {
-        cerrarModalDesbloquear();
-        if (r.ok) {
-          document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
-          document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
-          document.getElementById('modal-exito').style.display = 'flex';
-        } else {
-          alert('Error al desbloquear el usuario');
-        }
-      })
-      .catch(function() { alert('Error de conexión'); });
-  };
-  document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
-
   function cerrarModalExito() {
     document.getElementById('modal-exito').style.display = 'none';
     location.reload();
   }
-  document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
 
-  // ─── Cerrar modales al hacer clic fuera ───────────────────
-  document.getElementById('modal-crear').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalCrear();
-  });
-  document.getElementById('modal-editar').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalEditar();
-  });
-
-  // ─── Inicializar paginación al cargar ──────────────────────
+  // ─── Setup de eventos y paginación (tras cargar todo el DOM) ─
   window.addEventListener('load', function() {
-    setTimeout(function() {
-      inicializarPaginacion();
-      mostrarPagina(1);
-    }, 100);
+    document.getElementById('btn-confirmar-eliminar').onclick = function() {
+      if (!idUsuarioEliminar) return;
+      fetch('/api/usuarios/' + idUsuarioEliminar, { method: 'DELETE' })
+        .then(function(r) {
+          cerrarModalEliminar();
+          if (r.ok) {
+            document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
+            document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
+            document.getElementById('modal-exito').style.display = 'flex';
+          } else { alert('Error al eliminar el usuario'); }
+        })
+        .catch(function() { alert('Error de conexión'); });
+    };
+    document.getElementById('btn-confirmar-reactivar').onclick = function() {
+      if (!idUsuarioReactivar) return;
+      fetch('/api/usuarios/' + idUsuarioReactivar + '/reactivar', { method: 'POST' })
+        .then(function(r) {
+          cerrarModalReactivar();
+          if (r.ok) {
+            document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
+            document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
+            document.getElementById('modal-exito').style.display = 'flex';
+          } else { alert('Error al reactivar el usuario'); }
+        })
+        .catch(function() { alert('Error de conexión'); });
+    };
+    document.getElementById('btn-confirmar-desbloquear').onclick = function() {
+      if (!idUsuarioDesbloquear) return;
+      fetch('/api/usuarios/' + idUsuarioDesbloquear + '/bloquear', { method: 'POST' })
+        .then(function(r) {
+          cerrarModalDesbloquear();
+          if (r.ok) {
+            document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
+            document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
+            document.getElementById('modal-exito').style.display = 'flex';
+          } else { alert('Error al desbloquear el usuario'); }
+        })
+        .catch(function() { alert('Error de conexión'); });
+    };
+    document.getElementById('modal-eliminar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEliminar(); });
+    document.getElementById('modal-reactivar').addEventListener('click', function(e) { if(e.target===this) cerrarModalReactivar(); });
+    document.getElementById('modal-desbloquear').addEventListener('click', function(e) { if(e.target===this) cerrarModalDesbloquear(); });
+    document.getElementById('modal-exito').addEventListener('click', function(e) { if(e.target===this) cerrarModalExito(); });
+    document.getElementById('modal-crear').addEventListener('click', function(e) { if(e.target===this) cerrarModalCrear(); });
+    document.getElementById('modal-editar').addEventListener('click', function(e) { if(e.target===this) cerrarModalEditar(); });
+
+    document.querySelectorAll('#tbody-activos tr[data-nombre]').forEach(function(tr) {
+      tr.dataset.filtrado = '1';
+    });
+    document.getElementById('buscar-usuario').value = '';
+    inicializarPaginacion();
+    mostrarPagina(1);
   });
   </script>
 
