@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,140 +10,283 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
-    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
-    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
-    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
-    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .form-label-custom{font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block;}
-    .form-control-custom{width:100%;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;color:#111827;background:#fff;outline:none;transition:border .15s,box-shadow .15s;}
-    .form-control-custom:focus{border-color:#1B3A5C;box-shadow:0 0 0 3px rgba(27,58,92,.08);}
-    .form-control-custom[readonly]{background:#F9FAFB;color:#6B7280;cursor:not-allowed;}
-    .btn-guardar{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:background .15s;}
-    .btn-guardar:hover{background:#153050;}
-    .btn-cancelar{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;text-decoration:none;transition:background .15s;}
-    .btn-cancelar:hover{background:#F9FAFB;}
-    .badge-tipo{background:rgba(52,152,219,.1);color:#2471A3;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
-    .warning-box{background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.3);border-radius:8px;padding:12px 16px;display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#92651A;}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .65);
+      font-size: 14px;
+      font-weight: 500;
+      transition: background .18s;
+      border-left: 3px solid transparent;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .07);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(46, 204, 113, .18);
+      color: #fff;
+      border-left-color: #2ECC71;
+    }
+
+    .nav-sublist {
+      margin: 4px 0 6px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-subitem {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .65);
+      font-size: 13px;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+
+    .nav-subitem:hover {
+      background: rgba(255, 255, 255, .07);
+      color: #fff;
+    }
+
+    .form-label-custom {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-control-custom {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: #111827;
+      background: #fff;
+      outline: none;
+      transition: border .15s, box-shadow .15s;
+    }
+
+    .form-control-custom:focus {
+      border-color: #1B3A5C;
+      box-shadow: 0 0 0 3px rgba(27, 58, 92, .08);
+    }
+
+    .form-control-custom[readonly] {
+      background: #F9FAFB;
+      color: #6B7280;
+      cursor: not-allowed;
+    }
+
+    .btn-guardar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: none;
+      background: #1B3A5C;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background .15s;
+    }
+
+    .btn-guardar:hover {
+      background: #153050;
+    }
+
+    .btn-cancelar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      text-decoration: none;
+      transition: background .15s;
+    }
+
+    .btn-cancelar:hover {
+      background: #F9FAFB;
+    }
+
+    .badge-tipo {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .warning-box {
+      background: rgba(243, 156, 18, .08);
+      border: 1px solid rgba(243, 156, 18, .3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12px;
+      color: #92651A;
+    }
   </style>
 </head>
+
 <body>
 
-<div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
-  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-      <!-- Breadcrumb -->
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;font-size:13px;color:#9CA3AF;">
-        <a href="/superadmin/parametros" style="color:#1B3A5C;font-weight:600;text-decoration:none;">
-          <i class="fas fa-sliders-h" style="margin-right:4px;"></i>Parámetros del Sistema
-        </a>
-        <i class="fas fa-chevron-right" style="font-size:10px;"></i>
-        <span>Editar parámetro</span>
-      </div>
-
-      <!-- Header -->
-      <div style="margin-bottom:28px;">
-        <h1 style="font-size:20px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Editar Parámetro</h1>
-        <p style="color:#6B7280;font-size:13px;margin:0;">
-          Modificando:
-          <code style="background:#F3F4F6;padding:2px 8px;border-radius:4px;font-size:12px;color:#1B3A5C;font-weight:700;"
-                th:text="${parametro.clave}">CLAVE</code>
-        </p>
-      </div>
-
-      <!-- Card formulario -->
-      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);max-width:680px;">
-        <div style="padding:20px 24px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;">
-          <i class="fas fa-pencil-alt" style="color:#2ECC71;font-size:14px;"></i>
-          <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Datos del parámetro</span>
-          <span class="badge-tipo" th:text="${parametro.tipoDato}" style="margin-left:auto;">STRING</span>
+        <!-- Breadcrumb -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;font-size:13px;color:#9CA3AF;">
+          <a href="/superadmin/parametros" style="color:#1B3A5C;font-weight:600;text-decoration:none;">
+            <i class="fas fa-sliders-h" style="margin-right:4px;"></i>Parámetros del Sistema
+          </a>
+          <i class="fas fa-chevron-right" style="font-size:10px;"></i>
+          <span>Editar parámetro</span>
         </div>
 
-        <form th:action="@{/superadmin/parametros/editar/{id}(id=${parametro.id})}" method="post"
-              style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+        <!-- Header -->
+        <div style="margin-bottom:28px;">
+          <h1 style="font-size:20px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Editar Parámetro</h1>
+          <p style="color:#6B7280;font-size:13px;margin:0;">
+            Modificando:
+            <code
+              style="background:#F3F4F6;padding:2px 8px;border-radius:4px;font-size:12px;color:#1B3A5C;font-weight:700;"
+              th:text="${parametro.clave}">CLAVE</code>
+          </p>
+        </div>
 
-          <!-- Clave (read-only) -->
-          <div>
-            <label class="form-label-custom">Clave <span style="color:#9CA3AF;font-weight:400;">(no editable)</span></label>
-            <input type="text" class="form-control-custom" readonly
-                   th:value="${parametro.clave}" />
+        <!-- Card formulario -->
+        <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);max-width:680px;">
+          <div style="padding:20px 24px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-pencil-alt" style="color:#2ECC71;font-size:14px;"></i>
+            <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Datos del parámetro</span>
+            <span class="badge-tipo" th:text="${parametro.tipoDato}" style="margin-left:auto;">STRING</span>
           </div>
 
-          <!-- Valor -->
-          <div>
-            <label class="form-label-custom">
-              Valor <span style="color:#E74C3C;">*</span>
-            </label>
-            <textarea name="valor" rows="3" class="form-control-custom" required
-                      style="resize:vertical;"
-                      th:text="${parametro.valor}"></textarea>
-          </div>
+          <form th:action="@{/superadmin/parametros/editar/{id}(id=${parametro.id})}" method="post"
+            style="padding:24px;display:flex;flex-direction:column;gap:20px;">
 
-          <!-- Descripción -->
-          <div>
-            <label class="form-label-custom">Descripción</label>
-            <input type="text" name="descripcion" class="form-control-custom"
-                   th:value="${parametro.descripcion}" placeholder="Descripción del parámetro..." />
-          </div>
+            <!-- Clave (read-only) -->
+            <div>
+              <label class="form-label-custom">Clave <span style="color:#9CA3AF;font-weight:400;">(no
+                  editable)</span></label>
+              <input type="text" class="form-control-custom" readonly th:value="${parametro.clave}" />
+            </div>
 
-          <!-- Estado activo -->
-          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#F9FAFB;border-radius:8px;border:1px solid #F3F4F6;">
-            <input type="checkbox" name="estadoActivo" id="estadoActivo" value="true"
-                   style="width:16px;height:16px;accent-color:#1B3A5C;cursor:pointer;"
-                   th:checked="${parametro.estadoActivo}" />
-            <label for="estadoActivo" style="font-size:13px;font-weight:600;color:#374151;cursor:pointer;margin:0;">
-              Parámetro activo
-            </label>
-            <span style="font-size:12px;color:#9CA3AF;margin-left:4px;">— desactivar lo excluye del procesamiento del sistema</span>
-          </div>
+            <!-- Valor -->
+            <div>
+              <label class="form-label-custom">
+                Valor <span style="color:#E74C3C;">*</span>
+              </label>
+              <textarea name="valor" rows="3" class="form-control-custom" required style="resize:vertical;"
+                th:text="${parametro.valor}"></textarea>
+            </div>
 
-          <!-- Advertencia -->
-          <div class="warning-box">
-            <i class="fas fa-exclamation-triangle" style="color:#F39C12;flex-shrink:0;margin-top:1px;"></i>
-            <span>Los cambios en parámetros del sistema tienen efecto inmediato en producción. Verifica el valor antes de guardar.</span>
-          </div>
+            <!-- Descripción -->
+            <div>
+              <label class="form-label-custom">Descripción</label>
+              <input type="text" name="descripcion" class="form-control-custom" th:value="${parametro.descripcion}"
+                placeholder="Descripción del parámetro..." />
+            </div>
 
-          <!-- Acciones -->
-          <div style="display:flex;gap:12px;padding-top:4px;">
-            <button type="submit" class="btn-guardar">
-              <i class="fas fa-save"></i> Guardar cambios
-            </button>
-            <a href="/superadmin/parametros" class="btn-cancelar">
-              <i class="fas fa-arrow-left"></i> Cancelar
-            </a>
-          </div>
+            <!-- Estado activo -->
+            <div
+              style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:#F9FAFB;border-radius:8px;border:1px solid #F3F4F6;">
+              <input type="checkbox" name="estadoActivo" id="estadoActivo" value="true"
+                style="width:16px;height:16px;accent-color:#1B3A5C;cursor:pointer;"
+                th:checked="${parametro.estadoActivo}" />
+              <label for="estadoActivo" style="font-size:13px;font-weight:600;color:#374151;cursor:pointer;margin:0;">
+                Parámetro activo
+              </label>
+              <span style="font-size:12px;color:#9CA3AF;margin-left:4px;">— desactivar lo excluye del procesamiento del
+                sistema</span>
+            </div>
 
-        </form>
-      </div>
+            <!-- Advertencia -->
+            <div class="warning-box">
+              <i class="fas fa-exclamation-triangle" style="color:#F39C12;flex-shrink:0;margin-top:1px;"></i>
+              <span>Los cambios en parámetros del sistema tienen efecto inmediato en producción. Verifica el valor antes
+                de guardar.</span>
+            </div>
 
-    </main>
+            <!-- Acciones -->
+            <div style="display:flex;gap:12px;padding-top:4px;">
+              <button type="submit" class="btn-guardar">
+                <i class="fas fa-save"></i> Guardar cambios
+              </button>
+              <a href="/superadmin/parametros" class="btn-cancelar">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+            </div>
+
+          </form>
+        </div>
+
+      </main>
+    </div>
   </div>
-</div>
 
-<script>
-function navTo(page) {
-  var map = {
-    'inicio': '/superadmin/inicio',
-    'estudios': '/superadmin/estudios',
-    'normativo': '/superadmin/normativo',
-    'perfil': '/superadmin/perfil',
-    'notificaciones': '/superadmin/notificaciones',
-    'usuarios': '/superadmin/usuarios',
-    'admin-docs': '/superadmin/documentos',
-    'trazabilidad': '/superadmin/trazabilidad',
-    'reportes': '/superadmin/reportes',
-    'auditoria': '/superadmin/auditoria',
-    'impersonar': '/superadmin/impersonar',
-    'parametros': '/superadmin/parametros'
-  };
-  window.location.href = map[page] || ('/superadmin/' + page);
-}
-</script>
+  <script>
+    function navTo(page) {
+      var map = {
+        'inicio': '/superadmin/inicio',
+        'estudios': '/superadmin/estudios',
+        'normativo': '/superadmin/normativo',
+        'perfil': '/superadmin/perfil',
+        'notificaciones': '/superadmin/notificaciones',
+        'usuarios': '/superadmin/usuarios',
+        'admin-docs': '/superadmin/documentos',
+        'trazabilidad': '/superadmin/trazabilidad',
+        'reportes': '/superadmin/reportes',
+        'auditoria': '/superadmin/auditoria',
+        'impersonar': '/superadmin/impersonar',
+        'parametros': '/superadmin/parametros'
+      };
+      window.location.href = map[page] || ('/superadmin/' + page);
+    }
+  </script>
 </body>
+
 </html>

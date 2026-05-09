@@ -498,10 +498,11 @@
 
 <body>
   <div style="display:flex;flex-direction:column;min-height:100vh;">
-    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-      <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <!-- ══ HERO ══ -->
         <div class="norm-hero">
@@ -717,7 +718,8 @@
                   </tbody>
                 </table>
               </div>
-              <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+              <div
+                style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
                 <span id="conteo-normativas">Mostrando normativas</span>
                 <div style="display:flex;gap:4px;" id="paginacion-normativas"></div>
               </div>
@@ -1125,7 +1127,7 @@
 
           function getFilasActivas() {
             return Array.from(document.querySelectorAll('.norm-row'))
-              .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
+              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
           }
 
           function inicializarPaginacion() {
@@ -1144,20 +1146,20 @@
             var btnAnterior = document.createElement('button');
             btnAnterior.textContent = '← Ant';
             btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-            btnAnterior.onclick = function() {
+            btnAnterior.onclick = function () {
               if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
             };
             paginacionDiv.appendChild(btnAnterior);
 
             for (var i = 1; i <= totalPaginas; i++) {
-              (function(pageNum) {
+              (function (pageNum) {
                 var btn = document.createElement('button');
                 btn.textContent = pageNum;
                 btn.id = 'btn-pagina-' + pageNum;
                 btn.style.cssText = (pageNum === 1)
                   ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
                   : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-                btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
+                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
                 paginacionDiv.appendChild(btn);
               })(i);
             }
@@ -1165,7 +1167,7 @@
             var btnSiguiente = document.createElement('button');
             btnSiguiente.textContent = 'Sig →';
             btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnSiguiente.onclick = function() {
+            btnSiguiente.onclick = function () {
               var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
               if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
             };
@@ -1178,7 +1180,7 @@
             var inicio = (numero - 1) * ITEMS_POR_PAGINA;
             var fin = inicio + ITEMS_POR_PAGINA;
             var conteo = 0;
-            filas.forEach(function(tr) {
+            filas.forEach(function (tr) {
               if (tr.dataset.filtrado === '0') {
                 tr.style.display = 'none';
               } else {
@@ -1194,15 +1196,15 @@
             for (var i = 1; i <= total; i++) {
               var btn = document.getElementById('btn-pagina-' + i);
               if (btn) {
-                btn.style.background  = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
                 btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
-                btn.style.color       = (i === paginaActual) ? '#fff'    : '#6B7280';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
               }
             }
           }
 
           // ── Estado inicial: marca todas las filas y aplica filtro/paginación ──
-          document.querySelectorAll('.norm-row').forEach(function(tr) {
+          document.querySelectorAll('.norm-row').forEach(function (tr) {
             tr.dataset.filtrado = '1';
           });
           inicializarPaginacion();
@@ -1213,7 +1215,7 @@
     </div>
 
     <!-- ── Chatbot (fuera del main para position:fixed) ── -->
-    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
 </body>
