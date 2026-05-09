@@ -4,6 +4,7 @@ import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.service.AuditoriaService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -12,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auditoria")
 @CrossOrigin(origins = "*")
+@PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
 public class AuditoriaController {
 
     private final AuditoriaService auditoriaService;

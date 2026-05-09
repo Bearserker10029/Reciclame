@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,115 +9,299 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>if(typeof navTo==='undefined'){function navTo(p){window.location.href='/admin/'+p;}}</script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/admin/' + p; } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F0F4F8;}
 
-    @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(46,204,113,.6)}60%{box-shadow:0 0 0 8px rgba(46,204,113,0)}}
-    @keyframes rowIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-    @keyframes blinkDot{0%,100%{opacity:1}50%{opacity:.3}}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes pulseGreen {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .6)
+      }
+
+      60% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
+      }
+    }
+
+    @keyframes rowIn {
+      from {
+        opacity: 0;
+        transform: translateX(-12px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    @keyframes blinkDot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
 
     /* ── Hero Header ── */
-    .traza-hero{
-      background:linear-gradient(135deg,#1B3A5C 0%,#0d2035 50%,#1a3a2a 100%);
-      border-radius:20px;padding:24px 32px;margin-bottom:24px;
-      position:relative;overflow:hidden;
-      box-shadow:0 8px 40px rgba(27,58,92,.35);
-      animation:fadeUp .4s ease both;
+    .traza-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 50%, #1a3a2a 100%);
+      border-radius: 20px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
     }
-    .traza-hero::before{content:'';position:absolute;top:-80px;right:-40px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(46,204,113,.2) 0%,transparent 70%);}
-    .traza-hero::after{content:'';position:absolute;bottom:-60px;left:30%;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(52,152,219,.15) 0%,transparent 70%);}
+
+    .traza-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+    }
+
+    .traza-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 30%;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
+    }
 
     /* ── Live dot ── */
-    .live-dot{
-      width:10px;height:10px;border-radius:50%;background:#2ECC71;
-      animation:pulseGreen 1.8s ease infinite;display:inline-block;
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2ECC71;
+      animation: pulseGreen 1.8s ease infinite;
+      display: inline-block;
     }
 
     /* ── Filter bar ── */
-    .filter-bar{
-      background:#fff;border-radius:14px;padding:14px 20px;
-      margin-bottom:20px;box-shadow:0 2px 16px rgba(0,0,0,.07);
-      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-      animation:fadeUp .45s ease both;
+    .filter-bar {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      animation: fadeUp .45s ease both;
     }
-    .filter-bar input, .filter-bar select{
-      border:1.5px solid #E5E7EB;border-radius:10px;
-      padding:9px 14px;font-size:13px;font-family:inherit;color:#374151;
-      transition:border-color .2s,box-shadow .2s;background:#fff;
-    }
-    .filter-bar input{flex:1;min-width:200px;padding-left:38px;}
-    .filter-bar input:focus,.filter-bar select:focus{outline:none;border-color:#2ECC71;box-shadow:0 0 0 3px rgba(46,204,113,.1);}
 
-    .btn-limpiar{
-      padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;
-      background:#fff;cursor:pointer;font-size:12px;color:#6B7280;
-      font-family:inherit;display:flex;align-items:center;gap:6px;
-      transition:all .2s ease;
+    .filter-bar input,
+    .filter-bar select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      transition: border-color .2s, box-shadow .2s;
+      background: #fff;
     }
-    .btn-limpiar:hover{border-color:#E74C3C;color:#E74C3C;background:rgba(231,76,60,.04);}
+
+    .filter-bar input {
+      flex: 1;
+      min-width: 200px;
+      padding-left: 38px;
+    }
+
+    .filter-bar input:focus,
+    .filter-bar select:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .btn-limpiar {
+      padding: 9px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #E5E7EB;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      color: #6B7280;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s ease;
+    }
+
+    .btn-limpiar:hover {
+      border-color: #E74C3C;
+      color: #E74C3C;
+      background: rgba(231, 76, 60, .04);
+    }
 
     /* ── Table container ── */
-    .traza-table-wrap{
-      background:#fff;border-radius:16px;
-      box-shadow:0 2px 20px rgba(0,0,0,.08);overflow:hidden;
-      animation:fadeUp .5s .1s ease both;
+    .traza-table-wrap {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .1s ease both;
     }
-    .traza-table-wrap thead th{
-      font-size:10px;font-weight:700;letter-spacing:.08em;
-      text-transform:uppercase;color:#6B7280;
-      padding:13px 16px;border:none;
-      background:linear-gradient(90deg,#F8FAFC,#F0F4F8);
+
+    .traza-table-wrap thead th {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 13px 16px;
+      border: none;
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
     }
-    .audit-row{
-      border-bottom:1px solid #F3F4F6;
-      transition:background .2s;
-      animation:rowIn .35s ease both;
+
+    .audit-row {
+      border-bottom: 1px solid #F3F4F6;
+      transition: background .2s;
+      animation: rowIn .35s ease both;
     }
-    .audit-row:hover{background:#F0FFF6;}
-    .audit-row td{padding:12px 16px;vertical-align:middle;}
-    .audit-row:last-child{border-bottom:none;}
+
+    .audit-row:hover {
+      background: #F0FFF6;
+    }
+
+    .audit-row td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .audit-row:last-child {
+      border-bottom: none;
+    }
 
     /* ── Action pills ── */
-    .pill-action{
-      display:inline-flex;align-items:center;gap:5px;
-      padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;
-      transition:transform .2s;cursor:default;
+    .pill-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      transition: transform .2s;
+      cursor: default;
     }
-    .pill-action:hover{transform:scale(1.05);}
+
+    .pill-action:hover {
+      transform: scale(1.05);
+    }
 
     /* ── Status badges ── */
-    .badge-exitoso{background:rgba(46,204,113,.1);color:#27AE60;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;}
-    .badge-fallido{background:rgba(231,76,60,.1);color:#C0392B;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;}
+    .badge-exitoso {
+      background: rgba(46, 204, 113, .1);
+      color: #27AE60;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-fallido {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
 
     /* ── Module tag ── */
-    .mod-tag{background:#F3F4F6;color:#374151;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.04em;}
+    .mod-tag {
+      background: #F3F4F6;
+      color: #374151;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
 
     /* ── Footer ── */
-    .traza-footer{padding:12px 20px;background:#FAFBFC;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;}
+    .traza-footer {
+      padding: 12px 20px;
+      background: #FAFBFC;
+      border-top: 1px solid #F3F4F6;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
   </style>
 </head>
+
 <body>
-<div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="navbar/topbar :: topbar"></th:block>
-  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-    <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <!-- ══ HERO HEADER ══ -->
         <div class="traza-hero">
-          <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
                   <i class="fas fa-shield-alt" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Trazabilidad de Actividades</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Registro en tiempo real de todas las acciones del sistema</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Registro en tiempo real de todas las
+                    acciones del sistema</p>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
@@ -124,9 +309,12 @@
                 <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">En vivo</span>
               </div>
             </div>
-            <div th:if="${totalElements != null}" style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:16px 24px;text-align:center;">
+            <div th:if="${totalElements != null}"
+              style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:16px 24px;text-align:center;">
               <div style="font-size:32px;font-weight:800;color:#fff;" th:text="${totalElements}">0</div>
-              <div style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);">registros totales</div>
+              <div
+                style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);">
+                registros totales</div>
             </div>
           </div>
         </div>
@@ -134,7 +322,8 @@
         <!-- ══ FILTER BAR ══ -->
         <div class="filter-bar">
           <div style="position:relative;flex:1;min-width:220px;">
-            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+            <i class="fas fa-search"
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
             <input id="searchTraza" placeholder="Buscar por usuario, acción o descripción..." />
           </div>
           <select id="filterAccionTraza">
@@ -174,57 +363,61 @@
 
                 <tr th:if="${auditorias == null or auditorias.isEmpty()}">
                   <td colspan="7" style="text-align:center;padding:60px;">
-                    <i class="fas fa-clipboard-list" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
+                    <i class="fas fa-clipboard-list"
+                      style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
                     <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay registros de auditoría aún</div>
                   </td>
                 </tr>
 
-                <tr th:each="a, iStat : ${auditorias}"
-                    class="audit-row"
-                    th:data-accion="${a.accion}"
-                    th:data-estado="${a.estado}"
-                    th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.accion ?: '') + ' ' + (a.descripcion ?: '')}"
-                    th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
+                <tr th:each="a, iStat : ${auditorias}" class="audit-row" th:data-accion="${a.accion}"
+                  th:data-estado="${a.estado}"
+                  th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.accion ?: '') + ' ' + (a.descripcion ?: '')}"
+                  th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
 
                   <td>
                     <div style="font-size:12px;font-weight:600;color:#1B3A5C;white-space:nowrap;"
-                         th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</div>
+                      th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">
+                      —</div>
                     <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">UTC</div>
                   </td>
 
                   <td>
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2ECC71);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <div
+                        style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2ECC71);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <span style="font-size:11px;font-weight:700;color:#fff;"
-                              th:text="${a.usuarioNombre != null and #strings.length(a.usuarioNombre) > 0 ? #strings.toUpperCase(#strings.substring(a.usuarioNombre,0,1)) : 'S'}">S</span>
+                          th:text="${a.usuarioNombre != null and #strings.length(a.usuarioNombre) > 0 ? #strings.toUpperCase(#strings.substring(a.usuarioNombre,0,1)) : 'S'}">S</span>
                       </div>
                       <div>
-                        <div style="font-weight:600;color:#1B3A5C;font-size:12px;" th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
-                        <div style="font-size:10px;color:#9CA3AF;" th:text="${a.usuarioId != null ? 'ID: ' + a.usuarioId : 'Sistema'}">—</div>
+                        <div style="font-weight:600;color:#1B3A5C;font-size:12px;"
+                          th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
+                        <div style="font-size:10px;color:#9CA3AF;"
+                          th:text="${a.usuarioId != null ? 'ID: ' + a.usuarioId : 'Sistema'}">—</div>
                       </div>
                     </div>
                   </td>
 
                   <td>
-                    <span class="pill-action"
-                          th:style="${a.accion != null and #strings.contains(a.accion,'CREAR')} ? 'background:rgba(46,204,113,.12);color:#27AE60;' :
+                    <span class="pill-action" th:style="${a.accion != null and #strings.contains(a.accion,'CREAR')} ? 'background:rgba(46,204,113,.12);color:#27AE60;' :
                                      (${a.accion != null and #strings.contains(a.accion,'EDITAR')} ? 'background:rgba(52,152,219,.12);color:#2471A3;' :
                                      (${a.accion != null and #strings.contains(a.accion,'ELIMINAR')} ? 'background:rgba(231,76,60,.12);color:#C0392B;' :
                                      (${a.accion != null and #strings.contains(a.accion,'BLOQUEAR')} ? 'background:rgba(243,156,18,.12);color:#C27C0E;' :
                                      'background:rgba(139,92,246,.12);color:#7C3AED;')))"
-                          th:text="${a.accion ?: '—'}">—</span>
+                      th:text="${a.accion ?: '—'}">—</span>
                   </td>
 
                   <td>
                     <span class="mod-tag" th:text="${a.modulo ?: '—'}">—</span>
                   </td>
 
-                  <td style="color:#6B7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                      th:text="${a.descripcion ?: '—'}">—</td>
+                  <td
+                    style="color:#6B7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                    th:text="${a.descripcion ?: '—'}">—</td>
 
                   <td>
-                    <span style="font-family:monospace;font-size:11px;color:#6B7280;background:#F3F4F6;padding:3px 7px;border-radius:5px;"
-                          th:text="${a.ipAddress ?: 'N/A'}">—</span>
+                    <span
+                      style="font-family:monospace;font-size:11px;color:#6B7280;background:#F3F4F6;padding:3px 7px;border-radius:5px;"
+                      th:text="${a.ipAddress ?: 'N/A'}">—</span>
                   </td>
 
                   <td>
@@ -242,6 +435,13 @@
             </table>
           </div>
 
+          <!-- Paginación -->
+          <div
+            style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <span id="conteo-traza" style="font-size:12px;color:#6B7280;"></span>
+            <div id="paginacion-traza" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"></div>
+          </div>
+
           <div class="traza-footer">
             <div style="display:flex;align-items:center;gap:6px;">
               <span class="live-dot" style="width:8px;height:8px;"></span>
@@ -254,6 +454,87 @@
         </div>
 
         <script>
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.audit-row'))
+              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-traza');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-traza');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = '← Ant';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.onclick = function () {
+              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function (pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Sig →';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function () {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSiguiente);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.audit-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+              }
+            }
+          }
+
           document.getElementById('searchTraza')?.addEventListener('input', filtrarTraza);
           document.getElementById('filterAccionTraza')?.addEventListener('change', filtrarTraza);
           document.getElementById('filterEstadoTraza')?.addEventListener('change', filtrarTraza);
@@ -262,27 +543,39 @@
             var texto = (document.getElementById('searchTraza')?.value || '').toLowerCase();
             var accion = (document.getElementById('filterAccionTraza')?.value || '').toLowerCase();
             var estado = (document.getElementById('filterEstadoTraza')?.value || '').toLowerCase();
-            document.querySelectorAll('.audit-row').forEach(function(row) {
+            document.querySelectorAll('.audit-row').forEach(function (row) {
               var ok = (!texto || (row.dataset.texto || '').toLowerCase().includes(texto))
-                    && (!accion || (row.dataset.accion || '').toLowerCase().includes(accion))
-                    && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
-              row.style.display = ok ? '' : 'none';
+                && (!accion || (row.dataset.accion || '').toLowerCase().includes(accion))
+                && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
+              row.dataset.filtrado = ok ? '1' : '0';
             });
+            inicializarPaginacion();
+            mostrarPagina(1);
           }
+
           function limpiarFiltrosTraza() {
             document.getElementById('searchTraza').value = '';
             document.getElementById('filterAccionTraza').value = '';
             document.getElementById('filterEstadoTraza').value = '';
             filtrarTraza();
           }
+
+          window.addEventListener('load', function () {
+            document.querySelectorAll('.audit-row').forEach(function (tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
         </script>
 
-    </main>
+      </main>
+    </div>
+
+    <!-- ── Chatbot (fuera del main para position:fixed) ── -->
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <!-- ── Chatbot (fuera del main para position:fixed) ── -->
-  <th:block th:replace="components/chatbot :: chatbot"></th:block>
-</div>
-
 </body>
+
 </html>

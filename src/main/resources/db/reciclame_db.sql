@@ -882,7 +882,24 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Ad','71234567','admin@reciclame.com','admin123','Administrador del Sistema',NULL,2,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-26 05:02:02'),(2,'Super','71234568','superadmin@reciclame.com','super123','SuperAdmin',NULL,1,1,0,0,NULL,0,NULL,'INACTIVO',0,NULL,'2026-04-22 00:47:45','2026-04-24 06:40:50'),(3,'Socio Demo','71234569','socio@reciclame.com','socio123','Socio Empresarial',NULL,3,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-22 00:47:45'),(4,'Visualiza','71234570','visualizador@reciclame.com','vis123','Visualizador',NULL,4,NULL,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-26 05:07:35'),(5,'Usuario Pendiente','71234571','pendiente@reciclame.com','password','Nuevo Usuario',NULL,3,2,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-22 19:08:43'),(6,'harold_decadencia','21421434','a20202132@pucp.edu.pe','910e0084','desarrollador frontend',NULL,3,2,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 19:08:11','2026-04-26 05:21:39'),(7,'esddgfhbj','23242442','sergiomeneses893@gmail.com','910e0084','desarrollador frontend',NULL,4,4,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 19:17:38','2026-04-26 05:13:52'),(8,'sergio','21421432','sergiomeneses3@gmail.com','123456','desarolador',NULL,2,4,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-24 06:35:21','2026-04-24 06:35:21'),(9,'jairitocuadros','25254254','jairo@pucp.edu.pe','123456','IT',NULL,1,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-24 06:53:32','2026-04-24 06:53:32');
+-- Contraseñas cifradas con BCrypt (rounds=10):
+-- admin@reciclame.com        → admin123
+-- superadmin@reciclame.com   → super123
+-- socio@reciclame.com        → socio123
+-- visualizador@reciclame.com → vis123
+-- pendiente@reciclame.com    → password
+-- a20202132 / sergiomeneses893 → 910e0084
+-- sergiomeneses3 / jairo     → 123456
+INSERT INTO `usuarios` VALUES
+(1,'Ad','71234567','admin@reciclame.com','$2b$10$DcAuL30y3G9uCzGpCgCKle3rC.HIymnCb1f7ovjnB3n5daZ8ME9i6','Administrador del Sistema',NULL,2,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-26 05:02:02'),
+(2,'Super','71234568','superadmin@reciclame.com','$2b$10$Z.Lpe/Y4VlVwYtr6yofN.uHqthFdVRCjIrOiPjvrM2TgfZN2qVvwS','SuperAdmin',NULL,1,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-24 06:40:50'),
+(3,'Socio Demo','71234569','socio@reciclame.com','$2b$10$iwDe8HO.ZuKkW6HFUIAhe.2Q2mHEZSXYRWNesfOQh0gFHVG1l4.qq','Socio Empresarial',NULL,3,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-22 00:47:45'),
+(4,'Visualiza','71234570','visualizador@reciclame.com','$2b$10$fwCz/8MjgF52Kyxl/RGKCekZ4KKcgw59MEQ0FUHPuwL9pX2DqMX7G','Visualizador',NULL,4,NULL,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-26 05:07:35'),
+(5,'Usuario Pendiente','71234571','pendiente@reciclame.com','$2b$10$Vdk3J3.eHUOpQVK.HXqwWe36aOP9C/KOuGlEvAkL1OxHufVUpSfXq','Nuevo Usuario',NULL,3,2,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 00:47:45','2026-04-22 19:08:43'),
+(6,'harold_decadencia','21421434','a20202132@pucp.edu.pe','$2b$10$esXYyXRukydU//HhrNSdOeDl84CjDhQQ9rkMJOX5ZpmRriKs5yRdm','desarrollador frontend',NULL,3,2,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 19:08:11','2026-04-26 05:21:39'),
+(7,'esddgfhbj','23242442','sergiomeneses893@gmail.com','$2b$10$esXYyXRukydU//HhrNSdOeDl84CjDhQQ9rkMJOX5ZpmRriKs5yRdm','desarrollador frontend',NULL,4,4,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-22 19:17:38','2026-04-26 05:13:52'),
+(8,'sergio','21421432','sergiomeneses3@gmail.com','$2b$10$LS2TBRF5aKvUcdYQP3Vk6OoP8tmSwK6j5S8tMq3X0udamR3zFAnGu','desarolador',NULL,2,4,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-24 06:35:21','2026-04-24 06:35:21'),
+(9,'jairitocuadros','25254254','jairo@pucp.edu.pe','$2b$10$LS2TBRF5aKvUcdYQP3Vk6OoP8tmSwK6j5S8tMq3X0udamR3zFAnGu','IT',NULL,1,1,0,0,NULL,0,NULL,'ACTIVO',1,NULL,'2026-04-24 06:53:32','2026-04-24 06:53:32');
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -894,5 +911,37 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+--
+-- Mi Unidad (carpetas e ítems por socio) — ejecutar si aún no existen
+--
+CREATE TABLE IF NOT EXISTS `unidad_carpetas` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `usuario_id` bigint NOT NULL,
+  `parent_id` bigint DEFAULT NULL,
+  `nombre` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_unidad_carpeta_usuario` (`usuario_id`),
+  KEY `idx_unidad_carpeta_parent` (`parent_id`),
+  CONSTRAINT `fk_unidad_carpeta_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_unidad_carpeta_parent` FOREIGN KEY (`parent_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `unidad_items` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `usuario_id` bigint NOT NULL,
+  `carpeta_id` bigint DEFAULT NULL,
+  `documento_tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'NORMATIVA, ESTUDIO',
+  `documento_id` bigint NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_unidad_item_usuario` (`usuario_id`),
+  KEY `idx_unidad_item_carpeta` (`carpeta_id`),
+  KEY `idx_unidad_item_doc` (`documento_tipo`,`documento_id`),
+  CONSTRAINT `fk_unidad_item_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_unidad_item_carpeta` FOREIGN KEY (`carpeta_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Dump completed on 2026-04-28 21:13:19

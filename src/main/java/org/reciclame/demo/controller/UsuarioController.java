@@ -5,6 +5,7 @@ import org.reciclame.demo.dto.UsuarioResponseDTO;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ public class UsuarioController {
 
     // CREATE
     // POST /api/usuarios
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request, @AuthenticationPrincipal UserDetails userDetails) {
@@ -43,6 +45,7 @@ public class UsuarioController {
 
     // READ ALL
     // GET /api/usuarios
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
@@ -50,6 +53,7 @@ public class UsuarioController {
 
     //  READ ONE
     // GET /api/usuarios/{id}
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> obtenerUsuario(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(id));
@@ -57,6 +61,7 @@ public class UsuarioController {
 
     // UPDATE
     // PUT /api/usuarios/{id}
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
             @PathVariable Long id,
@@ -71,6 +76,7 @@ public class UsuarioController {
 
     // DELETE (lógico)
     // DELETE /api/usuarios/{id}
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -83,6 +89,7 @@ public class UsuarioController {
 
     // APROBAR solicitud pendiente
     // POST /api/usuarios/{id}/aprobar?rolId=X&empresaId=Y
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/aprobar")
     public ResponseEntity<UsuarioResponseDTO> aprobarUsuario(
             @PathVariable Long id,
@@ -98,6 +105,7 @@ public class UsuarioController {
 
     // RECHAZAR solicitud pendiente
     // POST /api/usuarios/{id}/rechazar
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/rechazar")
     public ResponseEntity<UsuarioResponseDTO> rechazarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -109,6 +117,7 @@ public class UsuarioController {
 
     // BLOQUEAR / DESBLOQUEAR usuario activo
     // POST /api/usuarios/{id}/bloquear
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/bloquear")
     public ResponseEntity<UsuarioResponseDTO> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
@@ -120,6 +129,7 @@ public class UsuarioController {
 
     // REACTIVAR USUARIO
     // POST /api/usuarios/{id}/reactivar
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/reactivar")
     public ResponseEntity<?> reaccionarUsuario(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request) {
@@ -131,6 +141,7 @@ public class UsuarioController {
 
     // EXPORTAR CSV
     // GET /api/usuarios/export.csv
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/export.csv")
     public ResponseEntity<String> exportarCsv() {
         return ResponseEntity.ok()

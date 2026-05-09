@@ -86,6 +86,10 @@ public class AuditoriaService {
         return auditoriaRepository.findAllPaginado(pageable);
     }
 
+    public List<Auditoria> listarAuditoriasUltimas100() {
+        return auditoriaRepository.findTop100ByOrderByFechaAccionDesc();
+    }
+
     public List<Auditoria> listarAuditoriasPorUsuario(Long usuarioId) {
         return auditoriaRepository.findByUsuarioId(usuarioId);
     }

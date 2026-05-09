@@ -1,19 +1,6 @@
 package org.reciclame.demo.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import org.reciclame.demo.dto.UsuarioResponseDTO;
-import org.reciclame.demo.model.Auditoria;
-import org.reciclame.demo.service.AuditoriaService;
-import org.reciclame.demo.service.EmpresaService;
-import org.reciclame.demo.service.EstadosNormativaService;
-import org.reciclame.demo.service.EstudioService;
-import org.reciclame.demo.service.EtiquetaService;
-import org.reciclame.demo.service.NotificacionService;
-import org.reciclame.demo.service.NormativaService;
-import org.reciclame.demo.service.RolService;
-import org.reciclame.demo.service.TematicaService;
-import org.reciclame.demo.service.TiposNormativaService;
-import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -24,14 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Controller
-public class AdminController {
+public class AdminController extends BaseReportesController {
 
     private final UsuarioService usuarioService;
     private final NormativaService normativaService;
@@ -44,6 +27,7 @@ public class AdminController {
     private final EstadosNormativaService estadosNormativaService;
     private final NotificacionService notificacionService;
     private final AuditoriaService auditoriaService;
+    private final ReporteService reporteService;
 
     public AdminController(UsuarioService usuarioService, NormativaService normativaService,
                            EstudioService estudioService, EmpresaService empresaService,
@@ -51,7 +35,8 @@ public class AdminController {
                            EtiquetaService etiquetaService,
                            TiposNormativaService tiposNormativaService,
                            EstadosNormativaService estadosNormativaService,
-                           NotificacionService notificacionService, AuditoriaService auditoriaService) {
+                           NotificacionService notificacionService, AuditoriaService auditoriaService,
+                           ReporteService reporteService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -63,7 +48,23 @@ public class AdminController {
         this.estadosNormativaService = estadosNormativaService;
         this.notificacionService = notificacionService;
         this.auditoriaService = auditoriaService;
+        this.reporteService = reporteService;
     }
+
+    @Override
+    protected UsuarioService usuarioService() { return usuarioService; }
+
+    @Override
+    protected NormativaService normativaService() { return normativaService; }
+
+    @Override
+    protected EstudioService estudioService() { return estudioService; }
+
+    @Override
+    protected ReporteService reporteService() { return reporteService; }
+
+    @Override
+    protected AuditoriaService auditoriaService() { return auditoriaService; }
 
     private void setupCommonAttributes(Model model, String correo) {
         model.addAttribute("rol", "ADMIN");
@@ -263,7 +264,7 @@ public class AdminController {
         topUsuarios.sort((a, b) -> ((Integer) b.get("interacciones")).compareTo((Integer) a.get("interacciones")));
         int maxInteracciones = topUsuarios.isEmpty() ? 1 : ((Integer) topUsuarios.get(0).get("interacciones")).intValue();
         List<Map<String, Object>> topUsuariosFinal = new ArrayList<>();
-        topUsuarios.stream().limit(5).forEach(usr -> {
+        topUsuarios.stream().filter(usr -> usr.get("nombre") != null).limit(5).forEach(usr -> {
             usr.put("porcentaje", (int) (maxInteracciones > 0 ? ((Integer) usr.get("interacciones") * 100.0) / maxInteracciones : 0));
             topUsuariosFinal.add(usr);
         });
@@ -418,8 +419,44 @@ public class AdminController {
         return "redirect:/admin/notificaciones";
     }
 
-    protected String esc(String s) {
-        if (s == null) return "";
-        return s.replace("\"", "\"\"");
-    }
+    /* 
+                                                w#dUCw*&r   vd#a*qdoMZ
+                            IW#mzZ8%}          Z#{>><_<<~{oQ,&X+~~~-_?f%;
+                          j&0i!l!!!lfbQ       |a\i}vCOZL\ivb8]+_?{t1}-_ha
+                          8Ll!]|xuux[/a       -q>1/trLXnX[n@}<+trvnzLx][Mv
+                          Bv!?[(nXJJr1o       1k](zZt)/wwtv@]~\z)dwLhdfU#h
+                         dkx]\frttx)jOQ       Qk)(XUuJUUQvqO8/jQ|YXzbbQrvoqaX
+                     {mdYjkr}{fx(\nXUwp  {/"dWdz{]|fvLQCXWm ;ocufLmkqLJ|nCwb#88&#v
+                   *a~_r(/%B[)rr/cnnchwBat]/zX0O)]11(\\\__vW%%8a?[}\JwOp}cmpL/)ftxO%Wn
+                  Uh{1tuYn(x?-{\xYYn\f-!><<?rCZJtxvxzXY\>><<>i!ll+/OZYfcO*X)1(}\1|(/||kM#kOd0
+               n*aMon)\\xuvUY]-]]}{iiii!><!rrU(x~{vXXX(_<>ii~++~<>~-[|w#MMMowLCCCJJLQLCx/t(uCb#O
+         >Y#888hkaaabJvzXC0Qnvvvvnf~iiiiiiil}c!~<<<<<~~~~i~!!-}{}[_1(10kkhha***oooo***#Q)|t|//x*f
+     QU&kv\/jrxxnnnvJ00QQL0OUL0JUYb*bm(i!!i!!>><<<~~~~~~+<~i;~}]]}[}(((Jzct[{uXJ0mwpdbLf)|\\()j@
+    qdx))(\frrrjjf|}}(xXUCQLJC#oaao*o*o\!ii>>>>><<<~~<~<~~<i;I>?11[?[{}]1))))1}[+liuz/)->~_~>-?v&
+   Ld}[}}{1))1{[-{LwbadmJfcXv#&&&&WWWMa?!>i>>><<<><<<<~~~>>!;;i<<_+++_?_--?]]][]_!<a#bYbM#***##Q~
+   Xd1]?????--fXrvOqbhhao*#YXaooh&&&W#q!!!ii>>>>>>>>>>>>>>i!;:I<+~><><~<<>>i><~+_<~#0
+    xbhokbdZn(xYnfuLZqdbhao#WrZ&wuW&W*nlll!!!!iiiiiiii>>ii!l/Wo]>iiiiiii!!!!!!!!!!iX#
+           JZOJ%WYvcLwppdbaoo_UMhroMLa};llIl!!li>i!!!!!i!!!x8Uo{l!!!!!!iiii!!!lllllrh
+               qWJzzJOwqpqpbh0?_(kk-qYiIllllli!!!!!iii!!!l{hk &xl!!i>~+~~~~~~<<!lliZB
+               ]WCXXJOwqdbdkJ|mkn)J]Z?;lI!l!!li>i!!i!!!!l!Uo  Wdl!i<~+++__+++~<>>!>ka
+                BwXXUmqqpdbb+moab|ZrCIIlll!!l!lliii!!!lII~oC  haIlii>_-+__+<<~+_i!!\ho
+                CBYYCmmZpdbbutpp/Oxv1lIIlIl!!!!!l!!!lllIIz%   n&II<>>l>-+>>~>!I!++<?kb
+                C%UYLZZmdkbpqdbwpb(Q~;IllllIlI;llllllllI!%z    B(lI<?+i;<]?+~++>lIi>n*;
+               (#0UCOO0mpdddddkobbqw0l;:;I;IlI!!lllIIII~bL     Bx!<lI_[_ilI<?[]_+~<><aa
+              )baUJQZ00wqdddbkkwqkqbm!>l;;::;IIIlllI;:~p&      ;&Y!>-l;-[[-<!l!~?]]+]8>
+             t%OXUCQ0QZwwqqpppmphpd#Z!i>ii>lII;;;lli<>?b%       mC;;;l~!I<+>~_>>illl(8
+             oMqZmZmmZOmwwpbpqo*wd#*QiiiiIii><<>><<<>>{h*       aX!!iilI><>><<><<+__~&_
+             BwUZwZOLL0Zwppmb*hdoMobm~__-+i+++_-----__)h#ooooooohO\{]>II!!!i>>>l:,l<<8/
+            >8LLYzzCmpbk*%@$$@@@@@@@$$@$$@@@@@@@@@@@@@@$$$$$$$$$$$$$$$@w}IiI!i!i!!!>>hb
+             8bObdpwZJUk@@$$$$$$$$@$$$$$$$$$$$$$$$$$$$$$$$$$$$@@$$$$$8j>>>l!!!l!!>mW
+            O*!>cXCwwwq&@$$$$@&###W@$$$$$$$$$$8#8@$$$$$$$$$$$$$$$BM*@$$$@Xi!!lllll!!!b*
+            hZucccuvJOp%@$$$%" "!!_%$$$$@$$$$$c xB$$$$$$$$$$$z^J$#x|8$$$$bnxxxxnxnnun8c
+                      d&$$$$) }W$BB$hi.  Ik$$$c I; "Z$^   "Zl. ."C<'M$$$$#0
+                      p&$$$$? 1&&- ov {$C .$$$c nBm ~%u:"` rBc X$k! M$$$$#0
+                      p&$$$$a  }t" oZ `U[ -$$$c }U< nC -X1 rBX }Uk! M$$$@#0
+                      QM$$$$$#wmd#m%@ammmbB$$$WwwmmkB@qmm8mo@8wmw&dwB$$$$*x
+                       @@$$$$$$$$@$$$$$$$@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$@B
+                        B%$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$&M
+                          Q&$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*J
+    */
 }
