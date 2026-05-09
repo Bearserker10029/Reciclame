@@ -10,28 +10,15 @@
           "rawBody": true
         }
       },
-      "id": "f5da05fe-365a-4755-a259-3d64f35ec3e5",
+      "id": "2e0e14df-2faf-4fbb-9787-7c96d365ca90",
       "name": "Chat Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -320,
-        96
+        -112,
+        208
       ],
       "webhookId": "chatbot-reciclame"
-    },
-    {
-      "parameters": {
-        "jsCode": "const allowedTables = ['materials', 'recycling_centers', 'collection_points', 'schedule', 'instructions'];\nconst dangerousPatterns = /\\b(DROP|DELETE|UPDATE|INSERT|ALTER|TRUNCATE|CREATE|GRANT|REVOKE|EXEC|EXECUTE|UNION|INTO|OUTFILE|DUMPFILE)\\b/i;\nconst body = $input.first().json.body;\nconst query = body.query || body.message || '';\nif (dangerousPatterns.test(query)) {\n  throw new Error('Consulta no permitida: solo se permiten consultas SELECT');\n}\nconst selectMatch = query.match(/\\bSELECT\\b/i);\nif (!selectMatch) {\n  throw new Error('Solo se permiten consultas SELECT');\n}\nconst tableMatch = query.match(/FROM\\s+`?(\\w+)`?/i);\nif (tableMatch && !allowedTables.includes(tableMatch[1].toLowerCase())) {\n  throw new Error('Tabla no permitida: ' + tableMatch[1]);\n}\nreturn [{ json: { safeQuery: query, validated: true } }];"
-      },
-      "id": "252668ce-61bd-4fc4-880c-efe812b022cb",
-      "name": "SQL Validator",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -208,
-        -112
-      ]
     },
     {
       "parameters": {
@@ -44,10 +31,10 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        0,
-        0
+        208,
+        112
       ],
-      "id": "3ac48f7c-5369-47bd-a637-8ea9b55dc546",
+      "id": "a6d9f8f0-925e-465c-ac02-a4c9295c8dc8",
       "name": "AI Agent1"
     },
     {
@@ -61,14 +48,14 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatMinimax",
       "typeVersion": 1,
       "position": [
-        -80,
-        240
+        128,
+        352
       ],
-      "id": "b1453989-c3a3-49c0-8166-5e5bd39ce270",
+      "id": "02a640b8-d451-4816-965d-8261022e3499",
       "name": "MiniMax Chat Model",
       "credentials": {
         "minimaxApi": {
-          "id": "8BsfKrVrMgFCa6pj",
+          "id": "hfkd7q6evFOuPofn",
           "name": "MiniMax account"
         }
       }
@@ -82,14 +69,14 @@
       "type": "n8n-nodes-base.mySqlTool",
       "typeVersion": 2.5,
       "position": [
-        208,
-        240
+        416,
+        352
       ],
-      "id": "abcd8e87-fe2d-4edd-9c56-10db2bff8419",
+      "id": "2d4de94c-961c-4e8f-b35a-2e3addfdb143",
       "name": "Execute Safe SQL Query",
       "credentials": {
         "mySql": {
-          "id": "N6WfXgkBMys26cPX",
+          "id": "dghSOQHFlSQclkpQ",
           "name": "MySQL account"
         }
       }
@@ -103,10 +90,10 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
       "position": [
-        576,
-        96
+        784,
+        208
       ],
-      "id": "64878016-e501-4af8-bf9f-08006d97b53f",
+      "id": "f48b8fda-0107-4500-8d88-557945d086ef",
       "name": "Respond to Webhook"
     }
   ],
@@ -124,17 +111,6 @@
       ]
     },
     "Chat Trigger": {
-      "main": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "SQL Validator": {
       "main": [
         [
           {
@@ -173,11 +149,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "41a0c82f-0e0b-4e77-9a5f-be8e588654c2",
+  "versionId": "5df633e4-ab57-4a1e-8144-c40062c7b27d",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "acf55694e0d874a64ecad315f2b4a3aa45eb553609ca47da13d196bb98f5d0b0"
+    "instanceId": "8953dfee771500d2daf8c5ae15a0a22f78adaf606cf3173fe9f6eb92d0283bee"
   },
-  "id": "JlOy07FcLi1Brr3E",
+  "id": "xAiCn8IxsMXyAuum",
   "tags": []
 }

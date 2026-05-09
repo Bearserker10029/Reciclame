@@ -431,10 +431,11 @@
 
 <body>
   <div style="display:flex;flex-direction:column;min-height:100vh;">
-    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-      <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="estudios-hero">
           <div
@@ -740,13 +741,10 @@
               var matchSeccion = !seccion || rowSeccion === seccion;
               var matchCategoria = !categoria || rowCategoria === categoria;
 
-              if (matchTexto && matchSeccion && matchCategoria) {
-                row.style.display = '';
-              } else {
-                row.style.display = 'none';
-              }
+              row.dataset.filtrado = (matchTexto && matchSeccion && matchCategoria) ? '1' : '0';
             });
             inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
           }
 
           function limpiarFiltrosDocumentos() {
@@ -762,14 +760,13 @@
 
           function inicializarPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             paginaDocumentosActual = 1;
 
             var paginacionDiv = document.getElementById('paginacion-documentos');
             paginacionDiv.innerHTML = '';
-            if (totalPaginas <= 1) return;
 
             var btnAnterior = document.createElement('button');
             btnAnterior.textContent = 'Anterior';
@@ -794,7 +791,6 @@
             paginacionDiv.appendChild(btnSiguiente);
 
             document.getElementById('conteo-documentos').textContent = 'Mostrando ' + filasVisibles + ' documentos';
-            mostrarPaginaDocumentos(1);
           }
 
           function mostrarPaginaDocumentos(numero) {
@@ -803,14 +799,18 @@
             var fin = inicio + DOCUMENTOS_POR_PAGINA;
             var conteo = 0;
             filas.forEach(function (tr) {
-              if (tr.style.display === 'none') { tr.style.display = 'none'; }
-              else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
             });
           }
 
           function actualizarBotonesPaginacionDocumentos() {
             var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
-            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.style.display !== 'none'; }).length;
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
             var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             for (var i = 1; i <= totalPaginas; i++) {
@@ -820,12 +820,18 @@
           }
 
           // Inicializar paginación al cargar
-          setTimeout(inicializarPaginacionDocumentos, 100);
+          window.addEventListener('load', function () {
+            document.querySelectorAll('#documentos-tbody tr.doc-row').forEach(function (tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
+          });
         </script>
 
       </main>
     </div>
-    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 </body>
 

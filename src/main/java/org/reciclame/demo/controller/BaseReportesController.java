@@ -1,0 +1,429 @@
+package org.reciclame.demo.controller;
+
+import jakarta.servlet.http.HttpServletResponse;
+import net.sf.jasperreports.engine.data.JRMapCollectionDataSource;
+import org.reciclame.demo.dto.NormativaResponseDTO;
+import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.model.Auditoria;
+import org.reciclame.demo.service.AuditoriaService;
+import org.reciclame.demo.service.EstudioService;
+import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.ReporteService;
+import org.reciclame.demo.service.UsuarioService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.util.*;
+
+public abstract class BaseReportesController {
+
+    protected abstract UsuarioService usuarioService();
+    protected abstract NormativaService normativaService();
+    protected abstract EstudioService estudioService();
+    protected abstract ReporteService reporteService();
+    protected abstract AuditoriaService auditoriaService();
+
+    @GetMapping("/admin/reportes/export/auditoria.pdf")
+    protected void exportarAuditoriaPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
+        List<Auditoria> auditorias = auditoriaService().listarAuditoriasUltimas100();
+        List<Map<String, Object>> datos = auditorias.stream().map(a -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("fechaAccion", a.getFechaAccion());
+            row.put("accion", a.getAccion());
+            row.put("modulo", a.getModulo());
+            row.put("estado", a.getEstado());
+            row.put("usuarioNombre", a.getUsuarioNombre());
+            row.put("ipAddress", a.getIpAddress());
+            row.put("descripcion", a.getDescripcion());
+            return row;
+        }).toList();
+
+        Map<String, Integer> accionesCount = new LinkedHashMap<>();
+        Map<String, Integer> estadoCount = new LinkedHashMap<>();
+        for (Auditoria a : auditorias) {
+            String accionKey = a.getAccion() != null ? a.getAccion() : "SIN_ACCION";
+            accionesCount.put(accionKey, accionesCount.getOrDefault(accionKey, 0) + 1);
+            String estadoKey = a.getEstado() != null ? a.getEstado() : "SIN_ESTADO";
+            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
+        }
+
+        List<Map<String, ?>> accionesData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : accionesCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            accionesData.add(row);
+        }
+        List<Map<String, ?>> estadoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            estadoData.add(row);
+        }
+
+        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(accionesData);
+        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(estadoData);
+
+        byte[] pdf = reporteService().generarReportePDF("auditoria_report", datos, null, chartData1, chartData2);
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.pdf\"");
+        response.getOutputStream().write(pdf);
+    }
+
+    @GetMapping("/admin/reportes/export/auditoria.xlsx")
+    protected void exportarAuditoriaXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
+        List<Auditoria> auditorias = auditoriaService().listarAuditoriasUltimas100();
+        List<Map<String, Object>> datos = auditorias.stream().map(a -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("fecha", a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "");
+            row.put("accion", a.getAccion());
+            row.put("modulo", a.getModulo());
+            row.put("estado", a.getEstado());
+            row.put("usuario", a.getUsuarioNombre());
+            row.put("ip", a.getIpAddress());
+            row.put("descripcion", a.getDescripcion());
+            return row;
+        }).toList();
+
+        Map<String, Integer> accionesCount = new LinkedHashMap<>();
+        Map<String, Integer> estadoCount = new LinkedHashMap<>();
+        for (Auditoria a : auditorias) {
+            String accionKey = a.getAccion() != null ? a.getAccion() : "SIN_ACCION";
+            accionesCount.put(accionKey, accionesCount.getOrDefault(accionKey, 0) + 1);
+            String estadoKey = a.getEstado() != null ? a.getEstado() : "SIN_ESTADO";
+            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
+        }
+
+        List<Map<String, ?>> accionesData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : accionesCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            accionesData.add(row);
+        }
+        List<Map<String, ?>> estadoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            estadoData.add(row);
+        }
+
+        byte[] xlsx = reporteService().generarReporteExcelConGraficos("Reporte de Auditoría",
+                "Últimas 100 acciones registradas",
+                new String[] { "Fecha", "Accion", "Modulo", "Estado", "Usuario", "IP", "Descripcion" },
+                datos, accionesData, estadoData);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria_report.xlsx\"");
+        response.getOutputStream().write(xlsx);
+    }
+
+    @GetMapping("/admin/reportes/export/usuarios.pdf")
+    protected void exportarUsuariosPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        List<UsuarioResponseDTO> usuarios = usuarioService().listarUsuariosUltimos100();
+        List<Map<String, Object>> datos = usuarios.stream().map(u -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("nombreCompleto", u.getNombreCompleto());
+            row.put("correoCorporativo", u.getCorreoCorporativo());
+            row.put("cargo", u.getCargo());
+            row.put("empresaNombre", u.getEmpresaNombre());
+            row.put("estadoCuenta", u.getEstadoCuenta());
+            row.put("ultimoLogin", u.getUltimoLogin());
+            return row;
+        }).toList();
+
+        Map<String, Integer> rolCount = new LinkedHashMap<>();
+        Map<String, Integer> estadoCount = new LinkedHashMap<>();
+        for (UsuarioResponseDTO u : usuarios) {
+            String rolKey = u.getRolNombre() != null ? u.getRolNombre() : "SIN_ROL";
+            rolCount.put(rolKey, rolCount.getOrDefault(rolKey, 0) + 1);
+            String estadoKey = u.getEstadoCuenta() != null ? u.getEstadoCuenta() : "SIN_ESTADO";
+            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
+        }
+
+        List<Map<String, ?>> rolData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : rolCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            rolData.add(row);
+        }
+        List<Map<String, ?>> estadoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            estadoData.add(row);
+        }
+
+        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(rolData);
+        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(estadoData);
+
+        byte[] pdf = reporteService().generarReportePDF("usuarios_report", datos, null, chartData1, chartData2);
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"usuarios_report.pdf\"");
+        response.getOutputStream().write(pdf);
+    }
+
+    @GetMapping("/admin/reportes/export/usuarios.xlsx")
+    protected void exportarUsuariosXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
+        List<UsuarioResponseDTO> usuarios = usuarioService().listarUsuariosUltimos100();
+        List<Map<String, Object>> datos = usuarios.stream().map(u -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("nombreCompleto", u.getNombreCompleto());
+            row.put("dni", u.getDni());
+            row.put("correoCorporativo", u.getCorreoCorporativo());
+            row.put("cargo", u.getCargo());
+            row.put("rol", u.getRolNombre());
+            row.put("empresa", u.getEmpresaNombre());
+            row.put("estado", u.getEstadoCuenta());
+            row.put("ultimoLogin", u.getUltimoLogin() != null ? fmt.format(u.getUltimoLogin()) : "");
+            return row;
+        }).toList();
+
+        Map<String, Integer> rolCount = new LinkedHashMap<>();
+        Map<String, Integer> estadoCount = new LinkedHashMap<>();
+        for (UsuarioResponseDTO u : usuarios) {
+            String rolKey = u.getRolNombre() != null ? u.getRolNombre() : "SIN_ROL";
+            rolCount.put(rolKey, rolCount.getOrDefault(rolKey, 0) + 1);
+            String estadoKey = u.getEstadoCuenta() != null ? u.getEstadoCuenta() : "SIN_ESTADO";
+            estadoCount.put(estadoKey, estadoCount.getOrDefault(estadoKey, 0) + 1);
+        }
+
+        List<Map<String, ?>> rolData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : rolCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            rolData.add(row);
+        }
+        List<Map<String, ?>> estadoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : estadoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            estadoData.add(row);
+        }
+
+        byte[] xlsx = reporteService().generarReporteExcelConGraficos("Reporte de Usuarios",
+                "Últimos 100 usuarios registrados",
+                new String[] { "Nombre Completo", "DNI", "Correo Corporativo", "Cargo", "Rol", "Empresa", "Estado",
+                        "Último Login" },
+                datos, rolData, estadoData);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"usuarios_report.xlsx\"");
+        response.getOutputStream().write(xlsx);
+    }
+
+    @GetMapping("/admin/reportes/export/normativas.pdf")
+    protected void exportarNormativasPDF(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        List<Map<String, Object>> datos = new ArrayList<>();
+        List<NormativaResponseDTO> normativas = normativaService().listarNormativasUltimas100();
+        List<org.reciclame.demo.dto.EstudioResponseDTO> estudios = estudioService().listarEstudiosUltimos100();
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        for (NormativaResponseDTO n : normativas) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("titulo", n.getTitulo());
+            row.put("tipo", "Normativa");
+            row.put("tematicaNombre", n.getTematicaNombre());
+            row.put("estado", n.getEstadoNormativaNombre());
+            row.put("anio", n.getAnio());
+            row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
+            row.put("fechaCreacion",
+                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(ZoneId.of("America/Lima")))
+                            : "");
+            datos.add(row);
+        }
+
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("titulo", e.getTitulo());
+            row.put("tipo", "Estudio");
+            row.put("tematicaNombre", e.getTematicaNombre());
+            row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
+            row.put("anio", e.getAnio());
+            row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
+            row.put("fechaCreacion",
+                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(ZoneId.of("America/Lima")))
+                            : "");
+            datos.add(row);
+        }
+
+        Map<String, Integer> tipoCount = new LinkedHashMap<>();
+        tipoCount.put("Normativa", normativas.size());
+        tipoCount.put("Estudio", estudios.size());
+
+        Map<String, Integer> tematicaCount = new LinkedHashMap<>();
+        for (NormativaResponseDTO n : normativas) {
+            String key = n.getTematicaNombre() != null ? n.getTematicaNombre() : "SIN_TEMATICA";
+            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
+        }
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
+            String key = e.getTematicaNombre() != null ? e.getTematicaNombre() : "SIN_TEMATICA";
+            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
+        }
+
+        Map<Integer, Integer> descargasPorAnio = new LinkedHashMap<>();
+        for (NormativaResponseDTO n : normativas) {
+            if (n.getAnio() == null) continue;
+            int desc = n.getDescargasCount() != null ? n.getDescargasCount() : 0;
+            descargasPorAnio.put(n.getAnio(), descargasPorAnio.getOrDefault(n.getAnio(), 0) + desc);
+        }
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudios) {
+            if (e.getAnio() == null) continue;
+            int desc = e.getDescargasCount() != null ? e.getDescargasCount() : 0;
+            descargasPorAnio.put(e.getAnio(), descargasPorAnio.getOrDefault(e.getAnio(), 0) + desc);
+        }
+
+        List<Map<String, ?>> tipoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : tipoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            tipoData.add(row);
+        }
+        List<Map<String, ?>> tematicaData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : tematicaCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            tematicaData.add(row);
+        }
+        List<Map<String, ?>> descargasData = new ArrayList<>();
+        List<Integer> aniosOrdenados = new ArrayList<>(descargasPorAnio.keySet());
+        aniosOrdenados.sort(Integer::compareTo);
+        for (Integer anio : aniosOrdenados) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("category", anio.toString());
+            row.put("value", descargasPorAnio.get(anio));
+            descargasData.add(row);
+        }
+
+        JRMapCollectionDataSource chartData1 = new JRMapCollectionDataSource(tipoData);
+        JRMapCollectionDataSource chartData2 = new JRMapCollectionDataSource(tematicaData);
+        JRMapCollectionDataSource chartData3 = new JRMapCollectionDataSource(descargasData);
+
+        byte[] pdf = reporteService().generarReportePDF("normativas_estudios_report", datos, null, chartData1, chartData2,
+                chartData3);
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.pdf\"");
+        response.getOutputStream().write(pdf);
+    }
+
+    @GetMapping("/admin/reportes/export/normativas.xlsx")
+    protected void exportarNormativasXLSX(HttpServletResponse response,
+            @AuthenticationPrincipal UserDetails user) throws IOException {
+        List<Map<String, Object>> datos = new ArrayList<>();
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        for (NormativaResponseDTO n : normativaService().listarNormativasUltimas100()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("titulo", n.getTitulo());
+            row.put("tipo", "Normativa");
+            row.put("tematicaNombre", n.getTematicaNombre());
+            row.put("estado", n.getEstadoNormativaNombre());
+            row.put("anio", n.getAnio());
+            row.put("descargasCount", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
+            row.put("fechaCreacion",
+                    n.getCreatedAt() != null ? fmt.format(n.getCreatedAt().atZone(ZoneId.of("America/Lima")))
+                            : "");
+            datos.add(row);
+        }
+
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estudioService().listarEstudiosUltimos100()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("titulo", e.getTitulo());
+            row.put("tipo", "Estudio");
+            row.put("tematicaNombre", e.getTematicaNombre());
+            row.put("estado", e.getEstadoActivo() != null && e.getEstadoActivo() ? "Activo" : "Inactivo");
+            row.put("anio", e.getAnio());
+            row.put("descargasCount", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
+            row.put("fechaCreacion",
+                    e.getCreatedAt() != null ? fmt.format(e.getCreatedAt().atZone(ZoneId.of("America/Lima")))
+                            : "");
+            datos.add(row);
+        }
+
+        Map<String, Integer> tipoCount = new LinkedHashMap<>();
+        List<NormativaResponseDTO> normas = normativaService().listarNormativasUltimas100();
+        List<org.reciclame.demo.dto.EstudioResponseDTO> estus = estudioService().listarEstudiosUltimos100();
+        tipoCount.put("Normativa", normas.size());
+        tipoCount.put("Estudio", estus.size());
+
+        Map<String, Integer> tematicaCount = new LinkedHashMap<>();
+        for (NormativaResponseDTO n : normas) {
+            String key = n.getTematicaNombre() != null ? n.getTematicaNombre() : "SIN_TEMATICA";
+            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
+        }
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estus) {
+            String key = e.getTematicaNombre() != null ? e.getTematicaNombre() : "SIN_TEMATICA";
+            tematicaCount.put(key, tematicaCount.getOrDefault(key, 0) + 1);
+        }
+
+        Map<Integer, Integer> descargasPorAnio = new LinkedHashMap<>();
+        for (NormativaResponseDTO n : normas) {
+            if (n.getAnio() == null) continue;
+            int desc = n.getDescargasCount() != null ? n.getDescargasCount() : 0;
+            descargasPorAnio.put(n.getAnio(), descargasPorAnio.getOrDefault(n.getAnio(), 0) + desc);
+        }
+        for (org.reciclame.demo.dto.EstudioResponseDTO e : estus) {
+            if (e.getAnio() == null) continue;
+            int desc = e.getDescargasCount() != null ? e.getDescargasCount() : 0;
+            descargasPorAnio.put(e.getAnio(), descargasPorAnio.getOrDefault(e.getAnio(), 0) + desc);
+        }
+
+        List<Map<String, ?>> tipoData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : tipoCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            tipoData.add(row);
+        }
+        List<Map<String, ?>> tematicaData = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : tematicaCount.entrySet()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", entry.getKey());
+            row.put("value", entry.getValue());
+            tematicaData.add(row);
+        }
+        List<Map<String, ?>> descargasData = new ArrayList<>();
+        List<Integer> aniosOrdenados = new ArrayList<>(descargasPorAnio.keySet());
+        aniosOrdenados.sort(Integer::compareTo);
+        for (Integer anio : aniosOrdenados) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("category", anio.toString());
+            row.put("value", descargasPorAnio.get(anio));
+            descargasData.add(row);
+        }
+
+        byte[] xlsx = reporteService().generarReporteExcelConGraficos("Reporte de Normativas y Estudios",
+                "Últimos 100 documentos registrados",
+                new String[] { "Titulo", "Tipo", "Tematica Nombre", "Estado", "Anio", "Descargas Count",
+                        "Fecha Creacion" },
+                datos, tipoData, tematicaData, descargasData);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"normativas_estudios_report.xlsx\"");
+        response.getOutputStream().write(xlsx);
+    }
+
+    protected String esc(String s) {
+        if (s == null) return "";
+        return s.replace("\"", "\"\"");
+    }
+}

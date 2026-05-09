@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,15 +10,23 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #F5F6FA; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
 
     .page-header {
       background: white;
       padding: 24px;
       border-radius: 12px;
       margin-bottom: 24px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .page-header h1 {
@@ -44,13 +53,13 @@
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       border-left: 4px solid #2ECC71;
       transition: all 0.3s ease;
     }
 
     .audit-entry:hover {
-      box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
     }
 
     .audit-entry.error {
@@ -142,7 +151,7 @@
       background: white;
       padding: 16px 20px;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
       flex-wrap: wrap;
     }
 
@@ -229,7 +238,7 @@
       padding: 48px 24px;
       background: white;
       border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .empty-state-icon {
@@ -246,171 +255,183 @@
     }
   </style>
 </head>
+
 <body>
 
-<div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="navbar/topbar :: topbar"></th:block>
-  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-      <!-- Page Header -->
-      <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-        <div>
-          <h1><i class="fas fa-shield-alt me-2"></i>Auditoría del Sistema</h1>
-          <p>Registro de todas las acciones y cambios realizados en el sistema</p>
+        <!-- Page Header -->
+        <div class="page-header"
+          style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h1><i class="fas fa-shield-alt me-2"></i>Auditoría del Sistema</h1>
+            <p>Registro de todas las acciones y cambios realizados en el sistema</p>
+          </div>
+          <a href="/admin/auditoria/export.csv"
+            style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;text-decoration:none;box-shadow:0 4px 14px rgba(27,58,92,.3);transition:all .2s;"
+            onmouseover="this.style.background='#2c5282'" onmouseout="this.style.background='#1B3A5C'">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+          </a>
         </div>
-        <a href="/admin/auditoria/export.csv"
-           style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;text-decoration:none;box-shadow:0 4px 14px rgba(27,58,92,.3);transition:all .2s;"
-           onmouseover="this.style.background='#2c5282'" onmouseout="this.style.background='#1B3A5C'">
-          <i class="fas fa-file-csv"></i> Exportar CSV
-        </a>
-      </div>
 
-      <!-- Toolbar -->
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Buscar por usuario, descripción..." />
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por usuario, descripción..." />
+          </div>
+          <div class="filter-group">
+            <select id="filterModulo">
+              <option value="">Todos los módulos</option>
+              <option value="USUARIOS">Usuarios</option>
+              <option value="NORMATIVAS">Normativas</option>
+              <option value="ESTUDIOS">Estudios</option>
+              <option value="EMPRESAS">Empresas</option>
+              <option value="SISTEMA">Sistema</option>
+            </select>
+            <select id="filterAccion">
+              <option value="">Todas las acciones</option>
+              <option value="CREAR">Crear</option>
+              <option value="EDITAR">Editar</option>
+              <option value="ELIMINAR">Eliminar</option>
+            </select>
+            <select id="filterEstado">
+              <option value="">Todos los estados</option>
+              <option value="EXITOSO">Exitoso</option>
+              <option value="FALLIDO">Fallido</option>
+              <option value="ERROR">Error</option>
+            </select>
+          </div>
         </div>
-        <div class="filter-group">
-          <select id="filterModulo">
-            <option value="">Todos los módulos</option>
-            <option value="USUARIOS">Usuarios</option>
-            <option value="NORMATIVAS">Normativas</option>
-            <option value="ESTUDIOS">Estudios</option>
-            <option value="EMPRESAS">Empresas</option>
-            <option value="SISTEMA">Sistema</option>
-          </select>
-          <select id="filterAccion">
-            <option value="">Todas las acciones</option>
-            <option value="CREAR">Crear</option>
-            <option value="EDITAR">Editar</option>
-            <option value="ELIMINAR">Eliminar</option>
-          </select>
-          <select id="filterEstado">
-            <option value="">Todos los estados</option>
-            <option value="EXITOSO">Exitoso</option>
-            <option value="FALLIDO">Fallido</option>
-            <option value="ERROR">Error</option>
-          </select>
-        </div>
-      </div>
 
-      <!-- Audit Timeline -->
-      <div class="audit-timeline">
-        <th:block th:if="${auditorias != null && auditorias.size() > 0}">
-          <th:block th:each="auditoria : ${auditorias}">
-            <div class="audit-entry" th:classappend="${auditoria.estado}=='EXITOSO'?'':'${auditoria.estado.toLowerCase()}==\"fallido\"?\"error\":\"warning\"'">
-              <div class="audit-header">
-                <div>
-                  <div class="audit-action">
-                    <i th:classappend="${auditoria.accion.contains('CREAR')?'fas fa-plus-circle':auditoria.accion.contains('EDITAR')?'fas fa-edit':auditoria.accion.contains('ELIMINAR')?'fas fa-trash-alt':auditoria.accion.contains('BLOQUEAR')?'fas fa-lock':'fas fa-info-circle'}"></i>
-                    <span th:text="${auditoria.accion}">Acción</span>
+        <!-- Audit Timeline -->
+        <div class="audit-timeline">
+          <th:block th:if="${auditorias != null && auditorias.size() > 0}">
+            <th:block th:each="auditoria : ${auditorias}">
+              <div class="audit-entry"
+                th:classappend="${auditoria.estado}=='EXITOSO'?'':'${auditoria.estado.toLowerCase()}==\"
+                fallido\"?\"error\":\"warning\"'">
+                <div class="audit-header">
+                  <div>
+                    <div class="audit-action">
+                      <i
+                        th:classappend="${auditoria.accion.contains('CREAR')?'fas fa-plus-circle':auditoria.accion.contains('EDITAR')?'fas fa-edit':auditoria.accion.contains('ELIMINAR')?'fas fa-trash-alt':auditoria.accion.contains('BLOQUEAR')?'fas fa-lock':'fas fa-info-circle'}"></i>
+                      <span th:text="${auditoria.accion}">Acción</span>
+                    </div>
+                    <div style="margin-top: 8px; display: flex; gap: 8px;">
+                      <span class="badge-modulo" th:text="${auditoria.modulo}">Módulo</span>
+                      <span class="badge-estado" th:classappend="${auditoria.estado.toLowerCase()}"
+                        th:text="${auditoria.estado}">Estado</span>
+                    </div>
                   </div>
-                  <div style="margin-top: 8px; display: flex; gap: 8px;">
-                    <span class="badge-modulo" th:text="${auditoria.modulo}">Módulo</span>
-                    <span class="badge-estado" th:classappend="${auditoria.estado.toLowerCase()}" th:text="${auditoria.estado}">Estado</span>
+                  <div class="audit-timestamp">
+                    <i class="far fa-clock me-1"></i>
+                    <span th:text="${#temporals.format(auditoria.fechaAccion, 'dd/MM/yyyy HH:mm:ss')}">Fecha</span>
                   </div>
                 </div>
-                <div class="audit-timestamp">
-                  <i class="far fa-clock me-1"></i>
-                  <span th:text="${#temporals.format(auditoria.fechaAccion, 'dd/MM/yyyy HH:mm:ss')}">Fecha</span>
-                </div>
-              </div>
 
-              <div class="audit-details">
-                <strong>Descripción:</strong> <span th:text="${auditoria.descripcion}">Descripción</span>
-                <th:block th:if="${auditoria.mensajeError != null}">
-                  <br/><strong>Error:</strong> <span th:text="${auditoria.mensajeError}" style="color: #DC3545;">Mensaje</span>
+                <div class="audit-details">
+                  <strong>Descripción:</strong> <span th:text="${auditoria.descripcion}">Descripción</span>
+                  <th:block th:if="${auditoria.mensajeError != null}">
+                    <br /><strong>Error:</strong> <span th:text="${auditoria.mensajeError}"
+                      style="color: #DC3545;">Mensaje</span>
+                  </th:block>
+                </div>
+
+                <div class="audit-meta">
+                  <div class="audit-meta-item">
+                    <div class="audit-meta-label">Usuario</div>
+                    <div class="audit-meta-value" th:text="${auditoria.usuarioNombre}">Usuario</div>
+                  </div>
+                  <div class="audit-meta-item">
+                    <div class="audit-meta-label">Dirección IP</div>
+                    <div class="audit-meta-value" th:text="${auditoria.ipAddress?:'No disponible'}">IP</div>
+                  </div>
+                  <div class="audit-meta-item">
+                    <div class="audit-meta-label">Navegador</div>
+                    <div class="audit-meta-value"
+                      th:text="${auditoria.userAgent?:#strings.abbreviate(auditoria.userAgent,30):'No disponible'}">User
+                      Agent</div>
+                  </div>
+                </div>
+
+                <th:block th:if="${auditoria.datosAnteriores != null || auditoria.datosNuevos != null}">
+                  <button class="btn btn-sm btn-outline-primary mt-2" type="button" data-bs-toggle="collapse"
+                    th:attr="data-bs-target='#cambios-' + ${auditoria.id}">
+                    <i class="fas fa-code-branch me-1"></i>Ver cambios
+                  </button>
+                  <div th:id="'cambios-' + ${auditoria.id}" class="collapse mt-2">
+                    <div
+                      style="background: #1B3A5C; color: #fff; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; overflow-x: auto; max-height: 200px; overflow-y: auto;">
+                      <th:block th:if="${auditoria.datosAnteriores != null}">
+                        <strong>Antes:</strong><br />
+                        <span th:text="${auditoria.datosAnteriores}">Datos anteriores</span><br /><br />
+                      </th:block>
+                      <th:block th:if="${auditoria.datosNuevos != null}">
+                        <strong>Después:</strong><br />
+                        <span th:text="${auditoria.datosNuevos}">Datos nuevos</span>
+                      </th:block>
+                    </div>
+                  </div>
                 </th:block>
               </div>
+            </th:block>
+          </th:block>
 
-              <div class="audit-meta">
-                <div class="audit-meta-item">
-                  <div class="audit-meta-label">Usuario</div>
-                  <div class="audit-meta-value" th:text="${auditoria.usuarioNombre}">Usuario</div>
-                </div>
-                <div class="audit-meta-item">
-                  <div class="audit-meta-label">Dirección IP</div>
-                  <div class="audit-meta-value" th:text="${auditoria.ipAddress?:'No disponible'}">IP</div>
-                </div>
-                <div class="audit-meta-item">
-                  <div class="audit-meta-label">Navegador</div>
-                  <div class="audit-meta-value" th:text="${auditoria.userAgent?:#strings.abbreviate(auditoria.userAgent,30):'No disponible'}">User Agent</div>
-                </div>
-              </div>
-
-              <th:block th:if="${auditoria.datosAnteriores != null || auditoria.datosNuevos != null}">
-                <button class="btn btn-sm btn-outline-primary mt-2" type="button"
-                        data-bs-toggle="collapse" th:attr="data-bs-target='#cambios-' + ${auditoria.id}">
-                  <i class="fas fa-code-branch me-1"></i>Ver cambios
-                </button>
-                <div th:id="'cambios-' + ${auditoria.id}" class="collapse mt-2">
-                  <div style="background: #1B3A5C; color: #fff; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; overflow-x: auto; max-height: 200px; overflow-y: auto;">
-                    <th:block th:if="${auditoria.datosAnteriores != null}">
-                      <strong>Antes:</strong><br/>
-                      <span th:text="${auditoria.datosAnteriores}">Datos anteriores</span><br/><br/>
-                    </th:block>
-                    <th:block th:if="${auditoria.datosNuevos != null}">
-                      <strong>Después:</strong><br/>
-                      <span th:text="${auditoria.datosNuevos}">Datos nuevos</span>
-                    </th:block>
-                  </div>
-                </div>
-              </th:block>
+          <th:block th:if="${auditorias == null || auditorias.isEmpty()}">
+            <div class="empty-state">
+              <div class="empty-state-icon"><i class="fas fa-file-check"></i></div>
+              <div class="empty-state-text">No hay registros de auditoría</div>
             </div>
           </th:block>
-        </th:block>
+        </div>
 
-        <th:block th:if="${auditorias == null || auditorias.isEmpty()}">
-          <div class="empty-state">
-            <div class="empty-state-icon"><i class="fas fa-file-check"></i></div>
-            <div class="empty-state-text">No hay registros de auditoría</div>
-          </div>
-        </th:block>
-      </div>
-
-    </main>
+      </main>
+    </div>
   </div>
-</div>
 
-<script>
-  function getBaseUrl() {
-    const path = window.location.pathname;
-    return path.startsWith('/superadmin') ? '/superadmin' : '/admin';
-  }
+  <script>
+    function getBaseUrl() {
+      const path = window.location.pathname;
+      return path.startsWith('/superadmin') ? '/superadmin' : '/admin';
+    }
 
-  function navTo(page) {
-    const base = getBaseUrl();
-    window.location.href = `${base}/${page}`;
-  }
+    function navTo(page) {
+      const base = getBaseUrl();
+      window.location.href = `${base}/${page}`;
+    }
 
-  // Search and filter functionality
-  document.getElementById('searchInput')?.addEventListener('input', filterAuditorias);
-  document.getElementById('filterModulo')?.addEventListener('change', filterAuditorias);
-  document.getElementById('filterAccion')?.addEventListener('change', filterAuditorias);
-  document.getElementById('filterEstado')?.addEventListener('change', filterAuditorias);
+    // Search and filter functionality
+    document.getElementById('searchInput')?.addEventListener('input', filterAuditorias);
+    document.getElementById('filterModulo')?.addEventListener('change', filterAuditorias);
+    document.getElementById('filterAccion')?.addEventListener('change', filterAuditorias);
+    document.getElementById('filterEstado')?.addEventListener('change', filterAuditorias);
 
-  function filterAuditorias() {
-    const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
-    const modulo = (document.getElementById('filterModulo')?.value || '').toLowerCase();
-    const accion = (document.getElementById('filterAccion')?.value || '').toLowerCase();
-    const estado = (document.getElementById('filterEstado')?.value || '').toLowerCase();
+    function filterAuditorias() {
+      const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
+      const modulo = (document.getElementById('filterModulo')?.value || '').toLowerCase();
+      const accion = (document.getElementById('filterAccion')?.value || '').toLowerCase();
+      const estado = (document.getElementById('filterEstado')?.value || '').toLowerCase();
 
-    document.querySelectorAll('.audit-entry').forEach(entry => {
-      const text = entry.textContent.toLowerCase();
-      const entryModulo = entry.querySelector('.badge-modulo')?.textContent.toLowerCase() || '';
-      const entryEstado = entry.querySelector('.badge-estado')?.textContent.toLowerCase() || '';
-      let visible = true;
+      document.querySelectorAll('.audit-entry').forEach(entry => {
+        const text = entry.textContent.toLowerCase();
+        const entryModulo = entry.querySelector('.badge-modulo')?.textContent.toLowerCase() || '';
+        const entryEstado = entry.querySelector('.badge-estado')?.textContent.toLowerCase() || '';
+        let visible = true;
 
-      if (searchTerm && !text.includes(searchTerm)) visible = false;
-      if (modulo && !entryModulo.includes(modulo)) visible = false;
-      if (estado && !entryEstado.includes(estado)) visible = false;
+        if (searchTerm && !text.includes(searchTerm)) visible = false;
+        if (modulo && !entryModulo.includes(modulo)) visible = false;
+        if (estado && !entryEstado.includes(estado)) visible = false;
 
-      entry.style.display = visible ? '' : 'none';
-    });
-  }
-</script>
+        entry.style.display = visible ? '' : 'none';
+      });
+    }
+  </script>
 </body>
+
 </html>

@@ -330,6 +330,74 @@
       .norm-card.hidden-card {
         display: none;
       }
+
+      .drive-row-actions {
+        position: relative;
+        display: inline-flex;
+        vertical-align: middle;
+        z-index: 50;
+      }
+
+      .drive-kebab {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #64748B;
+        cursor: pointer;
+        font-size: 16px;
+        line-height: 1;
+        padding: 0;
+      }
+
+      .drive-kebab:hover {
+        background: rgba(0, 0, 0, .07);
+        color: #1B3A5C;
+      }
+
+      .drive-dropdown {
+        display: none;
+        position: absolute;
+        right: 0;
+        top: 100%;
+        margin-top: 4px;
+        min-width: 228px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+        border: 1px solid #E8ECF0;
+        z-index: 10050;
+        padding: 6px 0;
+      }
+
+      .drive-dropdown.is-open {
+        display: block;
+      }
+
+      .drive-dropdown button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 10px 14px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 13px;
+        color: #374151;
+        font-family: inherit;
+        text-align: left;
+      }
+
+      .drive-dropdown button:hover:not(:disabled) {
+        background: #F3F4F6;
+      }
+
+      .drive-dropdown button:disabled {
+        opacity: .48;
+        cursor: not-allowed;
+      }
     </style>
 
     <!-- Header -->
@@ -367,7 +435,7 @@
               <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Ley 30884 - Plastico de un solo uso</div>
               <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 20 min</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+                <button onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
                 <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
                 <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Ley 30884','Plástico de un solo uso','pdf')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
               </div>
@@ -379,7 +447,7 @@
               <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">D.L. 1278 - Gestion de Residuos</div>
               <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 h</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+                <button onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
                 <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
                 <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.L. 1278','Ley de Gestión de Residuos','xlsx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
               </div>
@@ -391,7 +459,7 @@
               <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Reglamento de Envases D.S. 014-2021</div>
               <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 1 dia</div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
+                <button onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
                 <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
                 <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.S. 014-2021','Reglamento de Envases','docx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
               </div>
@@ -468,8 +536,9 @@
 
           <!-- LIST VIEW -->
           <div id="view-list">
-            <div style="border:1px solid #EEF1F4;border-radius:10px;overflow:hidden;">
-              <div style="overflow-x:auto;">
+            <div style="border:1px solid #EEF1F4;border-radius:10px;overflow:visible;">
+              <!-- overflow visible: si es auto, los submenús "Añadir a" hacia la izquierda se recortan. -->
+              <div class="norm-list-table-scroll" style="overflow:visible;">
                 <table class="norm-tbl" style="min-width:820px;">
                   <thead>
                     <tr>
@@ -481,11 +550,79 @@
                       <th>Clasif.</th>
                       <th>Estado</th>
                       <th>Temática</th>
-                      <th style="text-align:center;">Acceso</th>
+                      <th style="text-align:center;">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr class="norm-row" data-titulo="decreto legislativo 1278 ley gestión residuos" data-tipo="ley"
+                  <th:block th:if="${normativas != null and !normativas.isEmpty()}">
+                    <tr th:each="n : ${normativas}" class="norm-row"
+                        th:with="clasifFiltro=${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'no vinculante' : 'vinculante'}"
+                        th:attr="data-documento-id=${n.id},
+                          data-full-titulo=${n.titulo},
+                          data-anio=${n.anio},
+                          data-archivo-mime=${n.archivoTipoMime},
+                          data-titulo=${#strings.toLowerCase(n.titulo)},
+                          data-tipo=${#strings.toLowerCase(n.tipoNormativaNombre != null ? n.tipoNormativaNombre : '')},
+                          data-estado=${#strings.toLowerCase(n.estadoNormativaNombre != null ? n.estadoNormativaNombre : '')},
+                          data-ambito=${n.ambito},
+                          data-clasif=${clasifFiltro},
+                          data-tema=${#strings.toLowerCase(n.tematicaCodigo != null ? n.tematicaCodigo : '')}">
+                      <td>
+                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;" th:text="${n.titulo}">Título</div>
+                      </td>
+                      <td style="color:#6B7280;font-size:11px;white-space:nowrap;" th:text="|ID ${n.id}|">ID</td>
+                      <td style="color:#6B7280;font-size:11px;" th:text="${n.ambito == 'NACIONAL' ? 'Nacional' : 'Internacional'}">Ámbito</td>
+                      <td style="font-weight:600;font-size:12px;" th:text="${n.anio != null ? n.anio : '—'}">2024</td>
+                      <td style="color:#6B7280;font-size:11px;" th:text="${n.tipoNormativaNombre}">Tipo</td>
+                      <td>
+                        <span class="pill" th:style="${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'background:rgba(52,152,219,.1);color:#2471A3;' : 'background:rgba(231,76,60,.1);color:#C0392B;'}"
+                              th:text="${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'No vinculante' : 'Vinculante'}">Vinculante</span>
+                      </td>
+                      <td>
+                        <span th:class="${'pill ' + (n.estadoNormativaNombre != null and #strings.contains(#strings.toLowerCase(n.estadoNormativaNombre), 'proyecto') ? 's-proyecto' : 's-vigente')}">
+                          <i class="fas fa-circle" style="font-size:5px;"></i>
+                          <span th:text="${n.estadoNormativaNombre != null ? n.estadoNormativaNombre : '—'}">Vigente</span>
+                        </span>
+                      </td>
+                      <td>
+                        <th:block th:switch="${n.tematicaCodigo}">
+                          <span th:case="'EC'" class="tag" style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
+                          <span th:case="'GR'" class="tag" style="background:rgba(52,152,219,.1);color:#2471A3;border-left:3px solid #3498DB;">GR</span>
+                          <span th:case="'EE'" class="tag" style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
+                          <span th:case="'REP'" class="tag" style="background:rgba(231,76,60,.1);color:#C0392B;border-left:3px solid #E74C3C;">REP</span>
+                          <span th:case="*" class="tag" style="background:rgba(107,114,128,.12);color:#4B5563;border-left:3px solid #9CA3AF;" th:text="${n.tematicaCodigo != null ? n.tematicaCodigo : '—'}">—</span>
+                        </th:block>
+                      </td>
+                      <td style="text-align:center;">
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button" class="btn-ver-viz" th:onclick="|openVisorNormRow([[${n.id}]])|">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);" th:onclick="|downloadNormRow([[${n.id}]])|">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" th:onclick="|toggleDriveDropdown(event, 'drive-dd-n-${n.id}')|"><i class="fas fa-ellipsis-v"></i></button>
+                            <div class="drive-dropdown" onclick="event.stopPropagation();" th:id="|drive-dd-n-${n.id}|">
+                              <button type="button" th:onclick="|shareNormRow([[${n.id}]]); closeAllDriveDropdowns();|"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" th:attr="data-mu-id=${n.id},data-mu-titulo=${n.titulo}">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </th:block>
+                  <th:block th:if="${normativas == null}">
+                    <tr class="norm-row" data-documento-id="1" data-titulo="decreto legislativo 1278 ley gestión residuos" data-tipo="ley"
                       data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="gr">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Decreto
@@ -502,17 +639,35 @@
                           style="background:rgba(52,152,219,.1);color:#2471A3;border-left:3px solid #3498DB;">GR</span>
                       </td>
                       <td style="text-align:center;">
-                        <button
-                          onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF')"
-                          class="btn-ver-viz">
-                          <i class="fas fa-eye"></i> Ver
-                        </button>
-                        <button th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.L. 1278','Ley de Gestión de Residuos','pdf')" class="btn-ver-viz" style="margin-left:6px;border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                          <i class="fas fa-download"></i> Desc.
-                        </button>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button"
+                            onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)"
+                            class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.L. 1278','Ley de Gestión de Residuos','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-0')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-0" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('D.L. 1278','Ley de Gestión de Residuos'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="1" data-mu-titulo="Decreto Legislativo 1278 — Ley de Gestión de Residuos">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                    <tr class="norm-row" data-titulo="iso 14001 2015 sistemas gestión ambiental" data-tipo="norma técnica"
+                    <tr class="norm-row" data-documento-id="2" data-titulo="iso 14001 2015 sistemas gestión ambiental" data-tipo="norma técnica"
                       data-estado="vigente" data-ambito="INTERNACIONAL" data-clasif="no vinculante" data-tema="ec">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">ISO
@@ -529,11 +684,36 @@
                       <td><span class="tag"
                           style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
                       </td>
-                      <td style="text-align:center;"><span
-                          style="display:inline-flex;align-items:center;gap:4px;color:#9CA3AF;font-size:11px;"><i
-                            class="fas fa-lock" style="font-size:9px;"></i> </span></td>
+                      <td style="text-align:center;">
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button"
+                            onclick="openVisorViz('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental','2015','PDF',2)"
+                            class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-1')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-1" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="2" data-mu-titulo="ISO 14001:2015 — Sistemas de Gestión Ambiental">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
                     </tr>
-                    <tr class="norm-row" data-titulo="reglamento envases embalajes d.s. 014-2021" data-tipo="reglamento"
+                    <tr class="norm-row" data-documento-id="3" data-titulo="reglamento envases embalajes d.s. 014-2021" data-tipo="reglamento"
                       data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="ee">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
@@ -550,16 +730,33 @@
                           style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
                       </td>
                       <td style="text-align:center;">
-                        <button
-                          onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF')" class="btn-ver-viz">
-                          <i class="fas fa-eye"></i> Ver
-                        </button>
-                        <button th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.S. 014-2021','Envases y Embalajes','pdf')" class="btn-ver-viz" style="margin-left:6px;border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                          <i class="fas fa-download"></i> Desc.
-                        </button>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button" onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)" class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.S. 014-2021','Envases y Embalajes','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-2')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-2" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('D.S. 014-2021','Reglamento de Envases y Embalajes'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="3" data-mu-titulo="Reglamento de Envases y Embalajes — D.S. 014-2021">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                    <tr class="norm-row" data-titulo="ley 30884 plastico un solo uso congreso peru" data-tipo="ley"
+                    <tr class="norm-row" data-documento-id="4" data-titulo="ley 30884 plastico un solo uso congreso peru" data-tipo="ley"
                       data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="rep">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Ley
@@ -576,16 +773,33 @@
                           style="background:rgba(231,76,60,.1);color:#C0392B;border-left:3px solid #E74C3C;">REP</span>
                       </td>
                       <td style="text-align:center;">
-                        <button
-                          onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF')" class="btn-ver-viz">
-                          <i class="fas fa-eye"></i> Ver
-                        </button>
-                        <button th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Ley 30884','Plástico de un solo uso','pdf')" class="btn-ver-viz" style="margin-left:6px;border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                          <i class="fas fa-download"></i> Desc.
-                        </button>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button" onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)" class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Ley 30884','Plástico de un solo uso','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-3')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-3" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('Ley 30884','Ley 30884 — Plástico de un solo uso'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="4" data-mu-titulo="Ley 30884 — Ley que regula el plástico de un solo uso">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                    <tr class="norm-row" data-titulo="hoja ruta economia circular peru hrec 2030 minam mef"
+                    <tr class="norm-row" data-documento-id="5" data-titulo="hoja ruta economia circular peru hrec 2030 minam mef"
                       data-tipo="hoja de ruta" data-estado="proyecto publicado" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="ec">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Hoja de
@@ -602,16 +816,33 @@
                           style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
                       </td>
                       <td style="text-align:center;">
-                        <button
-                          onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF')" class="btn-ver-viz">
-                          <i class="fas fa-eye"></i> Ver
-                        </button>
-                        <button th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('HREC 2030','Economía Circular Perú','pdf')" class="btn-ver-viz" style="margin-left:6px;border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                          <i class="fas fa-download"></i> Desc.
-                        </button>
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button" onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF',5)" class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('HREC 2030','Economía Circular Perú','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-4')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-4" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('HREC 2030','Hoja de Ruta EC Perú 2030'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="5" data-mu-titulo="Hoja de Ruta de Economía Circular Perú 2030">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </td>
                     </tr>
-                    <tr class="norm-row" data-titulo="directiva 94/62/ec envases residuos parlamento europeo"
+                    <tr class="norm-row" data-documento-id="6" data-titulo="directiva 94/62/ec envases residuos parlamento europeo"
                       data-tipo="directiva" data-estado="vigente" data-ambito="INTERNACIONAL" data-clasif="vinculante" data-tema="ee">
                       <td>
                         <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
@@ -627,10 +858,39 @@
                       <td><span class="tag"
                           style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
                       </td>
-                      <td style="text-align:center;"><span
-                          style="display:inline-flex;align-items:center;gap:4px;color:#9CA3AF;font-size:11px;"><i
-                            class="fas fa-lock" style="font-size:9px;"></i> </span></td>
+                      <td style="text-align:center;">
+                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                          <button type="button"
+                            onclick="openVisorViz('Dir. 94/62/EC','Directiva 94/62/EC — Envases y Residuos de Envases','1994','PDF',6)"
+                            class="btn-ver-viz">
+                            <i class="fas fa-eye"></i> Ver
+                          </button>
+                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Dir. 94/62/EC','Directiva 94/62/EC — Envases y Residuos de Envases','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
+                            <i class="fas fa-download"></i> Desc.
+                          </button>
+                          <div class="drive-row-actions">
+                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-5')"><i class="fas fa-ellipsis-v"></i></button>
+                            <div id="drive-dd-n-5" class="drive-dropdown" onclick="event.stopPropagation();">
+                              <button type="button" onclick="driveShareNormativa('Dir. 94/62/EC','Directiva 94/62/EC — Envases'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="6" data-mu-titulo="Directiva 94/62/EC — Envases y Residuos de Envases">
+                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
+                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
+                                </button>
+                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
                     </tr>
+                  </th:block>
+                  <tr th:if="${normativas != null and normativas.isEmpty()}">
+                    <td colspan="9" style="text-align:center;padding:32px;color:#9CA3AF;font-size:13px;">No hay normativas activas en el repositorio.</td>
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -649,7 +909,7 @@
               data-estado="vigente" data-ambito="NACIONAL">
               <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
                 <div class="card-actions"><button
-                    onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF')"
+                    onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)"
                     style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
                       class="fas fa-eye"></i></button></div>
                 <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
@@ -680,7 +940,7 @@
               data-estado="vigente" data-ambito="NACIONAL">
               <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
                 <div class="card-actions"><button
-                    onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF')"
+                    onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)"
                     style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
                       class="fas fa-eye"></i></button></div>
                 <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
@@ -697,7 +957,7 @@
               data-estado="vigente" data-ambito="NACIONAL">
               <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
                 <div class="card-actions"><button
-                    onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF')"
+                    onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)"
                     style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
                       class="fas fa-eye"></i></button></div>
                 <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
@@ -714,7 +974,7 @@
               data-tipo="hoja de ruta" data-estado="proyecto publicado" data-ambito="NACIONAL">
               <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
                 <div class="card-actions"><button
-                    onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF')"
+                    onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF',5)"
                     style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
                       class="fas fa-eye"></i></button></div>
                 <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
@@ -1187,7 +1447,40 @@
           }
         };
 
-        window.openVisorViz = function (codigo, titulo, anio, formato) {
+        window.openVisorNormRow = function (id) {
+          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
+          if (!row) return;
+          var tit = row.getAttribute('data-full-titulo') || '';
+          var anio = row.getAttribute('data-anio') || '';
+          var mime = (row.getAttribute('data-archivo-mime') || '').toLowerCase();
+          var fmt = 'PDF';
+          if (mime.indexOf('spreadsheetml') >= 0 || mime.indexOf('excel') >= 0) fmt = 'XLS';
+          else if (mime.indexOf('presentation') >= 0 || mime.indexOf('powerpoint') >= 0) fmt = 'PPTX';
+          else if (mime.indexOf('pdf') < 0 && mime.length > 0) fmt = 'XLS';
+          window.openVisorViz('N-' + id, tit, anio, fmt, id);
+        };
+        window.downloadNormRow = function (id) {
+          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
+          if (!row) return;
+          var tit = row.getAttribute('data-full-titulo') || 'documento';
+          var mime = (row.getAttribute('data-archivo-mime') || '').toLowerCase();
+          var ext = 'pdf';
+          if (mime.indexOf('word') >= 0) ext = 'docx';
+          else if (mime.indexOf('spreadsheetml') >= 0 || mime.indexOf('excel') >= 0) ext = 'xlsx';
+          else if (mime.indexOf('presentation') >= 0) ext = 'pptx';
+          window.downloadDemoDoc('N-' + id, tit, ext);
+        };
+        window.shareNormRow = function (id) {
+          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
+          if (!row) return;
+          var tit = row.getAttribute('data-full-titulo') || '';
+          window.driveShareNormativa('N-' + id, tit);
+        };
+
+        window.openVisorViz = function (codigo, titulo, anio, formato, documentoId) {
+          if (documentoId != null && typeof window.__muRegistrarAccesoNormativa === 'function') {
+            window.__muRegistrarAccesoNormativa(documentoId);
+          }
           var modal = document.getElementById('visor-modal-viz');
           var titleEl = document.getElementById('visor-title-viz');
           var pdfDiv = document.getElementById('visor-pdf-viz');
@@ -1313,8 +1606,89 @@
           URL.revokeObjectURL(url);
         };
 
+        window.closeAllDriveDropdowns = function () {
+          document.querySelectorAll('.drive-dropdown.is-open').forEach(function (el) {
+            el.classList.remove('is-open');
+            el.style.position = '';
+            el.style.left = '';
+            el.style.top = '';
+            el.style.right = '';
+            el.style.marginTop = '';
+            el.style.zIndex = '';
+          });
+        };
+
+        window.toggleDriveDropdown = function (ev, id) {
+          if (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+          }
+          var menu = document.getElementById(id);
+          if (!menu) return;
+          var willOpen = !menu.classList.contains('is-open');
+          window.closeAllDriveDropdowns();
+          if (!willOpen) return;
+          menu.classList.add('is-open');
+          var btn = ev && ev.currentTarget;
+          if (btn && btn.getBoundingClientRect) {
+            var r = btn.getBoundingClientRect();
+            var mw = 228;
+            var left = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
+            menu.style.position = 'fixed';
+            menu.style.left = left + 'px';
+            menu.style.top = (r.bottom + 4) + 'px';
+            menu.style.right = 'auto';
+            menu.style.marginTop = '0';
+            menu.style.zIndex = '10050';
+          }
+        };
+
+        if (!window.__reciclameDriveScrollCloseNorm) {
+          window.__reciclameDriveScrollCloseNorm = true;
+          window.addEventListener('scroll', function () {
+            window.closeAllDriveDropdowns();
+          }, true);
+        }
+
+        if (!window.__reciclameDriveOutsideClickNorm) {
+          window.__reciclameDriveOutsideClickNorm = true;
+          document.addEventListener('click', function (e) {
+            if (e.target && e.target.closest && e.target.closest('.drive-row-actions')) {
+              return;
+            }
+            window.closeAllDriveDropdowns();
+          });
+        }
+
+        window.driveShareNormativa = function (codigo, titulo) {
+          var text = window.location.origin + '/socio/normativo — ' + codigo + ': ' + titulo;
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              alert('Copiado al portapapeles. Puedes pegarlo donde quieras compartir.');
+            }).catch(function () {
+              window.prompt('Copia manualmente:', text);
+            });
+          } else {
+            window.prompt('Copia manualmente:', text);
+          }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+          try {
+            var t = sessionStorage.getItem('reciclameNormativoTab');
+            if (t === 'todos' || t === 'nacional' || t === 'internacional') {
+              window.__normativoTab = t;
+              if (window.showNormativoTab) {
+                window.showNormativoTab(t);
+              }
+            }
+          } catch (e) { /* ignore */ }
+        });
+
       })();
     </script>
+
+    <th:block th:if="${rol == 'SOCIO'}" th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
 
   </th:block>
 </body>

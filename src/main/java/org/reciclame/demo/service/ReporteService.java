@@ -6,6 +6,12 @@ import net.sf.jasperreports.engine.util.JRLoader;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.encoders.EncoderUtil;
+import org.jfree.chart.encoders.ImageFormat;
+import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -147,6 +153,209 @@ public class ReporteService {
             return outputStream.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException("Error generating Excel report: " + title, e);
+        }
+    }
+
+    public byte[] generarReporteExcelConGraficos(String title, String subtitle, String[] headers,
+                                                  List<Map<String, Object>> data,
+                                                  List<Map<String, ?>> chart1Data,
+                                                  List<Map<String, ?>> chart2Data) {
+        return generarReporteExcelConGraficos(title, subtitle, headers, data, chart1Data, chart2Data, null);
+    }
+
+    public byte[] generarReporteExcelConGraficos(String title, String subtitle, String[] headers,
+                                                  List<Map<String, Object>> data,
+                                                  List<Map<String, ?>> chart1Data,
+                                                  List<Map<String, ?>> chart2Data,
+                                                  List<Map<String, ?>> chart3Data) {
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            XSSFSheet sheet = workbook.createSheet(title);
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.setColumnWidth(i, 4000);
+            }
+
+            int rowIndex = 0;
+
+            XSSFRow titleRow = sheet.createRow(rowIndex++);
+            titleRow.setHeight((short) 900);
+            XSSFCell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue(title);
+            XSSFCellStyle titleStyle = createTitleStyle(workbook);
+            titleCell.setCellStyle(titleStyle);
+            if (headers.length > 1) {
+                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, headers.length - 1));
+            }
+
+            XSSFRow subtitleRow = sheet.createRow(rowIndex++);
+            subtitleRow.setHeight((short) 400);
+            XSSFCell subCell = subtitleRow.createCell(0);
+            subCell.setCellValue(subtitle);
+            XSSFCellStyle subStyle = createSubtitleStyle(workbook);
+            subCell.setCellStyle(subStyle);
+            if (headers.length > 1) {
+                sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, headers.length - 1));
+            }
+
+            rowIndex++;
+
+            XSSFRow headerRow = sheet.createRow(rowIndex++);
+            headerRow.setHeight((short) 400);
+            for (int i = 0; i < headers.length; i++) {
+                XSSFCell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(createHeaderStyle(workbook));
+            }
+
+            for (int i = 0; i < data.size(); i++) {
+                Map<String, Object> row = data.get(i);
+                XSSFRow dataRow = sheet.createRow(rowIndex++);
+                dataRow.setHeight((short) 350);
+
+                int colIndex = 0;
+                for (String header : headers) {
+                    XSSFCell cell = dataRow.createCell(colIndex++);
+                    Object value = row.get(toCamelCase(header));
+                    if (value != null) {
+                        cell.setCellValue(value.toString());
+                    } else {
+                        cell.setCellValue("");
+                    }
+                    cell.setCellStyle(createDataStyle(workbook, i % 2 == 0));
+                }
+            }
+
+            int chartsStartRow = rowIndex + 2;
+            int chartColOffset = headers.length + 2;
+
+            if (chart1Data != null && !chart1Data.isEmpty()) {
+                createPieChart(workbook, sheet, "Chart 1: Distribution", chart1Data, chartsStartRow, chartColOffset);
+            }
+            if (chart2Data != null && !chart2Data.isEmpty()) {
+                createPieChart(workbook, sheet, "Chart 2: Distribution", chart2Data, chartsStartRow + 18, chartColOffset);
+            }
+            if (chart3Data != null && !chart3Data.isEmpty()) {
+                createBarChart(workbook, sheet, "Chart 3: By Category", chart3Data, chartsStartRow + 36, chartColOffset);
+            }
+
+            int footerRow = rowIndex + 2 + (chart3Data != null ? 54 : (chart2Data != null ? 36 : 18));
+            if (footerRow < sheet.getLastRowNum() + 4) {
+                XSSFRow footRow = sheet.createRow(footerRow);
+                footRow.setHeight((short) 350);
+                XSSFCell dateCell = footRow.createCell(0);
+                dateCell.setCellValue("Fecha de generación: " + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+                XSSFCellStyle footerStyle = createFooterStyle(workbook);
+                dateCell.setCellStyle(footerStyle);
+                if (headers.length > 1) {
+                    sheet.addMergedRegion(new CellRangeAddress(footerRow, footerRow, 0, headers.length - 1));
+                }
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating Excel report with charts: " + title, e);
+        }
+    }
+
+    private void createPieChart(XSSFWorkbook workbook, XSSFSheet sheet, String title, List<Map<String, ?>> data, int startRow, int startCol) {
+        if (data == null || data.isEmpty()) return;
+
+        try {
+            // Crear dataset para el gráfico pie
+            DefaultPieDataset dataset = new DefaultPieDataset();
+            for (Map<String, ?> row : data) {
+                String label = row.get("label") != null ? row.get("label").toString() : "";
+                Object val = row.get("value");
+                double value = 0;
+                if (val instanceof Number) {
+                    value = ((Number) val).doubleValue();
+                } else if (val != null) {
+                    try {
+                        value = Double.parseDouble(val.toString());
+                    } catch (NumberFormatException e) {
+                        value = 0;
+                    }
+                }
+                dataset.setValue(label, value);
+            }
+
+            // Crear gráfico pie
+            JFreeChart pieChart = ChartFactory.createPieChart(
+                title,
+                dataset,
+                true,  // legend
+                false, // tooltips
+                false  // urls
+            );
+
+            // Convertir gráfico a imagen
+            byte[] imageBytes = EncoderUtil.encode(pieChart.createBufferedImage(400, 300), ImageFormat.PNG);
+
+            // Insertar imagen en el sheet
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+            anchor.setCol1(startCol);
+            anchor.setCol2(startCol + 12);
+            anchor.setRow1(startRow);
+            anchor.setRow2(startRow + 18);
+
+            drawing.createPicture(anchor, workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG));
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating pie chart: " + title, e);
+        }
+    }
+
+    private void createBarChart(XSSFWorkbook workbook, XSSFSheet sheet, String title, List<Map<String, ?>> data, int startRow, int startCol) {
+        if (data == null || data.isEmpty()) return;
+
+        try {
+            // Crear dataset para el gráfico de barras
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            for (Map<String, ?> row : data) {
+                String category = row.get("category") != null ? row.get("category").toString() : 
+                                (row.get("label") != null ? row.get("label").toString() : "");
+                Object val = row.get("value");
+                double value = 0;
+                if (val instanceof Number) {
+                    value = ((Number) val).doubleValue();
+                } else if (val != null) {
+                    try {
+                        value = Double.parseDouble(val.toString());
+                    } catch (NumberFormatException e) {
+                        value = 0;
+                    }
+                }
+                dataset.addValue(value, "Values", category);
+            }
+
+            // Crear gráfico de barras
+            JFreeChart barChart = ChartFactory.createBarChart(
+                title,
+                "Category",
+                "Value",
+                dataset,
+                org.jfree.chart.plot.PlotOrientation.VERTICAL,
+                true,  // legend
+                false, // tooltips
+                false  // urls
+            );
+
+            // Convertir gráfico a imagen
+            byte[] imageBytes = EncoderUtil.encode(barChart.createBufferedImage(400, 300), ImageFormat.PNG);
+
+            // Insertar imagen en el sheet
+            XSSFDrawing drawing = sheet.createDrawingPatriarch();
+            XSSFClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+            anchor.setCol1(startCol);
+            anchor.setCol2(startCol + 12);
+            anchor.setRow1(startRow);
+            anchor.setRow2(startRow + 18);
+
+            drawing.createPicture(anchor, workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG));
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating bar chart: " + title, e);
         }
     }
 

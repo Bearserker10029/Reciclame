@@ -14,4 +14,6 @@ public interface EstudioRepository extends JpaRepository<Estudio, Long> {
     List<Estudio> findByAnio(Integer anio);
 
     List<Estudio> findByEsPublicoTrue();
+
+    List<Estudio> findTop100ByOrderByCreatedAtDesc();
 }
