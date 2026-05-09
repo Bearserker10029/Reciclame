@@ -359,10 +359,10 @@
 
 <body>
   <div style="display:flex;flex-direction:column;min-height:100vh;">
-    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-      <main style="flex:1;background:#F0F4F8;overflow-y:auto;padding:32px;">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="hero-section">
           <div class="hero-blob hero-blob-1"></div>
@@ -385,30 +385,36 @@
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Auditoría:</span>
-              <a href="/admin/reportes/export/auditoria.pdf" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/auditoria.pdf" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/auditoria.xlsx" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/auditoria.xlsx" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
             </div>
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Usuarios:</span>
-              <a href="/admin/reportes/export/usuarios.pdf" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/usuarios.pdf" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/usuarios.xlsx" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/usuarios.xlsx" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
             </div>
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Normativas:</span>
-              <a href="/admin/reportes/export/normativas.pdf" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/normativas.pdf" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/normativas.xlsx" class="btn-export" style="padding:8px 14px;font-size:12px;text-decoration:none;">
+              <a href="/admin/reportes/export/normativas.xlsx" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
             </div>
@@ -792,7 +798,7 @@
 
       </main>
     </div>
-    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 </body>
 

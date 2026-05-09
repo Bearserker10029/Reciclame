@@ -229,10 +229,10 @@
 
 <body>
   <div style="display:flex;flex-direction:column;min-height:100vh;">
-    <th:block th:replace="navbar/topbar :: topbar"></th:block>
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-      <th:block th:replace="navbar/sidebar :: sidebar"></th:block>
-      <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="hero-section">
           <div class="hero-icon"><i class="fas fa-shield-alt"></i></div>
@@ -246,31 +246,32 @@
           </div>
         </div>
 
-<div
-            style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;animation:fadeUp .5s ease both;">
-            <div class="alert-badge">
-              <span class="alert-dot"></span>
-              <span style="font-size:12px;font-weight:600;color:#E74C3C;"
-                th:text="${auditorias != null ? auditorias.size() + ' eventos' : '0 eventos'}">0 eventos</span>
-            </div>
-            <a href="/superadmin/auditoria/export.xlsx"
-               style="padding:9px 18px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;text-decoration:none;">
-              <i class="fas fa-file-excel"></i> Exportar XLSX
-            </a>
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;animation:fadeUp .5s ease both;">
+          <div class="alert-badge">
+            <span class="alert-dot"></span>
+            <span style="font-size:12px;font-weight:600;color:#E74C3C;"
+              th:text="${auditorias != null ? auditorias.size() + ' eventos' : '0 eventos'}">0 eventos</span>
           </div>
+          <a href="/superadmin/auditoria/export.xlsx"
+            style="padding:9px 18px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:7px;text-decoration:none;">
+            <i class="fas fa-file-excel"></i> Exportar XLSX
+          </a>
+        </div>
 
-          <div th:if="${auditorias != null and !auditorias.isEmpty()}"
-            style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;animation:slideDown .35s ease both;">
-            <div
-              style="width:40px;height:40px;border-radius:50%;background:#E74C3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-              <i class="fas fa-exclamation-triangle" style="color:#fff;font-size:16px;"></i>
-            </div>
-            <div style="flex:1;">
-              <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:3px;"
-                th:text="${totalElements != null ? totalElements + ' eventos de auditoría registrados' : 'Eventos de auditoría'}">Eventos de auditoría</div>
-              <div style="font-size:12px;color:#6B7280;">Registros de actividad del sistema</div>
-            </div>
+        <div th:if="${auditorias != null and !auditorias.isEmpty()}"
+          style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;animation:slideDown .35s ease both;">
+          <div
+            style="width:40px;height:40px;border-radius:50%;background:#E74C3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-exclamation-triangle" style="color:#fff;font-size:16px;"></i>
           </div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:3px;"
+              th:text="${totalElements != null ? totalElements + ' eventos de auditoría registrados' : 'Eventos de auditoría'}">
+              Eventos de auditoría</div>
+            <div style="font-size:12px;color:#6B7280;">Registros de actividad del sistema</div>
+          </div>
+        </div>
 
         <div class="filter-bar">
           <div class="search-box">
@@ -306,13 +307,15 @@
             <tbody id="tabla-auditoria">
               <tr th:if="${auditorias == null or auditorias.isEmpty()}">
                 <td colspan="5" style="text-align:center;padding:60px;">
-                  <i class="fas fa-clipboard-list" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
+                  <i class="fas fa-clipboard-list"
+                    style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
                   <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay eventos de auditoría aún</div>
                 </td>
               </tr>
               <tr th:each="a : ${auditorias}">
                 <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;"
-                  th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</td>
+                  th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—
+                </td>
                 <td>
                   <span class="pill"
                     th:classappend="${a.estado != null and a.estado == 'FALLIDO'} ? 'pill-login-failed' : (${a.modulo == 'SEGURIDAD'} ? 'pill-impersonation' : 'pill-ok')"
@@ -324,14 +327,14 @@
                 </td>
                 <td style="font-size:12px;color:#6B7280;" th:text="${a.descripcion ?: '—'}">—</td>
                 <td>
-                  <span class="pill"
-                    th:classappend="${a.estado == 'EXITOSO'} ? 'pill-ok' : 'pill-blocked'"
+                  <span class="pill" th:classappend="${a.estado == 'EXITOSO'} ? 'pill-ok' : 'pill-blocked'"
                     th:text="${a.estado == 'EXITOSO'} ? 'OK' : (${a.estado ?: 'Fallido'})">—</span>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+          <div
+            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
             <span id="conteo-auditoria">Mostrando registros</span>
             <div style="display:flex;gap:4px;" id="paginacion-auditoria"></div>
           </div>
@@ -339,99 +342,99 @@
 
       </main>
     </div>
-    <th:block th:replace="components/chatbot :: chatbot"></th:block>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-<script>
-const ITEMS_POR_PAGINA = 5;
-let paginaActual = 1;
+  <script>
+    const ITEMS_POR_PAGINA = 5;
+    let paginaActual = 1;
 
-function getFilasActivas() {
-  return Array.from(document.querySelectorAll('#tabla-auditoria tr'))
-    .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
-}
-
-function inicializarPaginacion() {
-  var filasActivas = getFilasActivas();
-  var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
-  if (totalPaginas < 1) totalPaginas = 1;
-  paginaActual = 1;
-
-  var conteoEl = document.getElementById('conteo-auditoria');
-  if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
-
-  var paginacionDiv = document.getElementById('paginacion-auditoria');
-  paginacionDiv.innerHTML = '';
-  if (totalPaginas <= 1) return;
-
-  var btnAnterior = document.createElement('button');
-  btnAnterior.textContent = '← Ant';
-  btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-  btnAnterior.onclick = function() {
-    if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
-  };
-  paginacionDiv.appendChild(btnAnterior);
-
-  for (var i = 1; i <= totalPaginas; i++) {
-    (function(pageNum) {
-      var btn = document.createElement('button');
-      btn.textContent = pageNum;
-      btn.id = 'btn-pagina-' + pageNum;
-      btn.style.cssText = (pageNum === 1)
-        ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-        : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-      btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
-      paginacionDiv.appendChild(btn);
-    })(i);
-  }
-
-  var btnSiguiente = document.createElement('button');
-  btnSiguiente.textContent = 'Sig →';
-  btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-  btnSiguiente.onclick = function() {
-    var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-    if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
-  };
-  paginacionDiv.appendChild(btnSiguiente);
-}
-
-function mostrarPagina(numero) {
-  paginaActual = numero;
-  var filas = document.querySelectorAll('#tabla-auditoria tr');
-  var inicio = (numero - 1) * ITEMS_POR_PAGINA;
-  var fin = inicio + ITEMS_POR_PAGINA;
-  var conteo = 0;
-  filas.forEach(function(tr) {
-    if (tr.dataset.filtrado === '0') {
-      tr.style.display = 'none';
-    } else {
-      tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
-      conteo++;
+    function getFilasActivas() {
+      return Array.from(document.querySelectorAll('#tabla-auditoria tr'))
+        .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
     }
-  });
-  actualizarBotonesPaginacion();
-}
 
-function actualizarBotonesPaginacion() {
-  var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-  for (var i = 1; i <= total; i++) {
-    var btn = document.getElementById('btn-pagina-' + i);
-    if (btn) {
-      btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
-      btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
-      btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+    function inicializarPaginacion() {
+      var filasActivas = getFilasActivas();
+      var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+      if (totalPaginas < 1) totalPaginas = 1;
+      paginaActual = 1;
+
+      var conteoEl = document.getElementById('conteo-auditoria');
+      if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+      var paginacionDiv = document.getElementById('paginacion-auditoria');
+      paginacionDiv.innerHTML = '';
+      if (totalPaginas <= 1) return;
+
+      var btnAnterior = document.createElement('button');
+      btnAnterior.textContent = '← Ant';
+      btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+      btnAnterior.onclick = function () {
+        if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnAnterior);
+
+      for (var i = 1; i <= totalPaginas; i++) {
+        (function (pageNum) {
+          var btn = document.createElement('button');
+          btn.textContent = pageNum;
+          btn.id = 'btn-pagina-' + pageNum;
+          btn.style.cssText = (pageNum === 1)
+            ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+            : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+          btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+          paginacionDiv.appendChild(btn);
+        })(i);
+      }
+
+      var btnSiguiente = document.createElement('button');
+      btnSiguiente.textContent = 'Sig →';
+      btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+      btnSiguiente.onclick = function () {
+        var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+        if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnSiguiente);
     }
-  }
-}
 
-window.addEventListener('load', function() {
-  document.querySelectorAll('#tabla-auditoria tr').forEach(function(tr) {
-    tr.dataset.filtrado = '1';
-  });
-  inicializarPaginacion();
-  mostrarPagina(1);
-});
-</script>
+    function mostrarPagina(numero) {
+      paginaActual = numero;
+      var filas = document.querySelectorAll('#tabla-auditoria tr');
+      var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+      var fin = inicio + ITEMS_POR_PAGINA;
+      var conteo = 0;
+      filas.forEach(function (tr) {
+        if (tr.dataset.filtrado === '0') {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+          conteo++;
+        }
+      });
+      actualizarBotonesPaginacion();
+    }
+
+    function actualizarBotonesPaginacion() {
+      var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+      for (var i = 1; i <= total; i++) {
+        var btn = document.getElementById('btn-pagina-' + i);
+        if (btn) {
+          btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+          btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+          btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+        }
+      }
+    }
+
+    window.addEventListener('load', function () {
+      document.querySelectorAll('#tabla-auditoria tr').forEach(function (tr) {
+        tr.dataset.filtrado = '1';
+      });
+      inicializarPaginacion();
+      mostrarPagina(1);
+    });
+  </script>
 
 </body>
 

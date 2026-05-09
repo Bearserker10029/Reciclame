@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,230 +10,350 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F5F6FA;}
-    .nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:8px;cursor:pointer;color:rgba(255,255,255,.65);font-size:14px;font-weight:500;transition:background .18s;border-left:3px solid transparent;user-select:none;}
-    .nav-item:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .nav-item.active{background:rgba(46,204,113,.18);color:#fff;border-left-color:#2ECC71;}
-    .nav-sublist{margin:4px 0 6px 34px;display:flex;flex-direction:column;gap:6px;}
-    .nav-subitem{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,.65);font-size:13px;font-weight:500;transition:background .15s,color .15s;}
-    .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
-    .badge-activo{background:rgba(46,204,113,.12);color:#27AE60;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
-    .badge-inactivo{background:rgba(231,76,60,.1);color:#E74C3C;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;}
-    .badge-tipo{background:rgba(52,152,219,.1);color:#2471A3;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;}
-    .btn-editar{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;border:1px solid #1B3A5C;background:#fff;color:#1B3A5C;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:background .15s,color .15s;}
-    .btn-editar:hover{background:#1B3A5C;color:#fff;}
-    .alert-exito{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);color:#27AE60;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;}
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .65);
+      font-size: 14px;
+      font-weight: 500;
+      transition: background .18s;
+      border-left: 3px solid transparent;
+      user-select: none;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, .07);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(46, 204, 113, .18);
+      color: #fff;
+      border-left-color: #2ECC71;
+    }
+
+    .nav-sublist {
+      margin: 4px 0 6px 34px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .nav-subitem {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, .65);
+      font-size: 13px;
+      font-weight: 500;
+      transition: background .15s, color .15s;
+    }
+
+    .nav-subitem:hover {
+      background: rgba(255, 255, 255, .07);
+      color: #fff;
+    }
+
+    .badge-activo {
+      background: rgba(46, 204, 113, .12);
+      color: #27AE60;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-inactivo {
+      background: rgba(231, 76, 60, .1);
+      color: #E74C3C;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-tipo {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .btn-editar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 7px;
+      border: 1px solid #1B3A5C;
+      background: #fff;
+      color: #1B3A5C;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+    }
+
+    .btn-editar:hover {
+      background: #1B3A5C;
+      color: #fff;
+    }
+
+    .alert-exito {
+      background: rgba(46, 204, 113, .1);
+      border: 1px solid rgba(46, 204, 113, .3);
+      color: #27AE60;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
 </head>
+
 <body>
 
-<div style="display:flex;flex-direction:column;min-height:100vh;">
-  <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
-  <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
-    <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-    <main style="flex:1;background:#F5F6FA;overflow-y:auto;padding:32px;">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-      <!-- Header -->
-      <div style="margin-bottom:28px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-          <div style="width:40px;height:40px;border-radius:10px;background:rgba(27,58,92,.1);display:flex;align-items:center;justify-content:center;">
-            <i class="fas fa-sliders-h" style="color:#1B3A5C;font-size:17px;"></i>
+        <!-- Header -->
+        <div style="margin-bottom:28px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <div
+              style="width:40px;height:40px;border-radius:10px;background:rgba(27,58,92,.1);display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-sliders-h" style="color:#1B3A5C;font-size:17px;"></i>
+            </div>
+            <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin:0;">Parámetros del Sistema</h1>
           </div>
-          <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin:0;">Parámetros del Sistema</h1>
+          <p style="color:#6B7280;font-size:14px;margin:0 0 0 52px;">Configuración global de la plataforma. Modifica con
+            precaución.</p>
         </div>
-        <p style="color:#6B7280;font-size:14px;margin:0 0 0 52px;">Configuración global de la plataforma. Modifica con precaución.</p>
-      </div>
 
-      <!-- Alerta de éxito (flash) -->
-      <div th:if="${exito}" class="alert-exito" style="margin-bottom:20px;">
-        <i class="fas fa-check-circle"></i>
-        <span th:text="${exito}">Parámetro actualizado correctamente.</span>
-      </div>
+        <!-- Alerta de éxito (flash) -->
+        <div th:if="${exito}" class="alert-exito" style="margin-bottom:20px;">
+          <i class="fas fa-check-circle"></i>
+          <span th:text="${exito}">Parámetro actualizado correctamente.</span>
+        </div>
 
-      <!-- Tabla -->
-      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
-        <div style="padding:20px 24px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-list" style="color:#2ECC71;font-size:14px;"></i>
-            <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Listado de parámetros</span>
-            <span style="background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;"
-                  th:text="${parametros.size()} + ' registros'">0 registros</span>
+        <!-- Tabla -->
+        <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+          <div
+            style="padding:20px 24px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <i class="fas fa-list" style="color:#2ECC71;font-size:14px;"></i>
+              <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Listado de parámetros</span>
+              <span
+                style="background:#F3F4F6;color:#6B7280;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;"
+                th:text="${parametros.size()} + ' registros'">0 registros</span>
+            </div>
+            <div style="color:#9CA3AF;font-size:12px;">Solo el SuperAdmin puede modificar estos valores</div>
           </div>
-          <div style="color:#9CA3AF;font-size:12px;">Solo el SuperAdmin puede modificar estos valores</div>
+
+          <div style="overflow-x:auto;">
+            <table id="tabla-parametros" class="table table-hover mb-0" style="font-size:13px;">
+              <thead style="background:#F9FAFB;">
+                <tr style="color:#6B7280;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">
+                  <th style="padding:12px 20px;border:none;width:60px;">#</th>
+                  <th style="padding:12px 16px;border:none;">Clave</th>
+                  <th style="padding:12px 16px;border:none;">Valor</th>
+                  <th style="padding:12px 16px;border:none;">Descripción</th>
+                  <th style="padding:12px 16px;border:none;">Tipo</th>
+                  <th style="padding:12px 16px;border:none;">Estado</th>
+                  <th style="padding:12px 16px;border:none;">Última modificación</th>
+                  <th style="padding:12px 20px;border:none;text-align:center;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="p : ${parametros}" style="border-top:1px solid #F3F4F6;">
+                  <td style="padding:14px 20px;color:#9CA3AF;font-weight:600;" th:text="${p.id}">1</td>
+                  <td style="padding:14px 16px;">
+                    <code
+                      style="background:#F3F4F6;padding:3px 8px;border-radius:5px;font-size:12px;color:#1B3A5C;font-weight:600;"
+                      th:text="${p.clave}">CLAVE</code>
+                  </td>
+                  <td style="padding:14px 16px;max-width:220px;">
+                    <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;"
+                      th:text="${p.valor}" th:title="${p.valor}">valor</span>
+                  </td>
+                  <td style="padding:14px 16px;max-width:240px;">
+                    <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#6B7280;"
+                      th:text="${p.descripcion != null ? p.descripcion : '—'}" th:title="${p.descripcion}">—</span>
+                  </td>
+                  <td style="padding:14px 16px;">
+                    <span class="badge-tipo" th:text="${p.tipoDato != null ? p.tipoDato : '—'}">STRING</span>
+                  </td>
+                  <td style="padding:14px 16px;">
+                    <span th:if="${p.estadoActivo}" class="badge-activo"><i class="fas fa-circle"
+                        style="font-size:7px;margin-right:4px;"></i>Activo</span>
+                    <span th:unless="${p.estadoActivo}" class="badge-inactivo"><i class="fas fa-circle"
+                        style="font-size:7px;margin-right:4px;"></i>Inactivo</span>
+                  </td>
+                  <td style="padding:14px 16px;color:#9CA3AF;font-size:12px;"
+                    th:text="${p.updatedAt != null ? #temporals.format(p.updatedAt, 'dd/MM/yyyy HH:mm', #locale) : '—'}">
+                    —</td>
+                  <td style="padding:14px 20px;text-align:center;">
+                    <a th:href="@{/superadmin/parametros/editar/{id}(id=${p.id})}" class="btn-editar">
+                      <i class="fas fa-pencil-alt"></i> Editar
+                    </a>
+                  </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(parametros)}">
+                  <td colspan="8" style="padding:40px;text-align:center;color:#9CA3AF;">
+                    <i class="fas fa-inbox" style="font-size:28px;margin-bottom:10px;display:block;"></i>
+                    No hay parámetros registrados en la base de datos.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+            <span id="conteo-parametros">Mostrando registros</span>
+            <div style="display:flex;gap:4px;" id="paginacion-parametros"></div>
+          </div>
         </div>
 
-        <div style="overflow-x:auto;">
-          <table id="tabla-parametros" class="table table-hover mb-0" style="font-size:13px;">
-            <thead style="background:#F9FAFB;">
-              <tr style="color:#6B7280;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">
-                <th style="padding:12px 20px;border:none;width:60px;">#</th>
-                <th style="padding:12px 16px;border:none;">Clave</th>
-                <th style="padding:12px 16px;border:none;">Valor</th>
-                <th style="padding:12px 16px;border:none;">Descripción</th>
-                <th style="padding:12px 16px;border:none;">Tipo</th>
-                <th style="padding:12px 16px;border:none;">Estado</th>
-                <th style="padding:12px 16px;border:none;">Última modificación</th>
-                <th style="padding:12px 20px;border:none;text-align:center;">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="p : ${parametros}" style="border-top:1px solid #F3F4F6;">
-                <td style="padding:14px 20px;color:#9CA3AF;font-weight:600;" th:text="${p.id}">1</td>
-                <td style="padding:14px 16px;">
-                  <code style="background:#F3F4F6;padding:3px 8px;border-radius:5px;font-size:12px;color:#1B3A5C;font-weight:600;"
-                        th:text="${p.clave}">CLAVE</code>
-                </td>
-                <td style="padding:14px 16px;max-width:220px;">
-                  <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;"
-                        th:text="${p.valor}" th:title="${p.valor}">valor</span>
-                </td>
-                <td style="padding:14px 16px;max-width:240px;">
-                  <span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#6B7280;"
-                        th:text="${p.descripcion != null ? p.descripcion : '—'}" th:title="${p.descripcion}">—</span>
-                </td>
-                <td style="padding:14px 16px;">
-                  <span class="badge-tipo" th:text="${p.tipoDato != null ? p.tipoDato : '—'}">STRING</span>
-                </td>
-                <td style="padding:14px 16px;">
-                  <span th:if="${p.estadoActivo}" class="badge-activo"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i>Activo</span>
-                  <span th:unless="${p.estadoActivo}" class="badge-inactivo"><i class="fas fa-circle" style="font-size:7px;margin-right:4px;"></i>Inactivo</span>
-                </td>
-                <td style="padding:14px 16px;color:#9CA3AF;font-size:12px;"
-                    th:text="${p.updatedAt != null ? #temporals.format(p.updatedAt, 'dd/MM/yyyy HH:mm', #locale) : '—'}">—</td>
-                <td style="padding:14px 20px;text-align:center;">
-                  <a th:href="@{/superadmin/parametros/editar/{id}(id=${p.id})}" class="btn-editar">
-                    <i class="fas fa-pencil-alt"></i> Editar
-                  </a>
-                </td>
-              </tr>
-              <tr th:if="${#lists.isEmpty(parametros)}">
-                <td colspan="8" style="padding:40px;text-align:center;color:#9CA3AF;">
-                  <i class="fas fa-inbox" style="font-size:28px;margin-bottom:10px;display:block;"></i>
-                  No hay parámetros registrados en la base de datos.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
-          <span id="conteo-parametros">Mostrando registros</span>
-          <div style="display:flex;gap:4px;" id="paginacion-parametros"></div>
-        </div>
-      </div>
-
-    </main>
+      </main>
+    </div>
   </div>
-</div>
 
-<script>
-function navTo(page) {
-  var map = {
-    'inicio': '/superadmin/inicio',
-    'estudios': '/superadmin/estudios',
-    'normativo': '/superadmin/normativo',
-    'perfil': '/superadmin/perfil',
-    'notificaciones': '/superadmin/notificaciones',
-    'usuarios': '/superadmin/usuarios',
-    'admin-docs': '/superadmin/documentos',
-    'trazabilidad': '/superadmin/trazabilidad',
-    'reportes': '/superadmin/reportes',
-    'auditoria': '/superadmin/auditoria',
-    'impersonar': '/superadmin/impersonar',
-    'parametros': '/superadmin/parametros'
-  };
-  window.location.href = map[page] || ('/superadmin/' + page);
-}
-
-/* ─── Paginación ─── */
-const ITEMS_POR_PAGINA = 5;
-let paginaActual = 1;
-
-function getFilasActivas() {
-  return Array.from(document.querySelectorAll('#tabla-parametros tbody tr'))
-    .filter(function(tr) { return tr.dataset.filtrado !== '0'; });
-}
-
-function inicializarPaginacion() {
-  var filasActivas = getFilasActivas();
-  var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
-  if (totalPaginas < 1) totalPaginas = 1;
-  paginaActual = 1;
-
-  var conteoEl = document.getElementById('conteo-parametros');
-  if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
-
-  var paginacionDiv = document.getElementById('paginacion-parametros');
-  paginacionDiv.innerHTML = '';
-  if (totalPaginas <= 1) return;
-
-  var btnAnterior = document.createElement('button');
-  btnAnterior.textContent = '← Ant';
-  btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-  btnAnterior.onclick = function() {
-    if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
-  };
-  paginacionDiv.appendChild(btnAnterior);
-
-  for (var i = 1; i <= totalPaginas; i++) {
-    (function(pageNum) {
-      var btn = document.createElement('button');
-      btn.textContent = pageNum;
-      btn.id = 'btn-pagina-' + pageNum;
-      btn.style.cssText = (pageNum === 1)
-        ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-        : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-      btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
-      paginacionDiv.appendChild(btn);
-    })(i);
-  }
-
-  var btnSiguiente = document.createElement('button');
-  btnSiguiente.textContent = 'Sig →';
-  btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-  btnSiguiente.onclick = function() {
-    var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-    if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
-  };
-  paginacionDiv.appendChild(btnSiguiente);
-}
-
-function mostrarPagina(numero) {
-  paginaActual = numero;
-  var filas = document.querySelectorAll('#tabla-parametros tbody tr');
-  var inicio = (numero - 1) * ITEMS_POR_PAGINA;
-  var fin = inicio + ITEMS_POR_PAGINA;
-  var conteo = 0;
-  filas.forEach(function(tr) {
-    if (tr.dataset.filtrado === '0') {
-      tr.style.display = 'none';
-    } else {
-      tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
-      conteo++;
+  <script>
+    function navTo(page) {
+      var map = {
+        'inicio': '/superadmin/inicio',
+        'estudios': '/superadmin/estudios',
+        'normativo': '/superadmin/normativo',
+        'perfil': '/superadmin/perfil',
+        'notificaciones': '/superadmin/notificaciones',
+        'usuarios': '/superadmin/usuarios',
+        'admin-docs': '/superadmin/documentos',
+        'trazabilidad': '/superadmin/trazabilidad',
+        'reportes': '/superadmin/reportes',
+        'auditoria': '/superadmin/auditoria',
+        'impersonar': '/superadmin/impersonar',
+        'parametros': '/superadmin/parametros'
+      };
+      window.location.href = map[page] || ('/superadmin/' + page);
     }
-  });
-  actualizarBotonesPaginacion();
-}
 
-function actualizarBotonesPaginacion() {
-  var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-  for (var i = 1; i <= total; i++) {
-    var btn = document.getElementById('btn-pagina-' + i);
-    if (btn) {
-      btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
-      btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
-      btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+    /* ─── Paginación ─── */
+    const ITEMS_POR_PAGINA = 5;
+    let paginaActual = 1;
+
+    function getFilasActivas() {
+      return Array.from(document.querySelectorAll('#tabla-parametros tbody tr'))
+        .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
     }
-  }
-}
 
-window.addEventListener('load', function() {
-  document.querySelectorAll('#tabla-parametros tbody tr').forEach(function(tr) {
-    tr.dataset.filtrado = '1';
-  });
-  inicializarPaginacion();
-  mostrarPagina(1);
-});
-</script>
+    function inicializarPaginacion() {
+      var filasActivas = getFilasActivas();
+      var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
+      if (totalPaginas < 1) totalPaginas = 1;
+      paginaActual = 1;
+
+      var conteoEl = document.getElementById('conteo-parametros');
+      if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+      var paginacionDiv = document.getElementById('paginacion-parametros');
+      paginacionDiv.innerHTML = '';
+      if (totalPaginas <= 1) return;
+
+      var btnAnterior = document.createElement('button');
+      btnAnterior.textContent = '← Ant';
+      btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+      btnAnterior.onclick = function () {
+        if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnAnterior);
+
+      for (var i = 1; i <= totalPaginas; i++) {
+        (function (pageNum) {
+          var btn = document.createElement('button');
+          btn.textContent = pageNum;
+          btn.id = 'btn-pagina-' + pageNum;
+          btn.style.cssText = (pageNum === 1)
+            ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+            : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+          btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+          paginacionDiv.appendChild(btn);
+        })(i);
+      }
+
+      var btnSiguiente = document.createElement('button');
+      btnSiguiente.textContent = 'Sig →';
+      btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+      btnSiguiente.onclick = function () {
+        var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+        if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+      };
+      paginacionDiv.appendChild(btnSiguiente);
+    }
+
+    function mostrarPagina(numero) {
+      paginaActual = numero;
+      var filas = document.querySelectorAll('#tabla-parametros tbody tr');
+      var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+      var fin = inicio + ITEMS_POR_PAGINA;
+      var conteo = 0;
+      filas.forEach(function (tr) {
+        if (tr.dataset.filtrado === '0') {
+          tr.style.display = 'none';
+        } else {
+          tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+          conteo++;
+        }
+      });
+      actualizarBotonesPaginacion();
+    }
+
+    function actualizarBotonesPaginacion() {
+      var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+      for (var i = 1; i <= total; i++) {
+        var btn = document.getElementById('btn-pagina-' + i);
+        if (btn) {
+          btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+          btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+          btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+        }
+      }
+    }
+
+    window.addEventListener('load', function () {
+      document.querySelectorAll('#tabla-parametros tbody tr').forEach(function (tr) {
+        tr.dataset.filtrado = '1';
+      });
+      inicializarPaginacion();
+      mostrarPagina(1);
+    });
+  </script>
 </body>
+
 </html>
