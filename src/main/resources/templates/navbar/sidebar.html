@@ -165,7 +165,8 @@
         '/admin/trazabilidad': 'nav-trazabilidad', '/admin/reportes': 'nav-reportes',
         '/admin/diccionarios': 'nav-diccionarios', '/admin/auditoria': 'nav-auditoria',
         '/superadmin': 'nav-inicio', '/superadmin/inicio': 'nav-inicio',
-        '/superadmin/estudios': 'nav-estudios', '/superadmin/normativo': 'nav-normativo',
+        '/superadmin/estudios': 'nav-estudios', '/superadmin/estudios/crear': 'nav-estudios',
+        '/superadmin/normativo': 'nav-normativo', '/superadmin/normativo/crear': 'nav-normativo',
         '/superadmin/perfil': 'nav-perfil', '/superadmin/notificaciones': 'nav-notificaciones',
         '/superadmin/usuarios': 'nav-usuarios', '/superadmin/documentos': 'nav-admin-docs',
         '/superadmin/trazabilidad': 'nav-trazabilidad', '/superadmin/reportes': 'nav-reportes',
@@ -207,6 +208,8 @@
       if (!activeNavId) {
         if (currentPath.startsWith('/admin/normativo/editar/')) activeNavId = 'nav-normativo';
         else if (currentPath.startsWith('/admin/estudios/editar/')) activeNavId = 'nav-estudios';
+        else if (currentPath.startsWith('/superadmin/normativo/editar/')) activeNavId = 'nav-normativo';
+        else if (currentPath.startsWith('/superadmin/estudios/editar/')) activeNavId = 'nav-estudios';
         else if (currentPath.startsWith('/socio/estudios/')) activeNavId = 'nav-estudios';
         else if (currentPath.startsWith('/superadmin/empresas/')) activeNavId = 'nav-empresas';
         else if (currentPath.startsWith('/admin/admin-docs')) activeNavId = 'nav-admin-docs';
