@@ -33,6 +33,10 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
+                        // Proxy seguro de documentos MinIO: cualquier usuario autenticado
+                        .requestMatchers("/api/documentos/ver").authenticated()
+                        // Proxy interno para kkfileview (sin sesión, objectName no adivinable)
+                        .requestMatchers("/api/documentos/kk-proxy").permitAll()
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         // Impersonación: solo SUPERADMIN o IMPERSONATOR

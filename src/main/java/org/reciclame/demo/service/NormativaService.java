@@ -4,6 +4,8 @@ import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +17,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class NormativaService {
+
+    @Value("${minio.url}")
+    private String minioUrl;
+
+    @Value("${minio.bucket}")
+    private String minioBucket;
 
     private final NormativaRepository            normativaRepository;
     private final NormativasEtiquetaRepository   normativasEtiquetaRepository;
@@ -41,6 +49,21 @@ public class NormativaService {
     }
 
     // ── READ ALL ──────────────────────────────────────────────
+
+    /**
+     * Para selectores (estudios-form): devuelve las normativas cuyo archivo está almacenado
+     * en el contenedor MinIO configurado, ordenadas por título.
+     * Excluye normativas con URLs de proveedores externos (GCP, S3, etc.) para garantizar
+     * consistencia entre la BD y el almacenamiento del contenedor.
+     */
+    public List<NormativaResponseDTO> listarNormativasParaSelector() {
+        String minioPrefix = minioUrl + "/" + minioBucket;
+        return normativaRepository.findAll(Sort.by("titulo")).stream()
+                .filter(n -> n.getArchivoUrl() != null && n.getArchivoUrl().startsWith(minioPrefix))
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<NormativaResponseDTO> listarNormativas() {
         return normativaRepository.findByEstadoActivoTrue()
                 .stream()

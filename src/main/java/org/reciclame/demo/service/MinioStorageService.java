@@ -1,8 +1,11 @@
 package org.reciclame.demo.service;
 
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.StatObjectArgs;
+import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class MinioStorageService {
@@ -79,22 +83,109 @@ public class MinioStorageService {
     public void eliminarArchivo(String archivoUrl) {
         if (archivoUrl == null || archivoUrl.isBlank()) return;
         try {
-            // URL formato: http://localhost:9000/reciclame-docs/{objectName}
-            String prefix = minioUrl + "/" + bucket + "/";
-            if (!archivoUrl.startsWith(prefix)) {
-                log.warn("URL de archivo no corresponde al bucket configurado: {}", archivoUrl);
-                return;
-            }
-            String objectName = archivoUrl.substring(prefix.length());
+            String objectName = extractObjectName(archivoUrl);
             buildClient().removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucket)
                             .object(objectName)
                             .build()
             );
+        } catch (IllegalArgumentException e) {
+            log.warn("URL de archivo no corresponde al bucket configurado: {}", archivoUrl);
         } catch (Exception e) {
             log.error("No se pudo eliminar el archivo de MinIO (url={}): {}", archivoUrl, e.getMessage());
         }
+    }
+
+    /**
+     * Genera una URL presignada válida por {@code minutosExpiry} minutos.
+     * Requiere que el bucket NO tenga política anónima de descarga — los clientes
+     * deben pasar por este método (vía el endpoint proxy Spring) para acceder.
+     *
+     * @param archivoUrl   URL pública almacenada en DB (http://localhost:9000/bucket/objectName)
+     * @param minutosExpiry minutos de validez (recomendado: 15 para vistas, 60 para visores)
+     */
+    public String generarUrlFirmada(String archivoUrl, int minutosExpiry) {
+        return generarPresigned(minioUrl, archivoUrl, minutosExpiry);
+    }
+
+    /**
+     * Igual que {@link #generarUrlFirmada} pero usando la URL interna de MinIO (minio:9000).
+     * Usar cuando quien consume la URL es un servicio dentro de la red Docker (ej. kkfileview).
+     */
+    public String generarUrlFirmadaInterna(String archivoUrl, int minutosExpiry) {
+        return generarPresigned(minioInternalUrl, archivoUrl, minutosExpiry);
+    }
+
+    private String generarPresigned(String endpoint, String archivoUrl, int minutosExpiry) {
+        String objectName = extractObjectName(archivoUrl);
+        try {
+            MinioClient client = MinioClient.builder()
+                    .endpoint(endpoint)
+                    .credentials(accessKey, secretKey)
+                    .build();
+            return client.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(bucket)
+                            .object(objectName)
+                            .expiry(minutosExpiry, TimeUnit.MINUTES)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo generar URL firmada para: " + objectName, e);
+        }
+    }
+
+    /**
+     * Verifica que el objeto exista en el bucket MinIO.
+     * Retorna false si la URL no corresponde al bucket, si el objeto no existe, o si MinIO no es accesible.
+     */
+    public boolean existeArchivo(String archivoUrl) {
+        String objectName;
+        try {
+            objectName = extractObjectName(archivoUrl);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        try {
+            buildClient().statObject(StatObjectArgs.builder()
+                    .bucket(bucket)
+                    .object(objectName)
+                    .build());
+            return true;
+        } catch (Exception e) {
+            log.debug("Archivo no encontrado en MinIO ({}): {}", objectName, e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Extrae el objectName del bucket a partir de cualquier URL de MinIO,
+     * independientemente del host (localhost:9000, minio:9000, host.docker.internal:9000, etc.).
+     * Busca el marcador "/{bucket}/" en la ruta y toma lo que viene después.
+     */
+    private String extractObjectName(String archivoUrl) {
+        if (archivoUrl == null || archivoUrl.isBlank()) {
+            throw new IllegalArgumentException("URL de archivo nula o vacía");
+        }
+        String marker = "/" + bucket + "/";
+        int idx = archivoUrl.indexOf(marker);
+        if (idx < 0) {
+            throw new IllegalArgumentException("URL no corresponde al bucket configurado: " + archivoUrl);
+        }
+        String path = archivoUrl.substring(idx + marker.length());
+        int q = path.indexOf('?');
+        String objectName = q > 0 ? path.substring(0, q) : path;
+        if (objectName.isBlank()) {
+            throw new IllegalArgumentException("Object name vacío en URL: " + archivoUrl);
+        }
+        return objectName;
+    }
+
+    /** Extrae el objectName de una URL de MinIO (cualquier hostname). */
+    public String getObjectNameFromUrl(String archivoUrl) {
+        return extractObjectName(archivoUrl);
     }
 
     public String getMinioUrl() {

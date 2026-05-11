@@ -1,6 +1,7 @@
 services:
   reciclame-app:
     image: kent10029/reciclame:latest
+    platform: linux/amd64
     container_name: reciclame-app
     restart: unless-stopped
     ports:
@@ -18,6 +19,7 @@ services:
       - KKFILEVIEW_URL=http://host.docker.internal:8012
       - N8N_WEBHOOK_URL=http://host.docker.internal:5678/webhook/send-email
       - APP_BASE_URL=http://localhost:8080
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app:8080
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -72,8 +74,8 @@ services:
       /bin/sh -c "
       mc alias set local http://minio:9000 minioadmin minioadmin &&
       mc mb --ignore-existing local/reciclame-docs &&
-      mc anonymous set download local/reciclame-docs &&
-      echo 'Bucket reciclame-docs listo con acceso publico de descarga.' &&
+      mc anonymous set none local/reciclame-docs &&
+      echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' &&
       exit 0
       "
 
@@ -89,6 +91,8 @@ services:
       - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=file:/opt/kkFileView/templates/web/,classpath:/web/
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - reciclame-net
 

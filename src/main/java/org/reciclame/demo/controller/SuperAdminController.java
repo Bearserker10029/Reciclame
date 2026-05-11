@@ -322,7 +322,7 @@ return "redirect:/superadmin/notificaciones";
         model.addAttribute("isEdit", false);
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
-        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("normativas", normativaService.listarNormativasParaSelector());
         return "SuperAdmin/estudios-form";
     }
 
@@ -335,7 +335,7 @@ return "redirect:/superadmin/notificaciones";
         model.addAttribute("estudio", estudioService.obtenerEstudioPorId(id));
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
-        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("normativas", normativaService.listarNormativasParaSelector());
         return "SuperAdmin/estudios-form";
     }
 
