@@ -137,6 +137,73 @@ public class NotificacionService {
         preferenciasRepository.save(prefs);
     }
 
+    // ── NOTIFICACIONES AUTOMÁTICAS ────────────────────────────
+
+    @Transactional
+    public void notificarNuevoEstudio(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevosEstudios()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVO_ESTUDIO",
+                    "Nuevo estudio disponible",
+                    "Se ha publicado el estudio: " + titulo,
+                    "/admin/estudios");
+            notificacionRepository.save(n);
+        });
+    }
+
+    @Transactional
+    public void notificarNuevaNormativa(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevasNormativas()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVA_NORMATIVA",
+                    "Nueva normativa disponible",
+                    "Se ha agregado al repositorio: " + titulo,
+                    "/admin/normativo");
+            notificacionRepository.save(n);
+        });
+    }
+
+    @Transactional
+    public void notificarAprobacion(Long usuarioId) {
+        usuarioRepository.findById(usuarioId).ifPresent(u -> {
+            Notificacione n = buildNotif(u, "APROBACION",
+                    "¡Tu cuenta ha sido aprobada!",
+                    "Tu solicitud de acceso a Recíclame fue aprobada. Ya puedes ingresar al repositorio.",
+                    null);
+            notificacionRepository.save(n);
+        });
+    }
+
+    @Transactional
+    public void notificarRechazo(Long usuarioId) {
+        usuarioRepository.findById(usuarioId).ifPresent(u -> {
+            Notificacione n = buildNotif(u, "RECHAZO",
+                    "Solicitud de acceso no aprobada",
+                    "Tu solicitud de acceso fue revisada y no pudo ser aprobada en esta ocasión. Puedes contactar al administrador.",
+                    null);
+            notificacionRepository.save(n);
+        });
+    }
+
+    private Notificacione buildNotif(Usuario u, String tipo, String titulo, String mensaje, String enlace) {
+        Notificacione n = new Notificacione();
+        n.setUsuario(u);
+        n.setTipo(tipo);
+        n.setTitulo(titulo);
+        n.setMensaje(mensaje);
+        n.setEnlaceRecurso(enlace);
+        n.setLeida(false);
+        n.setEstadoActivo(true);
+        n.setCreatedAt(Instant.now());
+        return n;
+    }
+
     // ── HELPER ────────────────────────────────────────────────
     private NotificacionResponseDTO toResponseDTO(Notificacione n) {
         NotificacionResponseDTO dto = new NotificacionResponseDTO();

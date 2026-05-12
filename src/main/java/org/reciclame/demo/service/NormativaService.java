@@ -31,6 +31,7 @@ public class NormativaService {
     private final EstadosNormativaRepository     estadosNormativaRepository;
     private final EtiquetaRepository             etiquetaRepository;
     private final UsuarioRepository              usuarioRepository;
+    private final NotificacionService            notificacionService;
 
     public NormativaService(NormativaRepository normativaRepository,
                             NormativasEtiquetaRepository normativasEtiquetaRepository,
@@ -38,7 +39,8 @@ public class NormativaService {
                             TiposNormativaRepository tiposNormativaRepository,
                             EstadosNormativaRepository estadosNormativaRepository,
                             EtiquetaRepository etiquetaRepository,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository,
+                            NotificacionService notificacionService) {
         this.normativaRepository          = normativaRepository;
         this.normativasEtiquetaRepository = normativasEtiquetaRepository;
         this.tematicaRepository           = tematicaRepository;
@@ -46,6 +48,7 @@ public class NormativaService {
         this.estadosNormativaRepository   = estadosNormativaRepository;
         this.etiquetaRepository           = etiquetaRepository;
         this.usuarioRepository            = usuarioRepository;
+        this.notificacionService          = notificacionService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -131,6 +134,7 @@ public class NormativaService {
 
         Normativa saved = normativaRepository.save(n);
         guardarEtiquetas(saved, dto.getEtiquetasIds());
+        try { notificacionService.notificarNuevaNormativa(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
         return toResponseDTO(saved);
     }
 

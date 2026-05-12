@@ -29,16 +29,18 @@ public class UsuarioService {
     private final EmpresaRepository empresaRepository;
     private final AuditoriaService auditoriaService;
     private final PasswordEncoder passwordEncoder;
+    private final NotificacionService notificacionService;
     private final ObjectMapper objectMapper;
 
     public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository,
                          EmpresaRepository empresaRepository, AuditoriaService auditoriaService,
-                         PasswordEncoder passwordEncoder) {
+                         PasswordEncoder passwordEncoder, NotificacionService notificacionService) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.empresaRepository = empresaRepository;
         this.auditoriaService = auditoriaService;
         this.passwordEncoder = passwordEncoder;
+        this.notificacionService = notificacionService;
 
         this.objectMapper = new ObjectMapper();
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -313,6 +315,8 @@ public class UsuarioService {
             "Aprobar usuario pendiente: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
             null, null, "EXITOSO", null, ipAddress, userAgent);
 
+        try { notificacionService.notificarAprobacion(usuarioGuardado.getId()); } catch (Exception ex) { /* no rollback */ }
+
         return toResponseDTO(usuarioGuardado);
     }
 
@@ -336,6 +340,8 @@ public class UsuarioService {
             AuditoriaService.ACCION_RECHAZAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
             "Rechazar usuario pendiente: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
             null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        try { notificacionService.notificarRechazo(usuarioGuardado.getId()); } catch (Exception ex) { /* no rollback */ }
 
         return toResponseDTO(usuarioGuardado);
     }
