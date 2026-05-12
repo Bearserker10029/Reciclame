@@ -452,33 +452,19 @@
               <div class="timeline-list" th:if="${auditorias != null and !#lists.isEmpty(auditorias)}">
                 <div th:each="a,aStat : ${auditorias}"
                      th:if="${aStat.index < 5}"
-                     class="timeline-item"
-                     th:with="mod=${#strings.toLowerCase(a.modulo ?: '')}">
+                     class="timeline-item">
                   <div class="timeline-left">
-                    <div class="timeline-dot"
-                         th:style="${#strings.contains(mod,'usuario')} ? 'background:rgba(16,185,129,.1)' :
-                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'background:rgba(239,68,68,.1)' :
-                                   ${#strings.contains(mod,'descarga')} ? 'background:rgba(59,130,246,.1)' :
-                                   ${#strings.contains(mod,'normativa')} ? 'background:rgba(139,92,246,.1)' :
-                                   'background:rgba(107,114,128,.1)'">
-                      <i th:class="${#strings.contains(mod,'usuario')} ? 'fas fa-user-edit' :
-                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'fas fa-file-alt' :
-                                   ${#strings.contains(mod,'descarga')} ? 'fas fa-download' :
-                                   ${#strings.contains(mod,'normativa')} ? 'fas fa-balance-scale' :
-                                   'fas fa-circle-dot'"
-                         th:style="${#strings.contains(mod,'usuario')} ? 'color:#10B981;font-size:13px' :
-                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'color:#EF4444;font-size:13px' :
-                                   ${#strings.contains(mod,'descarga')} ? 'color:#3B82F6;font-size:13px' :
-                                   ${#strings.contains(mod,'normativa')} ? 'color:#8B5CF6;font-size:13px' :
-                                   'color:#6B7280;font-size:13px'"></i>
+                    <div class="timeline-dot" style="background:rgba(107,114,128,.1);">
+                      <i class="fas fa-clock" style="color:#6B7280;font-size:13px;"></i>
                     </div>
-                    <div class="timeline-line" th:if="${!aStat.last and aStat.index < 4}"></div>
+                    <div class="timeline-line" th:if="${aStat.index < 4}"></div>
                   </div>
-                  <div th:style="${aStat.last or aStat.index >= 4} ? 'flex:1' : 'flex:1;padding-bottom:16px'">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                         th:text="${a.descripcion ?: a.accion}">Acción registrada</div>
+                  <div th:style="${aStat.index >= 4} ? 'flex:1' : 'flex:1;padding-bottom:16px'">
+                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                         th:text="${a.descripcion != null ? a.descripcion : a.accion}">Acción registrada</div>
                     <div style="font-size:11px;color:#9CA3AF;">
                       <span th:text="${a.modulo}">Módulo</span>
+                      <span th:if="${a.usuarioNombre != null}" th:text="' · ' + ${a.usuarioNombre}"></span>
                       <span> · </span>
                       <span class="time-ago" th:attr="data-ts=${a.fechaAccion}">—</span>
                     </div>
