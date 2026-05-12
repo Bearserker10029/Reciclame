@@ -177,12 +177,8 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
 
-      <!-- ── Main content area con overlay sobre la imagen ── -->
-      <main style="
-        flex:1; overflow-y:auto; padding:32px;
-        background:
-          linear-gradient(rgba(15,23,42,.52), rgba(15,23,42,.52)),
-          url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center / cover;">
+      <!-- ── Main content area ── -->
+      <main style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div>
 
@@ -206,10 +202,10 @@
 
           <!-- ─── Header ─── -->
           <div class="page-header anim-1" style="margin-bottom:24px;">
-            <h1 style="font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,.3);">
+            <h1 style="font-size:26px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">
               Panel de Administración
             </h1>
-            <p style="color:rgba(255,255,255,.65);font-size:14px;">
+            <p style="color:#6B7280;font-size:14px;">
               Resumen de actividad del repositorio y gestión de usuarios
             </p>
           </div>
@@ -297,7 +293,7 @@
                   <span style="background:rgba(255,255,255,.12);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">
                     <i class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional
                   </span>
-                  <span style="background:rgba(46,204,113,.25);border:1px solid rgba(46,204,113,.35);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">138 normas</span>
+                  <span style="background:rgba(46,204,113,.25);border:1px solid rgba(46,204,113,.35);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;" th:text="${#lists.size(normativas)} + ' normas'">138 normas</span>
                 </div>
                 <div style="width:32px;height:32px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;">
                   <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.85);font-size:12px;"></i>
@@ -320,12 +316,12 @@
                   <i class="fas fa-arrow-up" style="font-size:9px;"></i>+3 hoy
                 </span>
               </div>
-              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;">42</div>
+              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;" th:text="${#lists.size(usuariosActivos)}">42</div>
               <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">Usuarios activos</div>
               <div style="height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden;">
                 <div style="height:100%;width:68%;background:linear-gradient(90deg,#10B981,#34D399);border-radius:2px;"></div>
               </div>
-              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;">68% de la meta mensual</div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;" th:text="${#lists.size(usuariosActivos)} + ' usuarios registrados'">68% de la meta mensual</div>
             </div>
 
             <!-- Solicitudes nuevas -->
@@ -338,12 +334,12 @@
                   <span style="width:6px;height:6px;border-radius:50%;background:#F59E0B;display:inline-block;animation:pulse-dot 1.8s infinite;"></span>Pendiente
                 </span>
               </div>
-              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;">3</div>
+              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;" th:text="${#lists.size(usuariosPendientes)}">3</div>
               <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">Solicitudes nuevas</div>
               <div style="height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden;">
                 <div style="height:100%;width:30%;background:linear-gradient(90deg,#F59E0B,#FCD34D);border-radius:2px;"></div>
               </div>
-              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;">↑ 2 más que ayer</div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;" th:text="${#lists.size(usuariosPendientes)} + ' pendientes de aprobación'">↑ 2 más que ayer</div>
             </div>
 
             <!-- Estudios cargados -->
@@ -356,12 +352,12 @@
                   <i class="fas fa-arrow-up" style="font-size:9px;"></i>+2 esta semana
                 </span>
               </div>
-              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;">24</div>
+              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;" th:text="${#lists.size(estudios)}">24</div>
               <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">Estudios cargados</div>
               <div style="height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden;">
                 <div style="height:100%;width:48%;background:linear-gradient(90deg,#3B82F6,#60A5FA);border-radius:2px;"></div>
               </div>
-              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;">vs 22 el mes anterior</div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;" th:text="${#lists.size(estudios)} + ' en total'">vs 22 el mes anterior</div>
             </div>
 
             <!-- Descargas totales -->
@@ -374,12 +370,12 @@
                   <i class="fas fa-arrow-up" style="font-size:9px;"></i>+12% mes
                 </span>
               </div>
-              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;">891</div>
+              <div style="font-size:32px;font-weight:800;color:#1B3A5C;margin-bottom:4px;line-height:1;" th:text="${totalDescargas}">891</div>
               <div style="font-size:12px;color:#6B7280;margin-bottom:12px;">Descargas totales</div>
               <div style="height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden;">
                 <div style="height:100%;width:82%;background:linear-gradient(90deg,#8B5CF6,#A78BFA);border-radius:2px;"></div>
               </div>
-              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;">vs 795 el mes anterior</div>
+              <div style="font-size:10px;color:#9CA3AF;margin-top:6px;" th:text="${totalDescargas} + ' descargas acumuladas'">vs 795 el mes anterior</div>
             </div>
 
           </div><!-- /stats row -->
