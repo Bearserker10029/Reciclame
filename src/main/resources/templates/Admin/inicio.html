@@ -179,18 +179,12 @@
 
       <!-- ── Main content area con overlay sobre la imagen ── -->
       <main style="
-        flex:1; overflow-y:auto; padding:32px; position:relative;
-        background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed;
-        background-size: cover;">
+        flex:1; overflow-y:auto; padding:32px;
+        background:
+          linear-gradient(rgba(15,23,42,.52), rgba(15,23,42,.52)),
+          url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center / cover;">
 
-        <!-- Overlay semitransparente para legibilidad -->
-        <div style="
-          position:fixed; inset:0; pointer-events:none; z-index:0;
-          background: rgba(15,23,42,.55);
-          backdrop-filter: blur(1px);"></div>
-
-        <!-- Todo el contenido va sobre z-index:1 -->
-        <div style="position:relative;z-index:1;">
+        <div>
 
           <!-- Impersonation banner -->
           <div th:if="${session.ORIGINAL_USER != null}" class="impersonation-bar">
