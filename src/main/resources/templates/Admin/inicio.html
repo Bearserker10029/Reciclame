@@ -432,132 +432,114 @@
           <!-- ═══ ACTIVIDAD RECIENTE + SOLICITUDES ═══ -->
           <div class="bottom-grid anim-5" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
 
-            <!-- Actividad reciente — Timeline -->
+            <!-- Actividad reciente — Timeline dinámica -->
             <div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <i class="fas fa-clock" style="color:#2ECC71;font-size:14px;"></i>
                   <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Actividad reciente</span>
                 </div>
-                <span style="font-size:11px;color:#9CA3AF;font-weight:500;">Hoy</span>
+                <span style="font-size:11px;color:#9CA3AF;font-weight:500;">Últimas acciones</span>
               </div>
 
-              <div class="timeline-list">
+              <!-- Sin auditorías -->
+              <div th:if="${auditorias == null or #lists.isEmpty(auditorias)}"
+                   style="text-align:center;padding:32px 0;color:#9CA3AF;font-size:13px;">
+                <i class="fas fa-inbox" style="font-size:28px;margin-bottom:8px;display:block;opacity:.4;"></i>
+                Sin actividad registrada
+              </div>
 
-                <div class="timeline-item">
+              <div class="timeline-list" th:if="${auditorias != null and !#lists.isEmpty(auditorias)}">
+                <div th:each="a,aStat : ${auditorias}"
+                     th:if="${aStat.index < 5}"
+                     class="timeline-item"
+                     th:with="mod=${#strings.toLowerCase(a.modulo ?: '')}">
                   <div class="timeline-left">
-                    <div class="timeline-dot" style="background:rgba(16,185,129,.1);">
-                      <i class="fas fa-user-plus" style="color:#10B981;font-size:14px;"></i>
+                    <div class="timeline-dot"
+                         th:style="${#strings.contains(mod,'usuario')} ? 'background:rgba(16,185,129,.1)' :
+                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'background:rgba(239,68,68,.1)' :
+                                   ${#strings.contains(mod,'descarga')} ? 'background:rgba(59,130,246,.1)' :
+                                   ${#strings.contains(mod,'normativa')} ? 'background:rgba(139,92,246,.1)' :
+                                   'background:rgba(107,114,128,.1)'">
+                      <i th:class="${#strings.contains(mod,'usuario')} ? 'fas fa-user-edit' :
+                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'fas fa-file-alt' :
+                                   ${#strings.contains(mod,'descarga')} ? 'fas fa-download' :
+                                   ${#strings.contains(mod,'normativa')} ? 'fas fa-balance-scale' :
+                                   'fas fa-circle-dot'"
+                         th:style="${#strings.contains(mod,'usuario')} ? 'color:#10B981;font-size:13px' :
+                                   (${#strings.contains(mod,'estudio')} or ${#strings.contains(mod,'documento')}) ? 'color:#EF4444;font-size:13px' :
+                                   ${#strings.contains(mod,'descarga')} ? 'color:#3B82F6;font-size:13px' :
+                                   ${#strings.contains(mod,'normativa')} ? 'color:#8B5CF6;font-size:13px' :
+                                   'color:#6B7280;font-size:13px'"></i>
                     </div>
-                    <div class="timeline-line"></div>
+                    <div class="timeline-line" th:if="${!aStat.last and aStat.index < 4}"></div>
                   </div>
-                  <div style="flex:1;padding-bottom:16px;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;">Nuevo usuario aprobado: Ana Sánchez</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Gestión de usuarios · hace 30 min</div>
-                  </div>
-                </div>
-
-                <div class="timeline-item">
-                  <div class="timeline-left">
-                    <div class="timeline-dot" style="background:rgba(239,68,68,.1);">
-                      <i class="fas fa-file-pdf" style="color:#EF4444;font-size:14px;"></i>
-                    </div>
-                    <div class="timeline-line"></div>
-                  </div>
-                  <div style="flex:1;padding-bottom:16px;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;">Análisis de Flujo de Materiales 2025 cargado</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Documentos · hace 2 horas</div>
-                  </div>
-                </div>
-
-                <div class="timeline-item">
-                  <div class="timeline-left">
-                    <div class="timeline-dot" style="background:rgba(59,130,246,.1);">
-                      <i class="fas fa-download" style="color:#3B82F6;font-size:14px;"></i>
-                    </div>
-                    <div class="timeline-line"></div>
-                  </div>
-                  <div style="flex:1;padding-bottom:16px;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;">María López descargó D.L. 1278</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Trazabilidad · hace 4 horas</div>
-                  </div>
-                </div>
-
-                <div class="timeline-item">
-                  <div class="timeline-left">
-                    <div class="timeline-dot" style="background:rgba(139,92,246,.1);">
-                      <i class="fas fa-edit" style="color:#8B5CF6;font-size:14px;"></i>
+                  <div th:style="${aStat.last or aStat.index >= 4} ? 'flex:1' : 'flex:1;padding-bottom:16px'">
+                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                         th:text="${a.descripcion ?: a.accion}">Acción registrada</div>
+                    <div style="font-size:11px;color:#9CA3AF;">
+                      <span th:text="${a.modulo}">Módulo</span>
+                      <span> · </span>
+                      <span class="time-ago" th:attr="data-ts=${a.fechaAccion}">—</span>
                     </div>
                   </div>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;margin-bottom:2px;">Normativa EC-2024-07 actualizada</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Repositorio normativo · hace 6 horas</div>
-                  </div>
                 </div>
-
               </div>
             </div>
 
-            <!-- Solicitudes pendientes -->
+            <!-- Solicitudes pendientes dinámicas -->
             <div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                 <div style="display:flex;align-items:center;gap:8px;">
                   <i class="fas fa-user-clock" style="color:#F59E0B;font-size:14px;"></i>
                   <span style="font-weight:700;font-size:15px;color:#1B3A5C;">Solicitudes pendientes</span>
                 </div>
-                <span style="background:#EF4444;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">3 nuevas</span>
+                <span th:if="${!#lists.isEmpty(usuariosPendientes)}"
+                      th:text="${#lists.size(usuariosPendientes)} + ' nuevas'"
+                      style="background:#EF4444;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;">0 nuevas</span>
               </div>
 
-              <div style="display:flex;flex-direction:column;gap:12px;">
+              <!-- Sin pendientes -->
+              <div th:if="${#lists.isEmpty(usuariosPendientes)}"
+                   style="text-align:center;padding:32px 0;color:#9CA3AF;font-size:13px;">
+                <i class="fas fa-check-circle" style="font-size:28px;margin-bottom:8px;display:block;color:#10B981;opacity:.5;"></i>
+                Sin solicitudes pendientes
+              </div>
 
-                <div style="padding:12px;background:#FFFBEB;border-radius:10px;border-left:4px solid #F59E0B;display:flex;align-items:center;gap:10px;transition:background .15s;" onmouseover="this.style.background='#FEF3C7'" onmouseout="this.style.background='#FFFBEB'">
-                  <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#D97706);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">AS</div>
+              <div th:if="${!#lists.isEmpty(usuariosPendientes)}"
+                   style="display:flex;flex-direction:column;gap:12px;">
+                <div th:each="u,uStat : ${usuariosPendientes}"
+                     th:if="${uStat.index < 3}"
+                     style="padding:12px;background:#FFFBEB;border-radius:10px;border-left:4px solid #F59E0B;display:flex;align-items:center;gap:10px;transition:background .15s;"
+                     onmouseover="this.style.background='#FEF3C7'" onmouseout="this.style.background='#FFFBEB'">
+                  <!-- Iniciales generadas por JS a partir de data-name -->
+                  <div class="avatar-initials"
+                       th:attr="data-name=${u.nombreCompleto}"
+                       style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#F59E0B,#D97706);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">?</div>
                   <div style="flex:1;min-width:0;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Ana Sánchez</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Grupo Gloria S.A. · hace 2h</div>
+                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;" th:text="${u.nombreCompleto}">Usuario</div>
+                    <div style="font-size:11px;color:#9CA3AF;">
+                      <span th:text="${u.empresaNombre ?: 'Sin empresa'}">Empresa</span>
+                      <span> · </span>
+                      <span class="time-ago" th:attr="data-ts=${u.createdAt}">—</span>
+                    </div>
                   </div>
                   <div style="display:flex;gap:6px;">
-                    <button title="Aprobar" style="width:32px;height:32px;border-radius:8px;border:none;background:#10B981;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+                    <button title="Aprobar"
+                            th:onclick="'aprobarUsuario(' + ${u.id} + ')'"
+                            style="width:32px;height:32px;border-radius:8px;border:none;background:#10B981;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;"
+                            onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
                       <i class="fas fa-check"></i>
                     </button>
-                    <button title="Rechazar" style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#FEE2E2';this.style.color='#EF4444';this.style.borderColor='#FCA5A5'" onmouseout="this.style.background='#fff';this.style.color='#9CA3AF';this.style.borderColor='#E5E7EB'">
+                    <button title="Rechazar"
+                            th:onclick="'rechazarUsuario(' + ${u.id} + ')'"
+                            style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;"
+                            onmouseover="this.style.background='#FEE2E2';this.style.color='#EF4444';this.style.borderColor='#FCA5A5'"
+                            onmouseout="this.style.background='#fff';this.style.color='#9CA3AF';this.style.borderColor='#E5E7EB'">
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
                 </div>
-
-                <div style="padding:12px;background:#FFFBEB;border-radius:10px;border-left:4px solid #F59E0B;display:flex;align-items:center;gap:10px;transition:background .15s;" onmouseover="this.style.background='#FEF3C7'" onmouseout="this.style.background='#FFFBEB'">
-                  <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">LR</div>
-                  <div style="flex:1;min-width:0;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Luis Rodríguez</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Cartavio S.A.A. · hace 1 día</div>
-                  </div>
-                  <div style="display:flex;gap:6px;">
-                    <button title="Aprobar" style="width:32px;height:32px;border-radius:8px;border:none;background:#10B981;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-                      <i class="fas fa-check"></i>
-                    </button>
-                    <button title="Rechazar" style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#FEE2E2';this.style.color='#EF4444';this.style.borderColor='#FCA5A5'" onmouseout="this.style.background='#fff';this.style.color='#9CA3AF';this.style.borderColor='#E5E7EB'">
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </div>
-                </div>
-
-                <div style="padding:12px;background:#FFFBEB;border-radius:10px;border-left:4px solid #F59E0B;display:flex;align-items:center;gap:10px;transition:background .15s;" onmouseover="this.style.background='#FEF3C7'" onmouseout="this.style.background='#FFFBEB'">
-                  <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#06B6D4,#0891B2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">CM</div>
-                  <div style="flex:1;min-width:0;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Carlos Mendoza</div>
-                    <div style="font-size:11px;color:#9CA3AF;">Backus S.A. · hace 2 días</div>
-                  </div>
-                  <div style="display:flex;gap:6px;">
-                    <button title="Aprobar" style="width:32px;height:32px;border-radius:8px;border:none;background:#10B981;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
-                      <i class="fas fa-check"></i>
-                    </button>
-                    <button title="Rechazar" style="width:32px;height:32px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#9CA3AF;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;" onmouseover="this.style.background='#FEE2E2';this.style.color='#EF4444';this.style.borderColor='#FCA5A5'" onmouseout="this.style.background='#fff';this.style.color='#9CA3AF';this.style.borderColor='#E5E7EB'">
-                      <i class="fas fa-times"></i>
-                    </button>
-                  </div>
-                </div>
-
               </div>
 
               <button onclick="navTo('usuarios')"
@@ -599,6 +581,46 @@
       window.location.href = '/admin/' + (map[page] || page);
     }
     function goLogin() { window.location.href = '/login'; }
+
+    // Convierte un Instant ISO a "hace X min/h/días"
+    function timeAgo(isoStr) {
+      if (!isoStr) return '—';
+      var diff = Math.floor((Date.now() - new Date(isoStr).getTime()) / 1000);
+      if (diff < 60)   return 'hace ' + diff + ' seg';
+      if (diff < 3600) return 'hace ' + Math.floor(diff / 60) + ' min';
+      if (diff < 86400) return 'hace ' + Math.floor(diff / 3600) + ' h';
+      return 'hace ' + Math.floor(diff / 86400) + ' días';
+    }
+    document.querySelectorAll('.time-ago').forEach(function(el) {
+      el.textContent = timeAgo(el.dataset.ts);
+    });
+
+    // Genera iniciales (máx 2 letras) a partir del nombre completo
+    document.querySelectorAll('.avatar-initials').forEach(function(el) {
+      var name = (el.dataset.name || '').trim();
+      var parts = name.split(/\s+/).filter(Boolean);
+      var initials = parts.length >= 2
+        ? parts[0][0] + parts[1][0]
+        : (parts[0] ? parts[0].substring(0, 2) : '?');
+      el.textContent = initials.toUpperCase();
+    });
+
+    // Aprobar / Rechazar usuario pendiente desde el dashboard
+    var csrfToken  = document.querySelector('meta[name="_csrf"]');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+    function _apiPost(url) {
+      var headers = { 'Content-Type': 'application/json' };
+      if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
+      return fetch(url, { method: 'POST', headers: headers });
+    }
+    function aprobarUsuario(id) {
+      _apiPost('/api/usuarios/' + id + '/aprobar')
+        .then(function(r) { if (r.ok) location.reload(); else navTo('usuarios'); });
+    }
+    function rechazarUsuario(id) {
+      _apiPost('/api/usuarios/' + id + '/rechazar')
+        .then(function(r) { if (r.ok) location.reload(); else navTo('usuarios'); });
+    }
 
     // Donut chart con tooltip y animación de entrada
     (function () {
