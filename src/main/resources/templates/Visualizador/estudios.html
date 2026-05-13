@@ -97,6 +97,15 @@
       display: block;
     }
 
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-1 { animation: fadeInUp .5s ease both; }
+    .anim-2 { animation: fadeInUp .5s .1s ease both; }
+    .anim-3 { animation: fadeInUp .5s .2s ease both; }
+    .anim-4 { animation: fadeInUp .5s .3s ease both; }
+
     /* Modal Visor */
     .modal-overlay {
       position: fixed;
@@ -294,7 +303,7 @@
 
         <!-- PAGE: ESTUDIOS -->
         <div id="page-estudios" class="page active" style="padding:32px;">
-          <div style="margin-bottom:20px;">
+          <div class="anim-1" style="margin-bottom:20px;">
             <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
             <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
             <div
@@ -404,7 +413,9 @@
 
         <!-- PAGE: NORMATIVO -->
         <div id="page-normativo" class="page" style="padding:32px;">
-          <th:block th:replace="Visualizador/normativo :: normativo-content"></th:block>
+          <div class="anim-1">
+            <th:block th:replace="Visualizador/normativo :: normativo-content"></th:block>
+          </div>
         </div>
 
       </main>
@@ -469,7 +480,14 @@
   <script>
     function navTo(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById('page-' + page).classList.add('active');
+      var el = document.getElementById('page-' + page);
+      el.classList.add('active');
+      // Re-disparar animaciones en la página recién mostrada
+      el.querySelectorAll('.anim-1,.anim-2,.anim-3,.anim-4').forEach(function(a) {
+        a.style.animation = 'none';
+        void a.offsetWidth;
+        a.style.animation = '';
+      });
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       var nav = document.getElementById('nav-' + page);
       if (nav) nav.classList.add('active');
