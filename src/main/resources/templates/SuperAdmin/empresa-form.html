@@ -133,6 +133,17 @@
     .required {
       color: #E74C3C;
     }
+
+    .input-error {
+      border-color: #E74C3C !important;
+    }
+
+    .error-message {
+      color: #E74C3C;
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
   </style>
 </head>
 
@@ -159,15 +170,19 @@
               <label>RUC <span class="required">*</span></label>
               <input type="text" name="ruc" th:value="${empresa?.ruc}" required pattern="[0-9]{11}" maxlength="11"
                 th:disabled="${empresa != null}" th:readonly="${empresa != null}"
+                th:classappend="${error_ruc != null} ? 'input-error'"
                 placeholder="Ingrese 11 dígitos del RUC" />
               <small style="color:#9CA3AF;font-size:12px;" th:if="${empresa == null}">El RUC no podrá ser modificado
                 después de crear</small>
+              <span class="error-message" th:if="${error_ruc}" th:text="${error_ruc}"></span>
             </div>
 
             <div class="form-group">
               <label>Razón Social <span class="required">*</span></label>
               <input type="text" name="razonSocial" th:value="${empresa?.razonSocial}" required
+                th:classappend="${error_razonSocial != null} ? 'input-error'"
                 placeholder="Ingrese la razón social" />
+              <span class="error-message" th:if="${error_razonSocial}" th:text="${error_razonSocial}"></span>
             </div>
 
             <div class="form-group">

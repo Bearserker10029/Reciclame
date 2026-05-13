@@ -37,15 +37,13 @@
     }
 
     @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
+      50% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+    }
 
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: .5
-      }
+    @keyframes rotateBadge {
+      0% { transform: rotate(-3deg) scale(.95) }
+      100% { transform: rotate(0) scale(1) }
     }
 
     @keyframes barGrow {
@@ -59,7 +57,7 @@
     }
 
     .stat-card {
-      background: #fff;
+      background: #F0FAF4;
       border-radius: 16px;
       padding: 20px 24px;
       box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
@@ -74,7 +72,7 @@
     }
 
     .chart-card {
-      background: #fff;
+      background: #F0FAF4;
       border-radius: 16px;
       padding: 24px;
       box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
@@ -100,7 +98,7 @@
       display: flex;
       gap: 6px;
       margin-bottom: 24px;
-      background: #fff;
+      background: #F0FAF4;
       padding: 6px;
       border-radius: 14px;
       box-shadow: 0 2px 12px rgba(0, 0, 0, .07);
@@ -285,74 +283,71 @@
       cursor: pointer;
     }
 
-    .hero-section {
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 80px;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .65); margin-top: 4px; }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
       position: relative;
       overflow: hidden;
-      background: linear-gradient(135deg, #1B3A5C, #2c5282);
-      border-radius: 20px;
-      padding: 32px 36px;
-      margin-bottom: 28px;
-      animation: fadeUp .35s ease both;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
     }
 
-    .hero-blob {
+    .estudios-hero::before {
+      content: '';
       position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
-      filter: blur(40px);
-      opacity: .15;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
     }
 
-    .hero-blob-1 {
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
       width: 200px;
       height: 200px;
-      background: #2ECC71;
-      top: -60px;
-      right: -40px;
-    }
-
-    .hero-blob-2 {
-      width: 150px;
-      height: 150px;
-      background: #3498DB;
-      bottom: -40px;
-      left: -30px;
-    }
-
-    .hero-content {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, .15);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .hero-icon i {
-      font-size: 22px;
-      color: #fff;
-    }
-
-    .hero-text h2 {
-      font-size: 20px;
-      font-weight: 800;
-      color: #fff;
-      margin: 0 0 4px 0;
-    }
-
-    .hero-text p {
-      font-size: 13px;
-      color: rgba(255, 255, 255, .7);
-      margin: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
   </style>
 </head>
@@ -362,18 +357,27 @@
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <div class="hero-section">
-          <div class="hero-blob hero-blob-1"></div>
-          <div class="hero-blob hero-blob-2"></div>
-          <div class="hero-content">
-            <div class="hero-icon">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="hero-text">
-              <h2>Reportes de Uso</h2>
-              <p>Analíticas de actividad de socios en la plataforma</p>
+        <div class="estudios-hero">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-chart-line" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Reportes de Uso</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Analíticas de actividad de socios en la plataforma</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-chart-bar" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Módulo de reportes</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -675,7 +679,7 @@
 
         <div id="rtab-content-chatbot" style="display:none;">
           <div
-            style="background:#fff;border-radius:16px;padding:60px;box-shadow:0 2px 16px rgba(0,0,0,.07);text-align:center;">
+            style="background:#F0FAF4;border-radius:16px;padding:60px;box-shadow:0 2px 16px rgba(0,0,0,.07);text-align:center;">
             <div
               style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#E5E7EB,#F3F4F6);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
               <i class="fas fa-robot" style="font-size:36px;color:#9CA3AF;"></i>

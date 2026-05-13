@@ -24,7 +24,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -132,7 +135,7 @@ public class SuperAdminController extends AdminController {
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        model.addAttribute("tematicas", tematicaService.listarTematicasTodas());
         var conteoPorTematica = normativaService.contarPorTematica();
         model.addAttribute("conteoPorTematica", conteoPorTematica);
         model.addAttribute("estudios", estudioService.listarEstudios());
@@ -461,15 +464,14 @@ return "redirect:/superadmin/notificaciones";
     }
 
     @PostMapping("/superadmin/empresas/guardar")
-    public String guardarEmpresa(@RequestParam String razonSocial,
-            @RequestParam String ruc,
-            @RequestParam String sector,
-            RedirectAttributes redirectAttributes) {
+    public String guardarEmpresa(@Valid @ModelAttribute EmpresaRequestDTO dto,
+            BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            result.getFieldErrors().forEach(e ->
+                redirectAttributes.addFlashAttribute("error_" + e.getField(), e.getDefaultMessage()));
+            return "redirect:/superadmin/empresas/nueva";
+        }
         try {
-            EmpresaRequestDTO dto = new EmpresaRequestDTO();
-            dto.setRazonSocial(razonSocial);
-            dto.setRuc(ruc);
-            dto.setSector(sector);
             empresaService.crearEmpresa(dto);
             redirectAttributes.addFlashAttribute("mensaje", "Empresa creada exitosamente");
         } catch (Exception e) {
@@ -488,13 +490,14 @@ return "redirect:/superadmin/notificaciones";
 
     @PostMapping("/superadmin/empresas/editar/{id}")
     public String editarEmpresaGuardar(@PathVariable Long id,
-            @RequestParam String razonSocial,
-            @RequestParam String sector,
-            RedirectAttributes redirectAttributes) {
+            @Valid @ModelAttribute EmpresaRequestDTO dto,
+            BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            result.getFieldErrors().forEach(e ->
+                redirectAttributes.addFlashAttribute("error_" + e.getField(), e.getDefaultMessage()));
+            return "redirect:/superadmin/empresas/editar/" + id;
+        }
         try {
-            EmpresaRequestDTO dto = new EmpresaRequestDTO();
-            dto.setRazonSocial(razonSocial);
-            dto.setSector(sector);
             empresaService.actualizarEmpresa(id, dto);
             redirectAttributes.addFlashAttribute("mensaje", "Empresa actualizada exitosamente");
         } catch (Exception e) {
@@ -531,17 +534,22 @@ return "redirect:/superadmin/notificaciones";
 
     @PostMapping("/superadmin/parametros/editar/{id}")
     public String editarParametroGuardar(@PathVariable Long id,
-            @RequestParam String valor,
-            @RequestParam(required = false) String descripcion,
-            @RequestParam(required = false) Boolean estadoActivo,
-            RedirectAttributes redirectAttributes) {
-        ParametrosSistemaRequestDTO dto = new ParametrosSistemaRequestDTO();
-        dto.setValor(valor);
-        dto.setDescripcion(descripcion);
-        dto.setEstadoActivo(estadoActivo);
+            @Valid @ModelAttribute ParametrosSistemaRequestDTO dto,
+            BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            result.getFieldErrors().forEach(e ->
+                redirectAttributes.addFlashAttribute("error_" + e.getField(), e.getDefaultMessage()));
+            return "redirect:/superadmin/parametros/editar/" + id;
+        }
         parametrosSistemaService.actualizarParametro(id, dto);
-        redirectAttributes.addFlashAttribute("exito", "Paramáetro actualizado correctamente.");
+        redirectAttributes.addFlashAttribute("exito", "Parámetro actualizado correctamente.");
         return "redirect:/superadmin/parametros";
+    }
+
+    @GetMapping("/superadmin/backups")
+    public String backups(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "SuperAdmin/backups";
     }
 
     @Override

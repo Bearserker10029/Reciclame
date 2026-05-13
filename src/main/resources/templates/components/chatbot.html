@@ -64,6 +64,12 @@
 
   </div>
 
+  <script th:inline="javascript">
+    /* <![CDATA[ */
+    window.CHATBOT_WEBHOOK_URL = /*[[${@environment.getProperty('n8n.chatbot.webhook.url', 'http://localhost:5678/webhook/chatbot-reciclame')}]]*/ 'http://localhost:5678/webhook/chatbot-reciclame';
+    /* ]]> */
+  </script>
+
   <!-- ── Chatbot JS (inicialización segura para MPA) ── -->
   <script>
   (function () {
@@ -107,7 +113,7 @@
         input.value = '';
         msgs.scrollTop = msgs.scrollHeight;
 
-        fetch('http://localhost:5678/webhook/chatbot-reciclame', {
+        fetch(window.CHATBOT_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: msg })

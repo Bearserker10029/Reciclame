@@ -15,7 +15,9 @@
     .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
     .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 4px; }
     .nav-item { padding: 7px 14px !important; font-size: 13px !important; gap: 10px !important; }
+    .nav-item.active { background: rgba(46,204,113,.18); color: #fff !important; border-left: 3px solid #2ECC71; }
     .nav-subitem { padding: 6px 10px !important; font-size: 12px !important; }
+    .nav-subitem.active { background: rgba(46,204,113,.18); color: #fff !important; }
 
     /* Gradient masks for scroll indication */
     .scroll-mask {
@@ -149,7 +151,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var currentPath = window.location.pathname;
       try {
-        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo') {
+        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo' || currentPath === '/superadmin/normativo') {
           var storedTab = sessionStorage.getItem('reciclameNormativoTab');
           if (storedTab === 'todos' || storedTab === 'nacional' || storedTab === 'internacional') {
             window.__normativoTab = storedTab;
@@ -182,7 +184,7 @@
 
       function normativoVistaActiva() {
         var p = window.location.pathname;
-        if (p === '/admin/normativo' || p === '/socio/normativo') return true;
+        if (p === '/admin/normativo' || p === '/socio/normativo' || p === '/superadmin/normativo') return true;
         var sp = document.getElementById('page-normativo');
         if (sp && sp.classList.contains('active')) return true;
         return false;

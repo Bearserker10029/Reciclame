@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Gestión de Backups</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .5); }
+      60% { box-shadow: 0 0 0 10px rgba(46, 204, 113, 0); }
+    }
+
+    @keyframes rotateBadge {
+      0% { transform: rotate(-3deg) scale(.95) }
+      100% { transform: rotate(0) scale(1) }
+    }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 80px;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .v { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .l { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .65); margin-top: 4px; }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+
+    .norm-tab-bar {
+      display: flex;
+      gap: 4px;
+      background: #F0FAF4;
+      padding: 5px;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
+      margin-bottom: 20px;
+      width: fit-content;
+      animation: fadeUp .45s ease both;
+    }
+
+    .norm-tab {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+
+    .norm-tab:hover { background: #F3F4F6; color: #1B3A5C; }
+
+    .norm-tab.active {
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+    }
+
+    .norm-tab .count-badge {
+      background: rgba(255, 255, 255, .25);
+      color: inherit;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .norm-tab:not(.active) .count-badge {
+      background: rgba(27, 58, 92, .08);
+      color: #6B7280;
+    }
+
+    .norm-table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
+      overflow: hidden;
+    }
+
+    .norm-table-card thead { background: linear-gradient(90deg, #F8FAFC, #F0F4F8); }
+
+    .norm-table-card thead th {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 12px 14px;
+      border: none;
+    }
+
+    .norm-row { border-bottom: 1px solid #F3F4F6; transition: background .2s; }
+    .norm-row:hover { background: #F0FFF6; }
+    .norm-row:last-child { border-bottom: none; }
+    .norm-row td { padding: 12px 14px; vertical-align: middle; font-size: 12px; }
+
+    .badge-completado { background: rgba(46, 204, 113, .1); color: #27AE60; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .badge-en-proceso { background: rgba(52, 152, 219, .1); color: #2471A3; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge-fallido { background: rgba(231, 76, 60, .1); color: #C0392B; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge-pendiente { background: rgba(243, 156, 18, .1); color: #C27C0E; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+
+    .badge-completo { background: rgba(46, 204, 113, .1); color: #27AE60; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge-parcial { background: rgba(52, 152, 219, .1); color: #2471A3; padding: 3px 9px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+
+    .btn-restaurar { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #2ECC71; background: rgba(46, 204, 113, .07); color: #27AE60; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; }
+    .btn-restaurar:hover { background: #2ECC71; color: #fff; transform: translateY(-2px); box-shadow: 0 5px 16px rgba(46, 204, 113, .4); }
+
+    .btn-reintentar { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #F39C12; background: rgba(243, 156, 18, .07); color: #C27C0E; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; }
+    .btn-reintentar:hover { background: #F39C12; color: #fff; }
+
+    .btn-eliminar { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #E74C3C; background: rgba(231, 76, 60, .07); color: #C0392B; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; }
+    .btn-eliminar:hover { background: #E74C3C; color: #fff; }
+
+    .btn-programar { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #9B59B6; background: rgba(155, 89, 182, .07); color: #8E44AD; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; }
+    .btn-programar:hover { background: #9B59B6; color: #fff; }
+
+    .btn-toggle { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; border: 1.5px solid #3498DB; background: rgba(52, 152, 219, .07); color: #2471A3; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .25s; }
+    .btn-toggle:hover { background: #3498DB; color: #fff; }
+
+    .filter-row { background: #F0FAF4; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0, 0, 0, .06); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; animation: fadeUp .5s .05s ease both; }
+    .filter-row input, .filter-row select { border: 1.5px solid #E5E7EB; border-radius: 9px; padding: 8px 12px; font-size: 12px; font-family: inherit; color: #374151; transition: all .2s; background: #fff; }
+    .filter-row input { padding-left: 34px; }
+    .filter-row input:focus, .filter-row select:focus { outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .1); }
+
+    .empty-state { text-align: center; padding: 48px 24px; }
+    .empty-state i { font-size: 44px; color: #D1D5DB; display: block; margin-bottom: 12px; }
+    .empty-state p { color: #9CA3AF; font-size: 14px; }
+
+    .modal-label { font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 5px; display: block; }
+    .modal-input { width: 100%; border: 1.5px solid #E5E7EB; border-radius: 9px; padding: 9px 12px; font-size: 13px; font-family: inherit; color: #374151; transition: border-color .2s; }
+    .modal-input:focus { outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46, 204, 113, .1); }
+    .modal-error { display: none; background: #FEF2F2; border: 1px solid #FCA5A5; color: #B91C1C; padding: 10px 14px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; }
+
+    #bkp-toast { position: fixed; bottom: 28px; right: 28px; z-index: 9999; padding: 14px 22px; border-radius: 12px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 32px rgba(0, 0, 0, .2); opacity: 0; transition: opacity .3s; pointer-events: none; display: flex; align-items: center; gap: 10px; }
+    #bkp-toast.show { opacity: 1; }
+    #bkp-toast.success { background: #1E3A2F; color: #2ECC71; border: 1px solid rgba(46, 204, 113, .3); }
+    #bkp-toast.error { background: #3A1E1E; color: #E74C3C; border: 1px solid rgba(231, 76, 60, .3); }
+  </style>
+</head>
+
+<body>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
+
+        <!-- HERO -->
+        <div class="estudios-hero">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-database" style="color:#2ECC71;font-size:17px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Gestión de Backups</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Respaldo y restauración de la base de datos</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-database" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Gestión de backups</span>
+                </div>
+                <button onclick="abrirModalNuevoBackup()" style="display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:10px;background:linear-gradient(135deg,#2ECC71,#27AE60);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border:none;box-shadow:0 4px 14px rgba(46,204,113,.35);transition:all .25s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(46,204,113,.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(46,204,113,.35)'">
+                  <i class="fas fa-plus-circle"></i> Nuevo Backup
+                </button>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="v" id="stat-total">0</div>
+                <div class="l">Total</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="v" id="stat-completados" style="color:#34D399;">0</div>
+                <div class="l">Completados</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="v" id="stat-en-proceso" style="color:#60A5FA;">0</div>
+                <div class="l">En Proceso</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.4s">
+                <div class="v" id="stat-fallidos" style="color:#F87171;">0</div>
+                <div class="l">Fallidos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="norm-tab-bar">
+          <button id="tab-todos" class="norm-tab active" onclick="switchBkpTab('todos')">
+            <i class="fas fa-list"></i> Todos<span class="count-badge" id="badge-todos">0</span>
+          </button>
+          <button id="tab-completados" class="norm-tab" onclick="switchBkpTab('completados')">
+            <i class="fas fa-check-circle"></i> Completados<span class="count-badge" id="badge-completados">0</span>
+          </button>
+          <button id="tab-en-proceso" class="norm-tab" onclick="switchBkpTab('en-proceso')">
+            <i class="fas fa-spinner"></i> En Proceso<span class="count-badge" id="badge-en-proceso">0</span>
+          </button>
+          <button id="tab-fallidos" class="norm-tab" onclick="switchBkpTab('fallidos')">
+            <i class="fas fa-times-circle"></i> Fallidos<span class="count-badge" id="badge-fallidos">0</span>
+          </button>
+          <button id="tab-programaciones" class="norm-tab" onclick="switchBkpTab('programaciones')">
+            <i class="fas fa-clock"></i> Programaciones<span class="count-badge" id="badge-programaciones">0</span>
+          </button>
+        </div>
+
+        <!-- FILTER ROW -->
+        <div class="filter-row" id="filter-row-backups" style="display:none;">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
+            <input id="bkp-search" placeholder="Buscar backup..." oninput="applyBkpFilter()" />
+          </div>
+          <select id="bkp-tipo" onchange="applyBkpFilter()">
+            <option value="">Tipo: Todos</option>
+            <option value="COMPLETO">Completo</option>
+            <option value="PARCIAL_USUARIOS">Parcial - Usuarios</option>
+            <option value="PARCIAL_DOCUMENTOS">Parcial - Documentos</option>
+            <option value="PARCIAL_LOGS">Parcial - Logs</option>
+          </select>
+          <select id="bkp-estado" onchange="applyBkpFilter()">
+            <option value="">Estado: Todos</option>
+            <option value="COMPLETADO">Completado</option>
+            <option value="EN_PROCESO">En Proceso</option>
+            <option value="FALLIDO">Fallido</option>
+            <option value="PENDIENTE">Pendiente</option>
+          </select>
+          <button onclick="clearBkpFilters()" style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+        </div>
+
+        <!-- PANEL: BACKUPS -->
+        <div id="panel-backups">
+          <div class="norm-table-card">
+            <div style="overflow-x:auto;">
+              <table class="table mb-0" id="tabla-backups" style="min-width:800px;">
+                <thead>
+                  <tr>
+                    <th style="width:5%;">ID</th>
+                    <th style="width:12%;">Tipo</th>
+                    <th style="width:10%;">Estado</th>
+                    <th style="width:10%;">Tamaño</th>
+                    <th style="width:14%;">Solicitado Por</th>
+                    <th style="width:14%;">Fecha Creación</th>
+                    <th style="width:14%;">Fecha Completado</th>
+                    <th style="width:21%;" class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-backups">
+                </tbody>
+              </table>
+            </div>
+            <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+              <span id="conteo-backups">Sin datos</span>
+              <div style="display:flex;gap:4px;" id="paginacion-backups"></div>
+            </div>
+            <div id="no-results-bkp" style="display:none;text-align:center;padding:32px;">
+              <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
+              <p style="color:#9CA3AF;font-size:13px;">No se encontraron backups con los filtros actuales.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: PROGRAMACIONES -->
+        <div id="panel-programaciones" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div>
+              <h2 style="font-size:16px;font-weight:800;color:#1B3A5C;margin:0;">Programaciones</h2>
+              <p style="font-size:12px;color:#9CA3AF;margin:0;">Backups automáticos programados</p>
+            </div>
+            <button onclick="abrirModalProgramacion(null)" class="btn-programar" style="border:none;padding:10px 18px;">
+              <i class="fas fa-plus"></i> Nueva Programación
+            </button>
+          </div>
+          <div class="norm-table-card">
+            <div style="overflow-x:auto;">
+              <table class="table mb-0" id="tabla-programaciones" style="min-width:600px;">
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Frecuencia</th>
+                    <th>Hora</th>
+                    <th>Día</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-programaciones">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- CHATBOT -->
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+  </div>
+
+  <!-- MODAL: NUEVO BACKUP -->
+  <div id="modal-nuevo-backup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="cerrarModalNuevoBackup()" style="position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-database" style="color:#2ECC71;font-size:18px;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#1B3A5C;">Solicitar Backup</div>
+          <div style="font-size:12px;color:#9CA3AF;">Crear un nuevo backup manual</div>
+        </div>
+      </div>
+      <div id="nuevo-backup-error" class="modal-error"></div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="modal-label">Tipo de Backup *</label>
+          <select id="nuevo-tipo" class="modal-input">
+            <option value="COMPLETO">Completo (toda la base de datos)</option>
+            <option value="PARCIAL_USUARIOS">Parcial - Usuarios y Roles</option>
+            <option value="PARCIAL_DOCUMENTOS">Parcial - Normativas y Estudios</option>
+            <option value="PARCIAL_LOGS">Parcial - Logs y Auditoría</option>
+          </select>
+        </div>
+        <div>
+          <label class="modal-label">Notas (opcional)</label>
+          <textarea id="nuevo-notas" class="modal-input" rows="3" placeholder="Descripción u observación..."></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end;">
+        <button onclick="cerrarModalNuevoBackup()" style="padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;">Cancelar</button>
+        <button onclick="crearNuevoBackup()" style="padding:10px 24px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="fas fa-database" style="margin-right:6px;"></i> Solicitar Backup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR RESTAURACION (Step 1) -->
+  <div id="modal-confirmar-restaurar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="cerrarModalConfirmarRestaurar()" style="position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:18px;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#1B3A5C;">Restaurar Backup</div>
+          <div style="font-size:12px;color:#E74C3C;">¡Esta acción no se puede deshacer!</div>
+        </div>
+      </div>
+      <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <i class="fas fa-exclamation-circle" style="color:#B91C1C;margin-top:2px;"></i>
+          <div>
+            <p style="font-size:13px;color:#991B1B;font-weight:600;margin:0 0 4px 0;">ADVERTENCIA: Esta acción sobreescribirá TODOS los datos actuales del sistema.</p>
+            <p style="font-size:12px;color:#B91C1B;margin:0;">Los cambios realizados después del backup se perderán.</p>
+          </div>
+        </div>
+      </div>
+      <div style="background:#F9FAFB;border-radius:10px;padding:14px;margin-bottom:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><span style="font-size:11px;font-weight:600;color:#6B7280;">ID:</span> <span id="restaurar-id" style="font-size:13px;font-weight:700;color:#1B3A5C;">—</span></div>
+          <div><span style="font-size:11px;font-weight:600;color:#6B7280;">Tipo:</span> <span id="restaurar-tipo" style="font-size:13px;font-weight:700;color:#1B3A5C;">—</span></div>
+          <div><span style="font-size:11px;font-weight:600;color:#6B7280;">Tamaño:</span> <span id="restaurar-tamanio" style="font-size:13px;font-weight:700;color:#1B3A5C;">—</span></div>
+          <div><span style="font-size:11px;font-weight:600;color:#6B7280;">Fecha:</span> <span id="restaurar-fecha" style="font-size:13px;font-weight:700;color:#1B3A5C;">—</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="cerrarModalConfirmarRestaurar()" style="padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;">Cancelar</button>
+        <button onclick="abrirModalConfirmarRestaurarPaso2()" style="padding:10px 24px;border-radius:8px;border:none;background:#E74C3C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Continuar <i class="fas fa-arrow-right" style="margin-left:6px;"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR RESTAURACION (Step 2 - Typing) -->
+  <div id="modal-confirmar-restaurar-paso2" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="cerrarModalConfirmarRestaurarPaso2()" style="position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-key" style="color:#E74C3C;font-size:18px;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#1B3A5C;">Confirmar Restauración</div>
+          <div style="font-size:12px;color:#6B7280;">Escribe RESTAURAR para confirmar</div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="modal-label">Escribe <strong>RESTAURAR</strong> para confirmar:</label>
+        <input id="restaurar-confirmacion" type="text" class="modal-input" placeholder="RESTAURAR" autocomplete="off" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="restaurar-backup-seguridad" checked style="width:16px;height:16px;cursor:pointer;" />
+          <span style="font-size:13px;color:#374151;">Crear backup de seguridad antes de restaurar</span>
+        </label>
+        <p style="font-size:11px;color:#9CA3AF;margin:4px 0 0 24px;">Se creará un backup completo automáticamente antes de ejecutar la restauración.</p>
+      </div>
+      <div id="restaurar-error" class="modal-error"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="cerrarModalConfirmarRestaurarPaso2()" style="padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;">Cancelar</button>
+        <button id="btn-confirmar-restaurar" onclick="confirmarRestaurar()" disabled style="padding:10px 24px;border-radius:8px;border:none;background:#E74C3C;color:#fff;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;opacity:0.5;">Restaurar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROGRAMAR BACKUP -->
+  <div id="modal-programar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto;">
+      <button onclick="cerrarModalProgramacion()" style="position:absolute;top:16px;right:16px;border:none;background:none;font-size:18px;color:#9CA3AF;cursor:pointer;line-height:1;"><i class="fas fa-times"></i></button>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-clock" style="color:#9B59B6;font-size:18px;"></i>
+        </div>
+        <div>
+          <div style="font-size:17px;font-weight:800;color:#1B3A5C;" id="modal-prog-titulo">Programar Backup Automático</div>
+          <div style="font-size:12px;color:#9CA3AF;" id="modal-prog-subtitulo">Configura la frecuencia y hora de ejecución</div>
+        </div>
+      </div>
+      <div id="programar-error" class="modal-error"></div>
+      <input type="hidden" id="prog-id" />
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="modal-label">Tipo de Backup *</label>
+          <select id="prog-tipo" class="modal-input" required>
+            <option value="COMPLETO">Completo (toda la base de datos)</option>
+            <option value="PARCIAL_USUARIOS">Parcial - Usuarios y Roles</option>
+            <option value="PARCIAL_DOCUMENTOS">Parcial - Normativas y Estudios</option>
+            <option value="PARCIAL_LOGS">Parcial - Logs y Auditoría</option>
+          </select>
+        </div>
+        <div>
+          <label class="modal-label">Frecuencia *</label>
+          <select id="prog-frecuencia" class="modal-input" required onchange="toggleDiaCampo()">
+            <option value="DIARIA">Diaria</option>
+            <option value="SEMANAL">Semanal</option>
+            <option value="MENSUAL">Mensual</option>
+          </select>
+        </div>
+        <div>
+          <label class="modal-label">Hora de Ejecución *</label>
+          <input id="prog-hora" type="time" class="modal-input" value="02:00" required />
+        </div>
+        <div id="prog-dia-semana-wrap" style="display:none;">
+          <label class="modal-label">Día de la Semana *</label>
+          <select id="prog-dia-semana" class="modal-input">
+            <option value="1">Lunes</option>
+            <option value="2">Martes</option>
+            <option value="3">Miércoles</option>
+            <option value="4">Jueves</option>
+            <option value="5">Viernes</option>
+            <option value="6">Sábado</option>
+            <option value="0">Domingo</option>
+          </select>
+        </div>
+        <div id="prog-dia-mes-wrap" style="display:none;">
+          <label class="modal-label">Día del Mes *</label>
+          <select id="prog-dia-mes" class="modal-input">
+            <option th:each="d : ${#numbers.sequence(1, 28)}" th:value="${d}" th:text="${d}">1</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="prog-habilitado" checked style="width:16px;height:16px;cursor:pointer;" />
+            <span style="font-size:13px;color:#374151;">Habilitado</span>
+          </label>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:24px;justify-content:flex-end;">
+        <button onclick="cerrarModalProgramacion()" style="padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;">Cancelar</button>
+        <button onclick="guardarProgramacion()" style="padding:10px 24px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;"><i class="fas fa-save" style="margin-right:6px;"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="bkp-toast"></div>
+
+  <script>
+    const ITEMS_POR_PAGINA = 5;
+    let paginaActual = 1;
+    let backupsData = [];
+    let programacionesData = [];
+    let tabActual = 'todos';
+    let idBackupSeleccionado = null;
+
+    function getBaseUrl() {
+      return window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin';
+    }
+
+    async function cargarBackups() {
+      try {
+        const resp = await fetch('/api/respaldos');
+        backupsData = await resp.json();
+        actualizarStats();
+        applyBkpFilter();
+      } catch (e) { showToast('Error cargando backups', 'error'); }
+    }
+
+    async function cargarProgramaciones() {
+      try {
+        const resp = await fetch('/api/respaldos/programaciones');
+        programacionesData = await resp.json();
+        renderProgramaciones();
+        document.getElementById('badge-programaciones').textContent = programacionesData.length;
+      } catch (e) { showToast('Error cargando programaciones', 'error'); }
+    }
+
+    async function actualizarStats() {
+      try {
+        const resp = await fetch('/api/respaldos/stats');
+        const stats = await resp.json();
+        document.getElementById('stat-total').textContent = stats.total || 0;
+        document.getElementById('stat-completados').textContent = stats.completados || 0;
+        document.getElementById('stat-en-proceso').textContent = stats.enProceso || 0;
+        document.getElementById('stat-fallidos').textContent = stats.fallidos || 0;
+        document.getElementById('badge-todos').textContent = stats.total || 0;
+        document.getElementById('badge-completados').textContent = stats.completados || 0;
+        document.getElementById('badge-en-proceso').textContent = stats.enProceso || 0;
+        document.getElementById('badge-fallidos').textContent = stats.fallidos || 0;
+      } catch (e) { console.error('Error cargando stats', e); }
+    }
+
+    function switchBkpTab(tab) {
+      tabActual = tab;
+      ['todos', 'completados', 'en-proceso', 'fallidos', 'programaciones'].forEach(t => {
+        document.getElementById('tab-' + t).classList.remove('active');
+      });
+      document.getElementById('tab-' + tab).classList.add('active');
+
+      const panelBackups = document.getElementById('panel-backups');
+      const panelProgramaciones = document.getElementById('panel-programaciones');
+      const filterRow = document.getElementById('filter-row-backups');
+
+      if (tab === 'programaciones') {
+        panelBackups.style.display = 'none';
+        panelProgramaciones.style.display = '';
+        filterRow.style.display = 'none';
+        cargarProgramaciones();
+      } else {
+        panelBackups.style.display = '';
+        panelProgramaciones.style.display = 'none';
+        filterRow.style.display = '';
+        applyBkpFilter();
+      }
+    }
+
+    function applyBkpFilter() {
+      const q = document.getElementById('bkp-search')?.value?.toLowerCase() || '';
+      const tipo = document.getElementById('bkp-tipo')?.value || '';
+      const estado = document.getElementById('bkp-estado')?.value || '';
+
+      let filtered = backupsData.filter(b => {
+        if (b.esBackupPreRestauracion) return false;
+        const matchQ = !q || (b.tipo && b.tipo.toLowerCase().includes(q)) || (b.solicitadoPor && b.solicitadoPor.toLowerCase().includes(q));
+        const matchTipo = !tipo || b.tipo === tipo;
+        const matchEstado = !estado || b.estado === estado;
+        return matchQ && matchTipo && matchEstado;
+      });
+
+      if (tabActual === 'completados') filtered = filtered.filter(b => b.estado === 'COMPLETADO');
+      if (tabActual === 'en-proceso') filtered = filtered.filter(b => b.estado === 'EN_PROCESO' || b.estado === 'PENDIENTE');
+      if (tabActual === 'fallidos') filtered = filtered.filter(b => b.estado === 'FALLIDO');
+
+      renderBackups(filtered);
+    }
+
+    function clearBkpFilters() {
+      document.getElementById('bkp-search').value = '';
+      document.getElementById('bkp-tipo').value = '';
+      document.getElementById('bkp-estado').value = '';
+      applyBkpFilter();
+    }
+
+    function renderBackups(backups) {
+      const tbody = document.getElementById('tbody-backups');
+      const conteo = document.getElementById('conteo-backups');
+      const noResults = document.getElementById('no-results-bkp');
+
+      if (backups.length === 0) {
+        tbody.innerHTML = '';
+        noResults.style.display = 'block';
+        conteo.textContent = 'No hay backups';
+        return;
+      }
+
+      noResults.style.display = 'none';
+      conteo.textContent = `Mostrando ${backups.length} backup(s)`;
+
+      tbody.innerHTML = backups.map(b => {
+        const estadoBadge = getEstadoBadge(b.estado);
+        const tipoBadge = getTipoBadge(b.tipo);
+        const acciones = getAccionesBackup(b);
+        return `<tr class="norm-row">
+          <td><span style="font-weight:700;color:#1B3A5C;">#${b.id}</span></td>
+          <td>${tipoBadge}</td>
+          <td>${estadoBadge}</td>
+          <td>${b.tamanioFormateado || '—'}</td>
+          <td>${b.solicitadoPor || '—'}</td>
+          <td>${b.createdAt || '—'}</td>
+          <td>${b.fechaCompletado || '—'}</td>
+          <td class="text-center">${acciones}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function getEstadoBadge(estado) {
+      const map = {
+        'COMPLETADO': '<span class="badge-completado"><i class="fas fa-check" style="font-size:6px;"></i> Completado</span>',
+        'EN_PROCESO': '<span class="badge-en-proceso"><i class="fas fa-spinner fa-spin" style="font-size:8px;"></i> En Proceso</span>',
+        'FALLIDO': '<span class="badge-fallido"><i class="fas fa-times" style="font-size:8px;"></i> Fallido</span>',
+        'PENDIENTE': '<span class="badge-pendiente"><i class="fas fa-clock" style="font-size:8px;"></i> Pendiente</span>'
+      };
+      return map[estado] || estado;
+    }
+
+    function getTipoBadge(tipo) {
+      const completo = tipo === 'COMPLETO';
+      return completo
+        ? '<span class="badge-completo">' + tipo + '</span>'
+        : '<span class="badge-parcial">' + tipo + '</span>';
+    }
+
+    function getAccionesBackup(b) {
+      if (b.estado === 'COMPLETADO') {
+        return `<button class="btn-restaurar" onclick="abrirModalConfirmarRestaurar(${b.id})"><i class="fas fa-undo"></i> Restaurar</button>
+                <button class="btn-eliminar" onclick="eliminarBackup(${b.id})"><i class="fas fa-trash"></i></button>`;
+      }
+      if (b.estado === 'FALLIDO') {
+        return `<button class="btn-reintentar" onclick="reintentarBackup(${b.id})"><i class="fas fa-redo"></i> Reintentar</button>
+                <button class="btn-eliminar" onclick="eliminarBackup(${b.id})"><i class="fas fa-trash"></i></button>`;
+      }
+      return '—';
+    }
+
+    function renderProgramaciones() {
+      const tbody = document.getElementById('tbody-programaciones');
+      if (programacionesData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fas fa-clock"></i><p>No hay programaciones configuradas.</p></div></td></tr>`;
+        return;
+      }
+      tbody.innerHTML = programacionesData.map(p => {
+        const frecuenciaLabel = p.frecuencia === 'DIARIA' ? 'Diaria' : p.frecuencia === 'SEMANAL' ? 'Semanal' : 'Mensual';
+        const diaLabel = p.diaSemana != null ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][p.diaSemana] : (p.diaMes ? 'Día ' + p.diaMes : '—');
+        const estadoHtml = p.habilitado
+          ? '<span class="badge-completado"><i class="fas fa-check" style="font-size:6px;"></i> Activo</span>'
+          : '<span class="badge-pendiente"><i class="fas fa-pause" style="font-size:6px;"></i> Pausado</span>';
+        const toggleLabel = p.habilitado ? 'Pausar' : 'Activar';
+        return `<tr class="norm-row">
+          <td>${getTipoBadge(p.tipo)}</td>
+          <td style="font-weight:600;color:#374151;">${frecuenciaLabel}</td>
+          <td style="font-weight:600;color:#1B3A5C;">${p.horaEjecucion || '02:00'}</td>
+          <td style="color:#6B7280;">${diaLabel}</td>
+          <td>${estadoHtml}</td>
+          <td class="text-center">
+            <button class="btn-toggle" onclick="toggleProgramacion(${p.id})"><i class="fas fa-toggle-on"></i> ${toggleLabel}</button>
+            <button class="btn-programar" onclick="abrirModalProgramacion(${p.id})"><i class="fas fa-edit"></i></button>
+            <button class="btn-eliminar" onclick="eliminarProgramacion(${p.id})"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // --- MODAL HANDLERS ---
+    function abrirModalNuevoBackup() {
+      document.getElementById('nuevo-tipo').value = 'COMPLETO';
+      document.getElementById('nuevo-notas').value = '';
+      document.getElementById('nuevo-backup-error').style.display = 'none';
+      document.getElementById('modal-nuevo-backup').style.display = 'flex';
+    }
+
+    function cerrarModalNuevoBackup() {
+      document.getElementById('modal-nuevo-backup').style.display = 'none';
+    }
+
+    async function crearNuevoBackup() {
+      const tipo = document.getElementById('nuevo-tipo').value;
+      const notas = document.getElementById('nuevo-notas').value;
+      const errorEl = document.getElementById('nuevo-backup-error');
+      errorEl.style.display = 'none';
+
+      try {
+        const resp = await fetch('/api/respaldos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tipo, notas })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          cerrarModalNuevoBackup();
+          showToast('Backup solicitado exitosamente', 'success');
+          cargarBackups();
+        } else {
+          errorEl.textContent = data.error || 'Error al solicitar backup';
+          errorEl.style.display = 'block';
+        }
+      } catch (e) {
+        errorEl.textContent = 'Error de conexión';
+        errorEl.style.display = 'block';
+      }
+    }
+
+    function abrirModalConfirmarRestaurar(id) {
+      idBackupSeleccionado = id;
+      const backup = backupsData.find(b => b.id === id);
+      if (!backup) return;
+
+      document.getElementById('restaurar-id').textContent = backup.id;
+      document.getElementById('restaurar-tipo').textContent = backup.tipo;
+      document.getElementById('restaurar-tamanio').textContent = backup.tamanioFormateado || '—';
+      document.getElementById('restaurar-fecha').textContent = backup.fechaCompletado || backup.createdAt || '—';
+      document.getElementById('modal-confirmar-restaurar').style.display = 'flex';
+    }
+
+    function cerrarModalConfirmarRestaurar() {
+      document.getElementById('modal-confirmar-restaurar').style.display = 'none';
+    }
+
+    function abrirModalConfirmarRestaurarPaso2() {
+      cerrarModalConfirmarRestaurar();
+      document.getElementById('restaurar-confirmacion').value = '';
+      document.getElementById('restaurar-backup-seguridad').checked = true;
+      document.getElementById('restaurar-error').style.display = 'none';
+      document.getElementById('btn-confirmar-restaurar').disabled = true;
+      document.getElementById('modal-confirmar-restaurar-paso2').style.display = 'flex';
+
+      document.getElementById('restaurar-confirmacion').oninput = function() {
+        document.getElementById('btn-confirmar-restaurar').disabled = this.value !== 'RESTAURAR';
+      };
+    }
+
+    function cerrarModalConfirmarRestaurarPaso2() {
+      document.getElementById('modal-confirmar-restaurar-paso2').style.display = 'none';
+    }
+
+    async function confirmarRestaurar() {
+      const crearBackupSeguridad = document.getElementById('restaurar-backup-seguridad').checked;
+      const errorEl = document.getElementById('restaurar-error');
+
+      try {
+        const resp = await fetch('/api/respaldos/' + idBackupSeleccionado + '/restaurar?crearBackupSeguridad=' + crearBackupSeguridad, {
+          method: 'POST'
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          cerrarModalConfirmarRestaurarPaso2();
+          showToast('Restauración completada exitosamente', 'success');
+          cargarBackups();
+        } else {
+          errorEl.textContent = data.error || 'Error al restaurar';
+          errorEl.style.display = 'block';
+        }
+      } catch (e) {
+        errorEl.textContent = 'Error de conexión';
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function reintentarBackup(id) {
+      try {
+        const resp = await fetch('/api/respaldos/' + id + '/reintentar', { method: 'POST' });
+        if (resp.ok) {
+          showToast('Backup reintentado', 'success');
+          cargarBackups();
+        } else {
+          showToast('Error al reintentar', 'error');
+        }
+      } catch (e) { showToast('Error de conexión', 'error'); }
+    }
+
+    async function eliminarBackup(id) {
+      if (!confirm('¿Eliminar este backup?')) return;
+      try {
+        const resp = await fetch('/api/respaldos/' + id, { method: 'DELETE' });
+        if (resp.ok) {
+          showToast('Backup eliminado', 'success');
+          cargarBackups();
+        } else {
+          showToast('Error al eliminar', 'error');
+        }
+      } catch (e) { showToast('Error de conexión', 'error'); }
+    }
+
+    function toggleDiaCampo() {
+      const freq = document.getElementById('prog-frecuencia').value;
+      document.getElementById('prog-dia-semana-wrap').style.display = freq === 'SEMANAL' ? '' : 'none';
+      document.getElementById('prog-dia-mes-wrap').style.display = freq === 'MENSUAL' ? '' : 'none';
+    }
+
+    function abrirModalProgramacion(id) {
+      document.getElementById('prog-id').value = id || '';
+      document.getElementById('prog-tipo').value = 'COMPLETO';
+      document.getElementById('prog-frecuencia').value = 'DIARIA';
+      document.getElementById('prog-hora').value = '02:00';
+      document.getElementById('prog-dia-semana').value = '1';
+      document.getElementById('prog-dia-mes').value = '1';
+      document.getElementById('prog-habilitado').checked = true;
+      document.getElementById('programar-error').style.display = 'none';
+      toggleDiaCampo();
+
+      if (id) {
+        const prog = programacionesData.find(p => p.id === id);
+        if (prog) {
+          document.getElementById('prog-tipo').value = prog.tipo;
+          document.getElementById('prog-frecuencia').value = prog.frecuencia;
+          document.getElementById('prog-hora').value = prog.horaEjecucion || '02:00';
+          document.getElementById('prog-habilitado').checked = prog.habilitado;
+          if (prog.diaSemana != null) document.getElementById('prog-dia-semana').value = prog.diaSemana;
+          if (prog.diaMes != null) document.getElementById('prog-dia-mes').value = prog.diaMes;
+          toggleDiaCampo();
+        }
+      }
+
+      document.getElementById('modal-programar').style.display = 'flex';
+    }
+
+    function cerrarModalProgramacion() {
+      document.getElementById('modal-programar').style.display = 'none';
+    }
+
+    async function guardarProgramacion() {
+      const id = document.getElementById('prog-id').value;
+      const body = {
+        tipo: document.getElementById('prog-tipo').value,
+        frecuencia: document.getElementById('prog-frecuencia').value,
+        horaEjecucion: document.getElementById('prog-hora').value,
+        diaSemana: document.getElementById('prog-frecuencia').value === 'SEMANAL' ? parseInt(document.getElementById('prog-dia-semana').value) : null,
+        diaMes: document.getElementById('prog-frecuencia').value === 'MENSUAL' ? parseInt(document.getElementById('prog-dia-mes').value) : null,
+        habilitado: document.getElementById('prog-habilitado').checked
+      };
+      const errorEl = document.getElementById('programar-error');
+      errorEl.style.display = 'none';
+
+      try {
+        const url = id ? '/api/respaldos/programaciones/' + id : '/api/respaldos/programaciones';
+        const method = id ? 'PUT' : 'POST';
+        const resp = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          cerrarModalProgramacion();
+          showToast(id ? 'Programación actualizada' : 'Programación creada', 'success');
+          cargarProgramaciones();
+        } else {
+          errorEl.textContent = data.error || 'Error al guardar';
+          errorEl.style.display = 'block';
+        }
+      } catch (e) {
+        errorEl.textContent = 'Error de conexión';
+        errorEl.style.display = 'block';
+      }
+    }
+
+    async function toggleProgramacion(id) {
+      try {
+        const resp = await fetch('/api/respaldos/programaciones/' + id + '/toggle', { method: 'POST' });
+        if (resp.ok) {
+          showToast('Programación actualizada', 'success');
+          cargarProgramaciones();
+        } else {
+          showToast('Error al actualizar', 'error');
+        }
+      } catch (e) { showToast('Error de conexión', 'error'); }
+    }
+
+    async function eliminarProgramacion(id) {
+      if (!confirm('¿Eliminar esta programación?')) return;
+      try {
+        const resp = await fetch('/api/respaldos/programaciones/' + id, { method: 'DELETE' });
+        if (resp.ok) {
+          showToast('Programación eliminada', 'success');
+          cargarProgramaciones();
+        } else {
+          showToast('Error al eliminar', 'error');
+        }
+      } catch (e) { showToast('Error de conexión', 'error'); }
+    }
+
+    function showToast(msg, type) {
+      const t = document.getElementById('bkp-toast');
+      t.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i> ' + msg;
+      t.className = 'show ' + type;
+      setTimeout(() => t.className = '', 3200);
+    }
+
+    // Close modals on backdrop click
+    ['modal-nuevo-backup', 'modal-confirmar-restaurar', 'modal-confirmar-restaurar-paso2', 'modal-programar'].forEach(id => {
+      document.getElementById(id)?.addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+      });
+    });
+
+    // Init
+    document.addEventListener('DOMContentLoaded', function() {
+      cargarBackups();
+    });
+  </script>
+</body>
+</html>

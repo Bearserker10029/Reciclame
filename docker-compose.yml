@@ -1,27 +1,136 @@
 services:
-  reciclame-app:
+  reciclame-app1:
     image: kent10029/reciclame:latest
+    container_name: reciclame-app1
     platform: linux/amd64
-    container_name: reciclame-app
     restart: unless-stopped
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/reciclame_db
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=root
-      - MINIO_URL=http://host.docker.internal:9000
+      - SPRING_PROFILES_ACTIVE=aws
+      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Reciclame123
+      - MINIO_URL=http://minio:9000
       - MINIO_INTERNAL_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=reciclame-docs
-      - KKFILEVIEW_URL=http://host.docker.internal:8012
-      - N8N_WEBHOOK_URL=http://host.docker.internal:5678/webhook/send-email
-      - APP_BASE_URL=http://localhost:8080
-      - APP_KK_ACCESSIBLE_URL=http://reciclame-app:8080
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - KKFILEVIEW_URL=http://kkfileview:8012
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
+      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - APP_BASE_URL=https://reciclame.duckdns.org
+      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - APP_BACKUP_PATH=/backups
+    volumes:
+      - backup_data:/backups
+    networks:
+      - reciclame-net
+
+  reciclame-app2:
+    image: kent10029/reciclame:latest
+    container_name: reciclame-app2
+    platform: linux/amd64
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=aws
+      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Reciclame123
+      - MINIO_URL=http://minio:9000
+      - MINIO_INTERNAL_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=reciclame-docs
+      - KKFILEVIEW_URL=http://kkfileview:8012
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
+      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - APP_BASE_URL=https://reciclame.duckdns.org
+      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - APP_BACKUP_PATH=/backups
+    volumes:
+      - backup_data:/backups
+    networks:
+      - reciclame-net
+
+  reciclame-app3:
+    image: kent10029/reciclame:latest
+    container_name: reciclame-app3
+    platform: linux/amd64
+    restart: unless-stopped
+    expose:
+      - "8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=aws
+      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Reciclame123
+      - MINIO_URL=http://minio:9000
+      - MINIO_INTERNAL_URL=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=reciclame-docs
+      - KKFILEVIEW_URL=http://kkfileview:8012
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
+      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - APP_BASE_URL=https://reciclame.duckdns.org
+      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - APP_BACKUP_PATH=/backups
+    volumes:
+      - backup_data:/backups
+    networks:
+      - reciclame-net
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: reciclame-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - reciclame-net
+
+  nginx:
+    image: nginx:1.25.4-alpine
+    container_name: nginx_lb
+    expose:
+      - "80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - reciclame-app1
+      - reciclame-app2
+      - reciclame-app3
+    networks:
+      - reciclame-net
+
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    environment:
+      DB_SQLITE_FILE: /data/database.sqlite
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
     networks:
       - reciclame-net
 
@@ -103,3 +212,7 @@ networks:
 volumes:
   minio_data:
   n8n_data:
+  npm_data:
+  npm_letsencrypt:
+  redis_data:
+  backup_data:

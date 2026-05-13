@@ -59,7 +59,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
-                        .deleteCookies("JSESSIONID")
+                        // Support both container sessions (dev) and Spring Session cookie (prod)
+                        .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
                         .permitAll()
                 )
