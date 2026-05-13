@@ -46,13 +46,16 @@ public class LoginController {
                             u.getFotoUrl()
                     )));
 
-            // Si el usuario venía de una URL protegida, redirigir allí primero
+            // Si el usuario venía de una URL protegida válida, redirigir allí
             DefaultSavedRequest savedRequest = (DefaultSavedRequest)
                     session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
+            session.removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
             if (savedRequest != null) {
                 String targetUrl = savedRequest.getRedirectUrl();
-                getRedirectStrategy().sendRedirect(request, response, targetUrl);
-                return;
+                if (targetUrl != null && !targetUrl.contains("/error") && !targetUrl.contains("/login")) {
+                    getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                    return;
+                }
             }
 
             // Redirección según rol
