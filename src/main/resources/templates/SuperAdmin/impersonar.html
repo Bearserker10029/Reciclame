@@ -155,8 +155,21 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
     }
 
-    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
-    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .65); margin-top: 4px; }
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
 
     .readonly-badge {
       display: inline-flex;
@@ -169,26 +182,56 @@
       animation: rotateBadge .4s ease both;
     }
 
-    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
 
     @keyframes rotateBadge {
-      0% { transform: rotate(-3deg) scale(.95) }
-      100% { transform: rotate(0) scale(1) }
+      0% {
+        transform: rotate(-3deg) scale(.95)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
+      }
     }
 
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .4); }
-      50% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+      }
     }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes glowGreen {
-      0%, 100% { box-shadow: 0 0 5px rgba(46, 204, 113, .3); }
-      50% { box-shadow: 0 0 15px rgba(46, 204, 113, .6); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px rgba(46, 204, 113, .3);
+      }
+
+      50% {
+        box-shadow: 0 0 15px rgba(46, 204, 113, .6);
+      }
     }
 
     .pill {
@@ -226,7 +269,7 @@
     }
 
     .user-card {
-      background: #F0FAF4;
+      background: #cffce7;
       border-radius: 14px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
       padding: 20px 24px;
@@ -373,15 +416,18 @@
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="estudios-hero">
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
                   <i class="fas fa-user-shield" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Impersonar Usuarios</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Accede como cualquier usuario del sistema</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Accede como cualquier usuario del
+                    sistema</p>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
