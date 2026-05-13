@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
@@ -18,11 +19,14 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationSuccessHandler successHandler;
+    private final AccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
-                          AuthenticationSuccessHandler successHandler) {
+                          AuthenticationSuccessHandler successHandler,
+                          AccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -63,6 +67,9 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
                         .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
                 .csrf(csrf -> csrf.disable());
 
