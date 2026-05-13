@@ -1244,12 +1244,17 @@ CREATE TABLE `solicitudes_respaldo` (
     `tamanio_bytes` bigint DEFAULT NULL,
     `notas` text COLLATE utf8mb4_unicode_ci,
     `fecha_completado` timestamp NULL DEFAULT NULL,
+    `es_backup_pre_restauracion` tinyint(1) NOT NULL DEFAULT '0',
+    `restaurado_por_id` bigint DEFAULT NULL,
+    `fecha_restauracion` timestamp NULL DEFAULT NULL,
     `estado_activo` tinyint(1) NOT NULL DEFAULT '1',
     `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_respaldos_estado` (`estado`),
     KEY `idx_respaldos_solicitante` (`solicitado_por_id`),
-    CONSTRAINT `fk_respaldo_solicitante` FOREIGN KEY (`solicitado_por_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT
+    KEY `idx_respaldos_fecha` (`created_at`),
+    CONSTRAINT `fk_respaldo_solicitante` FOREIGN KEY (`solicitado_por_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT,
+    CONSTRAINT `fk_respaldo_restaurado_por` FOREIGN KEY (`restaurado_por_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Solicitudes de respaldo para auditoria de backups';
 /*!40101 SET character_set_client = @saved_cs_client */
 ;
@@ -1263,6 +1268,37 @@ LOCK TABLES `solicitudes_respaldo` WRITE;
 ;
 /*!40000 ALTER TABLE `solicitudes_respaldo` ENABLE KEYS */
 ;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `programaciones_backup`
+--
+
+DROP TABLE IF EXISTS `programaciones_backup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `programaciones_backup` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `tipo` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'COMPLETO' COMMENT 'COMPLETO, PARCIAL_USUARIOS, PARCIAL_DOCUMENTOS, PARCIAL_LOGS',
+    `frecuencia` varchar(15) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'DIARIA, SEMANAL, MENSUAL',
+    `hora_ejecucion` time NOT NULL DEFAULT '02:00:00',
+    `dia_semana` tinyint DEFAULT NULL COMMENT '0=Domingo, 1=Lunes... (SEMANAL)',
+    `dia_mes` tinyint DEFAULT NULL COMMENT '1-31 (MENSUAL)',
+    `habilitado` tinyint(1) NOT NULL DEFAULT '1',
+    `estado_activo` tinyint(1) NOT NULL DEFAULT '1',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Programaciones de backups automaticos';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `programaciones_backup`
+--
+
+LOCK TABLES `programaciones_backup` WRITE;
+/*!40000 ALTER TABLE `programaciones_backup` DISABLE KEYS */;
+/*!40000 ALTER TABLE `programaciones_backup` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1721,6 +1757,11 @@ UNLOCK TABLES;
 --
 -- Mi Unidad (carpetas e ítems por socio) — ejecutar si aún no existen
 --
+-- ============================================================
+-- UNIDAD DE USUARIO (My Documents personal)
+-- ============================================================
+
+-- Tabla de carpetas personales del usuario
 CREATE TABLE IF NOT EXISTS `unidad_carpetas` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `usuario_id` bigint NOT NULL,
@@ -1735,38 +1776,7 @@ CREATE TABLE IF NOT EXISTS `unidad_carpetas` (
     CONSTRAINT `fk_unidad_carpeta_parent` FOREIGN KEY (`parent_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS `unidad_items` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `usuario_id` bigint NOT NULL,
-    `carpeta_id` bigint DEFAULT NULL,
-    `documento_tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'NORMATIVA, ESTUDIO',
-    `documento_id` bigint NOT NULL,
-    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    KEY `idx_unidad_item_usuario` (`usuario_id`),
-    KEY `idx_unidad_item_carpeta` (`carpeta_id`),
-    KEY `idx_unidad_item_doc` (
-        `documento_tipo`,
-        `documento_id`
-    ),
-    CONSTRAINT `fk_unidad_item_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_unidad_item_carpeta` FOREIGN KEY (`carpeta_id`) REFERENCES `unidad_carpetas` (`id`) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXISTS unidad_carpetas (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    usuario_id BIGINT NOT NULL,
-    parent_id BIGINT DEFAULT NULL,
-    nombre VARCHAR(255) NOT NULL,
-    sort_order INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY idx_unidad_carpeta_usuario (usuario_id),
-    KEY idx_unidad_carpeta_parent (parent_id),
-    CONSTRAINT fk_unidad_carpeta_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE,
-    CONSTRAINT fk_unidad_carpeta_parent FOREIGN KEY (parent_id) REFERENCES unidad_carpetas (id) ON DELETE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
-
+-- Tabla de items (documentos guardados en carpetas personales)
 CREATE TABLE IF NOT EXISTS unidad_items (
     id BIGINT NOT NULL AUTO_INCREMENT,
     usuario_id BIGINT NOT NULL,
@@ -1783,12 +1793,6 @@ CREATE TABLE IF NOT EXISTS unidad_items (
     CONSTRAINT fk_unidad_item_carpeta FOREIGN KEY (carpeta_id) REFERENCES unidad_carpetas (id) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
--- Si la tabla ya existía sin titulo_presentacion:
--- ALTER TABLE unidad_items ADD COLUMN titulo_presentacion VARCHAR(500) NULL COMMENT 'Texto mostrado al usuario' AFTER documento_id;
-
-ALTER TABLE unidad_items
-ADD COLUMN titulo_presentacion VARCHAR(500) NULL COMMENT 'Texto mostrado al usuario (ej. desde la tabla normativo/estudios)' AFTER documento_id;
-
 CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -1802,4 +1806,50 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     CONSTRAINT fk_prt_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
 );
 
--- Dump completed on 2026-04-28 21:13:19
+SET SQL_SAFE_UPDATES = 0;
+
+-- ============================================================
+-- Migración: reemplazar URLs de GCP Storage por URLs de MinIO
+-- Ejecutar UNA SOLA VEZ contra la BD live cuando MinIO sea el
+-- almacenamiento activo y los archivos ya existan en el bucket.
+-- ============================================================
+
+-- IMPORTANTE: los archivos referenciados deben existir en el
+-- bucket MinIO (reciclame-docs) antes de ejecutar este script.
+-- Si los archivos no fueron migrados de GCP a MinIO, el visor
+-- mostrará error al intentar abrirlos.
+
+UPDATE estudios
+SET
+    archivo_url =
+REPLACE (
+        archivo_url,
+        'https://storage.googleapis.com/reciclame-docs/',
+        'http://localhost:9000/reciclame-docs/'
+    )
+WHERE
+    archivo_url LIKE 'https://storage.googleapis.com/reciclame-docs/%';
+
+UPDATE normativas
+SET
+    archivo_url =
+REPLACE (
+        archivo_url,
+        'https://storage.googleapis.com/reciclame-docs/',
+        'http://localhost:9000/reciclame-docs/'
+    )
+WHERE
+    archivo_url LIKE 'https://storage.googleapis.com/reciclame-docs/%';
+
+-- Verificación: mostrar registros actualizados
+SELECT 'estudios' AS tabla, id, titulo, archivo_url
+FROM estudios
+WHERE
+    archivo_url LIKE 'http://localhost:9000/reciclame-docs/%'
+UNION ALL
+SELECT 'normativas', id, titulo, archivo_url
+FROM normativas
+WHERE
+    archivo_url LIKE 'http://localhost:9000/reciclame-docs/%';
+
+SET SQL_SAFE_UPDATES = 1;

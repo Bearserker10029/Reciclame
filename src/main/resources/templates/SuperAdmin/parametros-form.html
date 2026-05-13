@@ -165,6 +165,17 @@
       font-size: 12px;
       color: #92651A;
     }
+
+    .input-error {
+      border-color: #E74C3C !important;
+    }
+
+    .error-message {
+      color: #E74C3C;
+      font-size: 12px;
+      margin-top: 4px;
+      display: block;
+    }
   </style>
 </head>
 
@@ -221,14 +232,19 @@
                 Valor <span style="color:#E74C3C;">*</span>
               </label>
               <textarea name="valor" rows="3" class="form-control-custom" required style="resize:vertical;"
+                th:classappend="${error_valor != null} ? 'input-error'"
                 th:text="${parametro.valor}"></textarea>
+              <span class="error-message" th:if="${error_valor}" th:text="${error_valor}"></span>
             </div>
 
             <!-- Descripción -->
             <div>
               <label class="form-label-custom">Descripción</label>
-              <input type="text" name="descripcion" class="form-control-custom" th:value="${parametro.descripcion}"
-                placeholder="Descripción del parámetro..." />
+              <input type="text" name="descripcion" class="form-control-custom"
+                th:classappend="${error_descripcion != null} ? 'input-error'"
+                th:value="${parametro.descripcion}"
+                placeholder="Descripción del parámetro..." maxlength="300" />
+              <span class="error-message" th:if="${error_descripcion}" th:text="${error_descripcion}"></span>
             </div>
 
             <!-- Estado activo -->

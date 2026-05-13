@@ -14,7 +14,9 @@ import java.time.Instant;
         @Index(name = "idx_respaldos_solicitante",
                 columnList = "solicitado_por_id"),
         @Index(name = "idx_respaldos_estado",
-                columnList = "estado")})
+                columnList = "estado"),
+        @Index(name = "idx_respaldos_fecha",
+                columnList = "created_at")})
 public class SolicitudesRespaldo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,13 +48,35 @@ public class SolicitudesRespaldo {
     @Column(name = "fecha_completado")
     private Instant fechaCompletado;
 
+    @ColumnDefault("0")
+    @Column(name = "es_backup_pre_restauracion", nullable = false)
+    private Boolean esBackupPreRestauracion = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "restaurado_por_id")
+    private Usuario restauradoPor;
+
+    @Column(name = "fecha_restauracion")
+    private Instant fechaRestauracion;
+
     @ColumnDefault("1")
     @Column(name = "estado_activo", nullable = false)
-    private Boolean estadoActivo;
+    private Boolean estadoActivo = true;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
+        if (estadoActivo == null) {
+            estadoActivo = true;
+        }
+        if (esBackupPreRestauracion == null) {
+            esBackupPreRestauracion = false;
+        }
+    }
 }
