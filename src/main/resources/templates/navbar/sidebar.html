@@ -15,7 +15,9 @@
     .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
     .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.2); border-radius: 4px; }
     .nav-item { padding: 7px 14px !important; font-size: 13px !important; gap: 10px !important; }
+    .nav-item.active { background: rgba(46,204,113,.18); color: #fff !important; border-left: 3px solid #2ECC71; }
     .nav-subitem { padding: 6px 10px !important; font-size: 12px !important; }
+    .nav-subitem.active { background: rgba(46,204,113,.18); color: #fff !important; }
 
     /* Gradient masks for scroll indication */
     .scroll-mask {
@@ -52,18 +54,18 @@
   <aside class="sidebar-nav"
     style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:10px 10px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;">
     <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-      <div class="nav-item" id="nav-inicio"
+      <div class="nav-item" id="nav-inicio" data-module="inicio"
            th:class="${rol == 'ADMIN' or rol == 'SUPERADMIN'} ? 'nav-item active' : 'nav-item'"
            onclick="navTo('inicio')">
         <i class="fas fa-home" style="width:18px;text-align:center;font-size:15px;"></i><span>Inicio</span>
       </div>
-      <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
+      <div class="nav-item" id="nav-estudios" data-module="estudios" onclick="navTo('estudios')">
         <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
       </div>
-      <div class="nav-item" id="nav-normativo" onclick="try{sessionStorage.setItem('reciclameNormativoTab','todos');}catch(e){}window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
+      <div class="nav-item" id="nav-normativo" data-module="normativo" onclick="try{sessionStorage.setItem('reciclameNormativoTab','todos');}catch(e){}window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
         <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
       </div>
-      <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
+      <div class="nav-sublist" data-module="normativo" aria-label="Submódulos de Repositorio Normativo">
         <div class="nav-subitem" id="nav-nacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','nacional');}catch(e){}window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
           <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Nacional</span>
@@ -73,19 +75,19 @@
           <span>Internacional</span>
         </div>
       </div>
-      <div class="nav-item" id="nav-mi-unidad" th:if="${rol == 'SOCIO'}"
+      <div class="nav-item" id="nav-mi-unidad" data-module="mi-unidad" th:if="${rol == 'SOCIO'}"
            onclick="window.location.href='/socio/mi-unidad'">
         <i class="fas fa-cloud" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Unidad</span>
       </div>
-      <div class="nav-item" id="nav-reportes-socio" th:if="${rol == 'SOCIO'}"
+      <div class="nav-item" id="nav-reportes-socio" data-module="reportes" th:if="${rol == 'SOCIO'}"
            onclick="window.location.href='/socio/reportes'">
         <i class="fas fa-chart-pie" style="width:18px;text-align:center;font-size:15px;"></i><span>Reportes</span>
       </div>
       <div style="height:1px;background:rgba(255,255,255,.1);margin:10px 0;"></div>
-      <div class="nav-item" id="nav-perfil" onclick="navTo('perfil')">
+      <div class="nav-item" id="nav-perfil" data-module="perfil" onclick="navTo('perfil')">
         <i class="fas fa-user" style="width:18px;text-align:center;font-size:15px;"></i><span>Mi Perfil</span>
       </div>
-      <div class="nav-item" id="nav-notificaciones"
+      <div class="nav-item" id="nav-notificaciones" data-module="notificaciones"
            onclick="navTo('notificaciones')"
            style="position:relative;cursor:pointer;">
         <i class="fas fa-bell" style="width:18px;text-align:center;font-size:15px;"></i>
@@ -113,6 +115,9 @@
             </div>
             <div class="nav-item" id="nav-diccionarios" onclick="navTo('diccionarios')">
                 <i class="fas fa-tags"></i><span>Diccionarios</span>
+            </div>
+            <div class="nav-item" id="nav-configuracion-vistas" onclick="navTo('configuracion-vistas')">
+                <i class="fas fa-sliders-h"></i><span>Configurar Vistas</span>
             </div>
         </div>
 
@@ -149,7 +154,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var currentPath = window.location.pathname;
       try {
-        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo') {
+        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo' || currentPath === '/superadmin/normativo') {
           var storedTab = sessionStorage.getItem('reciclameNormativoTab');
           if (storedTab === 'todos' || storedTab === 'nacional' || storedTab === 'internacional') {
             window.__normativoTab = storedTab;
@@ -164,8 +169,11 @@
         '/admin/usuarios': 'nav-usuarios', '/admin/documentos': 'nav-admin-docs', '/admin/admin-docs': 'nav-admin-docs',
         '/admin/trazabilidad': 'nav-trazabilidad', '/admin/reportes': 'nav-reportes',
         '/admin/diccionarios': 'nav-diccionarios', '/admin/auditoria': 'nav-auditoria',
+        '/admin/configuracion-vistas': 'nav-configuracion-vistas',
+        '/superadmin/configuracion-vistas': 'nav-configuracion-vistas',
         '/superadmin': 'nav-inicio', '/superadmin/inicio': 'nav-inicio',
-        '/superadmin/estudios': 'nav-estudios', '/superadmin/normativo': 'nav-normativo',
+        '/superadmin/estudios': 'nav-estudios', '/superadmin/estudios/crear': 'nav-estudios',
+        '/superadmin/normativo': 'nav-normativo', '/superadmin/normativo/crear': 'nav-normativo',
         '/superadmin/perfil': 'nav-perfil', '/superadmin/notificaciones': 'nav-notificaciones',
         '/superadmin/usuarios': 'nav-usuarios', '/superadmin/documentos': 'nav-admin-docs',
         '/superadmin/trazabilidad': 'nav-trazabilidad', '/superadmin/reportes': 'nav-reportes',
@@ -181,7 +189,7 @@
 
       function normativoVistaActiva() {
         var p = window.location.pathname;
-        if (p === '/admin/normativo' || p === '/socio/normativo') return true;
+        if (p === '/admin/normativo' || p === '/socio/normativo' || p === '/superadmin/normativo') return true;
         var sp = document.getElementById('page-normativo');
         if (sp && sp.classList.contains('active')) return true;
         return false;
@@ -207,6 +215,8 @@
       if (!activeNavId) {
         if (currentPath.startsWith('/admin/normativo/editar/')) activeNavId = 'nav-normativo';
         else if (currentPath.startsWith('/admin/estudios/editar/')) activeNavId = 'nav-estudios';
+        else if (currentPath.startsWith('/superadmin/normativo/editar/')) activeNavId = 'nav-normativo';
+        else if (currentPath.startsWith('/superadmin/estudios/editar/')) activeNavId = 'nav-estudios';
         else if (currentPath.startsWith('/socio/estudios/')) activeNavId = 'nav-estudios';
         else if (currentPath.startsWith('/superadmin/empresas/')) activeNavId = 'nav-empresas';
         else if (currentPath.startsWith('/admin/admin-docs')) activeNavId = 'nav-admin-docs';
@@ -217,6 +227,17 @@
       }
 
       sincronizarSubnavNormativo();
+
+      // ── Aplicar config de módulos del sidebar (solo socio/visualizador) ──
+      var _uiModulos = /*[[${uiModulosSidebar}]]*/ null;
+      if (_uiModulos && Array.isArray(_uiModulos)) {
+        document.querySelectorAll('[data-module]').forEach(function(el) {
+          var mod = el.getAttribute('data-module');
+          if (_uiModulos.indexOf(mod) === -1) {
+            el.style.display = 'none';
+          }
+        });
+      }
     });
 
     setInterval(function() {

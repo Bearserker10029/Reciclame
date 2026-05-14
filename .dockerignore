@@ -1,0 +1,7 @@
+*
+!pom.xml
+!src
+!.mvn
+!mvnw
+!mvnw.cmd
+!src/main/resources/db/*.sql

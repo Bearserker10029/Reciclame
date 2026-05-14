@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
@@ -18,11 +19,14 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationSuccessHandler successHandler;
+    private final AccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
-                          AuthenticationSuccessHandler successHandler) {
+                          AuthenticationSuccessHandler successHandler,
+                          AccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -33,6 +37,10 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
+                        // Proxy seguro de documentos MinIO: cualquier usuario autenticado
+                        .requestMatchers("/api/documentos/ver").authenticated()
+                        // Proxy interno para kkfileview (sin sesión, objectName no adivinable)
+                        .requestMatchers("/api/documentos/kk-proxy").permitAll()
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         // Impersonación: solo SUPERADMIN o IMPERSONATOR
@@ -55,9 +63,13 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
-                        .deleteCookies("JSESSIONID")
+                        // Support both container sessions (dev) and Spring Session cookie (prod)
+                        .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
                         .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler)
                 )
                 .csrf(csrf -> csrf.disable());
 

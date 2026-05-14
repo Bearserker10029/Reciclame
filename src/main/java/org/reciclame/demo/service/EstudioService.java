@@ -24,6 +24,7 @@ public class EstudioService {
     private final NormativaRepository         normativaRepository;
     private final UsuarioRepository           usuarioRepository;
     private final MinioStorageService         minioStorageService;
+    private final NotificacionService         notificacionService;
 
     public EstudioService(EstudioRepository estudioRepository,
                           EstudiosEtiquetaRepository estudiosEtiquetaRepository,
@@ -31,7 +32,8 @@ public class EstudioService {
                           EtiquetaRepository etiquetaRepository,
                           NormativaRepository normativaRepository,
                           UsuarioRepository usuarioRepository,
-                          MinioStorageService minioStorageService) {
+                          MinioStorageService minioStorageService,
+                          NotificacionService notificacionService) {
         this.estudioRepository          = estudioRepository;
         this.estudiosEtiquetaRepository = estudiosEtiquetaRepository;
         this.tematicaRepository         = tematicaRepository;
@@ -39,6 +41,7 @@ public class EstudioService {
         this.normativaRepository        = normativaRepository;
         this.usuarioRepository          = usuarioRepository;
         this.minioStorageService        = minioStorageService;
+        this.notificacionService        = notificacionService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -99,6 +102,7 @@ public class EstudioService {
 
         Estudio saved = estudioRepository.save(e);
         guardarEtiquetas(saved, dto.getEtiquetasIds());
+        try { notificacionService.notificarNuevoEstudio(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
         return toResponseDTO(saved);
     }
 

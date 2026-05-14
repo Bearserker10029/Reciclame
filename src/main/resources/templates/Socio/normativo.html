@@ -19,6 +19,14 @@
     body {
       background: #F5F6FA;
     }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim-1 { animation: fadeInUp .5s ease both; }
+    .anim-2 { animation: fadeInUp .5s .1s ease both; }
+    .anim-3 { animation: fadeInUp .5s .2s ease both; }
+    .anim-4 { animation: fadeInUp .5s .3s ease both; }
   </style>
 </head>
 
@@ -29,7 +37,9 @@
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
-        <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
+        <div class="anim-1">
+          <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
+        </div>
       </main>
     </div>
   </div>

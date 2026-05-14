@@ -51,6 +51,10 @@ public class SocioController {
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
         return "Socio/inicio";
     }
 
@@ -58,6 +62,10 @@ public class SocioController {
     public String socioInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
         return "Socio/inicio";
     }
 
