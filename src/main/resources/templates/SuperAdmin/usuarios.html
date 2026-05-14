@@ -65,6 +65,38 @@
       }
     }
 
+    @keyframes waterWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .estudios-hero {
       background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
       border-radius: 20px;
@@ -213,8 +245,10 @@
     .report-tab {
       padding: 9px 18px;
       border-radius: 8px;
-      border: 1px solid #D1E8DC;
-      background: #cffce7;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       cursor: pointer;
       font-size: 13px;
       font-weight: 500;
@@ -235,10 +269,13 @@
     .norm-tab-bar {
       display: flex;
       gap: 4px;
-      background: #cffce7;
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       padding: 5px;
       border-radius: 14px;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
       margin-bottom: 20px;
       width: fit-content;
     }
@@ -294,6 +331,7 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <!-- HERO -->
@@ -361,7 +399,7 @@
         <div id="utab-activos">
           <!-- Filtros -->
           <div
-            style="background:#cffce7;border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:10px;padding:14px 18px;margin-bottom:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <div style="position:relative;flex:1;min-width:200px;">
               <i class="fas fa-search"
                 style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
@@ -488,7 +526,7 @@
         <div id="utab-pendientes" style="display:none;">
           <div style="display:flex;flex-direction:column;gap:12px;">
             <div th:each="usuario : ${usuariosPendientes}"
-              style="background:#cffce7;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
               <div
                 style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;"
                 th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '??'}">
@@ -536,7 +574,7 @@
 
         <!-- ═══ TAB: HISTORIAL ═══ -->
         <div id="utab-historial" style="display:none;">
-          <div style="background:#cffce7;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+          <div style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
             <table class="table table-striped table-hover">
               <thead>
                 <tr>

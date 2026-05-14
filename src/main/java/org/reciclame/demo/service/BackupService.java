@@ -212,6 +212,7 @@ public class BackupService {
                     "-P", extraerPuerto(datasourceUrl),
                     "-u", datasourceUsername,
                     "-p" + datasourcePassword,
+                    "--ssl-mode=DISABLED",
                     "--single-transaction",
                     "--quick",
                     "--lock-tables=false",

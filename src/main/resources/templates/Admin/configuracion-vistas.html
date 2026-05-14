@@ -102,6 +102,66 @@
       background: rgba(27,58,92,.07); color: #1B3A5C; font-size: 11px;
       font-weight: 700; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
     }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+    @keyframes rotateBadge {
+      0% { transform: rotate(-3deg) scale(.95); }
+      100% { transform: rotate(0) scale(1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
+      50% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+    }
   </style>
 </head>
 <body>
@@ -112,11 +172,27 @@
 
     <main style="flex:1;background:url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed;background-size:cover;overflow-y:auto;padding:32px;">
 
-      <!-- Header -->
-      <div class="page-head anim-1">
-        <h1><i class="fas fa-sliders-h" style="color:#2ECC71;margin-right:10px;font-size:22px;"></i>Configurar vistas por rol</h1>
-        <p>Define qué columnas y módulos del sidebar son visibles para los roles Socio y Visualizador.</p>
-      </div>
+      <div class="estudios-hero">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-sliders-h" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Configurar vistas por rol</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Define qué columnas y módulos del sidebar son visibles para los roles Socio y Visualizador.</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Configuración por rol</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
       <!-- Rol tabs -->
       <div class="rol-tabs anim-2">
