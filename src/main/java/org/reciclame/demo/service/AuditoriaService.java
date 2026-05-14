@@ -170,6 +170,7 @@ public class AuditoriaService {
     public static final String ACCION_IMPERSONAR = "IMPERSONAR_USUARIO";
     public static final String ACCION_SALIR_IMPERSONACION = "SALIR_IMPERSONACION";
     public static final String ACCION_REACTIVAR_USUARIO = "REACTIVAR_USUARIO";
+    public static final String ACCION_DESCARGAR_DOCUMENTO = "DESCARGAR_DOCUMENTO";
 
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";

@@ -2,15 +2,18 @@ package org.reciclame.demo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration
 @EnableWebSecurity
@@ -37,10 +40,16 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
+                        // Descarga segura: solo roles con permiso de descarga
+                        .requestMatchers("/api/documentos/descargar").hasAnyRole("SUPERADMIN", "ADMINISTRADOR", "SOCIO")
+                        // Proxy reverso de kkfileview: requiere sesión (el browser nunca toca kkfileview directamente)
+                        .requestMatchers("/api/documentos/kk-view/**").authenticated()
+                        // Visor autenticado: cualquier usuario con sesión (token fresco en cada carga)
+                        .requestMatchers("/api/documentos/visor").authenticated()
                         // Proxy seguro de documentos MinIO: cualquier usuario autenticado
                         .requestMatchers("/api/documentos/ver").authenticated()
                         // Proxy interno para kkfileview (sin sesión, objectName no adivinable)
-                        .requestMatchers("/api/documentos/kk-proxy").permitAll()
+                        .requestMatchers("/api/documentos/kk-proxy", "/api/documentos/kk-proxy/**").permitAll()
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         // Impersonación: solo SUPERADMIN o IMPERSONATOR
@@ -70,6 +79,17 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler)
+                        // Solicitudes no autenticadas a endpoints de documentos → 401 en vez de redirect al login.
+                        // Incluye kk-view/** para que las imágenes de diapositivas (cargadas por <img> tags)
+                        // reciban 401 y no una redirección HTML al login que el browser no puede renderizar.
+                        .defaultAuthenticationEntryPointFor(
+                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
+                                req -> req.getRequestURI().startsWith("/api/documentos/")
+                        )
+                )
+                .headers(headers -> headers
+                        // Permite embeber rutas same-origin como /api/documentos/inline dentro del visor.
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
                 .csrf(csrf -> csrf.disable());
 

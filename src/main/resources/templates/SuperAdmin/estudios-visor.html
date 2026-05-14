@@ -133,7 +133,7 @@
           </div>
           <div class="visor-topbar-right">
             <a th:if="${archivoDisponible}"
-               th:href="@{/api/documentos/ver(url=${estudio.archivoUrl})}" target="_blank" class="btn-download">
+               th:href="@{/api/documentos/descargar(url=${estudio.archivoUrl},titulo=${estudio.titulo})}" target="_blank" class="btn-download">
               <i class="fas fa-download"></i> Descargar
             </a>
             <span th:unless="${archivoDisponible}"
@@ -158,9 +158,9 @@
         </div>
 
         <!-- iframe fullscreen (solo cuando el archivo existe) -->
-        <iframe th:if="${archivoDisponible}" th:src="${visorUrl}"
-          style="flex:1;border:none;width:100%;min-height:calc(100vh - 130px);"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups" allowfullscreen>
+        <iframe th:if="${archivoDisponible}"
+          th:src="@{/api/documentos/visor(url=${estudio.archivoUrl},titulo=${estudio.titulo},mime=${estudio.archivoTipoMime})}"
+          style="flex:1;border:none;width:100%;min-height:calc(100vh - 130px);" allowfullscreen>
         </iframe>
 
       </main>

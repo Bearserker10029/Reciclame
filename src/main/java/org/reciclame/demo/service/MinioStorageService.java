@@ -35,11 +35,15 @@ public class MinioStorageService {
     @Value("${minio.bucket}")
     private String bucket;
 
-    private MinioClient buildClient() {
+    private MinioClient buildClient(String endpoint) {
         return MinioClient.builder()
-                .endpoint(minioUrl)
+                .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
+    }
+
+    private MinioClient buildInternalClient() {
+        return buildClient(minioInternalUrl);
     }
 
     /**
@@ -52,7 +56,7 @@ public class MinioStorageService {
                     : "documento";
             String objectName = UUID.randomUUID().toString().substring(0, 8) + "_" + nombreOriginal;
 
-            MinioClient client = buildClient();
+            MinioClient client = buildInternalClient();
             client.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucket)
@@ -61,7 +65,7 @@ public class MinioStorageService {
                             .contentType(archivo.getContentType())
                             .build()
             );
-            return minioUrl + "/" + bucket + "/" + objectName;
+            return buildPublicObjectUrl(objectName);
         } catch (Exception e) {
             throw new RuntimeException("Error al subir archivo a MinIO: " + e.getMessage(), e);
         }
@@ -84,7 +88,7 @@ public class MinioStorageService {
         if (archivoUrl == null || archivoUrl.isBlank()) return;
         try {
             String objectName = extractObjectName(archivoUrl);
-            buildClient().removeObject(
+            buildInternalClient().removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucket)
                             .object(objectName)
@@ -149,7 +153,7 @@ public class MinioStorageService {
             return false;
         }
         try {
-            buildClient().statObject(StatObjectArgs.builder()
+            buildInternalClient().statObject(StatObjectArgs.builder()
                     .bucket(bucket)
                     .object(objectName)
                     .build());
@@ -194,5 +198,10 @@ public class MinioStorageService {
 
     public String getMinioInternalUrl() {
         return minioInternalUrl;
+    }
+
+    private String buildPublicObjectUrl(String objectName) {
+        String base = minioUrl.endsWith("/") ? minioUrl.substring(0, minioUrl.length() - 1) : minioUrl;
+        return base + "/" + bucket + "/" + objectName;
     }
 }
