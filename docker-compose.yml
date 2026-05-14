@@ -1,23 +1,17 @@
 services:
   reciclame-app1:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: reciclame-local:latest
+    image: kent10029/reciclame:latest
     container_name: reciclame-app1
     platform: linux/amd64
     restart: unless-stopped
-    ports:
-      - "8080:8080"
-    depends_on:
-      minio-init:
-        condition: service_completed_successfully
+    expose:
+      - "8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=local
-      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=root
-      - SPRING_DATASOURCE_PASSWORD=12345678
-      - MINIO_URL=http://localhost:9000
+      - SPRING_PROFILES_ACTIVE=aws
+      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=Reciclame123
+      - MINIO_URL=http://minio:9000
       - MINIO_INTERNAL_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -25,17 +19,17 @@ services:
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
       - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
-      - APP_BASE_URL=http://localhost:8080
-      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - APP_BASE_URL=https://reciclame.duckdns.org
+      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - APP_BACKUP_PATH=/backups
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app2:
-    profiles: ["prod"]
     image: kent10029/reciclame:latest
     container_name: reciclame-app2
     platform: linux/amd64
@@ -66,7 +60,6 @@ services:
       - reciclame-net
 
   reciclame-app3:
-    profiles: ["prod"]
     image: kent10029/reciclame:latest
     container_name: reciclame-app3
     platform: linux/amd64
@@ -100,11 +93,11 @@ services:
     image: redis:7.4-alpine
     container_name: reciclame-redis
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -112,7 +105,6 @@ services:
       - reciclame-net
 
   nginx:
-    profiles: ["prod"]
     image: nginx:1.25.4-alpine
     container_name: nginx_lb
     expose:
@@ -127,7 +119,6 @@ services:
       - reciclame-net
 
   nginx-proxy-manager:
-    profiles: ["prod"]
     image: jc21/nginx-proxy-manager:latest
     container_name: nginx-proxy-manager
     restart: unless-stopped
@@ -150,7 +141,7 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_SECURE_COOKIE=true
+      - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=America/Lima
     volumes:
       - n8n_data:/home/node/.n8n
@@ -172,7 +163,7 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -189,22 +180,13 @@ services:
     networks:
       - reciclame-net
     entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 minioadmin minioadmin &&
-      mc mb --ignore-existing local/reciclame-docs &&
-      mc anonymous set none local/reciclame-docs &&
-      echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' &&
-      exit 0
-      "
+      /bin/sh -c " mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' && exit 0 "
 
   kkfileview:
     image: keking/kkfileview:latest
     container_name: reciclame-kkfileview
-    platform: linux/amd64
-    # Solo accesible dentro de la red Docker; Spring actúa como proxy reverso autenticado.
-    # Para debug local con `mvn spring-boot:run`, añade temporalmente: ports: ["8012:8012"]
-    expose:
-      - "8012"
+    ports:
+      - "8012:8012"
     depends_on:
       - minio-init
     environment:
