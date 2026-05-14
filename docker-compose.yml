@@ -1,17 +1,23 @@
 services:
   reciclame-app1:
-    image: kent10029/reciclame:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: reciclame-local:latest
     container_name: reciclame-app1
     platform: linux/amd64
     restart: unless-stopped
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
     environment:
-      - SPRING_PROFILES_ACTIVE=aws
-      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://minio:9000
+      - SPRING_PROFILES_ACTIVE=local
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=12345678
+      - MINIO_URL=http://localhost:9000
       - MINIO_INTERNAL_URL=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
@@ -19,17 +25,17 @@ services:
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
       - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
-      - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
-      - APP_BACKUP_PATH=/backups
+      - APP_BASE_URL=http://localhost:8080
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app2:
+    profiles: ["prod"]
     image: kent10029/reciclame:latest
     container_name: reciclame-app2
     platform: linux/amd64
@@ -60,6 +66,7 @@ services:
       - reciclame-net
 
   reciclame-app3:
+    profiles: ["prod"]
     image: kent10029/reciclame:latest
     container_name: reciclame-app3
     platform: linux/amd64
@@ -105,6 +112,7 @@ services:
       - reciclame-net
 
   nginx:
+    profiles: ["prod"]
     image: nginx:1.25.4-alpine
     container_name: nginx_lb
     expose:
@@ -119,6 +127,7 @@ services:
       - reciclame-net
 
   nginx-proxy-manager:
+    profiles: ["prod"]
     image: jc21/nginx-proxy-manager:latest
     container_name: nginx-proxy-manager
     restart: unless-stopped
@@ -191,8 +200,11 @@ services:
   kkfileview:
     image: keking/kkfileview:latest
     container_name: reciclame-kkfileview
-    ports:
-      - "8012:8012"
+    platform: linux/amd64
+    # Solo accesible dentro de la red Docker; Spring actúa como proxy reverso autenticado.
+    # Para debug local con `mvn spring-boot:run`, añade temporalmente: ports: ["8012:8012"]
+    expose:
+      - "8012"
     depends_on:
       - minio-init
     environment:

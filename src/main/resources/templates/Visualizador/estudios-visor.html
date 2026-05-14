@@ -48,10 +48,6 @@
         </div>
       </div>
     </div>
-    <a th:if="${archivoDisponible}"
-       th:href="@{/api/documentos/ver(url=${estudio.archivoUrl})}" target="_blank" class="btn-download">
-      <i class="fas fa-download"></i> Descargar
-    </a>
     <span th:unless="${archivoDisponible}"
           style="font-size:12px;color:#F87171;font-weight:600;">
       <i class="fas fa-exclamation-triangle"></i> No disponible
@@ -70,9 +66,9 @@
     </a>
   </div>
 
-  <iframe th:if="${archivoDisponible}" th:src="${visorUrl}"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          allowfullscreen>
+  <iframe th:if="${archivoDisponible}"
+    th:src="@{/api/documentos/visor(url=${estudio.archivoUrl},titulo=${estudio.titulo},mime=${estudio.archivoTipoMime})}"
+    allowfullscreen>
   </iframe>
 </body>
 </html>
