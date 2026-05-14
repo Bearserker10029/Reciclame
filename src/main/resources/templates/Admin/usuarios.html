@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <meta charset="UTF-8" />
@@ -254,8 +255,9 @@
                         <i th:class="${usuario.cuentaBloqueada ? 'fas fa-unlock' : 'fas fa-ban'}"
                           th:style="${usuario.cuentaBloqueada ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
                       </button>
-                      <!-- Eliminar -->
-                      <button th:onclick="|eliminarUsuario(${usuario.id})|" title="Eliminar usuario"
+                      <!-- Eliminar (solo SUPERADMIN) -->
+                      <button sec:authorize="hasRole('SUPERADMIN')"
+                        th:onclick="|eliminarUsuario(${usuario.id})|" title="Eliminar usuario"
                         style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                         <i class="fas fa-trash" style="color:#E74C3C;"></i>
                       </button>
@@ -926,7 +928,11 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else { alert('Error al eliminar el usuario'); }
+                  } else if (r.status === 403) {
+                    alert('Sin permisos: solo el SuperAdmin puede eliminar usuarios.');
+                  } else {
+                    alert('Error al eliminar el usuario (código: ' + r.status + ')');
+                  }
                 })
                 .catch(function () { alert('Error de conexión'); });
             };

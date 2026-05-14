@@ -19,8 +19,20 @@ public class RoleBasedAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) throws IOException {
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // Las llamadas a /api/** nunca deben redirigir — devolver 403 JSON
+        String uri = request.getRequestURI();
+        String accept = request.getHeader("Accept");
+        boolean isApiCall = uri.startsWith(request.getContextPath() + "/api/")
+                || (accept != null && accept.contains("application/json"));
 
+        if (isApiCall) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"error\":\"Acceso denegado\",\"status\":403}");
+            return;
+        }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) {
             String redirectUrl = resolveHomeByRole(auth);
             response.sendRedirect(request.getContextPath() + redirectUrl);
