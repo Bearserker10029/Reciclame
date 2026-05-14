@@ -542,15 +542,15 @@
                 <table class="norm-tbl" style="min-width:820px;">
                   <thead>
                     <tr>
-                      <th>Nombre</th>
-                      <th>Código</th>
-                      <th>Organismo</th>
-                      <th>Año</th>
-                      <th>Tipo</th>
-                      <th>Clasif.</th>
-                      <th>Estado</th>
-                      <th>Temática</th>
-                      <th style="text-align:center;">Acciones</th>
+                      <th data-col="nombre">Nombre</th>
+                      <th data-col="codigo">Código</th>
+                      <th data-col="organismo">Organismo</th>
+                      <th data-col="anio">Año</th>
+                      <th data-col="tipo">Tipo</th>
+                      <th data-col="clasif">Clasif.</th>
+                      <th data-col="estado">Estado</th>
+                      <th data-col="tematica">Temática</th>
+                      <th data-col="acciones" style="text-align:center;">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1685,6 +1685,27 @@
           } catch (e) { /* ignore */ }
         });
 
+      })();
+
+      // ── Ocultar columnas según config del admin — CSS injection (cubre filas dinámicas) ──
+      (function() {
+        var colsVis = /*[[${uiColsNormativas}]]*/ null;
+        if (!colsVis || !Array.isArray(colsVis)) return;
+        var ref = document.querySelector('.norm-tbl thead');
+        if (!ref) return;
+        var headers = ref.querySelectorAll('th[data-col]');
+        var css = '';
+        headers.forEach(function(th, idx) {
+          if (colsVis.indexOf(th.getAttribute('data-col')) === -1) {
+            var n = idx + 1;
+            css += '.norm-tbl th:nth-child(' + n + '),.norm-tbl td:nth-child(' + n + '){display:none!important}';
+          }
+        });
+        if (css) {
+          var s = document.createElement('style');
+          s.textContent = css;
+          document.head.appendChild(s);
+        }
       })();
     </script>
 

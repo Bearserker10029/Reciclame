@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+  Fragmento: notif-toast
+  Incluir en cualquier inicio.html que pase "notificaciones" en el modelo.
+  Muestra un toast por cada notificación no leída reciente (máx. 3).
+  Usa sessionStorage para no repetir en la misma sesión de navegador.
+-->
+<div th:fragment="notif-toast" th:if="${notificaciones != null and noLeidasCount != null and noLeidasCount > 0}">
+
+  <!-- Contenedor de toasts -->
+  <div id="notif-toast-container" style="
+    position:fixed; bottom:24px; right:24px; z-index:9999;
+    display:flex; flex-direction:column-reverse; gap:10px;
+    max-width:340px; pointer-events:none;">
+  </div>
+
+  <style>
+    .notif-toast-item {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(12px);
+      border-left: 4px solid #4f46e5;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      pointer-events: all;
+      animation: toast-in .4s cubic-bezier(.22,.61,.36,1) both;
+      transition: opacity .3s, transform .3s;
+    }
+    .notif-toast-item.toast-out {
+      opacity: 0;
+      transform: translateX(120%);
+    }
+    .notif-toast-item .toast-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #ede9fe;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: #4f46e5; font-size: 15px;
+    }
+    .notif-toast-item .toast-body { flex: 1; min-width: 0; }
+    .notif-toast-item .toast-title {
+      font-weight: 600; font-size: 13px; color: #1e1b4b;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .notif-toast-item .toast-msg {
+      font-size: 12px; color: #6b7280; margin-top: 2px;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .notif-toast-item .toast-time { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+    .notif-toast-item .toast-close {
+      background: none; border: none; cursor: pointer;
+      color: #9ca3af; font-size: 16px; line-height: 1;
+      padding: 0; flex-shrink: 0;
+    }
+    .notif-toast-item .toast-close:hover { color: #374151; }
+    @keyframes toast-in {
+      from { opacity:0; transform: translateX(60px); }
+      to   { opacity:1; transform: translateX(0); }
+    }
+  </style>
+
+  <script th:inline="javascript">
+  (function() {
+    const SESSION_KEY = 'notifToastShown';
+    if (sessionStorage.getItem(SESSION_KEY)) return;
+    sessionStorage.setItem(SESSION_KEY, '1');
+
+    const notifs = /*[[${notificaciones}]]*/ [];
+    const container = document.getElementById('notif-toast-container');
+    if (!container || !notifs || notifs.length === 0) return;
+
+    const unread = notifs.filter(n => !n.leida).slice(0, 3);
+    const iconMap = {
+      'NUEVO_ESTUDIO':    'fa-file-alt',
+      'NUEVA_NORMATIVA':  'fa-gavel',
+      'APROBACION':       'fa-check-circle',
+      'RECHAZO':          'fa-times-circle',
+      'MENSAJE_ADMIN':    'fa-bell',
+    };
+    const colorMap = {
+      'APROBACION': '#10b981',
+      'RECHAZO':    '#ef4444',
+      'NUEVA_NORMATIVA': '#f59e0b',
+    };
+
+    function dismiss(el) {
+      el.classList.add('toast-out');
+      setTimeout(() => el.remove(), 350);
+    }
+
+    unread.forEach((n, idx) => {
+      const icon  = iconMap[n.tipo] || 'fa-bell';
+      const color = colorMap[n.tipo] || '#4f46e5';
+      const item  = document.createElement('div');
+      item.className = 'notif-toast-item';
+      item.style.borderLeftColor = color;
+      item.innerHTML = `
+        <div class="toast-icon" style="background:${color}22; color:${color}">
+          <i class="fas ${icon}"></i>
+        </div>
+        <div class="toast-body">
+          <div class="toast-title">${n.titulo || 'Notificación'}</div>
+          <div class="toast-msg">${n.mensaje || ''}</div>
+          <div class="toast-time">${n.tiempoRelativo || ''}</div>
+        </div>
+        <button class="toast-close" aria-label="Cerrar">&times;</button>`;
+      item.querySelector('.toast-close').addEventListener('click', () => dismiss(item));
+      item.style.animationDelay = (idx * 150) + 'ms';
+      container.appendChild(item);
+      setTimeout(() => dismiss(item), 6000 + idx * 1500);
+    });
+
+    // Badge de resumen si hay más de 3
+    const extra = notifs.filter(n => !n.leida).length - 3;
+    if (extra > 0) {
+      const summary = document.createElement('div');
+      summary.className = 'notif-toast-item';
+      summary.innerHTML = `
+        <div class="toast-icon"><i class="fas fa-bell"></i></div>
+        <div class="toast-body">
+          <div class="toast-title">+${extra} notificaciones más</div>
+          <div class="toast-msg">Revisa tu bandeja de notificaciones</div>
+        </div>`;
+      summary.style.animationDelay = (unread.length * 150) + 'ms';
+      container.appendChild(summary);
+      setTimeout(() => dismiss(summary), 8000);
+    }
+  })();
+  </script>
+
+</div>
+</body>
+</html>

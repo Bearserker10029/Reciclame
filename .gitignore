@@ -33,6 +33,9 @@ build/
 ### VS Code ###
 .vscode/
 
+# Guia de comandos (archivo local con IPs sensitive)
+guia-comandos-ec2.md
+
 # Archivos de sistema y temporales
 *.log
 *.tmp
@@ -45,3 +48,9 @@ skills-lock.json
 
 # Claude Code (worktrees y archivos internos)
 .claude/
+
+# Jira
+Jira.csv
+
+# Environment variables (contiene credenciales)
+.env

@@ -14,12 +14,17 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 @Controller
 public class EstudioVisorController {
+
+    private static final Logger log = LoggerFactory.getLogger(EstudioVisorController.class);
 
     private final EstudioService estudioService;
     private final MinioStorageService minioStorageService;
@@ -28,6 +33,9 @@ public class EstudioVisorController {
 
     @Value("${kkfileview.url}")
     private String kkfileviewUrl;
+
+    @Value("${app.kk-accessible-url}")
+    private String kkAccessibleUrl;
 
     public EstudioVisorController(EstudioService estudioService,
                                    MinioStorageService minioStorageService,
@@ -76,35 +84,62 @@ public class EstudioVisorController {
     // ── Helpers ───────────────────────────────────────────────
 
     private String cargarVisor(Long id, Model model, String template, String urlRetorno) {
+        EstudioResponseDTO estudio;
         try {
-            EstudioResponseDTO estudio = estudioService.obtenerEstudioPorId(id);
-            estudioService.incrementarVisualizaciones(id);
-            model.addAttribute("estudio", estudio);
-            model.addAttribute("visorUrl", construirVisorUrl(estudio.getArchivoUrl(), estudio.getTitulo()));
-            model.addAttribute("urlRetorno", urlRetorno);
-            return template;
+            estudio = estudioService.obtenerEstudioPorId(id);
         } catch (RuntimeException e) {
+            log.warn("Estudio {} no encontrado: {}", id, e.getMessage());
             return "redirect:" + urlRetorno;
         }
+        estudioService.incrementarVisualizaciones(id);
+        model.addAttribute("estudio", estudio);
+        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo());
+        model.addAttribute("urlRetorno", urlRetorno);
+        return template;
     }
 
     private String cargarVisorPublico(Long id, Model model, String template, String urlRetorno) {
+        EstudioResponseDTO estudio;
         try {
-            EstudioResponseDTO estudio = estudioService.obtenerEstudioPublicoPorId(id);
-            estudioService.incrementarVisualizaciones(id);
-            model.addAttribute("estudio", estudio);
-            model.addAttribute("visorUrl", construirVisorUrl(estudio.getArchivoUrl(), estudio.getTitulo()));
-            model.addAttribute("urlRetorno", urlRetorno);
-            return template;
+            estudio = estudioService.obtenerEstudioPublicoPorId(id);
         } catch (RuntimeException e) {
+            log.warn("Estudio público {} no encontrado o no accesible: {}", id, e.getMessage());
             return "redirect:" + urlRetorno;
         }
+        estudioService.incrementarVisualizaciones(id);
+        model.addAttribute("estudio", estudio);
+        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo());
+        model.addAttribute("urlRetorno", urlRetorno);
+        return template;
+    }
+
+    private void poblarVisor(Model model, String archivoUrl, String titulo) {
+        boolean archivoDisponible = minioStorageService.existeArchivo(archivoUrl);
+        model.addAttribute("archivoDisponible", archivoDisponible);
+        model.addAttribute("visorUrl", archivoDisponible ? construirVisorUrl(archivoUrl, titulo) : "");
     }
 
     private String construirVisorUrl(String archivoUrl, String titulo) {
         if (archivoUrl == null || archivoUrl.isBlank()) return "";
-        String internalUrl = minioStorageService.urlParaVisor(archivoUrl);
-        String base64Url = Base64.getEncoder().encodeToString(internalUrl.getBytes(StandardCharsets.UTF_8));
+
+        // Extraer objectName de la URL almacenada en BD (independiente del hostname de MinIO)
+        String objectName;
+        try {
+            objectName = minioStorageService.getObjectNameFromUrl(archivoUrl);
+        } catch (Exception e) {
+            log.warn("No se pudo extraer objectName de URL '{}': {}", archivoUrl, e.getMessage());
+            return "";
+        }
+
+        // La URL que kkfileview (en Docker) usará para descargar el archivo via el proxy de Spring Boot.
+        // Spring Boot hace el fetch a MinIO internamente con localhost:9000, evitando dependencias de red
+        // entre kkfileview y MinIO.
+        String proxyUrl = kkAccessibleUrl + "/api/documentos/kk-proxy?objectName="
+                + URLEncoder.encode(objectName, StandardCharsets.UTF_8);
+
+        String base64Url = URLEncoder.encode(
+                Base64.getEncoder().encodeToString(proxyUrl.getBytes(StandardCharsets.UTF_8)),
+                StandardCharsets.UTF_8);
         String fullfilename = URLEncoder.encode(
                 sanitizarNombreArchivo(titulo) + extraerExtension(archivoUrl),
                 StandardCharsets.UTF_8);

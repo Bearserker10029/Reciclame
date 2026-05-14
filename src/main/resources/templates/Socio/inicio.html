@@ -182,6 +182,19 @@
     .page.active {
       display: block;
     }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    .anim-1 { animation: fadeInUp .5s ease both; }
+    .anim-2 { animation: fadeInUp .5s .1s ease both; }
+    .anim-3 { animation: fadeInUp .5s .2s ease both; }
+    .anim-4 { animation: fadeInUp .5s .3s ease both; }
   </style>
 </head>
 
@@ -224,13 +237,13 @@
 
         <!-- PAGE: INICIO -->
         <div id="page-inicio" class="page active" style="padding:32px;">
-          <div style="margin-bottom:28px;">
+          <div class="anim-1" style="margin-bottom:28px;">
             <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:6px;">Bienvenido, Juan 👋</h1>
             <p style="color:#6B7280;font-size:14px;">Selecciona una sección para comenzar a explorar el repositorio</p>
           </div>
 
           <!-- Donut chart + distribution -->
-          <div
+          <div class="anim-2"
             style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:28px;display:flex;align-items:center;gap:32px;">
             <div style="flex-shrink:0;">
               <canvas id="donut-inicio" width="140" height="140"></canvas>
@@ -284,7 +297,7 @@
           </div>
 
           <!-- Cards row -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
+          <div class="anim-3" style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:28px;">
             <div class="main-card" onclick="navTo('estudios')">
               <div style="height:5px;background:#2ECC71;"></div>
               <div style="padding:32px;">
@@ -338,7 +351,7 @@
           </div>
 
           <!-- Recent updates -->
-          <div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
+          <div class="anim-4" style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
               <div style="display:flex;align-items:center;gap:8px;">
                 <i class="fas fa-clock" style="color:#2ECC71;font-size:15px;"></i>
@@ -391,22 +404,30 @@
 
         <!-- PAGE: ESTUDIOS (placeholder) -->
         <div id="page-estudios" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/estudios-content :: estudios-content}"></th:block>
+          <div class="anim-1">
+            <th:block th:replace="~{Socio/estudios-content :: estudios-content}"></th:block>
+          </div>
         </div>
 
         <!-- PAGE: NORMATIVO (placeholder) -->
         <div id="page-normativo" class="page" style="padding:32px;">
-          <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
+          <div class="anim-1">
+            <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
+          </div>
         </div>
 
         <!-- PAGE: PERFIL -->
         <div id="page-perfil" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/perfil-content :: perfil-content}"></th:block>
+          <div class="anim-1">
+            <th:block th:replace="~{Socio/perfil-content :: perfil-content}"></th:block>
+          </div>
         </div>
 
         <!-- PAGE: NOTIFICACIONES -->
         <div id="page-notificaciones" class="page" style="padding:32px;">
-          <th:block th:replace="~{Socio/notificaciones :: notificaciones-content}"></th:block>
+          <div class="anim-1">
+            <th:block th:replace="~{Socio/notificaciones :: notificaciones-content}"></th:block>
+          </div>
         </div>
 
       </main>
@@ -447,7 +468,14 @@
   <script>
     function navTo(page) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById('page-' + page).classList.add('active');
+      var el = document.getElementById('page-' + page);
+      el.classList.add('active');
+      // Re-disparar animaciones en la página recién mostrada
+      el.querySelectorAll('.anim-1,.anim-2,.anim-3,.anim-4').forEach(function(a) {
+        a.style.animation = 'none';
+        void a.offsetWidth;
+        a.style.animation = '';
+      });
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       var nav = document.getElementById('nav-' + page);
       if (nav) nav.classList.add('active');
@@ -519,6 +547,8 @@
 
     document.getElementById('chatbot-bubble').style.display = 'flex';
   </script>
+
+  <div th:replace="~{components/notif-toast :: notif-toast}"></div>
 </body>
 
 </html>
