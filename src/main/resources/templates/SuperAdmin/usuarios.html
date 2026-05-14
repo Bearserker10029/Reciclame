@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <meta charset="UTF-8" />
@@ -925,7 +926,11 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else { alert('Error al eliminar el usuario'); }
+                  } else if (r.status === 403) {
+                    alert('Sin permisos para eliminar este usuario.');
+                  } else {
+                    alert('Error al eliminar el usuario (código: ' + r.status + ')');
+                  }
                 })
                 .catch(function () { alert('Error de conexión'); });
             };

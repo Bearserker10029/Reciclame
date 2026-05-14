@@ -1852,4 +1852,37 @@ FROM normativas
 WHERE
     archivo_url LIKE 'http://localhost:9000/reciclame-docs/%';
 
+-- ============================================================
+-- TABLAS CREADAS EN SESIÓN: Configuración de vistas por rol
+-- Fecha: 2026-05-13
+-- ============================================================
+
+-- Tabla: configuracion_ui_rol
+-- Almacena qué columnas y módulos del sidebar son visibles
+-- para cada rol (SOCIO, VISUALIZADOR), configurado por Admin/SuperAdmin.
+--
+-- Claves posibles por rol:
+--   columnas_normativas  → columnas visibles en Repositorio Normativo
+--   columnas_estudios    → columnas visibles en Estudios Recíclame
+--   modulos_sidebar      → módulos del sidebar visibles
+--
+-- El campo 'valor' guarda los nombres separados por coma.
+-- Ej: "nombre,codigo,anio,tipo,acciones"
+--
+-- Si no existe fila para un rol+clave, el servicio devuelve
+-- los valores por defecto definidos en ConfiguracionUiRolService.
+
+CREATE TABLE IF NOT EXISTS `reciclame_db`.`configuracion_ui_rol` (
+  `id`             BIGINT        NOT NULL AUTO_INCREMENT,
+  `rol`            VARCHAR(50)   NOT NULL COMMENT 'Rol afectado: SOCIO | VISUALIZADOR',
+  `clave`          VARCHAR(100)  NOT NULL COMMENT 'columnas_normativas | columnas_estudios | modulos_sidebar',
+  `valor`          TEXT          NULL     COMMENT 'Valores separados por coma',
+  `actualizado_at` DATETIME(6)   NULL     COMMENT 'Última modificación',
+  PRIMARY KEY (`id`),
+  CONSTRAINT `uq_ui_rol_clave` UNIQUE (`rol`, `clave`)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_unicode_ci
+  COMMENT='Configuración de columnas y módulos visibles por rol de usuario';
+
 SET SQL_SAFE_UPDATES = 1;
