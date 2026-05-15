@@ -6,6 +6,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -18,9 +24,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups
@@ -36,6 +42,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -48,9 +60,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups
@@ -66,6 +78,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -78,9 +96,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups

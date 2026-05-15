@@ -67,6 +67,8 @@
   <script th:inline="javascript">
     /* <![CDATA[ */
     window.CHATBOT_WEBHOOK_URL = /*[[${@environment.getProperty('n8n.chatbot.webhook.url', 'http://localhost:5678/webhook/chatbot-reciclame')}]]*/ 'http://localhost:5678/webhook/chatbot-reciclame';
+    window.USUARIO_ROL = /*[[${session.usuarioSesion?.rolNombre ?: 'ANONYMOUS'}]]*/ 'ANONYMOUS';
+    window.USUARIO_ID = /*[[${session.usuarioSesion?.id ?: 0}]]*/ 0;
     /* ]]> */
   </script>
 
@@ -116,7 +118,11 @@
         fetch(window.CHATBOT_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: msg })
+          body: JSON.stringify({ 
+            message: msg,
+            userRole: window.USUARIO_ROL,
+            userId: window.USUARIO_ID
+          })
         })
         .then(function(res) { return res.text(); })
         .then(function(data) {
