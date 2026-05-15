@@ -24,7 +24,7 @@ RUN addgroup -S reciclame && adduser -S reciclame -G reciclame
 COPY --from=builder /app/target/*.jar app.jar
 COPY --from=builder /app/src/main/resources/db/*.sql ./db/
 
-RUN apk add --no-cache mariadb-client
+RUN apk add --no-cache mariadb-client fontconfig ttf-dejavu
 
 RUN chown -R reciclame:reciclame /app
 
@@ -32,6 +32,6 @@ USER reciclame
 
 EXPOSE 8080
 
-ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC"
+ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -Djava.awt.headless=true"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

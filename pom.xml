@@ -213,6 +213,28 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>net.sf.jasperreports</groupId>
+				<artifactId>jasperreports-maven-plugin</artifactId>
+				<version>7.0.6</version>
+				<configuration>
+					<sourceDirectory>src/main/resources/reports</sourceDirectory>
+					<outputDirectory>target/classes/reports</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<goals><goal>compile</goal></goals>
+						<phase>compile</phase>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>net.sf.jasperreports</groupId>
+						<artifactId>jasperreports-charts</artifactId>
+						<version>7.0.6</version>
+					</dependency>
+				</dependencies>
+			</plugin>
 		</plugins>
 	</build>
 
