@@ -6,6 +6,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -18,9 +24,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups
@@ -36,6 +42,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -48,9 +60,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups
@@ -66,6 +78,12 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     environment:
       - SPRING_PROFILES_ACTIVE=aws
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -78,9 +96,9 @@ services:
       - MINIO_BUCKET=reciclame-docs
       - KKFILEVIEW_URL=http://kkfileview:8012
       - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=http://n8n:5678/webhook/chatbot-reciclame
+      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
       - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://nginx:80
+      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - APP_BACKUP_PATH=/backups
@@ -93,11 +111,11 @@ services:
     image: redis:7.4-alpine
     container_name: reciclame-redis
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -141,7 +159,7 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_SECURE_COOKIE=true
+      - N8N_SECURE_COOKIE=false
       - GENERIC_TIMEZONE=America/Lima
     volumes:
       - n8n_data:/home/node/.n8n
@@ -163,7 +181,7 @@ services:
       - minio_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -180,13 +198,7 @@ services:
     networks:
       - reciclame-net
     entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 minioadmin minioadmin &&
-      mc mb --ignore-existing local/reciclame-docs &&
-      mc anonymous set none local/reciclame-docs &&
-      echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' &&
-      exit 0
-      "
+      /bin/sh -c " mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' && exit 0 "
 
   kkfileview:
     image: keking/kkfileview:latest

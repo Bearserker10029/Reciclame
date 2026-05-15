@@ -60,9 +60,9 @@ public class NormativaService {
      * consistencia entre la BD y el almacenamiento del contenedor.
      */
     public List<NormativaResponseDTO> listarNormativasParaSelector() {
-        String minioPrefix = minioUrl + "/" + minioBucket;
+        String minioPathMarker = "/" + minioBucket + "/";
         return normativaRepository.findAll(Sort.by("titulo")).stream()
-                .filter(n -> n.getArchivoUrl() != null && n.getArchivoUrl().startsWith(minioPrefix))
+                .filter(n -> n.getArchivoUrl() != null && n.getArchivoUrl().contains(minioPathMarker))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

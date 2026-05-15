@@ -687,9 +687,10 @@
                   <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
                       lectura</span></td>
                   <td class="text-center">
-                    <button class="btn-ver" onclick="openModalFromRow(this)">
+                    <a class="btn-ver" th:href="@{/superadmin/estudios/{id}/ver(id=${e.id})}"
+                      style="text-decoration:none;">
                       <i class="fas fa-eye"></i> Ver
-                    </button>
+                    </a>
                   </td>
                   <td class="text-center">
                     <div style="display:flex;gap:6px;justify-content:center;">
@@ -791,8 +792,7 @@
                   </div>
                   <div
                     style="height:280px;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;background:#F9FAFB;">
-                    <iframe id="modal-visor-iframe" src="" width="100%" height="100%" frameborder="0"
-                      sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="lazy"
+                    <iframe id="modal-visor-iframe" src="" width="100%" height="100%" frameborder="0" loading="lazy"
                       style="display:block;">
                     </iframe>
                   </div>
@@ -958,7 +958,7 @@
             return 'otro';
           }
 
-          function openModal(id, titulo, descripcion, anio, mime, url) {
+          async function openModal(id, titulo, descripcion, anio, mime, url) {
             var tipo = tipoArchivo(mime);
             var formatoMap = {
               pdf: 'PDF — Infografía / Reporte',
@@ -978,7 +978,7 @@
             document.getElementById('modal-descripcion').textContent = descripcion || '—';
             document.getElementById('modal-anio').textContent = anio || '—';
             document.getElementById('modal-formato').textContent = formatoMap[tipo] || tipo;
-            document.getElementById('modal-link').href = url || '#';
+            document.getElementById('modal-link').href = buildDocumentoViewHref(url);
             var icon = document.getElementById('modal-icon');
             var iconI = document.getElementById('modal-icon-i');
             icon.style.background = iconMap[tipo].bg;
@@ -988,13 +988,17 @@
             var previewSection = document.getElementById('modal-visor-preview');
             var iframe = document.getElementById('modal-visor-iframe');
             var verCompletoBtn = document.getElementById('modal-ver-completo');
-            if (url && url !== '#' && typeof KKFILEVIEW_URL !== 'undefined' && KKFILEVIEW_URL) {
-              var internalUrl = url.replace(MINIO_URL, MINIO_INT_URL);
-              var encoded = btoa(unescape(encodeURIComponent(internalUrl)));
-              var fullfilename = encodeURIComponent(kkNombreArchivo(titulo, url));
-              iframe.src = KKFILEVIEW_URL + '/onlinePreview?url=' + encoded + '&fullfilename=' + fullfilename;
+            if (url && url !== '#') {
               verCompletoBtn.href = '/superadmin/estudios/' + id + '/ver';
+              iframe.src = '';
               previewSection.style.display = 'block';
+              try {
+                iframe.src = await buildPreviewUrl(url, titulo, mime);
+              } catch (e) {
+                iframe.src = '';
+                previewSection.style.display = 'none';
+                console.error(e);
+              }
             } else {
               iframe.src = '';
               previewSection.style.display = 'none';
@@ -1019,6 +1023,28 @@
               .replace(/\s+/g, '_')
               .replace(/_+/g, '_');
             return nombre + ext;
+          }
+
+          function buildDocumentoViewHref(url) {
+            return url ? '/api/documentos/ver?url=' + encodeURIComponent(url) : '#';
+          }
+
+          function buildDocumentoInlineHref(url) {
+            return url ? '/api/documentos/inline?url=' + encodeURIComponent(url) : '';
+          }
+
+          async function buildPreviewUrl(url, titulo, mime) {
+            if (tipoArchivo(mime) === 'pdf') {
+              return buildDocumentoInlineHref(url);
+            }
+            var res = await fetch('/api/documentos/preview-url?url=' + encodeURIComponent(url)
+              + '&titulo=' + encodeURIComponent(titulo || 'documento')
+              + '&mime=' + encodeURIComponent(mime || ''));
+            if (!res.ok) {
+              throw new Error('No se pudo preparar la vista previa.');
+            }
+            var data = await res.json();
+            return data.previewUrl || '';
           }
 
           async function eliminarEstudio(id) {
@@ -1048,9 +1074,6 @@
   </div>
 
   <script th:inline="javascript">
-    var KKFILEVIEW_URL = /*[[${@environment.getProperty('kkfileview.url')}]]*/ 'http://localhost:8012';
-    var MINIO_URL = /*[[${@environment.getProperty('minio.url')}]]*/ 'http://localhost:9000';
-    var MINIO_INT_URL = /*[[${@environment.getProperty('minio.internal-url')}]]*/ 'http://minio:9000';
   </script>
 
 </body>

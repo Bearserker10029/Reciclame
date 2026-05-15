@@ -49,7 +49,7 @@
       </div>
     </div>
     <a th:if="${archivoDisponible}"
-       th:href="@{/api/documentos/ver(url=${estudio.archivoUrl})}" target="_blank" class="btn-download">
+       th:href="@{/api/documentos/descargar(url=${estudio.archivoUrl},titulo=${estudio.titulo})}" target="_blank" class="btn-download">
       <i class="fas fa-download"></i> Descargar
     </a>
     <span th:unless="${archivoDisponible}"
@@ -70,9 +70,9 @@
     </a>
   </div>
 
-  <iframe th:if="${archivoDisponible}" th:src="${visorUrl}"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-          allowfullscreen>
+  <iframe th:if="${archivoDisponible}"
+    th:src="@{/api/documentos/visor(url=${estudio.archivoUrl},titulo=${estudio.titulo},mime=${estudio.archivoTipoMime})}"
+    allowfullscreen>
   </iframe>
 </body>
 </html>
