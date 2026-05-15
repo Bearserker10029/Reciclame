@@ -41,9 +41,16 @@ public class SocioController {
         model.addAttribute("rolNombre", "Socio");
         model.addAttribute("notifUrl", "/socio/notificaciones");
         try {
-            usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+            usuarioService.findByCorreo(correo).ifPresent(u -> {
+                model.addAttribute("usuarioNombre", u.getNombreCompleto());
+                try {
+                    model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+                } catch (Exception e) {
+                    model.addAttribute("noLeidasCount", 0);
+                }
+            });
         } catch (Exception e) {
-            model.addAttribute("usuarioNombre", "Usuario");
+            model.addAttribute("noLeidasCount", 0);
         }
     }
 
@@ -51,10 +58,6 @@ public class SocioController {
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-        });
         return "Socio/inicio";
     }
 
@@ -62,10 +65,6 @@ public class SocioController {
     public String socioInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-        });
         return "Socio/inicio";
     }
 
@@ -74,7 +73,6 @@ public class SocioController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
         return "Socio/notificaciones";
     }

@@ -376,7 +376,7 @@
             Distribución de normativas por temática
           </div>
           <div style="display:flex;align-items:center;gap:32px;">
-            <div style="flex-shrink:0;position:relative;">
+            <div style="flex-shrink:0;position:relative;width:150px;height:150px;">
               <canvas id="donut-admin" width="150" height="150"></canvas>
               <div id="donut-center"
                 style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
@@ -516,40 +516,30 @@
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <script>
+  <script th:inline="javascript">
     function navTo(page) {
       var map = { 'admin-docs': 'documentos' };
       window.location.href = '/superadmin/' + (map[page] || page);
     }
     function goLogin() { window.location.href = '/login'; }
 
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
-      var tematicasData = /*[[${tematicas}]]*/[];
-      var conteoPorTematica = /*[[${conteoPorTematica}]]*/ {};
-      var totalNormativas = /*[[${normativas != null ? normativas.size() : 0}]]*/ 0;
 
-      var colorMap = {
-        'EC': '#27AE60',
-        'GR': '#3498DB',
-        'EE': '#F39C12',
-        'REP': '#E74C3C',
-        'OTRO': '#95A5A6'
-      };
+      var donutData = /*[[${donutData}]]*/ [];
 
       var labels = [];
       var data = [];
       var colors = [];
 
-      if (tematicasData && tematicasData.length > 0) {
-        tematicasData.forEach(function (t) {
-          var codigo = t.codigo || 'Otro';
-          var count = conteoPorTematica[codigo] || 0;
+      if (donutData && donutData.length > 0) {
+        donutData.forEach(function (item) {
+          var count = Number(item.count) || 0;
           if (count > 0) {
-            labels.push(codigo + ' — ' + t.nombre);
+            labels.push(item.codigo + ' — ' + item.nombre);
             data.push(count);
-            colors.push(t.colorHex || '#95A5A6');
+            colors.push(item.colorHex || '#95A5A6');
           }
         });
       }
@@ -574,6 +564,7 @@
         },
         options: {
           responsive: false,
+          maintainAspectRatio: false,
           cutout: '68%',
           animation: { duration: 1400, easing: 'easeInOutQuart' },
           plugins: {
@@ -585,9 +576,11 @@
               padding: 10,
               cornerRadius: 8,
               callbacks: {
-                label: function (ctx) {
+                label: function (tooltipItem) {
                   var total = data.reduce(function (a, b) { return a + b; }, 0);
-                  return '  ' + ctx.parsed + ' normativas (' + Math.round(ctx.parsed / total * 100) + '%)';
+                  var value = tooltipItem.parsed;
+                  var pct = total > 0 ? Math.round(value / total * 100) : 0;
+                  return '  ' + value + ' normativas (' + pct + '%)';
                 }
               }
             }
@@ -603,7 +596,7 @@
         el.style.background = 'rgba(' + r + ',' + g + ',' + b + ',.07)';
         el.style.border = '1px solid rgba(' + r + ',' + g + ',' + b + ',.12)';
       });
-    })();
+    });
   </script>
 
   <div th:replace="~{components/notif-toast :: notif-toast}"></div>

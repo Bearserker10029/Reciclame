@@ -14,6 +14,7 @@ public class VisualizadorController {
         model.addAttribute("rolNombre", "Visualizador");
         model.addAttribute("usuarioNombre", user != null ? user.getUsername() : "Visualizador");
         model.addAttribute("notifUrl", "/visualizador/notificaciones");
+        model.addAttribute("noLeidasCount", 0);
     }
 
     @GetMapping({"/visualizador", "/visualizador/inicio"})

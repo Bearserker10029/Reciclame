@@ -70,7 +70,18 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("rolNombre", "Administrador");
         model.addAttribute("notifUrl", "/admin/notificaciones");
-        usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        try {
+            usuarioService.findByCorreo(correo).ifPresent(u -> {
+                model.addAttribute("usuarioNombre", u.getNombreCompleto());
+                try {
+                    model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+                } catch (Exception e) {
+                    model.addAttribute("noLeidasCount", 0);
+                }
+            });
+        } catch (Exception e) {
+            model.addAttribute("noLeidasCount", 0);
+        }
     }
 
     @GetMapping("/admin")
@@ -78,6 +89,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("rolNombre", "Administrador");
         model.addAttribute("usuarioNombre", "Admin General");
+        model.addAttribute("noLeidasCount", 0);
         return "Admin/inicio";
     }
 
@@ -93,11 +105,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
-
-        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-        });
 
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
@@ -289,7 +296,6 @@ public class AdminController extends BaseReportesController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         return "Admin/notificaciones";
