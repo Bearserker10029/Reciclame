@@ -1,10 +1,12 @@
 package org.reciclame.demo.controller;
 
+import org.reciclame.demo.service.DocumentPreviewService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,14 +31,34 @@ public class KkfileviewProxyController {
     private String bucket;
 
     private final MinioStorageService minioStorageService;
+    private final DocumentPreviewService documentPreviewService;
 
-    public KkfileviewProxyController(MinioStorageService minioStorageService) {
+    public KkfileviewProxyController(MinioStorageService minioStorageService,
+                                     DocumentPreviewService documentPreviewService) {
         this.minioStorageService = minioStorageService;
+        this.documentPreviewService = documentPreviewService;
     }
 
     @GetMapping("/api/documentos/kk-proxy")
     public void proxy(@RequestParam("objectName") String objectName,
+                      @RequestParam("fileName") String fileName,
+                      @RequestParam("token") String token,
                       HttpServletResponse response) throws IOException {
+        proxyInternal(objectName, fileName, token, response);
+    }
+
+    @GetMapping("/api/documentos/kk-proxy/{objectName}/{fileName}")
+    public void proxyConNombre(@PathVariable("objectName") String objectName,
+                               @PathVariable("fileName") String fileName,
+                               @RequestParam("token") String token,
+                               HttpServletResponse response) throws IOException {
+        proxyInternal(objectName, fileName, token, response);
+    }
+
+    private void proxyInternal(String objectName,
+                               String fileName,
+                               String token,
+                               HttpServletResponse response) throws IOException {
         // Validate: plain filename only, no path traversal
         if (objectName == null || objectName.isBlank()
                 || objectName.contains("/") || objectName.contains("\\")
@@ -44,11 +66,21 @@ public class KkfileviewProxyController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
+        if (fileName == null || fileName.isBlank()
+                || fileName.contains("/") || fileName.contains("\\")
+                || fileName.contains("..") || fileName.contains("\0")) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        if (!documentPreviewService.isValidKkProxyToken(token, objectName, fileName)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
 
         String archivoUrl = minioStorageService.getMinioUrl() + "/" + bucket + "/" + objectName;
         String presignedUrl;
         try {
-            presignedUrl = minioStorageService.generarUrlFirmada(archivoUrl, 10);
+            presignedUrl = minioStorageService.generarUrlFirmadaInterna(archivoUrl, 10);
         } catch (Exception e) {
             log.error("kk-proxy: error generando URL firmada para '{}': {}", objectName, e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

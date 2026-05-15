@@ -6,7 +6,6 @@ import org.reciclame.demo.service.DocumentosRecientesService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.UsuarioService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -17,10 +16,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 @Controller
 public class EstudioVisorController {
 
@@ -30,12 +25,6 @@ public class EstudioVisorController {
     private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
     private final DocumentosRecientesService documentosRecientesService;
-
-    @Value("${kkfileview.url}")
-    private String kkfileviewUrl;
-
-    @Value("${app.kk-accessible-url}")
-    private String kkAccessibleUrl;
 
     public EstudioVisorController(EstudioService estudioService,
                                    MinioStorageService minioStorageService,
@@ -93,7 +82,7 @@ public class EstudioVisorController {
         }
         estudioService.incrementarVisualizaciones(id);
         model.addAttribute("estudio", estudio);
-        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo());
+        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo(), estudio.getArchivoTipoMime());
         model.addAttribute("urlRetorno", urlRetorno);
         return template;
     }
@@ -108,64 +97,15 @@ public class EstudioVisorController {
         }
         estudioService.incrementarVisualizaciones(id);
         model.addAttribute("estudio", estudio);
-        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo());
+        poblarVisor(model, estudio.getArchivoUrl(), estudio.getTitulo(), estudio.getArchivoTipoMime());
         model.addAttribute("urlRetorno", urlRetorno);
         return template;
     }
 
-    private void poblarVisor(Model model, String archivoUrl, String titulo) {
-        boolean archivoDisponible = minioStorageService.existeArchivo(archivoUrl);
-        model.addAttribute("archivoDisponible", archivoDisponible);
-        model.addAttribute("visorUrl", archivoDisponible ? construirVisorUrl(archivoUrl, titulo) : "");
-    }
-
-    private String construirVisorUrl(String archivoUrl, String titulo) {
-        if (archivoUrl == null || archivoUrl.isBlank()) return "";
-
-        // Extraer objectName de la URL almacenada en BD (independiente del hostname de MinIO)
-        String objectName;
-        try {
-            objectName = minioStorageService.getObjectNameFromUrl(archivoUrl);
-        } catch (Exception e) {
-            log.warn("No se pudo extraer objectName de URL '{}': {}", archivoUrl, e.getMessage());
-            return "";
-        }
-
-        // La URL que kkfileview (en Docker) usará para descargar el archivo via el proxy de Spring Boot.
-        // Spring Boot hace el fetch a MinIO internamente con localhost:9000, evitando dependencias de red
-        // entre kkfileview y MinIO.
-        String proxyUrl = kkAccessibleUrl + "/api/documentos/kk-proxy?objectName="
-                + URLEncoder.encode(objectName, StandardCharsets.UTF_8);
-
-        String base64Url = URLEncoder.encode(
-                Base64.getEncoder().encodeToString(proxyUrl.getBytes(StandardCharsets.UTF_8)),
-                StandardCharsets.UTF_8);
-        String fullfilename = URLEncoder.encode(
-                sanitizarNombreArchivo(titulo) + extraerExtension(archivoUrl),
-                StandardCharsets.UTF_8);
-        return kkfileviewUrl + "/onlinePreview?url=" + base64Url + "&fullfilename=" + fullfilename;
-    }
-
-    // Reemplaza espacios con guion bajo y elimina caracteres inválidos en nombres de archivo
-    private String sanitizarNombreArchivo(String titulo) {
-        if (titulo == null || titulo.isBlank()) return "documento";
-        return titulo.trim()
-                .replaceAll("[/\\\\:*?\"<>|]", "")
-                .replaceAll("\\s+", "_")
-                .replaceAll("_{2,}", "_");
-    }
-
-    // Extrae la extensión del objectName almacenado en MinIO (ej: ".pdf", ".pptx")
-    private String extraerExtension(String url) {
-        try {
-            String path = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
-            int dot = path.lastIndexOf('.');
-            int slash = path.lastIndexOf('/');
-            if (dot > slash && dot > 0) {
-                return path.substring(dot).toLowerCase();
-            }
-        } catch (Exception ignored) {}
-        return "";
+    private void poblarVisor(Model model, String archivoUrl, String titulo, String archivoTipoMime) {
+        model.addAttribute("archivoDisponible", minioStorageService.existeArchivo(archivoUrl));
+        // visorUrl ya no se precomputa: los templates usan /api/documentos/visor
+        // para generar un token fresco en cada carga del iframe.
     }
 
     private void setupAdmin(Model model, String correo) {
