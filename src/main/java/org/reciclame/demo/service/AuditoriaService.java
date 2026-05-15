@@ -151,6 +151,48 @@ public class AuditoriaService {
         return auditoriaRepository.findByFechaRango(desde, hasta);
     }
 
+    public List<Map<String, Object>> obtenerActividadDiaria(Instant desde, Instant hasta) {
+        List<Auditoria> auditorias = listarAuditoriasPorFechaRango(desde, hasta);
+        return auditorias.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getFechaAccion().toString().substring(0, 10),
+                        Collectors.counting()))
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("fecha", e.getKey());
+                    item.put("count", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> obtenerTopUsuariosActivos(int limit) {
+        List<Auditoria> auditorias = listarAuditorias();
+        Map<Long, String> nombrePorId = new HashMap<>();
+        Map<Long, Long> conteoPorId = new HashMap<>();
+
+        for (Auditoria a : auditorias) {
+            if (a.getUsuarioId() != null && a.getUsuarioNombre() != null) {
+                nombrePorId.put(a.getUsuarioId(), a.getUsuarioNombre());
+                conteoPorId.put(a.getUsuarioId(), conteoPorId.getOrDefault(a.getUsuarioId(), 0L) + 1);
+            }
+        }
+
+        return conteoPorId.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(limit)
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("usuarioId", e.getKey());
+                    item.put("usuarioNombre", nombrePorId.get(e.getKey()));
+                    item.put("interacciones", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
     public Auditoria obtenerAuditoriaPorId(Long id) {
         return auditoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Auditoría no encontrada con id: " + id));

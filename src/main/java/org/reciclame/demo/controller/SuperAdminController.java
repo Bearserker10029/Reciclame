@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.LinkedHashMap;
+import java.time.Instant;
+import java.time.Duration;
 
 @Controller
 public class SuperAdminController extends AdminController {
@@ -127,6 +129,7 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("rol", "SUPERADMIN");
         model.addAttribute("rolNombre", "SuperAdmin");
         model.addAttribute("usuarioNombre", "Super Admin");
+        model.addAttribute("noLeidasCount", 0);
         return "SuperAdmin/inicio";
     }
 
@@ -135,9 +138,19 @@ public class SuperAdminController extends AdminController {
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        model.addAttribute("tematicas", tematicaService.listarTematicasTodas());
+        var tematicas = tematicaService.listarTematicasTodas();
+        model.addAttribute("tematicas", tematicas);
         var conteoPorTematica = normativaService.contarPorTematica();
         model.addAttribute("conteoPorTematica", conteoPorTematica);
+        List<Map<String, Object>> donutData = tematicas.stream().map(t -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("codigo", t.getCodigo());
+            item.put("nombre", t.getNombre());
+            item.put("colorHex", t.getColorHex());
+            item.put("count", conteoPorTematica.getOrDefault(t.getCodigo(), 0L));
+            return item;
+        }).collect(java.util.stream.Collectors.toList());
+        model.addAttribute("donutData", donutData);
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
@@ -199,17 +212,62 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         var estudios = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
-        model.addAttribute("estudios", estudios);
-        model.addAttribute("normativas", normativas);
-        model.addAttribute("tematicas", tematicaService.listarTematicas());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        var tematicas = tematicaService.listarTematicas();
+        var usuariosActivos = usuarioService.listarUsuariosActivos();
+
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
                 + normativas.stream()
                         .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+
+        List<Map<String, Object>> topDocumentos = new ArrayList<>();
+        List<Map<String, Object>> allDocs = new ArrayList<>();
+        for (var e : estudios) {
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("nombre", e.getTitulo());
+            doc.put("descargas", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
+            doc.put("tipo", "Estudio");
+            allDocs.add(doc);
+        }
+        for (var n : normativas) {
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("nombre", n.getTitulo());
+            doc.put("descargas", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
+            doc.put("tipo", "Normativa");
+            allDocs.add(doc);
+        }
+        allDocs.sort((a, b) -> Integer.compare((int) b.get("descargas"), (int) a.get("descargas")));
+        int topLimit = Math.min(5, allDocs.size());
+        topDocumentos = new ArrayList<>(allDocs.subList(0, topLimit));
+
+        Instant hace30Dias = Instant.now().minus(Duration.ofDays(30));
+        List<Map<String, Object>> actividadDiaria = auditoriaService.obtenerActividadDiaria(hace30Dias, Instant.now());
+
+        List<Map<String, Object>> topUsuarios = auditoriaService.obtenerTopUsuariosActivos(5);
+        for (Map<String, Object> u : topUsuarios) {
+            Long uId = (Long) u.get("usuarioId");
+            try {
+                var uDto = usuarioService.obtenerUsuarioPorId(uId);
+                u.put("empresaNombre", uDto.getEmpresaNombre() != null ? uDto.getEmpresaNombre() : "Sin empresa");
+            } catch (Exception ex) {
+                u.put("empresaNombre", "Sin empresa");
+            }
+        }
+
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("tematicas", tematicas);
+        model.addAttribute("usuariosActivos", usuariosActivos);
         model.addAttribute("totalDescargas", totalDescargas);
-        model.addAttribute("estudiosCount", estudios.size());
-        model.addAttribute("normativasCount", normativas.size());
+        model.addAttribute("topDocumentos", topDocumentos);
+        model.addAttribute("actividadDiaria", actividadDiaria);
+        model.addAttribute("topUsuarios", topUsuarios);
+
+        int maxEstudios = estudios.isEmpty() ? 1 : estudios.size();
+        int maxNormativas = normativas.isEmpty() ? 1 : normativas.size();
+        model.addAttribute("maxEstudios", maxEstudios);
+        model.addAttribute("maxNormativas", maxNormativas);
+
         return "SuperAdmin/reportes";
     }
 
@@ -229,7 +287,6 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         return "SuperAdmin/notificaciones";

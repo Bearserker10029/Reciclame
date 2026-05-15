@@ -70,25 +70,36 @@
 
     /* ── Page header ── */
     .form-hero {
-      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 55%, #0e3322 100%);
       border-radius: 20px;
-      padding: 24px 32px;
-      margin-bottom: 28px;
-      box-shadow: 0 8px 32px rgba(27, 58, 92, .3);
-      animation: fadeUp .4s ease both;
+      padding: 26px 32px;
+      margin-bottom: 24px;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 10px 48px rgba(27, 58, 92, .4);
+      animation: fadeUp .4s ease both;
     }
 
     .form-hero::before {
       content: '';
       position: absolute;
-      top: -50px;
+      top: -80px;
       right: -40px;
-      width: 220px;
-      height: 220px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(46, 204, 113, .18) 0%, transparent 70%);
+    }
+
+    .form-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 15%;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
     }
 
     /* ── Back button ── */
@@ -518,25 +529,25 @@
 
         <!-- ══ HERO ══ -->
         <div class="form-hero">
-          <div
-            style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-            <div style="display:flex;align-items:center;gap:14px;">
-              <div
-                style="width:46px;height:46px;border-radius:13px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
-                <i th:class="${isEdit} ? 'fas fa-edit' : 'fas fa-plus-circle'"
-                  style="color:#2ECC71;font-size:19px;"></i>
-              </div>
-              <div>
-                <h1 style="font-size:20px;font-weight:800;color:#fff;margin:0;"
-                  th:text="${isEdit} ? 'Editar Estudio' : 'Nuevo Estudio'">Nuevo Estudio</h1>
-                <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
-                  th:text="${isEdit} ? ('Modificando: ' + estudio.titulo) : 'Completa los datos del nuevo documento'">
-                  Completa los datos del nuevo documento</p>
-              </div>
-            </div>
-            <a href="/superadmin/estudios" class="btn-back">
-              <i class="fas fa-arrow-left"></i> Volver a Estudios
+          <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
+            <a href="/superadmin/estudios" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
+                  display:flex;align-items:center;justify-content:center;text-decoration:none;
+                  color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.25)'"
+              onmouseout="this.style.background='rgba(255,255,255,.15)'">
+              <i class="fas fa-arrow-left" style="font-size:15px;"></i>
             </a>
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);
+                    display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+              <i th:class="${isEdit} ? 'fas fa-edit' : 'fas fa-plus-circle'"
+                style="color:#2ECC71;font-size:18px;"></i>
+            </div>
+            <div>
+              <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;"
+                th:text="${isEdit} ? 'Editar Estudio' : 'Nuevo Estudio'">Nuevo Estudio</h1>
+              <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
+                th:text="${isEdit} ? ('Modificando: ' + estudio.titulo) : 'Completa los datos del nuevo documento'">
+                Completa los datos del nuevo documento</p>
+            </div>
           </div>
         </div>
 

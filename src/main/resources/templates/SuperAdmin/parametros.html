@@ -291,11 +291,11 @@
                 <div class="lbl">Total</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" id="stat-activos" style="color:#34D399;">—</div>
+                <div class="val" id="stat-activos" style="color:#34D399;">0</div>
                 <div class="lbl">Activos</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
-                <div class="val" id="stat-inactivos" style="color:#F87171;">—</div>
+                <div class="val" id="stat-inactivos" style="color:#F87171;">0</div>
                 <div class="lbl">Inactivos</div>
               </div>
             </div>
@@ -508,8 +508,8 @@
       });
       var statActivos = document.getElementById('stat-activos');
       var statInactivos = document.getElementById('stat-inactivos');
-      if (statActivos) statActivos.textContent = activos || '—';
-      if (statInactivos) statInactivos.textContent = inactivos || '—';
+      if (statActivos) statActivos.textContent = activos || '0';
+      if (statInactivos) statInactivos.textContent = inactivos || '0';
     });
   </script>
 </body>

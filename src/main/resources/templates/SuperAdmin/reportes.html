@@ -514,7 +514,8 @@
               </div>
               <div style="height:4px;background:#F0F4F8;border-radius:2px;margin-top:14px;overflow:hidden;">
                 <div
-                  style="height:100%;width:72%;background:linear-gradient(90deg,#2ECC71,#27AE60);border-radius:2px;transition:width 1.2s ease;">
+                  style="height:100%;background:linear-gradient(90deg,#2ECC71,#27AE60);border-radius:2px;transition:width 1.2s ease;"
+                  th:style="'height:100%;width:' + (${estudios != null ? estudios.size() * 100 / maxEstudios : 0}) + '%;background:linear-gradient(90deg,#2ECC71,#27AE60);border-radius:2px;transition:width 1.2s ease;'">
                 </div>
               </div>
             </div>
@@ -580,7 +581,8 @@
               </div>
               <div style="height:4px;background:#F0F4F8;border-radius:2px;margin-top:14px;overflow:hidden;">
                 <div
-                  style="height:100%;width:85%;background:linear-gradient(90deg,#E74C3C,#C0392B);border-radius:2px;transition:width 1.2s ease;">
+                  style="height:100%;background:linear-gradient(90deg,#E74C3C,#C0392B);border-radius:2px;transition:width 1.2s ease;"
+                  th:style="'height:100%;width:' + (${normativas != null ? normativas.size() * 100 / maxNormativas : 0}) + '%;background:linear-gradient(90deg,#E74C3C,#C0392B);border-radius:2px;transition:width 1.2s ease;'">
                 </div>
               </div>
             </div>
@@ -593,7 +595,7 @@
                   style="width:32px;height:32px;border-radius:8px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
                   <i class="fas fa-chart-line" style="color:#2ECC71;font-size:13px;"></i>
                 </div>
-                Ingresos diarios — Marzo 2026
+                Actividad diaria — Últimos 30 días
               </div>
               <div style="position:relative;height:210px;"><canvas id="chart-ingresos"></canvas></div>
             </div>
@@ -619,50 +621,17 @@
                 Top 5 documentos descargados
               </div>
               <div id="top-docs">
-                <div class="rank-item" style="animation-delay:0ms;">
-                  <div class="rank-badge" style="background:#1B3A5C;color:#fff;">1</div>
-                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">Hoja de Ruta EC Perú 2030</span>
+                <div th:each="doc, iterStat : ${topDocumentos}" class="rank-item" th:style="'animation-delay:' + ${iterStat.index * 50} + 'ms;'">
+                  <div class="rank-badge" th:classappend="${iterStat.index == 0} ? 'badge-1st' : (${iterStat.index == 1} ? 'badge-2nd' : (${iterStat.index == 2} ? 'badge-3rd' : (${iterStat.index == 3} ? 'badge-other' : 'badge-other')))" th:text="${iterStat.index + 1}">1</div>
+                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;" th:text="${doc.nombre}">Documento</span>
                   <div class="rank-bar-wrap">
-                    <div class="rank-bar" style="background:linear-gradient(90deg,#2ECC71,#27AE60);" data-w="100%">
-                    </div>
+                    <div class="rank-bar" th:classappend="${iterStat.index == 0} ? 'bar-1st' : (${iterStat.index == 1} ? 'bar-2nd' : (${iterStat.index == 2} ? 'bar-3rd' : (${iterStat.index == 3} ? 'bar-4th' : 'bar-5th')))" th:attr="data-w=${topDocumentos[0].descargas > 0 ? (doc.descargas * 100 / topDocumentos[0].descargas) + '%' : '0%'}"></div>
                   </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">48</span>
+                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;" th:text="${doc.descargas}">0</span>
                 </div>
-                <div class="rank-item" style="animation-delay:50ms;">
-                  <div class="rank-badge" style="background:#374151;color:#fff;">2</div>
-                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">D.L. 1278 — Gestión de
-                    Residuos</span>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar" style="background:linear-gradient(90deg,#3498DB,#2980B9);" data-w="71%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">34</span>
-                </div>
-                <div class="rank-item" style="animation-delay:100ms;">
-                  <div class="rank-badge" style="background:#6B7280;color:#fff;">3</div>
-                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">Ley 30884 — Plástico de un solo
-                    uso</span>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar" style="background:linear-gradient(90deg,#F39C12,#D68910);" data-w="60%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">29</span>
-                </div>
-                <div class="rank-item" style="animation-delay:150ms;">
-                  <div class="rank-badge" style="background:#9CA3AF;color:#fff;">4</div>
-                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">D.S. 014-2021 — Envases y
-                    Embalajes</span>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar" style="background:linear-gradient(90deg,#E74C3C,#C0392B);" data-w="46%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">22</span>
-                </div>
-                <div class="rank-item" style="animation-delay:200ms;border-bottom:none;">
-                  <div class="rank-badge" style="background:#D1D5DB;color:#6B7280;">5</div>
-                  <span style="flex:1;font-size:13px;color:#374151;font-weight:500;">Análisis de Flujo de Materiales
-                    2025</span>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar" style="background:linear-gradient(90deg,#8B5CF6,#7C3AED);" data-w="38%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">18</span>
+                <div th:if="${#lists.isEmpty(topDocumentos)}" class="empty-state" style="padding:32px 16px;">
+                  <i class="fas fa-file-alt" style="font-size:28px;color:#D1D5DB;display:block;margin-bottom:8px;"></i>
+                  <p style="color:#9CA3AF;font-size:13px;">Sin datos de descargas aún.</p>
                 </div>
               </div>
             </div>
@@ -676,60 +645,20 @@
                 Top 5 usuarios más activos
               </div>
               <div id="top-users">
-                <div class="rank-item" style="animation-delay:0ms;">
-                  <div class="rank-badge badge-1st">1</div>
+                <div th:each="u, iterStat : ${topUsuarios}" class="rank-item" th:style="'animation-delay:' + ${iterStat.index * 50} + 'ms;'">
+                  <div class="rank-badge" th:classappend="${iterStat.index == 0} ? 'badge-1st' : (${iterStat.index == 1} ? 'badge-2nd' : (${iterStat.index == 2} ? 'badge-3rd' : 'badge-other'))" th:text="${iterStat.index + 1}">1</div>
                   <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Juan Pérez — Tetra Pak</div>
-                    <div style="font-size:11px;color:#9CA3AF;">127 interacciones</div>
+                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;" th:text="${u.usuarioNombre} + ' — ' + ${u.empresaNombre}">Usuario — Empresa</div>
+                    <div style="font-size:11px;color:#9CA3AF;" th:text="${u.interacciones} + ' interacciones'">0 interacciones</div>
                   </div>
                   <div class="rank-bar-wrap">
-                    <div class="rank-bar bar-1st" data-w="100%"></div>
+                    <div class="rank-bar" th:classappend="${iterStat.index == 0} ? 'bar-1st' : (${iterStat.index == 1} ? 'bar-2nd' : (${iterStat.index == 2} ? 'bar-3rd' : (${iterStat.index == 3} ? 'bar-4th' : 'bar-5th')))" th:attr="data-w=${topUsuarios[0].interacciones > 0 ? (u.interacciones * 100 / topUsuarios[0].interacciones) + '%' : '0%'}"></div>
                   </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">127</span>
+                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;" th:text="${u.interacciones}">0</span>
                 </div>
-                <div class="rank-item" style="animation-delay:50ms;">
-                  <div class="rank-badge badge-2nd">2</div>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">María López — Kimberly-Clark</div>
-                    <div style="font-size:11px;color:#9CA3AF;">98 interacciones</div>
-                  </div>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar bar-2nd" data-w="77%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">98</span>
-                </div>
-                <div class="rank-item" style="animation-delay:100ms;">
-                  <div class="rank-badge badge-3rd">3</div>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Carlos Ríos — Arca Continental</div>
-                    <div style="font-size:11px;color:#9CA3AF;">84 interacciones</div>
-                  </div>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar bar-3rd" data-w="66%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">84</span>
-                </div>
-                <div class="rank-item" style="animation-delay:150ms;">
-                  <div class="rank-badge badge-other">4</div>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Ana Sánchez — Grupo Gloria</div>
-                    <div style="font-size:11px;color:#9CA3AF;">71 interacciones</div>
-                  </div>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar bar-4th" data-w="56%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">71</span>
-                </div>
-                <div class="rank-item" style="animation-delay:200ms;border-bottom:none;">
-                  <div class="rank-badge badge-other">5</div>
-                  <div style="flex:1;">
-                    <div style="font-size:13px;font-weight:600;color:#1B3A5C;">Luis Rodríguez — Cartavio</div>
-                    <div style="font-size:11px;color:#9CA3AF;">63 interacciones</div>
-                  </div>
-                  <div class="rank-bar-wrap">
-                    <div class="rank-bar bar-5th" data-w="50%"></div>
-                  </div>
-                  <span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">63</span>
+                <div th:if="${#lists.isEmpty(topUsuarios)}" class="empty-state" style="padding:32px 16px;">
+                  <i class="fas fa-users" style="font-size:28px;color:#D1D5DB;display:block;margin-bottom:8px;"></i>
+                  <p style="color:#9CA3AF;font-size:13px;">Sin datos de actividad aún.</p>
                 </div>
               </div>
             </div>
@@ -748,7 +677,7 @@
           </div>
         </div>
 
-        <script>
+        <script th:inline="javascript">
           function switchReportTab(tab) {
             document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('rtab-content-actividad').style.display = 'none';
@@ -766,6 +695,7 @@
           function initCharts() {
             var normasData = /*[[${normativas}]]*/[];
             var tematicasData = /*[[${tematicas}]]*/[];
+            var actividadData = /*[[${actividadDiaria}]]*/[];
             var colorMap = {};
             if (tematicasData) {
               tematicasData.forEach(function (t) {
@@ -783,15 +713,24 @@
             var tData = tLabels.map(function (k) { return temaCounts[k]; });
             var tColors = tLabels.map(function (k) { return colorMap[k] || '#95A5A6'; });
 
+            var aLabels = [];
+            var aData = [];
+            if (actividadData && actividadData.length > 0) {
+              actividadData.forEach(function (d) {
+                aLabels.push(d.fecha);
+                aData.push(d.count);
+              });
+            }
+
             const ci = document.getElementById('chart-ingresos');
             if (ci && !ci.chart) {
               ci.chart = new Chart(ci, {
                 type: 'line',
                 data: {
-                  labels: ['1', '5', '10', '15', '20', '25', '30'],
+                  labels: aLabels.length > 0 ? aLabels : ['Sin datos'],
                   datasets: [{
-                    label: 'Descargas',
-                    data: [12, 19, 15, 28, 22, 31, 26, 38, 35, 42, 38, 45],
+                    label: 'Actividad',
+                    data: aData.length > 0 ? aData : [0],
                     borderColor: '#2ECC71',
                     backgroundColor: function (ctx) {
                       var grad = ctx.chart.ctx.createLinearGradient(0, 0, 0, 200);
