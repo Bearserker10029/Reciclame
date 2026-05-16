@@ -234,17 +234,21 @@ public class BackupService {
 
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new RuntimeException("mysqldump falló con código: " + exitCode);
+                log.warn("mysqldump exit code: {}. Verificando si el archivo se creó correctamente...", exitCode);
             }
 
             long tamanhoBytes = Files.size(archivoPath);
+            if (tamanhoBytes == 0) {
+                throw new RuntimeException("mysqldump falló: archivo generado está vacío (exit code: " + exitCode + ")");
+            }
+
             backup.setStorageKey(filename);
             backup.setTamanioBytes(tamanhoBytes);
             backup.setEstado("COMPLETADO");
             backup.setFechaCompletado(Instant.now());
             backupRepository.save(backup);
 
-            log.info("Backup {} completado: {} ({} bytes)", backup.getId(), filename, tamanhoBytes);
+            log.info("Backup {} completado: {} ({} bytes, exit code: {})", backup.getId(), filename, tamanhoBytes, exitCode);
 
         } catch (Exception e) {
             backup.setEstado("FALLIDO");

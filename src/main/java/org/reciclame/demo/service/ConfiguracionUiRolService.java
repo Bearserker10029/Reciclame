@@ -20,10 +20,13 @@ public class ConfiguracionUiRolService {
             List.of("documento", "tematica", "objetivo", "anio", "formato", "acciones");
 
     public static final List<String> DEFAULT_MODULOS_SOCIO =
-            List.of("inicio", "estudios", "normativo", "mi-unidad", "reportes", "perfil", "notificaciones");
+            List.of("estudios", "normativo", "mi-unidad", "reportes", "perfil", "notificaciones");
 
     public static final List<String> DEFAULT_MODULOS_VISUALIZADOR =
             List.of("estudios", "normativo", "perfil", "notificaciones");
+
+    public static final List<String> DEFAULT_MODULOS_ADMIN =
+            List.of("estudios", "normativo", "usuarios", "admin-docs", "trazabilidad", "reportes", "diccionarios", "perfil", "notificaciones");
 
     private static final String CLAVE_COLS_NORMATIVAS = "columnas_normativas";
     private static final String CLAVE_COLS_ESTUDIOS   = "columnas_estudios";
@@ -46,8 +49,14 @@ public class ConfiguracionUiRolService {
     }
 
     public List<String> getModulosSidebar(String rol) {
-        List<String> defaultMods = "VISUALIZADOR".equals(rol)
-                ? DEFAULT_MODULOS_VISUALIZADOR : DEFAULT_MODULOS_SOCIO;
+        List<String> defaultMods;
+        if ("VISUALIZADOR".equals(rol)) {
+            defaultMods = DEFAULT_MODULOS_VISUALIZADOR;
+        } else if ("ADMINISTRADOR".equals(rol)) {
+            defaultMods = DEFAULT_MODULOS_ADMIN;
+        } else {
+            defaultMods = DEFAULT_MODULOS_SOCIO;
+        }
         return get(rol, CLAVE_MODULOS, defaultMods);
     }
 

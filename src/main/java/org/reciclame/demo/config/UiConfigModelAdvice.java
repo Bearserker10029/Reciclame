@@ -48,6 +48,7 @@ public class UiConfigModelAdvice {
             switch (ga.getAuthority()) {
                 case "ROLE_SOCIO":        return "SOCIO";
                 case "ROLE_VISUALIZADOR": return "VISUALIZADOR";
+                case "ROLE_ADMINISTRADOR":return "ADMINISTRADOR";
                 case "ROLE_IMPERSONATOR": return "SOCIO";
             }
         }

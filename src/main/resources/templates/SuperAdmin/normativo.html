@@ -536,6 +536,178 @@
       font-size: 14px;
     }
 
+    /* ── Toggle switch para vista lista/grid (estilo Google Drive) ── */
+    .vista-toggle-group {
+      display: inline-flex;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .vista-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn + .vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
+    }
+
+    /* ── Grid container ── */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .grid-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      transition: all .2s ease;
+      animation: fadeUp .4s ease both;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .grid-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+      transform: translateY(-2px);
+    }
+
+    .grid-card-icon-area {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .grid-card-icon-area i {
+      font-size: 28px;
+    }
+
+    .grid-card-info {
+      padding: 14px;
+    }
+
+    .grid-card-info .card-title {
+      font-weight: 700;
+      color: #1B3A5C;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .grid-card-info .card-anio {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-bottom: 6px;
+    }
+
+    .grid-card-info .card-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .grid-card-info .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #F3F4F6;
+      padding-top: 10px;
+    }
+
+    .grid-card-info .card-badges {
+      display: flex;
+      gap: 4px;
+    }
+
+    .grid-card-info .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .badge-vinc { background: rgba(231,76,60,.12); color: #C0392B; }
+    .badge-novinc { background: rgba(52,152,219,.12); color: #2471A3; }
+    .badge-vigente { background: rgba(46,204,113,.12); color: #27AE60; }
+    .badge-proyecto { background: rgba(243,156,18,.12); color: #C27C0E; }
+    .badge-derogada { background: rgba(156,163,175,.14); color: #6B7280; }
+
+    .grid-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
+    }
+
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
+
+    .grid-card-actions button,
+    .grid-card-actions a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 2px 6px rgba(0,0,0,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .grid-card-actions .btn-view { color: #2ECC71; }
+    .grid-card-actions .btn-edit { color: #F39C12; }
+    .grid-card-actions .btn-delete { color: #E74C3C; }
+
+    .grid-card-actions button:hover,
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
     .readonly-badge {
       display: inline-flex;
       align-items: center;
@@ -666,6 +838,17 @@
             <option value="EE">EE</option>
             <option value="REP">REP</option>
           </select>
+          <select id="norm-anio" onchange="applyNormFilter()">
+            <option value="">Todos los años</option>
+          </select>
+          <div class="vista-toggle-group">
+            <button class="vista-toggle-btn active" id="btn-vista-lista" onclick="setNormVista('lista')" title="Lista">
+              <i class="fas fa-list"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
           <button onclick="clearNormFilters()"
             style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
             onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
@@ -907,6 +1090,8 @@
           </div>
         </div><!-- /norm-layout -->
 
+        <div id="normativas-grid" class="grid-container" style="display:none;"></div>
+
         <script>
           // ════════════════════════════════════════════════════════
           //  INICIALIZACIÓN: computa contadores desde las filas DOM
@@ -987,6 +1172,21 @@
             }
           })();
 
+          // ── Populate year filter ──
+          (function populateAnios() {
+            var rows = document.querySelectorAll('.norm-row');
+            var years = new Set();
+            rows.forEach(function(r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            var sel = document.getElementById('norm-anio');
+            if (!sel) return;
+            var sorted = Array.from(years).sort(function(a,b){ return b - a; });
+            sorted.forEach(function(y) {
+              var opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            });
+          })();
+
           // ════════════════════════════════════════════════════════
           //  TAB SWITCHING
           //  No oculta/muestra panes: hay UNA sola tabla.
@@ -1015,6 +1215,7 @@
             var clasif = (document.getElementById('norm-clasificacion')?.value || '');
             var estado = (document.getElementById('norm-estado')?.value || '');
             var tema = (document.getElementById('norm-tema')?.value || '');
+            var anio = (document.getElementById('norm-anio')?.value || '');
 
             var visibles = 0;
             document.querySelectorAll('.norm-row').forEach(function (row) {
@@ -1031,8 +1232,10 @@
               var matchClasif = !clasif || rClasif === clasif;
               var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
               var matchTema = !tema || rTema === tema;
+              var rAnio = row.dataset.anio || '';
+              var matchAnio = !anio || rAnio === anio;
 
-              var match = matchTab && matchQ && matchClasif && matchEstado && matchTema;
+              var match = matchTab && matchQ && matchClasif && matchEstado && matchTema && matchAnio;
               row.dataset.filtrado = match ? '1' : '0';
               if (match) visibles++;
             });
@@ -1042,10 +1245,11 @@
 
             inicializarPaginacion();
             mostrarPagina(1);
+            if (normVistaActual === 'grid') renderNormGrid();
           }
 
           function clearNormFilters() {
-            ['norm-search', 'norm-clasificacion', 'norm-estado', 'norm-tema'].forEach(function (id) {
+            ['norm-search', 'norm-clasificacion', 'norm-estado', 'norm-tema', 'norm-anio'].forEach(function (id) {
               var el = document.getElementById(id);
               if (el) el.value = '';
             });
@@ -1117,6 +1321,96 @@
           });
 
           // ════════════════════════════════════════════════════════
+          //  VISTA LISTA / GRID
+          // ════════════════════════════════════════════════════════
+          var normVistaActual = 'lista';
+
+          function setNormVista(vista) {
+            var layout = document.querySelector('.norm-layout');
+            var gridDiv = document.getElementById('normativas-grid');
+            var btnLista = document.getElementById('btn-vista-lista');
+            var btnGrid = document.getElementById('btn-vista-grid');
+
+            normVistaActual = vista;
+
+            if (vista === 'grid') {
+              layout.style.display = 'none';
+              gridDiv.style.display = '';
+              btnLista.classList.remove('active');
+              btnGrid.classList.add('active');
+              renderNormGrid();
+            } else {
+              layout.style.display = '';
+              gridDiv.style.display = 'none';
+              btnLista.classList.add('active');
+              btnGrid.classList.remove('active');
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
+          }
+
+          function renderNormGrid() {
+            var gridDiv = document.getElementById('normativas-grid');
+            var filas = Array.from(document.querySelectorAll('.norm-row')).filter(function(tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+
+            if (filas.length === 0) {
+              gridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 24px;"><i class="fas fa-balance-scale" style="font-size:44px;color:#D1D5DB;display:block;margin-bottom:12px;"></i><p style="color:#9CA3AF;font-size:14px;">No se encontraron normativas con los filtros actuales.</p></div>';
+              return;
+            }
+
+            var ambitoIcon = {
+              'NACIONAL': { cls: 'fas fa-flag', color: '#2ECC71', bg: 'rgba(46,204,113,.08)' },
+              'INTERNACIONAL': { cls: 'fas fa-globe', color: '#3498DB', bg: 'rgba(52,152,219,.08)' }
+            };
+
+            var estadoBadge = {
+              'Vigente': '<span class="badge badge-vigente">Vigente</span>',
+              'Proyecto publicado': '<span class="badge badge-proyecto">Proyecto</span>',
+              'Consulta pública': '<span class="badge badge-proyecto">Consulta</span>',
+              'Derogada': '<span class="badge badge-derogada">Derogada</span>'
+            };
+
+            gridDiv.innerHTML = filas.map(function(row, idx) {
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var ambito = (row.dataset.ambito || '').toUpperCase();
+              var estado = row.dataset.estado || '';
+              var id = row.dataset.id || '';
+              var url = row.dataset.url || '';
+
+              var ai = ambitoIcon[ambito] || ambitoIcon['NACIONAL'];
+              var eb = estadoBadge[estado] || '<span class="badge badge-derogada">' + escapeHtml(estado) + '</span>';
+
+              return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
+                '<div class="grid-card-actions">' +
+                  (url ? '<a href="' + escapeHtml(url) + '" class="btn-view" title="Ver" target="_blank" onclick="event.stopPropagation();"><i class="fas fa-eye"></i></a>' : '') +
+                  '<a href="/superadmin/normativo/editar/' + id + '" class="btn-edit" title="Editar" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-edit"></i></a>' +
+                  '<button class="btn-delete" title="Eliminar" onclick="event.stopPropagation();eliminarNormativa(\'' + id + '\')"><i class="fas fa-trash"></i></button>' +
+                '</div>' +
+                '<div class="grid-card-icon-area" style="background:' + ai.bg + '">' +
+                  '<i class="' + ai.cls + '" style="color:' + ai.color + ';"></i>' +
+                '</div>' +
+                '<div class="grid-card-info">' +
+                  '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                  '<div class="card-anio">' + escapeHtml(anio) + '</div>' +
+                  '<div class="card-footer">' +
+                    '<div class="card-badges">' + eb + '</div>' +
+                    (url ? '<button onclick="openNormVisor(\'' + id + '\',\'' + escapeHtml(titulo).replace(/'/g, "\\'") + '\',\'' + escapeHtml(anio) + '\',\'' + escapeHtml(url).replace(/'/g, "\\'") + '\')" style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i class="fas fa-eye"></i> Ver</button>' : '') +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+          }
+
+          function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+          }
+
+          // ════════════════════════════════════════════════════════
           //  ELIMINAR normativa (borrado lógico)
           // ════════════════════════════════════════════════════════
           async function eliminarNormativa(id) {
@@ -1128,13 +1422,13 @@
                 alert('Error: ' + (data.error || 'No se pudo eliminar'));
                 return;
               }
-              var row = document.querySelector('.norm-row[data-id="' + id + '"]');
-              if (row) {
-                row.style.transition = 'opacity .4s,transform .4s';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                setTimeout(function () { row.remove(); }, 420);
-              }
+               var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+               if (row) {
+                 row.style.transition = 'opacity .4s,transform .4s';
+                 row.style.opacity = '0';
+                 row.style.transform = 'translateX(20px)';
+                 setTimeout(function () { row.remove(); applyNormFilter(); }, 420);
+               }
             } catch (e) {
               alert('Error de red: ' + e.message);
             }
