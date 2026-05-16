@@ -120,6 +120,25 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("totalPages", auditorias.getTotalPages());
         model.addAttribute("totalElements", auditorias.getTotalElements());
 
+        // ── Distribución real por temática para el donut chart ──
+        Map<String, Long> byTematica = normativaService.contarPorTematica();
+        long normEC   = byTematica.getOrDefault("EC",  0L);
+        long normGR   = byTematica.getOrDefault("GR",  0L);
+        long normEE   = byTematica.getOrDefault("EE",  0L);
+        long normREP  = byTematica.getOrDefault("REP", 0L);
+        long totalNorm = byTematica.values().stream().mapToLong(Long::longValue).sum();
+        long normOtro  = Math.max(0L, totalNorm - normEC - normGR - normEE - normREP);
+        model.addAttribute("normEC",   normEC);
+        model.addAttribute("normGR",   normGR);
+        model.addAttribute("normEE",   normEE);
+        model.addAttribute("normREP",  normREP);
+        model.addAttribute("normOtro", normOtro);
+        model.addAttribute("totalNormativas", totalNorm);
+        model.addAttribute("pctEC",  totalNorm > 0 ? (int) Math.round(normEC  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctGR",  totalNorm > 0 ? (int) Math.round(normGR  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctEE",  totalNorm > 0 ? (int) Math.round(normEE  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctREP", totalNorm > 0 ? (int) Math.round(normREP * 100.0 / totalNorm) : 0);
+
         return "Admin/inicio";
     }
 
@@ -175,6 +194,10 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("estudios", estudios);
         model.addAttribute("normativas", normativas);
         model.addAttribute("totalDescargas", totalDescargas);
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
+        model.addAttribute("tiposNormativa", tiposNormativaService.listarTipos());
+        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstados());
         return "Admin/admin-docs";
     }
 

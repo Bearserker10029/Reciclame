@@ -91,6 +91,196 @@
       font-size: 11px;
       font-weight: 700;
     }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
+      50%       { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+    }
+
+    @keyframes rotateBadge {
+      0%   { transform: rotate(-3deg) scale(.95) }
+      100% { transform: rotate(0) scale(1) }
+    }
+
+    @keyframes waterWave {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg { position: relative; overflow: hidden; }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * { position: relative; z-index: 1; }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 20%;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-top: 4px; }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+
+    /* ── Modal subir documento ──────────────────────────── */
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.93) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(8,18,32,.6);
+      backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+      z-index: 9999; align-items: center; justify-content: center;
+    }
+    .modal-box {
+      background: #fff; border-radius: 20px; width: 100%; max-width: 580px;
+      box-shadow: 0 40px 100px rgba(0,0,0,.32);
+      position: relative; max-height: 92vh; overflow: hidden;
+      display: flex; flex-direction: column;
+      animation: modalIn .26s cubic-bezier(.34,1.4,.64,1) both;
+    }
+    .modal-header-banner {
+      background: linear-gradient(135deg, #0d2340 0%, #1B3A5C 55%, #1a4a72 100%);
+      padding: 24px 28px 20px; position: relative; overflow: hidden; flex-shrink: 0;
+    }
+    .modal-header-banner::before {
+      content: ''; position: absolute; top: -40px; right: -40px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(46,204,113,.18) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .modal-close-btn {
+      position: absolute; top: 14px; right: 14px;
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.15); background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.65); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; transition: background .15s, color .15s; z-index: 2;
+    }
+    .modal-close-btn:hover { background: rgba(255,255,255,.2); color: #fff; }
+    .modal-body-scroll { padding: 20px 28px 4px; overflow-y: auto; flex: 1; }
+    .modal-footer {
+      display: flex; gap: 10px; justify-content: flex-end;
+      padding: 14px 28px 20px; border-top: 1px solid #F3F4F6; flex-shrink: 0;
+    }
+    .modal-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #9CA3AF; margin: 14px 0 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .modal-section-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, #E5E7EB, transparent);
+    }
+    .field-group2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .field-group2 .full { grid-column: 1 / -1; }
+    .field-wrap2 { display: flex; flex-direction: column; gap: 4px; }
+    .field-wrap2 label { font-size: 11.5px; font-weight: 600; color: #4B5563; }
+    .field-wrap2 label .req { color: #EF4444; }
+    .type-tabs { display: flex; gap: 0; border-bottom: 2px solid #E5E7EB; margin-bottom: 4px; }
+    .type-tab {
+      padding: 8px 20px; border: none; background: none; font-size: 13px;
+      font-weight: 600; color: #6B7280; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      font-family: inherit; transition: color .15s;
+    }
+    .type-tab.active { color: #1B3A5C; border-bottom-color: #2ECC71; }
+    .upload-zone {
+      border: 2px dashed #D1D5DB; border-radius: 10px; padding: 20px;
+      text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
+    }
+    .upload-zone:hover { border-color: #2ECC71; background: rgba(46,204,113,.04); }
+    .upload-zone.has-file { border-color: #2ECC71; background: rgba(46,204,113,.06); }
+    .btn-cancel {
+      padding: 10px 22px; border-radius: 10px; border: 1.5px solid #E5E7EB;
+      background: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; color: #6B7280; transition: border-color .15s, color .15s;
+    }
+    .btn-cancel:hover { border-color: #D1D5DB; color: #374151; }
+    .btn-guardar {
+      padding: 10px 24px; border-radius: 10px; border: none;
+      background: linear-gradient(135deg, #1B3A5C 0%, #1d4e77 100%);
+      color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; display: flex; align-items: center; gap: 7px;
+      box-shadow: 0 4px 14px rgba(27,58,92,.3); transition: transform .15s, box-shadow .15s;
+    }
+    .btn-guardar:hover { box-shadow: 0 8px 22px rgba(27,58,92,.4); transform: translateY(-1px); }
+    .btn-guardar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
   </style>
 </head>
 
@@ -101,25 +291,46 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ Header ══ -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-          <div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-              <div
-                style="width:40px;height:40px;border-radius:10px;background:rgba(27,58,92,.1);display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-folder-open" style="color:#1B3A5C;font-size:17px;"></i>
+        <!-- ══ Hero Banner ══ -->
+        <div class="estudios-hero">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-folder-open" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Panel de Documentos</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Gestiona estudios y normativas del repositorio</p>
+                </div>
               </div>
-              <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin:0;">Panel de Documentos</h1>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-shield-alt" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Panel de administración</span>
+                </div>
+                <button onclick="abrirModalSubir()"
+                  style="display:inline-flex;align-items:center;gap:7px;padding:8px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#2ECC71,#27AE60);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(46,204,113,.35);transition:all .25s;"
+                  onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 20px rgba(46,204,113,.5)'"
+                  onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(46,204,113,.35)'">
+                  <i class="fas fa-cloud-upload-alt"></i> Subir documento
+                </button>
+              </div>
             </div>
-            <p style="color:#6B7280;font-size:13px;margin:0 0 0 50px;">Gestiona estudios y normativas del repositorio
-            </p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" th:text="${#lists.size(estudios)}">0</div>
+                <div class="lbl">Estudios</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" th:text="${normativas != null ? #lists.size(normativas) : 0}">0</div>
+                <div class="lbl">Normativas</div>
+              </div>
+            </div>
           </div>
-          <button
-            style="padding:10px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-cloud-upload-alt"></i> Subir documento
-          </button>
         </div>
 
         <!-- ══ Stats cards ══ -->
@@ -311,7 +522,287 @@
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
+  <!-- ═══ MODAL: SUBIR DOCUMENTO ═══ -->
+  <div id="modal-subir" class="modal-overlay">
+    <div class="modal-box">
+      <!-- Header -->
+      <div class="modal-header-banner">
+        <button onclick="cerrarModalSubir()" class="modal-close-btn"><i class="fas fa-times"></i></button>
+        <div style="display:flex;align-items:center;gap:10px;position:relative;z-index:1;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.32);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-cloud-upload-alt" style="color:#2ECC71;font-size:17px;"></i>
+          </div>
+          <div>
+            <div style="color:#fff;font-size:16px;font-weight:800;letter-spacing:-.02em;">Subir documento</div>
+            <div style="color:rgba(255,255,255,.5);font-size:11px;margin-top:2px;">Selecciona el tipo y completa los datos</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs tipo -->
+      <div style="padding:16px 28px 0;">
+        <div class="type-tabs">
+          <button class="type-tab active" id="tab-estudio" onclick="switchTipoDoc('estudio')">
+            <i class="fas fa-file-alt" style="margin-right:5px;"></i>Estudio
+          </button>
+          <button class="type-tab" id="tab-normativa" onclick="switchTipoDoc('normativa')">
+            <i class="fas fa-balance-scale" style="margin-right:5px;"></i>Normativa
+          </button>
+        </div>
+      </div>
+
+      <!-- Cuerpo scrollable -->
+      <div class="modal-body-scroll">
+        <div id="subir-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:12px;"></div>
+
+        <!-- ── Campos ESTUDIO ── -->
+        <div id="panel-estudio">
+          <div class="modal-section-label"><i class="fas fa-info-circle" style="font-size:9px;"></i> Datos del estudio</div>
+          <div class="field-group2">
+            <div class="field-wrap2 full">
+              <label>Título <span class="req">*</span></label>
+              <input id="e-titulo" type="text" class="form-control" placeholder="Ej: Informe de reciclaje 2024" />
+            </div>
+            <div class="field-wrap2 full">
+              <label>Descripción breve</label>
+              <input id="e-descripcion" type="text" class="form-control" placeholder="Resumen corto..." />
+            </div>
+            <div class="field-wrap2">
+              <label>Año <span class="req">*</span></label>
+              <input id="e-anio" type="number" class="form-control" placeholder="2024" min="2000" max="2099" />
+            </div>
+            <div class="field-wrap2">
+              <label>Temática <span class="req">*</span></label>
+              <select id="e-tematica" class="form-control">
+                <option value="">Seleccionar...</option>
+                <option th:each="t : ${tematicas}" th:value="${t.id}" th:text="${t.nombre}">Temática</option>
+              </select>
+            </div>
+            <div class="field-wrap2">
+              <label>Autor</label>
+              <input id="e-autor" type="text" class="form-control" placeholder="Ej: Equipo Recíclame" />
+            </div>
+            <div class="field-wrap2">
+              <label>Acceso</label>
+              <select id="e-publico" class="form-control">
+                <option value="false">Solo lectura</option>
+                <option value="true">Descargable (público)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-section-label"><i class="fas fa-paperclip" style="font-size:9px;"></i> Archivo</div>
+          <div class="upload-zone" id="zone-estudio" onclick="document.getElementById('e-archivo').click()">
+            <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:#9CA3AF;display:block;margin-bottom:6px;"></i>
+            <div id="e-archivo-label" style="font-size:12px;color:#6B7280;">Haz clic para seleccionar un archivo PDF o PPTX</div>
+          </div>
+          <input type="file" id="e-archivo" accept=".pdf,.pptx,.ppt" style="display:none;" onchange="mostrarArchivo('e-archivo','e-archivo-label','zone-estudio')" />
+        </div>
+
+        <!-- ── Campos NORMATIVA ── -->
+        <div id="panel-normativa" style="display:none;">
+          <div class="modal-section-label"><i class="fas fa-info-circle" style="font-size:9px;"></i> Datos de la normativa</div>
+          <div class="field-group2">
+            <div class="field-wrap2 full">
+              <label>Título <span class="req">*</span></label>
+              <input id="n-titulo" type="text" class="form-control" placeholder="Ej: Ley de gestión de residuos sólidos" />
+            </div>
+            <div class="field-wrap2 full">
+              <label>Descripción breve</label>
+              <input id="n-descripcion" type="text" class="form-control" placeholder="Resumen corto..." />
+            </div>
+            <div class="field-wrap2">
+              <label>Año <span class="req">*</span></label>
+              <input id="n-anio" type="number" class="form-control" placeholder="2024" min="2000" max="2099" />
+            </div>
+            <div class="field-wrap2">
+              <label>Temática <span class="req">*</span></label>
+              <select id="n-tematica" class="form-control">
+                <option value="">Seleccionar...</option>
+                <option th:each="t : ${tematicas}" th:value="${t.id}" th:text="${t.nombre}">Temática</option>
+              </select>
+            </div>
+            <div class="field-wrap2">
+              <label>Tipo de normativa <span class="req">*</span></label>
+              <select id="n-tipo" class="form-control">
+                <option value="">Seleccionar...</option>
+                <option th:each="t : ${tiposNormativa}" th:value="${t.id}" th:text="${t.nombre}">Tipo</option>
+              </select>
+            </div>
+            <div class="field-wrap2">
+              <label>Estado <span class="req">*</span></label>
+              <select id="n-estado" class="form-control">
+                <option value="">Seleccionar...</option>
+                <option th:each="e : ${estadosNormativa}" th:value="${e.id}" th:text="${e.nombre}">Estado</option>
+              </select>
+            </div>
+            <div class="field-wrap2">
+              <label>Ámbito</label>
+              <select id="n-ambito" class="form-control">
+                <option value="NACIONAL">Nacional</option>
+                <option value="INTERNACIONAL">Internacional</option>
+              </select>
+            </div>
+            <div class="field-wrap2">
+              <label>Acceso</label>
+              <select id="n-publica" class="form-control">
+                <option value="false">Restringido</option>
+                <option value="true">Público</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-section-label"><i class="fas fa-paperclip" style="font-size:9px;"></i> Archivo</div>
+          <div class="upload-zone" id="zone-normativa" onclick="document.getElementById('n-archivo').click()">
+            <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:#9CA3AF;display:block;margin-bottom:6px;"></i>
+            <div id="n-archivo-label" style="font-size:12px;color:#6B7280;">Haz clic para seleccionar un archivo PDF</div>
+          </div>
+          <input type="file" id="n-archivo" accept=".pdf" style="display:none;" onchange="mostrarArchivo('n-archivo','n-archivo-label','zone-normativa')" />
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button onclick="cerrarModalSubir()" class="btn-cancel">Cancelar</button>
+        <button id="btn-guardar-doc" onclick="guardarDocumento()" class="btn-guardar">
+          <i class="fas fa-cloud-upload-alt"></i> Subir documento
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    /* ═══ MODAL SUBIR DOCUMENTO ═══ */
+    var _tipoActual = 'estudio';
+
+    function abrirModalSubir() {
+      _tipoActual = 'estudio';
+      switchTipoDoc('estudio');
+      document.getElementById('subir-error').style.display = 'none';
+      // reset estudio
+      ['e-titulo','e-descripcion','e-autor'].forEach(function(id){ document.getElementById(id).value=''; });
+      document.getElementById('e-anio').value = '';
+      document.getElementById('e-tematica').value = '';
+      document.getElementById('e-publico').value = 'false';
+      document.getElementById('e-archivo').value = '';
+      document.getElementById('e-archivo-label').textContent = 'Haz clic para seleccionar un archivo PDF o PPTX';
+      document.getElementById('zone-estudio').classList.remove('has-file');
+      // reset normativa
+      ['n-titulo','n-descripcion'].forEach(function(id){ document.getElementById(id).value=''; });
+      document.getElementById('n-anio').value = '';
+      document.getElementById('n-tematica').value = '';
+      document.getElementById('n-tipo').value = '';
+      document.getElementById('n-estado').value = '';
+      document.getElementById('n-ambito').value = 'NACIONAL';
+      document.getElementById('n-publica').value = 'false';
+      document.getElementById('n-archivo').value = '';
+      document.getElementById('n-archivo-label').textContent = 'Haz clic para seleccionar un archivo PDF';
+      document.getElementById('zone-normativa').classList.remove('has-file');
+
+      var m = document.getElementById('modal-subir');
+      m.style.display = 'flex';
+    }
+
+    function cerrarModalSubir() {
+      document.getElementById('modal-subir').style.display = 'none';
+    }
+
+    function switchTipoDoc(tipo) {
+      _tipoActual = tipo;
+      document.getElementById('panel-estudio').style.display  = tipo === 'estudio'  ? '' : 'none';
+      document.getElementById('panel-normativa').style.display = tipo === 'normativa' ? '' : 'none';
+      document.getElementById('tab-estudio').classList.toggle('active',  tipo === 'estudio');
+      document.getElementById('tab-normativa').classList.toggle('active', tipo === 'normativa');
+    }
+
+    function mostrarArchivo(inputId, labelId, zoneId) {
+      var file = document.getElementById(inputId).files[0];
+      if (!file) return;
+      document.getElementById(labelId).textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+      document.getElementById(zoneId).classList.add('has-file');
+    }
+
+    function guardarDocumento() {
+      var btn = document.getElementById('btn-guardar-doc');
+      var errDiv = document.getElementById('subir-error');
+      errDiv.style.display = 'none';
+
+      var fd = new FormData();
+
+      if (_tipoActual === 'estudio') {
+        var titulo = document.getElementById('e-titulo').value.trim();
+        var anio   = document.getElementById('e-anio').value.trim();
+        var tema   = document.getElementById('e-tematica').value;
+        if (!titulo) { mostrarError('El título es obligatorio.'); return; }
+        if (!anio)   { mostrarError('El año es obligatorio.'); return; }
+        if (!tema)   { mostrarError('Debes seleccionar una temática.'); return; }
+
+        var dto = {
+          titulo: titulo,
+          descripcionBreve: document.getElementById('e-descripcion').value.trim() || null,
+          anio: parseInt(anio),
+          tematicaId: parseInt(tema),
+          autor: document.getElementById('e-autor').value.trim() || null,
+          esPublico: document.getElementById('e-publico').value === 'true'
+        };
+        fd.append('estudio', new Blob([JSON.stringify(dto)], {type:'application/json'}));
+        var archivoInput = document.getElementById('e-archivo');
+        if (archivoInput.files[0]) fd.append('archivo', archivoInput.files[0]);
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+        fetch('/api/estudios', { method: 'POST', body: fd })
+          .then(function(r) { return r.ok ? r.json() : r.json().then(function(e){ throw new Error(e.mensaje || 'Error al subir'); }); })
+          .then(function() { cerrarModalSubir(); window.location.reload(); })
+          .catch(function(e) { mostrarError(e.message); })
+          .finally(function() { btn.disabled=false; btn.innerHTML='<i class="fas fa-cloud-upload-alt"></i> Subir documento'; });
+
+      } else {
+        var titulo = document.getElementById('n-titulo').value.trim();
+        var anio   = document.getElementById('n-anio').value.trim();
+        var tema   = document.getElementById('n-tematica').value;
+        var tipo   = document.getElementById('n-tipo').value;
+        var estado = document.getElementById('n-estado').value;
+        if (!titulo) { mostrarError('El título es obligatorio.'); return; }
+        if (!anio)   { mostrarError('El año es obligatorio.'); return; }
+        if (!tema)   { mostrarError('Debes seleccionar una temática.'); return; }
+        if (!tipo)   { mostrarError('Debes seleccionar el tipo de normativa.'); return; }
+        if (!estado) { mostrarError('Debes seleccionar el estado.'); return; }
+
+        var dto = {
+          titulo: titulo,
+          descripcionBreve: document.getElementById('n-descripcion').value.trim() || null,
+          anio: parseInt(anio),
+          tematicaId: parseInt(tema),
+          tipoNormativaId: parseInt(tipo),
+          estadoNormativaId: parseInt(estado),
+          ambito: document.getElementById('n-ambito').value,
+          esPublica: document.getElementById('n-publica').value === 'true'
+        };
+        fd.append('normativa', new Blob([JSON.stringify(dto)], {type:'application/json'}));
+        var archivoInput = document.getElementById('n-archivo');
+        if (archivoInput.files[0]) fd.append('archivo', archivoInput.files[0]);
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo...';
+        fetch('/api/normativas', { method: 'POST', body: fd })
+          .then(function(r) { return r.ok ? r.json() : r.json().then(function(e){ throw new Error(e.mensaje || 'Error al subir'); }); })
+          .then(function() { cerrarModalSubir(); window.location.reload(); })
+          .catch(function(e) { mostrarError(e.message); })
+          .finally(function() { btn.disabled=false; btn.innerHTML='<i class="fas fa-cloud-upload-alt"></i> Subir documento'; });
+      }
+    }
+
+    function mostrarError(msg) {
+      var d = document.getElementById('subir-error');
+      d.textContent = msg;
+      d.style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('modal-subir').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalSubir();
+      });
+    });
+
     /*
      * navTo: en esta página standalone redirige por URL.
      * El sidebar siempre llama navTo(), así que debe estar definido.

@@ -388,9 +388,11 @@
             </div>
             <div class="donut-row" style="display:flex;align-items:center;gap:32px;">
               <div style="flex-shrink:0;position:relative;">
-                <canvas id="donut-admin" width="150" height="150"></canvas>
+                <canvas id="donut-admin" width="150" height="150"
+                  th:data-ec="${normEC}" th:data-gr="${normGR}" th:data-ee="${normEE}"
+                  th:data-rep="${normREP}" th:data-otro="${normOtro}"></canvas>
                 <div id="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
-                  <div style="font-size:22px;font-weight:800;color:#1B3A5C;">138</div>
+                  <div style="font-size:22px;font-weight:800;color:#1B3A5C;" th:text="${totalNormativas}">0</div>
                   <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">normas</div>
                 </div>
               </div>
@@ -400,28 +402,28 @@
                     <div style="width:12px;height:12px;border-radius:3px;background:#27AE60;flex-shrink:0;"></div>
                     <div>
                       <div style="font-size:12px;font-weight:700;color:#1B3A5C;">EC — Economía Circular</div>
-                      <div style="font-size:11px;color:#6B7280;">52 normativas · 38%</div>
+                      <div style="font-size:11px;color:#6B7280;" th:text="|${normEC} normativas · ${pctEC}%|">0 normativas · 0%</div>
                     </div>
                   </div>
                   <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(52,152,219,.07);border-radius:10px;border:1px solid rgba(52,152,219,.12);">
                     <div style="width:12px;height:12px;border-radius:3px;background:#3498DB;flex-shrink:0;"></div>
                     <div>
                       <div style="font-size:12px;font-weight:700;color:#1B3A5C;">GR — Gestión de Residuos</div>
-                      <div style="font-size:11px;color:#6B7280;">34 normativas · 25%</div>
+                      <div style="font-size:11px;color:#6B7280;" th:text="|${normGR} normativas · ${pctGR}%|">0 normativas · 0%</div>
                     </div>
                   </div>
                   <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(243,156,18,.07);border-radius:10px;border:1px solid rgba(243,156,18,.12);">
                     <div style="width:12px;height:12px;border-radius:3px;background:#F39C12;flex-shrink:0;"></div>
                     <div>
                       <div style="font-size:12px;font-weight:700;color:#1B3A5C;">EE — Envases y Embalajes</div>
-                      <div style="font-size:11px;color:#6B7280;">28 normativas · 20%</div>
+                      <div style="font-size:11px;color:#6B7280;" th:text="|${normEE} normativas · ${pctEE}%|">0 normativas · 0%</div>
                     </div>
                   </div>
                   <div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(231,76,60,.07);border-radius:10px;border:1px solid rgba(231,76,60,.12);">
                     <div style="width:12px;height:12px;border-radius:3px;background:#E74C3C;flex-shrink:0;"></div>
                     <div>
                       <div style="font-size:12px;font-weight:700;color:#1B3A5C;">REP — Responsabilidad Ext.</div>
-                      <div style="font-size:11px;color:#6B7280;">16 normativas · 12%</div>
+                      <div style="font-size:11px;color:#6B7280;" th:text="|${normREP} normativas · ${pctREP}%|">0 normativas · 0%</div>
                     </div>
                   </div>
                 </div>
@@ -612,12 +614,18 @@
     (function () {
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
+      var _ec   = parseInt(ctx.dataset.ec   || '0');
+      var _gr   = parseInt(ctx.dataset.gr   || '0');
+      var _ee   = parseInt(ctx.dataset.ee   || '0');
+      var _rep  = parseInt(ctx.dataset.rep  || '0');
+      var _otro = parseInt(ctx.dataset.otro || '0');
+      var _total = _ec + _gr + _ee + _rep + _otro;
       var chart = new Chart(ctx, {
         type: 'doughnut',
         data: {
           labels: ['EC — Economía Circular', 'GR — Gestión de Residuos', 'EE — Envases y Embalajes', 'REP — Responsabilidad Ext.', 'Otro'],
           datasets: [{
-            data: [52, 34, 28, 16, 8],
+            data: [_ec, _gr, _ee, _rep, _otro],
             backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'],
             hoverBackgroundColor: ['#2ECC71', '#5DADE2', '#F4A83A', '#EC7063', '#AAB7B8'],
             borderWidth: 3,
@@ -639,7 +647,7 @@
               cornerRadius: 8,
               callbacks: {
                 label: function(ctx) {
-                  return '  ' + ctx.parsed + ' normativas (' + Math.round(ctx.parsed / 138 * 100) + '%)';
+                  return '  ' + ctx.parsed + ' normativas (' + (_total > 0 ? Math.round(ctx.parsed / _total * 100) : 0) + '%)';
                 }
               }
             }

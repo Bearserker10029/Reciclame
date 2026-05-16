@@ -97,6 +97,9 @@ public class UsuarioController {
             @RequestParam(required = false) Long empresaId,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+        if (rolId == null) {
+            return ResponseEntity.badRequest().build();
+        }
         String ipAddress = obtenerIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
