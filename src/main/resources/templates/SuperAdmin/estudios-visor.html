@@ -163,10 +163,12 @@
           style="flex:1;border:none;width:100%;min-height:calc(100vh - 130px);" allowfullscreen>
         </iframe>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
+
 </body>
 
 </html>

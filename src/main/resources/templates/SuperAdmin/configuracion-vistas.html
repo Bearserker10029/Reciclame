@@ -347,8 +347,10 @@
         </button>
       </div>
 
-    </main>
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+      </main>
   </div>
+  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </div>
 
 <div id="toast"></div>
@@ -422,5 +424,6 @@
 </script>
 
 <div th:replace="~{components/notif-toast :: notif-toast}"></div>
+
 </body>
 </html>

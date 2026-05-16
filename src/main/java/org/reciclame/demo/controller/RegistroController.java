@@ -43,7 +43,12 @@ public class RegistroController {
             @RequestParam(defaultValue = "") String dni,
             @RequestParam(name = "correo", defaultValue = "") String correo,
             @RequestParam(defaultValue = "") String empresa,
+            @RequestParam(name = "aceptaTerminos", defaultValue = "false") boolean aceptaTerminos,
             Model model) {
+
+        if (!aceptaTerminos) {
+            return error(model, nombre, dni, correo, empresa, "Debes aceptar los Términos y Condiciones para registrarte");
+        }
 
         if (correo.isEmpty()) {
             return error(model, nombre, dni, correo, empresa, "El correo corporativo es requerido");
@@ -71,6 +76,28 @@ public class RegistroController {
     @GetMapping("/registro/pendiente")
     public String pendiente() {
         return "pendiente-registro";
+    }
+
+    // ── Public legal pages (no authentication required) ──────
+
+    @GetMapping("/legal/terminos")
+    public String legalTerminos() {
+        return "legal/terminos";
+    }
+
+    @GetMapping("/legal/cookies")
+    public String legalCookies() {
+        return "legal/cookies";
+    }
+
+    @GetMapping("/legal/privacidad")
+    public String legalPrivacidad() {
+        return "legal/privacidad";
+    }
+
+    @GetMapping("/legal/nosotros")
+    public String legalNosotros() {
+        return "legal/nosotros";
     }
 
     // ── JSON endpoint — keeps AC1 (login.html panel) working ──

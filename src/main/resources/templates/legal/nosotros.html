@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nosotros — Recíclame Perú</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes waterWave {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(46, 204, 113, .12) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, .1) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, .08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-breadcrumb {
+      padding: 12px 32px;
+      background: #1B3A5C;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .65);
+    }
+
+    .nav-breadcrumb a {
+      color: rgba(255, 255, 255, .85);
+      text-decoration: none;
+    }
+
+    .nav-breadcrumb a:hover {
+      color: #2ECC71;
+    }
+
+    .nosotros-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      padding: 80px 32px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nosotros-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+    }
+
+    .nosotros-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 20%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
+    }
+
+    .nosotros-hero .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .nosotros-hero h1 {
+      font-size: 52px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+      animation: fadeUp .6s ease both;
+    }
+
+    .nosotros-hero p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, .7);
+      line-height: 1.7;
+      animation: fadeUp .6s .1s ease both;
+    }
+
+    .section {
+      padding: 64px 32px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 12px;
+    }
+
+    .section-header p {
+      font-size: 15px;
+      color: #6B7280;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .quienes-somos {
+      background: #fff;
+    }
+
+    .quienes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .quienes-text h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 16px;
+    }
+
+    .quienes-text p {
+      font-size: 15px;
+      color: #4B5563;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+
+    .quienes-text .stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(46, 204, 113, .08), rgba(52, 152, 219, .05));
+      border-radius: 12px;
+      border: 1px solid rgba(46, 204, 113, .15);
+    }
+
+    .stat-item .num {
+      font-size: 28px;
+      font-weight: 800;
+      color: #2ECC71;
+    }
+
+    .stat-item .label {
+      font-size: 11px;
+      color: #6B7280;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .quienes-image {
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+    }
+
+    .quienes-image img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .vm-section {
+      background: linear-gradient(135deg, #F0F7F4, #E8F5E9);
+    }
+
+    .vm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .vm-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 32px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      border-top: 4px solid #2ECC71;
+    }
+
+    .vm-card.vision {
+      border-top-color: #3498DB;
+    }
+
+    .vm-card h3 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vm-card h3 i {
+      color: #2ECC71;
+      font-size: 22px;
+    }
+
+    .vm-card.vision h3 i {
+      color: #3498DB;
+    }
+
+    .vm-card p {
+      font-size: 14px;
+      color: #4B5563;
+      line-height: 1.8;
+    }
+
+    .objetivos-section {
+      background: #fff;
+    }
+
+    .obj-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .obj-card {
+      background: linear-gradient(135deg, rgba(46, 204, 113, .06), rgba(52, 152, 219, .04));
+      border: 1px solid rgba(46, 204, 113, .12);
+      border-radius: 16px;
+      padding: 28px 20px;
+      text-align: center;
+      transition: all .3s;
+    }
+
+    .obj-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(46, 204, 113, .15);
+    }
+
+    .obj-card .icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .obj-card .icon-wrap i {
+      color: #fff;
+      font-size: 22px;
+    }
+
+    .obj-card h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin-bottom: 8px;
+    }
+
+    .obj-card p {
+      font-size: 12px;
+      color: #6B7280;
+      line-height: 1.6;
+    }
+
+    .partners-section {
+      background: linear-gradient(135deg, #F8FAFC, #F0F4F8);
+    }
+
+    .partners-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .partner-logo {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+      transition: all .2s;
+      height: 80px;
+    }
+
+    .partner-logo:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
+    }
+
+    .partner-logo img {
+      max-width: 100%;
+      max-height: 50px;
+      object-fit: contain;
+    }
+
+    .team-section {
+      background: #fff;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 28px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .team-card {
+      text-align: center;
+      padding: 32px 24px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(46, 204, 113, .05), rgba(52, 152, 219, .03));
+      border: 1px solid rgba(46, 204, 113, .1);
+      transition: all .3s;
+    }
+
+    .team-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(46, 204, 113, .15);
+    }
+
+    .team-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      overflow: hidden;
+      border: 3px solid #2ECC71;
+    }
+
+    .team-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .team-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin-bottom: 4px;
+    }
+
+    .team-card .role {
+      font-size: 12px;
+      color: #2ECC71;
+      font-weight: 600;
+    }
+
+    .blog-section {
+      background: linear-gradient(135deg, #F0F7F4, #E8F5E9);
+    }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .blog-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .08);
+      transition: all .3s;
+    }
+
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .12);
+    }
+
+    .blog-img {
+      height: 160px;
+      overflow: hidden;
+    }
+
+    .blog-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .blog-content {
+      padding: 20px;
+    }
+
+    .blog-content h5 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .blog-content .date {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-bottom: 12px;
+    }
+
+    .blog-content a {
+      font-size: 12px;
+      font-weight: 600;
+      color: #2ECC71;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .blog-content a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background: linear-gradient(135deg, #0f2540 0%, #1B3A5C 100%);
+      color: rgba(255, 255, 255, .6);
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    footer a {
+      color: rgba(255, 255, 255, .6);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    footer a:hover {
+      color: #2ECC71;
+    }
+
+    footer .copy {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .4);
+    }
+
+    footer .social {
+      display: flex;
+      gap: 12px;
+    }
+
+    footer .social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, .6);
+      transition: all .2s;
+    }
+
+    footer .social a:hover {
+      background: rgba(46, 204, 113, .2);
+      color: #2ECC71;
+    }
+  </style>
+</head>
+
+<body>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/superadmin/' + p; } }</script>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:if="${session.usuarioSesion != null}">
+      <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    </th:block>
+
+    <main class="water-bg" style="flex:1;padding:0;">
+      <!-- HERO -->
+      <div class="nosotros-hero">
+        <div class="hero-content">
+          <h1>Nosotros</h1>
+          <p>Conócenos, nuestra misión, visión y el equipo que impulsa la economía circular en el Perú.</p>
+        </div>
+      </div>
+
+      <!-- QUIENES SOMOS -->
+      <section class="section quienes-somos">
+        <div class="quienes-grid">
+          <div class="quienes-text">
+            <h2>¿Quiénes Somos?</h2>
+            <p>Somos una organización sin fines de lucro que <strong>impulsa la economía circular en el Perú</strong>,
+              articulando al sector público, privado, academia y sociedad civil para acelerar la transición hacia
+              modelos sostenibles.</p>
+            <p>Conformados por un equipo técnico especializado, desarrollamos estudios, proyectos e iniciativas
+              innovadoras que fortalecen la gestión de residuos y la corresponsabilidad en el país.</p>
+            <div class="stats">
+              <div class="stat-item">
+                <div class="num">14+</div>
+                <div class="label">Años de experiencia</div>
+              </div>
+              <div class="stat-item">
+                <div class="num">CEMPRE</div>
+                <div class="label">Red LATAM</div>
+              </div>
+            </div>
+          </div>
+          <div class="quienes-image">
+            <img src="https://reciclame.org/wp-content/uploads/2025/12/Somos-Reciclame.png" alt="Somos Recíclame" />
+          </div>
+        </div>
+      </section>
+
+      <!-- VISION MISION -->
+      <section class="section vm-section">
+        <div class="vm-grid">
+          <div class="vm-card vision">
+            <h3><i class="fas fa-eye"></i> Visión</h3>
+            <p>Transformar las economías lineales del país hacia economías circulares inclusivas, eficientes y
+              sostenibles.</p>
+          </div>
+          <div class="vm-card">
+            <h3><i class="fas fa-bullseye"></i> Misión</h3>
+            <p>Impulsar soluciones técnicas, colaborativas y escalables que mejoren la gestión de residuos, fortalezcan
+              la corresponsabilidad empresarial y generen impacto social y ambiental.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OBJETIVOS -->
+      <section class="section objetivos-section">
+        <div class="section-header">
+          <h2>Objetivos</h2>
+        </div>
+        <div class="obj-grid">
+          <div class="obj-card">
+            <div class="icon-wrap"><i class="fas fa-chart-line"></i></div>
+            <h4>Promover</h4>
+            <p>Modelos de economía circular basados en evidencia</p>
+          </div>
+          <div class="obj-card">
+            <div class="icon-wrap"><i class="fas fa-handshake"></i></div>
+            <h4>Articular</h4>
+            <p>Actores clave para acelerar cambios sistémicos</p>
+          </div>
+          <div class="obj-card">
+            <div class="icon-wrap"><i class="fas fa-graduation-cap"></i></div>
+            <h4>Fortalecer</h4>
+            <p>Capacidades en toda la cadena del reciclaje</p>
+          </div>
+          <div class="obj-card">
+            <div class="icon-wrap"><i class="fas fa-rocket"></i></div>
+            <h4>Impulsar</h4>
+            <p>Proyectos que conecten empresa, recicladores y ciudadanía</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SOCIOS -->
+      <section class="section partners-section">
+        <div class="section-header">
+          <h2>Nuestros Socios</h2>
+          <p>El modelo colaborativo de Recíclame se basa en un colectivo empresarial comprometido con la sostenibilidad.
+          </p>
+        </div>
+        <div class="partners-grid">
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/ALICORP-LOGO-A-COLOR-1.png" alt="Alicorp" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/ARCA-CONTINENTAL-LOGO-A-COLOR.png"
+              alt="Arca Continental" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/COCA-COLA-LOGO-A-COLOR.png" alt="Coca-Cola" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/INDUSTRIAS-DEL-ENVASE-LOGO-A-COLOR.png"
+              alt="Industrias del Envase" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2025/12/Logo-OI-sin-fondo-10.png" alt="OI" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/QROMA-LOGO-A-COLOR.png" alt="Qroma" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/SMI-LOGO-A-COLOR.png" alt="SMI" />
+          </div>
+          <div class="partner-logo">
+            <img src="https://reciclame.org/wp-content/uploads/2019/10/TETRA-PAK-LOGO-A-COLOR.png" alt="Tetra Pak" />
+          </div>
+        </div>
+      </section>
+
+      <!-- TEAM -->
+      <section class="section team-section">
+        <div class="section-header">
+          <h2>Conócenos</h2>
+          <p>Detrás de cada estudio, proyecto y articulación que impulsamos, existe un equipo comprometido con construir
+            un Perú más sostenible.</p>
+        </div>
+        <div class="team-grid">
+          <div class="team-card">
+            <div class="team-avatar">
+              <img src="https://reciclame.org/wp-content/uploads/2026/01/Fanny-Reyes-300x300.jpg" alt="Fanny Reyes" />
+            </div>
+            <h4>Fanny Reyes</h4>
+            <div class="role">Gerente General</div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar">
+              <img src="https://reciclame.org/wp-content/uploads/2026/01/Andrea-Cornejo.jpg" alt="Andrea Cornejo" />
+            </div>
+            <h4>Andrea Cornejo</h4>
+            <div class="role">Coord. de Proyectos de Economía Circular</div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar">
+              <img src="https://reciclame.org/wp-content/uploads/2026/01/Angelica-Rivera-300x300.jpg"
+                alt="Angélica Rivera" />
+            </div>
+            <h4>Angélica Rivera</h4>
+            <div class="role">Líder de Comunicaciones y Marketing</div>
+          </div>
+          <div class="team-card">
+            <div class="team-avatar">
+              <img src="https://reciclame.org/wp-content/uploads/2026/01/Alberto-Mendoza-300x300.jpg"
+                alt="Alberto Mendoza" />
+            </div>
+            <h4>Alberto Mendoza</h4>
+            <div class="role">Líder del Proyecto ReSÍclamos</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BLOG -->
+      <section class="section blog-section">
+        <div class="section-header">
+          <h2>Blog | Novedades</h2>
+        </div>
+        <div class="blog-grid">
+          <div class="blog-card">
+            <div class="blog-img">
+              <img src="https://reciclame.org/wp-content/uploads/2025/12/reciclame-simposio-6to-01-600x373.jpg"
+                alt="Simposio" />
+            </div>
+            <div class="blog-content">
+              <h5>VI Simposio Internacional de Reciclaje y Economía Circular</h5>
+              <div class="date">diciembre 29, 2025</div>
+              <a href="https://reciclame.org/strategy-for-norways-peion-to-fund-global-2-3-2-2/">Leer artículo <i
+                  class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+            </div>
+          </div>
+          <div class="blog-card">
+            <div class="blog-img">
+              <img src="https://reciclame.org/wp-content/uploads/2025/12/blog-programa-reciclame-peru-04-01-600x373.jpg"
+                alt="Programa" />
+            </div>
+            <div class="blog-content">
+              <h5>Programa de Desarrollo Profesional para Recicladores</h5>
+              <div class="date">diciembre 29, 2025</div>
+              <a href="https://reciclame.org/strategy-for-norways-peion-to-fund-global-2-2/">Leer artículo <i
+                  class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+            </div>
+          </div>
+          <div class="blog-card">
+            <div class="blog-img">
+              <img src="https://reciclame.org/wp-content/uploads/2025/12/blog-reciclame-01-resiclamos-600x373.jpg"
+                alt="ReSÍclamos" />
+            </div>
+            <div class="blog-content">
+              <h5>ReSíclamos: un piloto de reciclaje que anticipa el futuro</h5>
+              <div class="date">diciembre 29, 2025</div>
+              <a href="https://reciclame.org/strategy-for-norways-peion-to-fund-global-2-3-2/">Leer artículo <i
+                  class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+            </div>
+          </div>
+          <div class="blog-card">
+            <div class="blog-img">
+              <img
+                src="https://reciclame.org/wp-content/uploads/2025/12/Comunicacion-de-cambio-reciclame-01-600x373.jpg"
+                alt="Mucho Gusto" />
+            </div>
+            <div class="blog-content">
+              <h5>Recíclame en Perú Mucho Gusto – Lima 2025</h5>
+              <div class="date">diciembre 29, 2025</div>
+              <a href="https://reciclame.org/strategy-for-norways-peion-to-fund-global-2/">Leer artículo <i
+                  class="fas fa-arrow-right" style="font-size:10px;"></i></a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+  </div>
+</body>
+
+</html>

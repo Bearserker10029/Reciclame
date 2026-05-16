@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Términos y Condiciones — Recíclame</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F5F6FA;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes waterWave {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(46, 204, 113, .12) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, .1) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, .08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-breadcrumb {
+      padding: 12px 32px;
+      background: #1B3A5C;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, .65);
+    }
+
+    .nav-breadcrumb a {
+      color: rgba(255, 255, 255, .85);
+      text-decoration: none;
+    }
+
+    .nav-breadcrumb a:hover {
+      color: #2ECC71;
+    }
+
+    .terminos-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      padding: 80px 32px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .terminos-hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+    }
+
+    .terminos-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 20%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
+    }
+
+    .terminos-hero .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .terminos-hero h1 {
+      font-size: 52px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+      animation: fadeUp .6s ease both;
+    }
+
+    .terminos-hero p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, .7);
+      line-height: 1.7;
+      animation: fadeUp .6s .1s ease both;
+    }
+
+    .section {
+      padding: 64px 32px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 12px;
+    }
+
+    .section-header p {
+      font-size: 15px;
+      color: #6B7280;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .content-section {
+      background: #fff;
+    }
+
+    .content-card {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .content-card h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #F0F4F8;
+    }
+
+    .content-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #2ECC71;
+      margin: 28px 0 12px;
+    }
+
+    .content-card p {
+      font-size: 15px;
+      color: #4B5563;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .content-card ul {
+      padding-left: 24px;
+      margin-bottom: 16px;
+    }
+
+    .content-card li {
+      font-size: 15px;
+      color: #4B5563;
+      line-height: 1.8;
+      margin-bottom: 8px;
+    }
+
+    .content-card .last-update {
+      font-size: 13px;
+      color: #9CA3AF;
+      margin-bottom: 36px;
+      text-align: center;
+    }
+
+    .content-card a {
+      color: #2ECC71;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .content-card a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      background: linear-gradient(135deg, #0f2540 0%, #1B3A5C 100%);
+      color: rgba(255, 255, 255, .6);
+      padding: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    footer a {
+      color: rgba(255, 255, 255, .6);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    footer a:hover {
+      color: #2ECC71;
+    }
+
+    footer .copy {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .4);
+    }
+
+    footer .social {
+      display: flex;
+      gap: 12px;
+    }
+
+    footer .social a {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, .6);
+      transition: all .2s;
+    }
+
+    footer .social a:hover {
+      background: rgba(46, 204, 113, .2);
+      color: #2ECC71;
+    }
+  </style>
+</head>
+
+<body>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/superadmin/' + p; } }</script>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:if="${session.usuarioSesion != null}">
+      <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    </th:block>
+
+    <main class="water-bg" style="flex:1;padding:0;">
+      <div class="terminos-hero">
+        <div class="hero-content">
+          <h1><i class="fas fa-file-contract" style="margin-right:12px;color:#2ECC71;"></i>Términos y Condiciones</h1>
+          <p>Condiciones de uso del sistema Recíclame</p>
+        </div>
+      </div>
+
+      <section class="section content-section">
+        <div class="content-card">
+          <p class="last-update"><i class="fas fa-clock" style="margin-right:6px;"></i>Última actualización: 16 de mayo
+            de 2026</p>
+
+          <h2>1. Aceptación de los términos</h2>
+          <p>Al acceder y utilizar el sistema Recíclame ("el Sistema"), usted acepta estar sujeto a estos Términos y
+            Condiciones. Si no está de acuerdo con alguno de estos términos, por favor no utilice el Sistema.</p>
+
+          <h2>2. Descripción del servicio</h2>
+          <p>Recíclame es una plataforma de gestión de documentación técnica, normativas y estudios relacionados con la
+            economía circular y el reciclaje en el Perú. El Sistema permite a usuarios autorizados acceder, descargar y
+            gestionar documentos técnicos.</p>
+
+          <h2>3. Elegibilidad y registro</h2>
+          <p>Para utilizar el Sistema, debe:</p>
+          <ul>
+            <li>Tener al menos 18 años de edad</li>
+            <li>Completar el proceso de registro con información veraz</li>
+            <li>Contar con autorización de la empresa a la que pertenece</li>
+            <li>Mantener la confidencialidad de sus credenciales de acceso</li>
+          </ul>
+
+          <h2>4. Credenciales de acceso</h2>
+          <p>Usted es responsable de:</p>
+          <ul>
+            <li>Mantener la confidencialidad de su nombre de usuario y contraseña</li>
+            <li>Notificar inmediatamente cualquier uso no autorizado de su cuenta</li>
+            <li>No compartir sus credenciales con terceros</li>
+            <li>Utilizar contraseñas seguras y cambiarlas periódicamente</li>
+          </ul>
+
+          <h2>5. Uso aceptable</h2>
+          <p>Usted se compromete a:</p>
+          <ul>
+            <li>Utilizar el Sistema únicamente para fines legítimos</li>
+            <li>No intentar acceder a información para la cual no tiene autorización</li>
+            <li>No modificar, copiar o redistribuir documentos sin autorización</li>
+            <li>No realizar pruebas de penetración o ataques al Sistema</li>
+            <li>No utilizar bots o herramientas automatizadas sin autorización</li>
+            <li>Respetar los derechos de propiedad intelectual de los documentos</li>
+          </ul>
+
+          <h2>6. Roles y permisos</h2>
+          <p>El Sistema cuenta con los siguientes roles:</p>
+          <ul>
+            <li><strong>SUPERADMIN:</strong> Acceso total al sistema, gestión de usuarios y configuración</li>
+            <li><strong>ADMINISTRADOR:</strong> Gestión de documentos y usuarios de su empresa</li>
+            <li><strong>SOCIO:</strong> Acceso a documentos y descarga</li>
+            <li><strong>VISUALIZADOR:</strong> Solo lectura de documentos</li>
+          </ul>
+
+          <h2>7. Propiedad intelectual</h2>
+          <p>Todo el contenido del Sistema, incluyendo pero no limitado a textos, gráficos, logotipos, iconos, imágenes,
+            clips de audio, descargas digitales y software, es propiedad de Recíclame Perú o de sus respectivos
+            propietarios y está protegido por leyes de propiedad intelectual.</p>
+
+          <h2>8. Limitación de responsabilidad</h2>
+          <p>Recíclame Perú no será responsable por:</p>
+          <ul>
+            <li>Daños directos, indirectos, incidentales o consecuentes</li>
+            <li>Pérdida de datos o información</li>
+            <li>Interrupciones del servicio por causas ajenas</li>
+            <li>Acceso no autorizado a sus datos por terceros</li>
+          </ul>
+
+          <h2>9. Disponibilidad del servicio</h2>
+          <p>El Sistema busca estar disponible 24/7, pero puede experimentar interrupciones programadas o no
+            programadas. Recíclame Perú no garantiza disponibilidad continua y puede modificar o descontinuar servicios
+            con previo aviso.</p>
+
+          <h2>10. Terminación</h2>
+          <p>Recíclame Perú se reserva el derecho de terminar o suspender su acceso al Sistema sin previo aviso si:</p>
+          <ul>
+            <li>Viola estos Términos y Condiciones</li>
+            <li>Utiliza el Sistema para fines ilegales</li>
+            <li>Representa un riesgo de seguridad para el Sistema</li>
+            <li>Por solicitud de la empresa a la que pertenece</li>
+          </ul>
+
+          <h2>11. Modificaciones</h2>
+          <p>Recíclame Perú puede modificar estos términos en cualquier momento. Los cambios serán efectivos desde su
+            publicación en el Sistema. Es su responsabilidad revisar periódicamente estos términos.</p>
+
+          <h2>12. Ley aplicable</h2>
+          <p>Estos Términos se rigen por las leyes de la República del Perú. Cualquier controversia derivada de estos
+            términos será sometida a la jurisdicción exclusiva de los tribunales de Lima, Perú.</p>
+
+          <h2>13. Contacto</h2>
+          <p>Para consultas sobre estos términos, contáctenos:<br />
+            <strong>Recíclame Perú</strong><br />
+            Email: <a href="mailto:info@reciclame.org">info@reciclame.org</a><br />
+            Teléfono: +51 923 454 909<br />
+            Dirección: Av. Javier Prado Este 1234, Lima, Perú
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+  </div>
+</body>
+
+</html>

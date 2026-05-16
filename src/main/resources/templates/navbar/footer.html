@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<th:block th:fragment="footer">
+  <style>
+    .sa-footer {
+      background: linear-gradient(135deg, #0f2540 0%, #1B3A5C 50%, #0d2340 100%);
+      color: rgba(255, 255, 255, .7);
+      padding: 24px 32px;
+      position: relative;
+      bottom: 0;
+      margin-top: 48px;
+      overflow: hidden;
+    }
+
+    .sa-footer::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(46, 204, 113, .1) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .sa-footer::after {
+      content: '';
+      position: absolute;
+      bottom: -30px;
+      left: 30px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(46, 204, 113, .06) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .sa-footer-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .sa-footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sa-footer-logo img {
+      height: 32px;
+    }
+
+    .sa-footer-brand {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sa-footer-brand span {
+      font-weight: 400;
+      color: rgba(255, 255, 255, .55);
+      font-size: 12px;
+    }
+
+    .sa-footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .sa-footer-links a {
+      color: rgba(255, 255, 255, .6);
+      font-size: 12px;
+      text-decoration: none;
+      transition: color .2s;
+    }
+
+    .sa-footer-links a:hover {
+      color: #2ECC71;
+    }
+
+    .sa-footer-social {
+      display: flex;
+      gap: 12px;
+    }
+
+    .sa-footer-social a {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid rgba(255, 255, 255, .12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, .6);
+      font-size: 14px;
+      transition: all .2s;
+    }
+
+    .sa-footer-social a:hover {
+      background: rgba(46, 204, 113, .2);
+      border-color: rgba(46, 204, 113, .35);
+      color: #2ECC71;
+      transform: translateY(-2px);
+    }
+
+    .sa-footer-copy {
+      width: 100%;
+      text-align: center;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .4);
+      border-top: 1px solid rgba(255, 255, 255, .08);
+      padding-top: 14px;
+      margin-top: 4px;
+    }
+  </style>
+  <footer class="sa-footer">
+    <div class="sa-footer-content">
+      <div class="sa-footer-logo">
+        <img th:src="@{https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png}"
+          src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png" alt="Recíclame" />
+
+      </div>
+      <div class="sa-footer-links">
+        <a th:href="@{/superadmin/legal/cookies}">Política de Cookies</a>
+        <a th:href="@{/superadmin/legal/privacidad}">Política de Privacidad</a>
+        <a th:href="@{/superadmin/legal/terminos}">Términos y Condiciones</a>
+        <a th:href="@{/superadmin/legal/nosotros}">Nosotros</a>
+      </div>
+      <div class="sa-footer-social">
+        <a href="https://www.facebook.com/ReciclamePlaneta" target="_blank" title="Facebook"><i
+            class="fab fa-facebook-f"></i></a>
+        <a href="https://www.instagram.com/reciclameperu/" target="_blank" title="Instagram"><i
+            class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/company/reciclameperu/" target="_blank" title="LinkedIn"><i
+            class="fab fa-linkedin-in"></i></a>
+        <a href="https://www.youtube.com/@reciclameperu" target="_blank" title="YouTube"><i
+            class="fab fa-youtube"></i></a>
+        <a href="https://www.tiktok.com/@reciclameperu" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://api.whatsapp.com/send?phone=51923454909&text=%C2%A1Hola%20Rec%C3%ADclame!" target="_blank"
+          title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+      </div>
+      <div class="sa-footer-copy">
+        © 2026 Recíclame Perú. Todos los derechos reservados. | Sistema de gestión de residuos y economía circular.
+      </div>
+    </div>
+  </footer>
+</th:block>
+
+</html>
