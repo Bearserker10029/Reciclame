@@ -694,25 +694,6 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleYearMode();
   applyEstudiosFilters();
 
-  // ── Ocultar columnas según config del admin — CSS injection (cubre filas dinámicas) ──
-  (function() {
-    var colsVis = /*[[${uiColsEstudios}]]*/ null;
-    if (!colsVis || !Array.isArray(colsVis)) return;
-    var ref = document.querySelector('#estudios-view-list table thead');
-    if (!ref) return;
-    var headers = ref.querySelectorAll('th[data-col]');
-    var css = '';
-    headers.forEach(function(th, idx) {
-      if (colsVis.indexOf(th.getAttribute('data-col')) === -1) {
-        var n = idx + 1;
-        css += '#estudios-view-list table th:nth-child(' + n + '),#estudios-view-list table td:nth-child(' + n + '){display:none!important}';
-      }
-    });
-    if (css) {
-      var s = document.createElement('style');
-      s.textContent = css;
-      document.head.appendChild(s);
-    }
   })();
 });
 </script>

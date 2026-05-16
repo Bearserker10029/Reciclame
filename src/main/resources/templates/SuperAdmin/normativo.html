@@ -290,6 +290,12 @@
       animation: fadeUp .5s .1s ease both;
     }
 
+    #table-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
     /* ── Table card ── */
     .norm-table-card {
       background: #F0FAF4;
@@ -303,7 +309,7 @@
     }
 
     .norm-table-card thead th {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: .07em;
       text-transform: uppercase;
@@ -860,8 +866,8 @@
         <!-- ══ MAIN LAYOUT ══ -->
         <div class="norm-layout">
 
-          <!-- ── Tabla unificada (una sola, filtrada por JS según pestaña) ── -->
-          <div>
+<!-- ── Tabla unificada (una sola, filtrada por JS según pestaña) ── -->
+          <div id="table-col">
             <div class="norm-table-card">
               <div style="overflow-x:auto;">
                 <table class="table mb-0" id="norm-table" style="min-width:820px;">
@@ -987,6 +993,7 @@
                 <div id="paginacion-normas" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
               </div>
             </div>
+            <div id="normativas-grid" class="grid-container" style="display:none;"></div>
           </div>
 
           <!-- ── Sidebar ── -->
@@ -1089,8 +1096,6 @@
 
           </div>
         </div><!-- /norm-layout -->
-
-        <div id="normativas-grid" class="grid-container" style="display:none;"></div>
 
         <script>
           // ════════════════════════════════════════════════════════
@@ -1326,7 +1331,7 @@
           var normVistaActual = 'lista';
 
           function setNormVista(vista) {
-            var layout = document.querySelector('.norm-layout');
+            var tableCard = document.querySelector('.norm-table-card');
             var gridDiv = document.getElementById('normativas-grid');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
@@ -1334,13 +1339,13 @@
             normVistaActual = vista;
 
             if (vista === 'grid') {
-              layout.style.display = 'none';
+              tableCard.style.display = 'none';
               gridDiv.style.display = '';
               btnLista.classList.remove('active');
               btnGrid.classList.add('active');
               renderNormGrid();
             } else {
-              layout.style.display = '';
+              tableCard.style.display = '';
               gridDiv.style.display = 'none';
               btnLista.classList.add('active');
               btnGrid.classList.remove('active');

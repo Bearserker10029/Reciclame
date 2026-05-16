@@ -28,7 +28,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
+      background: #F0F4F8;
     }
 
     @keyframes fadeUp {
@@ -69,6 +69,18 @@
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
     }
 
     .water-bg {
@@ -566,6 +578,85 @@
     }
 
     .fila-nueva td { animation: rowHighlight 2.8s ease-out forwards; }
+
+    /* ── Table card (matches estudios.html) ── */
+    .table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .table-card thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .table-card thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 14px 16px;
+      border: none;
+    }
+
+    .table-card tbody tr {
+      transition: background .2s, transform .2s;
+      border-bottom: 1px solid #F3F4F6;
+      animation: slideDown .35s ease both;
+    }
+
+    .table-card tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .table-card tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
+
+    /* ── norm-table-card variant (matches table-card) ── */
+    .norm-table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .norm-table-card thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .norm-table-card thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 12px 14px;
+      border: none;
+    }
+
+    .norm-table-card tbody tr {
+      transition: background .2s, transform .2s;
+      border-bottom: 1px solid #F3F4F6;
+      animation: slideDown .35s ease both;
+    }
+
+    .norm-table-card tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .norm-table-card tbody td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      font-size: 12px;
+    }
   </style>
 </head>
 
@@ -671,19 +762,18 @@
           </div>
 
           <!-- Tabla -->
-          <div style="background:#F0FAF4;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;">
+          <div class="norm-table-card">
+            <div style="overflow-x:auto;">
             <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
               <thead>
                 <tr>
-                  <th><input type="checkbox" id="check-all" style="cursor:pointer;" onclick="toggleCheckAll(this)" />
-                  </th>
                   <th>Usuario</th>
                   <th>DNI</th>
                   <th>Rol</th>
                   <th>Estado</th>
                   <th>Empresa</th>
                   <th>Registro</th>
-                  <th>Acciones</th>
+                  <th class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody id="tbody-activos">
@@ -692,7 +782,6 @@
                   th:data-correo="${usuario.correoCorporativo != null ? usuario.correoCorporativo.toLowerCase() : ''}"
                   th:data-rol="${(usuario.rolNombre != null ? usuario.rolNombre : '').toLowerCase()}"
                   th:data-estado="${(usuario.estadoCuenta != null ? usuario.estadoCuenta : '').toLowerCase()}">
-                  <td><input type="checkbox" class="row-check" /></td>
                   <td>
                     <div style="display:flex;align-items:center;gap:10px;">
                       <div
@@ -758,6 +847,7 @@
                 </tr>
               </tbody>
             </table>
+            </div>
             <div
               style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
               <span id="conteo-usuarios"
