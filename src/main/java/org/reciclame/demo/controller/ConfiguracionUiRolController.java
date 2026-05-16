@@ -13,40 +13,62 @@ import java.util.Map;
 @Controller
 public class ConfiguracionUiRolController {
 
+    private static final Map<String, String> MODULO_LABELS_SOCIO = Map.of(
+            "estudios", "Estudios",
+            "normativo", "Repositorio Normativo",
+            "mi-unidad", "Mi Unidad",
+            "reportes", "Reportes",
+            "perfil", "Mi Perfil",
+            "notificaciones", "Notificaciones"
+    );
+
+    private static final Map<String, String> MODULO_LABELS_VISUALIZADOR = Map.of(
+            "estudios", "Estudios",
+            "normativo", "Repositorio Normativo",
+            "perfil", "Mi Perfil",
+            "notificaciones", "Notificaciones"
+    );
+
+    private static final Map<String, String> MODULO_LABELS_ADMIN = Map.of(
+            "estudios", "Estudios",
+            "normativo", "Repositorio Normativo",
+            "usuarios", "Usuarios",
+            "admin-docs", "Panel de Documentos",
+            "trazabilidad", "Trazabilidad",
+            "reportes", "Reportes",
+            "diccionarios", "Diccionarios",
+            "perfil", "Mi Perfil",
+            "notificaciones", "Notificaciones"
+    );
+
     private final ConfiguracionUiRolService service;
 
     public ConfiguracionUiRolController(ConfiguracionUiRolService service) {
         this.service = service;
     }
 
-    // ── Vista admin ────────────────────────────────────────────────────────
+    // ── Vista superadmin ───────────────────────────────────────────────────
 
-    @GetMapping({"/admin/configuracion-vistas", "/superadmin/configuracion-vistas"})
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @GetMapping("/superadmin/configuracion-vistas")
+    @PreAuthorize("hasRole('SUPERADMIN')")
     public String paginaConfiguracion(Model model) {
-        // Config actual para SOCIO
-        model.addAttribute("socioColsNorm",    service.getColumnasNormativas("SOCIO"));
-        model.addAttribute("socioColsEst",     service.getColumnasEstudios("SOCIO"));
         model.addAttribute("socioModulos",     service.getModulosSidebar("SOCIO"));
-
-        // Config actual para VISUALIZADOR
-        model.addAttribute("vizColsNorm",      service.getColumnasNormativas("VISUALIZADOR"));
-        model.addAttribute("vizColsEst",       service.getColumnasEstudios("VISUALIZADOR"));
         model.addAttribute("vizModulos",       service.getModulosSidebar("VISUALIZADOR"));
-
-        // Listas completas de opciones disponibles
-        model.addAttribute("allColsNorm",  ConfiguracionUiRolService.DEFAULT_COLS_NORMATIVAS);
-        model.addAttribute("allColsEst",   ConfiguracionUiRolService.DEFAULT_COLS_ESTUDIOS);
+        model.addAttribute("adminModulos",     service.getModulosSidebar("ADMINISTRADOR"));
         model.addAttribute("allModSocio",  ConfiguracionUiRolService.DEFAULT_MODULOS_SOCIO);
         model.addAttribute("allModViz",    ConfiguracionUiRolService.DEFAULT_MODULOS_VISUALIZADOR);
+        model.addAttribute("allModAdmin",  ConfiguracionUiRolService.DEFAULT_MODULOS_ADMIN);
+        model.addAttribute("moduloLabelsSocio", MODULO_LABELS_SOCIO);
+        model.addAttribute("moduloLabelsViz", MODULO_LABELS_VISUALIZADOR);
+        model.addAttribute("moduloLabelsAdmin", MODULO_LABELS_ADMIN);
 
-        return "Admin/configuracion-vistas";
+        return "SuperAdmin/configuracion-vistas";
     }
 
     // ── API REST ───────────────────────────────────────────────────────────
 
     @GetMapping("/api/ui-config/{rol}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @ResponseBody
     public ResponseEntity<Map<String, List<String>>> getConfig(@PathVariable String rol) {
         String rolUpper = rol.toUpperCase();
@@ -58,7 +80,7 @@ public class ConfiguracionUiRolController {
     }
 
     @PostMapping("/api/ui-config/{rol}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @PreAuthorize("hasRole('SUPERADMIN')")
     @ResponseBody
     public ResponseEntity<Void> guardarConfig(
             @PathVariable String rol,

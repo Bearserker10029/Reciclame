@@ -11,6 +11,11 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: #F5F6FA; }
 
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(20px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -19,24 +24,56 @@
     .anim-2 { animation: fadeInUp .5s .1s ease both; }
     .anim-3 { animation: fadeInUp .5s .2s ease both; }
 
-    .page-head { margin-bottom: 28px; }
-    .page-head h1 { font-size: 24px; font-weight: 800; color: #1B3A5C; margin-bottom: 4px; }
-    .page-head p  { color: #6B7280; font-size: 14px; }
-
-    /* Role tabs */
-    .rol-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-    .rol-tab {
-      padding: 10px 24px; border-radius: 10px; border: 2px solid #E5E7EB;
-      background: #fff; cursor: pointer; font-size: 14px; font-weight: 600;
-      color: #6B7280; transition: all .18s; font-family: inherit;
+    .rol-tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 5px;
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 20px;
+      width: fit-content;
+      animation: fadeUp .45s ease both;
     }
-    .rol-tab.active { border-color: #2ECC71; background: rgba(46,204,113,.08); color: #1B3A5C; }
-    .rol-tab:hover:not(.active) { border-color: #D1D5DB; background: #F9FAFB; }
+
+    .rol-tab {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+
+    .rol-tab:hover {
+      background: #F3F4F6;
+      color: #1B3A5C;
+    }
+
+    .rol-tab.active {
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+    }
+
+    .rol-tab.active i {
+      color: #fff !important;
+    }
 
     .rol-panel { display: none; }
     .rol-panel.active { display: block; }
 
-    /* Config cards */
     .cfg-card {
       background: #fff; border-radius: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,.07); padding: 24px; margin-bottom: 20px;
@@ -47,7 +84,6 @@
     }
     .cfg-card-title i { color: #2ECC71; }
 
-    /* Toggle rows */
     .toggle-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
     }
@@ -72,7 +108,6 @@
     .toggle-item.on .toggle-dot { background: #2ECC71; }
     .toggle-item.on .toggle-dot::after { transform: translateX(16px); }
 
-    /* Save button */
     .btn-save {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 12px 28px; border-radius: 10px; border: none;
@@ -84,7 +119,6 @@
     .btn-save:hover { opacity: .9; transform: translateY(-1px); }
     .btn-save:active { transform: translateY(0); }
 
-    /* Toast */
     #toast {
       position: fixed; bottom: 28px; right: 28px; z-index: 9999;
       background: #1B3A5C; color: #fff; padding: 14px 22px; border-radius: 10px;
@@ -94,9 +128,6 @@
     #toast.show { display: flex; animation: fadeInUp .3s ease; }
     #toast.error { background: #EF4444; }
 
-    .section-divider {
-      height: 1px; background: #F3F4F6; margin: 20px 0;
-    }
     .preview-badge {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(27,58,92,.07); color: #1B3A5C; font-size: 11px;
@@ -111,7 +142,7 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
-      animation: fadeUp .4s ease both;
+      animation: fadeInUp .4s ease both;
     }
 
     .estudios-hero::before {
@@ -144,18 +175,12 @@
       border-radius: 8px;
       background: rgba(231, 76, 60, .07);
       border: 1px solid rgba(231, 76, 60, .2);
-      animation: rotateBadge .4s ease both;
     }
 
     .readonly-badge span {
       font-size: 11px;
       color: #C0392B;
       font-weight: 700;
-    }
-
-    @keyframes rotateBadge {
-      0% { transform: rotate(-3deg) scale(.95); }
-      100% { transform: rotate(0) scale(1); }
     }
 
     @keyframes pulse {
@@ -181,22 +206,24 @@
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Configurar vistas por rol</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Define qué columnas y módulos del sidebar son visibles para los roles Socio y Visualizador.</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Define qué módulos y funcionalidades están accesibles para los roles Administrador, Socio y Visualizador.</p>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
                 <div class="readonly-badge">
                   <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
-                  <span>Configuración por rol</span>
+                  <span>Solo Super Admin</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-      <!-- Rol tabs -->
       <div class="rol-tabs anim-2">
-        <button class="rol-tab active" onclick="switchRol('socio')">
+        <button class="rol-tab active" onclick="switchRol('admin')">
+          <i class="fas fa-user-shield" style="margin-right:6px;color:#E67E22;"></i>Administrador
+        </button>
+        <button class="rol-tab" onclick="switchRol('socio')">
           <i class="fas fa-user-tie" style="margin-right:6px;color:#2ECC71;"></i>Socio
         </button>
         <button class="rol-tab" onclick="switchRol('visualizador')">
@@ -204,50 +231,40 @@
         </button>
       </div>
 
+      <!-- ══════════ PANEL ADMINISTRADOR ══════════ -->
+      <div id="panel-admin" class="rol-panel active anim-3">
+        <div class="cfg-card">
+          <div class="cfg-card-title">
+            <i class="fas fa-bars"></i> Módulos y funcionalidades accesibles
+          </div>
+          <div class="preview-badge"><i class="fas fa-shield-alt"></i> Desactivar un módulo bloquea el acceso a su página</div>
+          <div class="toggle-grid" id="admin-modulos">
+            <div th:each="modulo : ${allModAdmin}" class="toggle-item"
+                 th:classappend="${adminModulos != null and adminModulos.contains(modulo)} ? ' on' : ''"
+                 th:data-val="${modulo}" onclick="toggle(this)">
+              <span class="toggle-label" th:text="${moduloLabelsAdmin[modulo]} ?: ${modulo}">modulo</span>
+              <div class="toggle-dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="guardar('ADMINISTRADOR')">
+          <i class="fas fa-save"></i> Guardar configuración de Administrador
+        </button>
+      </div>
+
       <!-- ══════════ PANEL SOCIO ══════════ -->
-      <div id="panel-socio" class="rol-panel active anim-3">
-
-        <!-- Columnas normativas -->
+      <div id="panel-socio" class="rol-panel anim-3">
         <div class="cfg-card">
           <div class="cfg-card-title">
-            <i class="fas fa-balance-scale"></i> Columnas visibles — Repositorio Normativo
+            <i class="fas fa-bars"></i> Módulos y funcionalidades accesibles
           </div>
-          <div class="preview-badge"><i class="fas fa-info-circle"></i> Las columnas desactivadas se ocultarán para todos los socios</div>
-          <div class="toggle-grid" id="socio-cols-norm">
-            <div th:each="col : ${allColsNorm}" class="toggle-item"
-                 th:classappend="${socioColsNorm != null and socioColsNorm.contains(col)} ? ' on' : ''"
-                 th:data-val="${col}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${col}">col</span>
-              <div class="toggle-dot"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columnas estudios -->
-        <div class="cfg-card">
-          <div class="cfg-card-title">
-            <i class="fas fa-file-alt"></i> Columnas visibles — Estudios Recíclame
-          </div>
-          <div class="toggle-grid" id="socio-cols-est">
-            <div th:each="col : ${allColsEst}" class="toggle-item"
-                 th:classappend="${socioColsEst != null and socioColsEst.contains(col)} ? ' on' : ''"
-                 th:data-val="${col}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${col}">col</span>
-              <div class="toggle-dot"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Módulos sidebar -->
-        <div class="cfg-card">
-          <div class="cfg-card-title">
-            <i class="fas fa-bars"></i> Módulos visibles en el sidebar
-          </div>
+          <div class="preview-badge"><i class="fas fa-shield-alt"></i> Desactivar un módulo bloquea el acceso a su página</div>
           <div class="toggle-grid" id="socio-modulos">
             <div th:each="modulo : ${allModSocio}" class="toggle-item"
                  th:classappend="${socioModulos != null and socioModulos.contains(modulo)} ? ' on' : ''"
                  th:data-val="${modulo}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${modulo}">modulo</span>
+              <span class="toggle-label" th:text="${moduloLabelsSocio[modulo]} ?: ${modulo}">modulo</span>
               <div class="toggle-dot"></div>
             </div>
           </div>
@@ -260,48 +277,16 @@
 
       <!-- ══════════ PANEL VISUALIZADOR ══════════ -->
       <div id="panel-visualizador" class="rol-panel">
-
-        <!-- Columnas normativas -->
         <div class="cfg-card">
           <div class="cfg-card-title">
-            <i class="fas fa-balance-scale"></i> Columnas visibles — Repositorio Normativo
+            <i class="fas fa-bars"></i> Módulos y funcionalidades accesibles
           </div>
-          <div class="preview-badge"><i class="fas fa-info-circle"></i> Las columnas desactivadas se ocultarán para todos los visualizadores</div>
-          <div class="toggle-grid" id="viz-cols-norm">
-            <div th:each="col : ${allColsNorm}" class="toggle-item"
-                 th:classappend="${vizColsNorm != null and vizColsNorm.contains(col)} ? ' on' : ''"
-                 th:data-val="${col}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${col}">col</span>
-              <div class="toggle-dot"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Columnas estudios -->
-        <div class="cfg-card">
-          <div class="cfg-card-title">
-            <i class="fas fa-file-alt"></i> Columnas visibles — Estudios Recíclame
-          </div>
-          <div class="toggle-grid" id="viz-cols-est">
-            <div th:each="col : ${allColsEst}" class="toggle-item"
-                 th:classappend="${vizColsEst != null and vizColsEst.contains(col)} ? ' on' : ''"
-                 th:data-val="${col}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${col}">col</span>
-              <div class="toggle-dot"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Módulos sidebar -->
-        <div class="cfg-card">
-          <div class="cfg-card-title">
-            <i class="fas fa-bars"></i> Módulos visibles en el sidebar
-          </div>
+          <div class="preview-badge"><i class="fas fa-shield-alt"></i> Desactivar un módulo bloquea el acceso a su página</div>
           <div class="toggle-grid" id="viz-modulos">
             <div th:each="modulo : ${allModViz}" class="toggle-item"
                  th:classappend="${vizModulos != null and vizModulos.contains(modulo)} ? ' on' : ''"
                  th:data-val="${modulo}" onclick="toggle(this)">
-              <span class="toggle-label" th:text="${modulo}">modulo</span>
+              <span class="toggle-label" th:text="${moduloLabelsViz[modulo]} ?: ${modulo}">modulo</span>
               <div class="toggle-dot"></div>
             </div>
           </div>
@@ -316,34 +301,27 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <script>
-  var _rolPrefix = (function() {
-    var p = window.location.pathname;
-    if (p.startsWith('/superadmin')) return '/superadmin';
-    return '/admin';
-  })();
-
   function navTo(page) {
     var map = {
-      'inicio':              _rolPrefix + '/inicio',
-      'estudios':            _rolPrefix + '/estudios',
-      'normativo':           _rolPrefix + '/normativo',
-      'perfil':              _rolPrefix + '/perfil',
-      'notificaciones':      _rolPrefix + '/notificaciones',
-      'usuarios':            _rolPrefix + '/usuarios',
-      'admin-docs':          _rolPrefix + '/admin-docs',
-      'trazabilidad':        _rolPrefix + '/trazabilidad',
-      'reportes':            _rolPrefix + '/reportes',
-      'diccionarios':        _rolPrefix + '/diccionarios',
-      'auditoria':           _rolPrefix + '/auditoria',
-      'configuracion-vistas':_rolPrefix + '/configuracion-vistas',
+      'inicio':              '/superadmin/inicio',
+      'estudios':            '/superadmin/estudios',
+      'normativo':           '/superadmin/normativo',
+      'perfil':              '/superadmin/perfil',
+      'notificaciones':      '/superadmin/notificaciones',
+      'usuarios':            '/superadmin/usuarios',
+      'admin-docs':          '/superadmin/documentos',
+      'trazabilidad':        '/superadmin/trazabilidad',
+      'reportes':            '/superadmin/reportes',
+      'diccionarios':        '/superadmin/diccionarios',
+      'auditoria':           '/superadmin/auditoria',
+      'configuracion-vistas':'/superadmin/configuracion-vistas',
       'empresas':            '/superadmin/empresas',
       'impersonar':          '/superadmin/impersonar'
     };
-    window.location.href = map[page] || (_rolPrefix + '/' + page);
+    window.location.href = map[page] || ('/superadmin/' + page);
   }
 
   function switchRol(rol) {
@@ -363,11 +341,13 @@
   }
 
   function guardar(rol) {
-    var prefix = rol === 'SOCIO' ? 'socio' : 'viz';
+    var prefix;
+    if (rol === 'SOCIO') prefix = 'socio';
+    else if (rol === 'VISUALIZADOR') prefix = 'viz';
+    else prefix = 'admin';
+
     var body = {
-      columnas_normativas: getSelected(prefix + '-cols-norm'),
-      columnas_estudios:   getSelected(prefix + '-cols-est'),
-      modulos_sidebar:     getSelected(prefix + '-modulos')
+      modulos_sidebar: getSelected(prefix + '-modulos')
     };
 
     fetch('/api/ui-config/' + rol, {
