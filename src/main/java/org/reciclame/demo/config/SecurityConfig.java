@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/legal/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
                                 "/images/**", "/fonts/**", "/favicon.ico").permitAll()
                         // Descarga segura: solo roles con permiso de descarga

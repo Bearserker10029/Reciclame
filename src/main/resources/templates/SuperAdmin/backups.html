@@ -732,6 +732,7 @@
           </div>
         </div>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
@@ -1377,8 +1378,10 @@
     document.addEventListener('DOMContentLoaded', function () {
       switchBkpTab('todos');
       cargarBackups();
+      cargarProgramaciones();
     });
   </script>
+
 </body>
 
 </html>

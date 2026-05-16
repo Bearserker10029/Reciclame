@@ -134,7 +134,8 @@ public class UsuarioService {
 
     public List<UsuarioResponseDTO> listarUsuariosActivos() {
         return usuarioRepository.findAll().stream()
-                .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()) && "ACTIVO".equals(u.getEstadoCuenta()))
+                .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()))
+                .filter(u -> u.getRol() != null && !"SUPERADMIN".equals(u.getRol().getNombre()))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -203,6 +204,7 @@ public class UsuarioService {
         }
 
         if (dto.getNombreCompleto() != null) usuario.setNombreCompleto(dto.getNombreCompleto());
+        if (dto.getCorreoCorporativo() != null) usuario.setCorreoCorporativo(dto.getCorreoCorporativo());
         if (dto.getCargo()          != null) usuario.setCargo(dto.getCargo());
         if (dto.getFotoUrl()        != null) usuario.setFotoUrl(dto.getFotoUrl());
 
@@ -421,6 +423,27 @@ public class UsuarioService {
 
     private String hashPassword(String password) {
         return passwordEncoder.encode(password);
+    }
+
+    @Transactional
+    public boolean cambiarPassword(Long usuarioId, String passwordActual, String nuevaPassword) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + usuarioId));
+
+        if (!passwordEncoder.matches(passwordActual, usuario.getPasswordHash())) {
+            return false;
+        }
+
+        usuario.setPasswordHash(hashPassword(nuevaPassword));
+        usuario.setUpdatedAt(Instant.now());
+        usuarioRepository.save(usuario);
+
+        auditoriaService.registrarAccion(usuarioId, usuario.getNombreCompleto(),
+                AuditoriaService.ACCION_CAMBIAR_PASSWORD, AuditoriaService.MODULO_SEGURIDAD,
+                "Cambio de contraseña exitoso",
+                null, null, "EXITOSO", null, null, null);
+
+        return true;
     }
 
     private String escapeCsv(String val) {

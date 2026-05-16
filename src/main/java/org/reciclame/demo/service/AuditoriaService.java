@@ -78,12 +78,18 @@ public class AuditoriaService {
 
     // ── READ ─────────────────────────────────────────────────────────
     public List<Auditoria> listarAuditorias() {
-        return auditoriaRepository.findAll();
+        var result = auditoriaRepository.findAll();
+        return result != null ? result : java.util.Collections.emptyList();
     }
 
     public Page<Auditoria> listarAuditoriasPaginado(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return auditoriaRepository.findAllPaginado(pageable);
+    }
+
+    public Page<Auditoria> listarAuditoriasParaTrazabilidad(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findAllExcludingSeguridad(pageable);
     }
 
     public List<Auditoria> listarAuditoriasUltimas100() {
@@ -148,11 +154,13 @@ public class AuditoriaService {
     }
 
     public List<Auditoria> listarAuditoriasPorFechaRango(Instant desde, Instant hasta) {
-        return auditoriaRepository.findByFechaRango(desde, hasta);
+        var result = auditoriaRepository.findByFechaRango(desde, hasta);
+        return result != null ? result : java.util.Collections.emptyList();
     }
 
     public List<Map<String, Object>> obtenerActividadDiaria(Instant desde, Instant hasta) {
-        List<Auditoria> auditorias = listarAuditoriasPorFechaRango(desde, hasta);
+        var auditorias = listarAuditoriasPorFechaRango(desde, hasta);
+        if (auditorias == null || auditorias.isEmpty()) return java.util.Collections.emptyList();
         return auditorias.stream()
                 .collect(Collectors.groupingBy(
                         a -> a.getFechaAccion().toString().substring(0, 10),
@@ -169,7 +177,8 @@ public class AuditoriaService {
     }
 
     public List<Map<String, Object>> obtenerTopUsuariosActivos(int limit) {
-        List<Auditoria> auditorias = listarAuditorias();
+        var auditorias = listarAuditorias();
+        if (auditorias == null || auditorias.isEmpty()) return java.util.Collections.emptyList();
         Map<Long, String> nombrePorId = new HashMap<>();
         Map<Long, Long> conteoPorId = new HashMap<>();
 
@@ -196,6 +205,113 @@ public class AuditoriaService {
     public Auditoria obtenerAuditoriaPorId(Long id) {
         return auditoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Auditoría no encontrada con id: " + id));
+    }
+
+    // ── AUDITORÍA DE SEGURIDAD ───────────────────────────────────────
+    public Page<Auditoria> listarEventosSeguridad(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findEventosSeguridad(pageable);
+    }
+
+    public List<Map<String, Object>> obtenerTopIPsFallidas(int limit) {
+        var result = auditoriaRepository.topIPsFallidas(PageRequest.of(0, limit));
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("ip", row[0]);
+                    item.put("count", ((Number) row[1]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> obtenerTopUsuariosFallidos(int limit) {
+        var result = auditoriaRepository.topUsuariosFallidos(PageRequest.of(0, limit));
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("usuarioId", row[0]);
+                    item.put("usuarioNombre", row[1]);
+                    item.put("count", ((Number) row[2]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public long contarIntentosFallidosHoy() {
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        return auditoriaRepository.contarFallidosDesde(hace24h);
+    }
+
+    public long contarImpersonaciones() {
+        return auditoriaRepository.contarImpersonaciones();
+    }
+
+    public List<Map<String, Object>> obtenerConteoPorModulo() {
+        var result = auditoriaRepository.conteoPorModulo();
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("modulo", row[0]);
+                    item.put("count", ((Number) row[1]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<String> obtenerModulosDistinct() {
+        var result = auditoriaRepository.modulosDistinct();
+        return result != null ? result : java.util.Collections.emptyList();
+    }
+
+    public List<String> generarAlertasSeguridad() {
+        List<String> alertas = new java.util.ArrayList<>();
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        var todas = listarAuditoriasPorFechaRango(hace24h, Instant.now());
+        if (todas == null) return alertas;
+        List<Auditoria> fallidos24h = todas.stream()
+                .filter(a -> "FALLIDO".equals(a.getEstado()))
+                .collect(Collectors.toList());
+
+        Map<String, Long> fallosPorIP = fallidos24h.stream()
+                .filter(a -> a.getIpAddress() != null)
+                .collect(Collectors.groupingBy(Auditoria::getIpAddress, Collectors.counting()));
+
+        fallosPorIP.forEach((ip, count) -> {
+            if (count >= 3) {
+                alertas.add("⚠ " + count + " intentos fallidos desde IP " + ip + " en las últimas 24h");
+            }
+        });
+
+        Map<String, Long> fallosPorUsuario = fallidos24h.stream()
+                .filter(a -> a.getUsuarioNombre() != null)
+                .collect(Collectors.groupingBy(Auditoria::getUsuarioNombre, Collectors.counting()));
+
+        fallosPorUsuario.forEach((usuario, count) -> {
+            if (count >= 3) {
+                alertas.add("⚠ Usuario " + usuario + " tiene " + count + " acciones fallidas en 24h");
+            }
+        });
+
+        long impersonaciones = contarImpersonaciones();
+        if (impersonaciones > 0) {
+            alertas.add("ℹ " + impersonaciones + " sesión(es) de impersonación registrada(s)");
+        }
+
+        return alertas;
+    }
+
+    public double obtenerTasaExito24h() {
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        var auditorias24h = listarAuditoriasPorFechaRango(hace24h, Instant.now());
+        if (auditorias24h == null || auditorias24h.isEmpty()) return 100.0;
+        long exitosos = auditorias24h.stream()
+                .filter(a -> "EXITOSO".equals(a.getEstado()))
+                .count();
+        return Math.round((exitosos * 100.0 / auditorias24h.size()) * 10.0) / 10.0;
     }
 
     // ── CONSTANTES ───────────────────────────────────────────────────

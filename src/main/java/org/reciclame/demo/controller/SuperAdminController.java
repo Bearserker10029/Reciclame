@@ -275,7 +275,7 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditoriasPage = auditoriaService.listarAuditoriasPaginado(0, 50);
+        var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 50);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
         return "SuperAdmin/trazabilidad";
@@ -328,7 +328,98 @@ return "redirect:/superadmin/notificaciones";
     @GetMapping("/superadmin/perfil")
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            List<Auditoria> auditoriasUsuario = auditoriaService.listarAuditoriasPorUsuario(u.getId());
+
+            long descargasCount = auditoriasUsuario.stream()
+                    .filter(a -> "DESCARGAR_DOCUMENTO".equals(a.getAccion()))
+                    .count();
+            model.addAttribute("descargasCount", descargasCount);
+
+            long busquedasCount = auditoriasUsuario.stream()
+                    .filter(a -> a.getAccion().contains("BUSQUEDA") || a.getAccion().contains("CONSULTA"))
+                    .count();
+            model.addAttribute("busquedasCount", busquedasCount);
+
+            long documentosVistos = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()) || "ESTUDIOS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("documentosVistos", documentosVistos);
+
+            long normativasConsultadas = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("normativasConsultadas", normativasConsultadas);
+
+            model.addAttribute("ultimoAcceso", u.getUltimoLogin());
+
+            var auditoriasRecientes = auditoriaService.listarAuditoriasPorUsuarioPaginado(u.getId(), 0, 5);
+            model.addAttribute("actividadReciente", auditoriasRecientes.getContent());
+        });
         return "SuperAdmin/perfil";
+    }
+
+    @PostMapping("/superadmin/perfil/actualizar")
+    public String actualizarPerfil(
+            @RequestParam Long id,
+            @RequestParam String nombreCompleto,
+            @RequestParam String correoCorporativo,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if (nombreCompleto == null || nombreCompleto.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
+            return "redirect:/superadmin/perfil";
+        }
+        if (correoCorporativo == null || correoCorporativo.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El correo corporativo es obligatorio");
+            return "redirect:/superadmin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                if (!u.getId().equals(id)) {
+                    ra.addFlashAttribute("errorPerfil", "No tienes permiso para editar este usuario");
+                    return;
+                }
+                var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
+                dto.setNombreCompleto(nombreCompleto);
+                dto.setCorreoCorporativo(correoCorporativo);
+                usuarioService.actualizarUsuario(id, dto);
+                ra.addFlashAttribute("exitoPerfil", "Información personal actualizada correctamente");
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPerfil", "Error al actualizar: " + e.getMessage());
+        }
+        return "redirect:/superadmin/perfil";
+    }
+
+    @PostMapping("/superadmin/perfil/cambiar-password")
+    public String cambiarPassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if (!newPassword.equals(confirmPassword)) {
+            ra.addFlashAttribute("errorPassword", "Las contraseñas nuevas no coinciden");
+            return "redirect:/superadmin/perfil";
+        }
+        if (newPassword.length() < 8) {
+            ra.addFlashAttribute("errorPassword", "La contraseña debe tener al menos 8 caracteres");
+            return "redirect:/superadmin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                if (ok) {
+                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                } else {
+                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                }
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPassword", "Error al cambiar la contraseña: " + e.getMessage());
+        }
+        return "redirect:/superadmin/perfil";
     }
 
     @Override
@@ -406,9 +497,20 @@ return "redirect:/superadmin/notificaciones";
             @RequestParam(defaultValue = "20") int size,
             Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditoriasPage = auditoriaService.listarAuditoriasPaginado(page, size);
+        var auditoriasPage = auditoriaService.listarEventosSeguridad(page, size);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+
+        model.addAttribute("fallidosHoy", auditoriaService.contarIntentosFallidosHoy());
+        model.addAttribute("impersonaciones", auditoriaService.contarImpersonaciones());
+        model.addAttribute("tasaExito", auditoriaService.obtenerTasaExito24h());
+        var alertas = auditoriaService.generarAlertasSeguridad();
+        model.addAttribute("alertas", alertas != null ? alertas : java.util.Collections.emptyList());
+        var topIPs = auditoriaService.obtenerTopIPsFallidas(5);
+        model.addAttribute("topIPsFallidas", topIPs != null ? topIPs : java.util.Collections.emptyList());
+        var topUsuariosF = auditoriaService.obtenerTopUsuariosFallidos(5);
+        model.addAttribute("topUsuariosFallidos", topUsuariosF != null ? topUsuariosF : java.util.Collections.emptyList());
+
         return "SuperAdmin/auditoria";
     }
 
@@ -693,6 +795,30 @@ return "redirect:/superadmin/notificaciones";
         model.addAttribute("tiposNormativa", tiposNormativaService.listarTiposTodos());
         model.addAttribute("estadosNormativa", estadosNormativaService.listarEstadosTodos());
         return "SuperAdmin/diccionarios";
+    }
+
+    @GetMapping("/superadmin/legal/cookies")
+    public String legalCookies(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/cookies";
+    }
+
+    @GetMapping("/superadmin/legal/privacidad")
+    public String legalPrivacidad(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/privacidad";
+    }
+
+    @GetMapping("/superadmin/legal/terminos")
+    public String legalTerminos(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/terminos";
+    }
+
+    @GetMapping("/superadmin/legal/nosotros")
+    public String legalNosotros(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/nosotros";
     }
 
 }

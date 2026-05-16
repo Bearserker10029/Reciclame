@@ -4,327 +4,146 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recíclame — Auditoría Global</title>
+  <title>Recíclame — Auditoría de Seguridad</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F5F6FA; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(231,76,60,.4) } 50% { box-shadow: 0 0 0 8px rgba(231,76,60,0) } }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-12px) } to { opacity: 1; transform: translateX(0) } }
+    @keyframes waterWave { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
+
+    .water-bg { position: relative; overflow: hidden; }
+    .water-bg::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg,rgba(46,204,113,.15) 0%,transparent 50%),
+                  linear-gradient(225deg,rgba(52,152,219,.12) 0%,transparent 50%),
+                  linear-gradient(315deg,rgba(41,128,185,.1) 0%,transparent 50%),
+                  linear-gradient(45deg,rgba(27,58,92,.08) 0%,transparent 50%);
+      background-size: 400% 400%; animation: waterWave 12s ease infinite;
+      pointer-events: none; z-index: 0; border-radius: inherit;
     }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(24px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    @keyframes slideDown {
-      from {
-        opacity: 0;
-        transform: translateY(-10px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4)
-      }
-
-      50% {
-        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
-      }
-    }
+    .water-bg > * { position: relative; z-index: 1; }
 
     .estudios-hero {
       background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
-      border-radius: 20px;
-      padding: 28px 32px;
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
-      animation: fadeUp .4s ease both;
+      border-radius: 20px; padding: 28px 32px; margin-bottom: 28px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27,58,92,.35); animation: fadeUp .4s ease both;
     }
-
-    .hero-section::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
-    }
-
-    .hero-section::after {
-      content: '';
-      position: absolute;
-      bottom: -80px;
-      left: 20%;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
-    }
-
-    .hero-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: rgba(46, 204, 113, .2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      animation: pulse 2s ease infinite;
-    }
-
-    .hero-icon i {
-      font-size: 22px;
-      color: #2ECC71;
-    }
-
-    .hero-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 6px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-subtitle {
-      font-size: 13px;
-      color: rgba(255, 255, 255, .7);
-      position: relative;
-      z-index: 1;
+    .estudios-hero::before {
+      content: ''; position: absolute; top: -60px; right: -60px; width: 280px; height: 280px;
+      border-radius: 50%; background: radial-gradient(circle,rgba(46,204,113,.25) 0%,transparent 70%);
     }
 
     .stat-chip {
-      background: rgba(255, 255, 255, .12);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, .2);
-      border-radius: 14px;
-      padding: 14px 20px;
-      text-align: center;
-      min-width: 80px;
-      transition: all .3s ease;
-      animation: fadeUp .5s ease both;
+      background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 14px;
+      padding: 14px 20px; text-align: center; min-width: 80px;
+      transition: all .3s ease; animation: fadeUp .5s ease both;
     }
-
-    .stat-chip:hover {
-      background: rgba(255, 255, 255, .22);
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
-    }
-
-    .stat-chip .val {
-      font-size: 28px;
-      font-weight: 800;
-      color: #fff;
-      line-height: 1;
-    }
-
-    .stat-chip .lbl {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: rgba(255, 255, 255, .65);
-      margin-top: 4px;
-    }
+    .stat-chip:hover { background: rgba(255,255,255,.22); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-top: 4px; }
 
     .readonly-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 8px;
-      background: rgba(231, 76, 60, .07);
-      border: 1px solid rgba(231, 76, 60, .2);
-      animation: rotateBadge .4s ease both;
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border-radius: 8px; background: rgba(231,76,60,.07); border: 1px solid rgba(231,76,60,.2);
     }
+    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
 
-    .readonly-badge span {
-      font-size: 11px;
-      color: #C0392B;
-      font-weight: 700;
+    .alert-banner {
+      background: rgba(231,76,60,.06); border: 1px solid rgba(231,76,60,.25);
+      border-radius: 10px; padding: 16px 20px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 14px;
+      animation: slideDown .35s ease both;
     }
-
-    @keyframes rotateBadge {
-      0% {
-        transform: rotate(-3deg) scale(.95)
-      }
-
-      100% {
-        transform: rotate(0) scale(1)
-      }
+    .alert-banner .alert-icon {
+      width: 40px; height: 40px; border-radius: 50%; background: #E74C3C;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
+    .alert-banner .alert-icon i { color: #fff; font-size: 16px; }
+    .alert-banner .alert-text { flex: 1; }
+    .alert-banner .alert-title { font-size: 13px; font-weight: 700; color: #C0392B; margin-bottom: 3px; }
+    .alert-banner .alert-desc { font-size: 12px; color: #6B7280; }
 
-    @keyframes waterWave {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    .alert-list {
+      background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      padding: 16px 20px; margin-bottom: 24px; animation: fadeUp .5s .1s ease both;
     }
+    .alert-list h4 { font-size: 13px; font-weight: 700; color: #1B3A5C; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .alert-list h4 i { color: #E74C3C; }
+    .alert-item {
+      display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6; font-size: 12px; color: #374151;
+    }
+    .alert-item:last-child { border-bottom: none; }
+    .alert-item i { color: #F39C12; margin-top: 2px; flex-shrink: 0; }
 
-    .water-bg {
-      position: relative;
-      overflow: hidden;
+    .patterns-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px; margin-bottom: 24px; animation: fadeUp .5s .15s ease both;
     }
-
-    .water-bg::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background:
-        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
-        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
-        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
-      background-size: 400% 400%;
-      animation: waterWave 12s ease infinite;
-      pointer-events: none;
-      z-index: 0;
-      border-radius: inherit;
+    .pattern-card {
+      background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      padding: 18px 20px; transition: all .2s;
     }
-
-    .water-bg > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    .alert-badge {
-      background: rgba(231, 76, 60, .1);
-      border: 1px solid rgba(231, 76, 60, .25);
-      border-radius: 8px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .alert-dot {
-      width: 8px;
-      height: 8px;
-      background: #E74C3C;
-      border-radius: 50%;
-      display: inline-block;
-      animation: pulse 1.5s infinite;
-    }
+    .pattern-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-2px); }
+    .pattern-card h5 { font-size: 12px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+    .pattern-card h5 i { color: #F39C12; }
+    .pattern-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #F8FAFC; }
+    .pattern-row:last-child { border-bottom: none; }
+    .pattern-row .p-label { font-size: 12px; color: #374151; font-weight: 500; }
+    .pattern-row .p-value { font-size: 12px; font-weight: 700; color: #1B3A5C; background: #F0F4F8; padding: 2px 8px; border-radius: 6px; }
 
     .filter-row {
-      background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      background: rgba(255,255,255,.28); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.5); border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       animation: fadeUp .5s .05s ease both;
     }
-
-    .filter-row input,
-    .filter-row select {
-      border: 1.5px solid #E5E7EB;
-      border-radius: 9px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-family: inherit;
-      color: #374151;
-      transition: all .2s;
-      background: #fff;
+    .filter-row input, .filter-row select {
+      border: 1.5px solid #E5E7EB; border-radius: 9px; padding: 8px 12px;
+      font-size: 12px; font-family: inherit; color: #374151;
+      transition: all .2s; background: #fff;
     }
-
-    .filter-row input {
-      padding-left: 34px;
-    }
-
-    .filter-row input:focus,
-    .filter-row select:focus {
-      outline: none;
-      border-color: #2ECC71;
-      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    .filter-row input { padding-left: 34px; }
+    .filter-row input:focus, .filter-row select:focus {
+      outline: none; border-color: #E74C3C; box-shadow: 0 0 0 3px rgba(231,76,60,.1);
     }
 
     .table-card {
-      background: #F0FAF4;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
-      overflow: hidden;
+      background: #F0FAF4; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      overflow: hidden; animation: fadeUp .5s .1s ease both;
+    }
+    .table-card thead th {
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: #6B7280; padding: 13px 16px; border: none;
+      background: linear-gradient(90deg,#F8FAFC,#F0F4F8);
     }
 
-    .pill {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 600;
-    }
+    .sev-alta { background: rgba(231,76,60,.12); color: #C0392B; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .sev-media { background: rgba(243,156,18,.12); color: #D68910; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .sev-baja { background: rgba(52,152,219,.12); color: #2471A3; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .sev-info { background: rgba(149,165,166,.14); color: #717D7E; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 
-    .pill-login-failed {
-      background: rgba(231, 76, 60, .12);
-      color: #C0392B;
-    }
+    .pill-ok { background: rgba(46,204,113,.12); color: #27AE60; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
+    .pill-blocked { background: rgba(231,76,60,.12); color: #C0392B; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; }
 
-    .pill-impersonation {
-      background: rgba(243, 156, 18, .12);
-      color: #D68910;
-    }
-
-    .pill-role-change {
-      background: rgba(52, 152, 219, .12);
-      color: #2471A3;
-    }
-
-    .pill-doc-deleted {
-      background: rgba(231, 76, 60, .12);
-      color: #C0392B;
-    }
-
-    .pill-account-deactivated {
-      background: rgba(149, 165, 166, .14);
-      color: #717D7E;
-    }
-
-    .pill-ok {
-      background: rgba(46, 204, 113, .12);
-      color: #27AE60;
-    }
-
-    .pill-blocked {
-      background: rgba(231, 76, 60, .12);
-      color: #C0392B;
-    }
+    .audit-row { border-bottom: 1px solid #F3F4F6; transition: background .2s; animation: rowIn .35s ease both; }
+    .audit-row:hover { background: #FFF5F5; }
+    .audit-row td { padding: 12px 16px; vertical-align: middle; }
+    .audit-row:last-child { border-bottom: none; }
   </style>
 </head>
 
@@ -338,130 +157,172 @@
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="estudios-hero">
-          <div
-            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                <div
-                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
-                  <i class="fas fa-shield-alt" style="color:#2ECC71;font-size:18px;"></i>
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(231,76,60,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-shield-alt" style="color:#E74C3C;font-size:18px;"></i>
                 </div>
                 <div>
-                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Panel de Auditoría Global</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Eventos críticos de seguridad en
-                    tiempo real</p>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Panel de Auditoría de Seguridad</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Eventos críticos de seguridad y detección de anomalías</p>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
                 <div class="readonly-badge">
                   <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
-                  <span>Registros de auditoría</span>
+                  <span>Solo eventos de seguridad</span>
                 </div>
               </div>
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
               <div class="stat-chip" style="animation-delay:.1s">
-                <div class="val" th:text="${auditorias != null ? auditorias.size() : 0}">0</div>
-                <div class="lbl">Total</div>
+                <div class="val" th:text="${fallidosHoy != null ? fallidosHoy : 0}" style="color:#F87171;">0</div>
+                <div class="lbl">Fallos 24h</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" id="stat-exitosos" style="color:#34D399;">0</div>
-                <div class="lbl">Exitosos</div>
+                <div class="val" th:text="${impersonaciones != null ? impersonaciones : 0}" style="color:#FBBF24;">0</div>
+                <div class="lbl">Impersonaciones</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
-                <div class="val" id="stat-fallidos" style="color:#F87171;">0</div>
-                <div class="lbl">Fallidos</div>
+                <div class="val" th:text="${tasaExito != null ? tasaExito : '100'}" style="color:#34D399;">0</div>
+                <div class="lbl">% Éxito 24h</div>
               </div>
               <div class="stat-chip" style="animation-delay:.4s">
-                <div class="val" id="stat-hoy" style="color:#60A5FA;">0</div>
-                <div class="lbl">Hoy</div>
+                <div class="val" th:text="${totalElements != null ? totalElements : 0}">0</div>
+                <div class="lbl">Total eventos</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div th:if="${auditorias != null and !auditorias.isEmpty()}"
-          style="background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;animation:slideDown .35s ease both;">
-          <div
-            style="width:40px;height:40px;border-radius:50%;background:#E74C3C;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <i class="fas fa-exclamation-triangle" style="color:#fff;font-size:16px;"></i>
+        <div th:if="${alertas != null and !alertas.isEmpty()}" class="alert-list">
+          <h4><i class="fas fa-exclamation-triangle"></i> Alertas de Seguridad Detectadas</h4>
+          <th:block th:each="alerta : ${alertas}">
+            <div class="alert-item">
+              <i class="fas fa-exclamation-circle"></i>
+              <span th:text="${alerta}">Alerta</span>
+            </div>
+          </th:block>
+        </div>
+
+        <div th:if="${alertas == null or alertas.isEmpty()}" class="alert-banner">
+          <div class="alert-icon"><i class="fas fa-check"></i></div>
+          <div class="alert-text">
+            <div class="alert-title">Sin alertas activas</div>
+            <div class="alert-desc">No se detectaron patrones sospechosos en las últimas 24 horas</div>
           </div>
-          <div style="flex:1;">
-            <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:3px;"
-              th:text="${totalElements != null ? totalElements + ' eventos de auditoría registrados' : 'Eventos de auditoría'}">
-              Eventos de auditoría</div>
-            <div style="font-size:12px;color:#6B7280;">Registros de actividad del sistema</div>
-          </div>
+        </div>
+
+        <div class="patterns-grid">
+          <th:block th:if="${topIPsFallidas != null and !topIPsFallidas.isEmpty()}">
+            <div class="pattern-card">
+              <h5><i class="fas fa-network-wired"></i> IPs con más fallos</h5>
+              <th:block th:each="ip : ${topIPsFallidas}">
+                <div class="pattern-row">
+                  <span class="p-label" th:text="${ip.ip}">0.0.0.0</span>
+                  <span class="p-value" th:text="${ip.count}">0</span>
+                </div>
+              </th:block>
+            </div>
+          </th:block>
+          <th:block th:if="${topUsuariosFallidos != null and !topUsuariosFallidos.isEmpty()}">
+            <div class="pattern-card">
+              <h5><i class="fas fa-user-times"></i> Usuarios con más fallos</h5>
+              <th:block th:each="u : ${topUsuariosFallidos}">
+                <div class="pattern-row">
+                  <span class="p-label" th:text="${u.usuarioNombre}">Usuario</span>
+                  <span class="p-value" th:text="${u.count}">0</span>
+                </div>
+              </th:block>
+            </div>
+          </th:block>
         </div>
 
         <div class="filter-row">
           <div style="position:relative;flex:1;min-width:200px;">
-            <i class="fas fa-search"
-              style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
+            <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
             <input id="search-auditoria" placeholder="Buscar por usuario o IP..." />
           </div>
-          <select id="filter-tipo-aud" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;">
+          <select id="filter-tipo-aud">
             <option value="">Tipo: Todos</option>
-            <option>Login fallido</option>
-            <option>Cambio de rol</option>
-            <option>Cuenta desactivada</option>
-            <option>Doc. eliminado</option>
-            <option>Impersonación</option>
+            <option value="LOGIN">Login fallido</option>
+            <option value="IMPERSONAR_USUARIO">Impersonación</option>
+            <option value="BLOQUEAR_USUARIO">Cuenta bloqueada</option>
+            <option value="CAMBIAR_PASSWORD">Cambio contraseña</option>
+            <option value="ELIMINAR_USUARIO">Usuario eliminado</option>
           </select>
-          <select id="filter-rango-aud" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;">
+          <select id="filter-severidad-aud">
+            <option value="">Severidad: Todas</option>
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+          <select id="filter-rango-aud">
             <option value="">Últimas 24h</option>
-            <option>Última semana</option>
-            <option>Rango personalizado</option>
+            <option value="semana">Última semana</option>
+            <option value="mes">Último mes</option>
           </select>
         </div>
 
         <div class="table-card">
-          <table class="table table-striped table-hover">
+          <table class="table mb-0" style="min-width:800px;">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>Tipo evento</th>
-                <th>Usuario / IP</th>
+                <th><i class="fas fa-clock" style="margin-right:6px;"></i>Timestamp</th>
+                <th><i class="fas fa-flag" style="margin-right:6px;"></i>Severidad</th>
+                <th><i class="fas fa-tag" style="margin-right:6px;"></i>Tipo evento</th>
+                <th><i class="fas fa-user" style="margin-right:6px;"></i>Usuario / IP</th>
                 <th>Descripción</th>
                 <th>Resultado</th>
               </tr>
             </thead>
             <tbody id="tabla-auditoria">
               <tr th:if="${auditorias == null or auditorias.isEmpty()}">
-                <td colspan="5" style="text-align:center;padding:60px;">
-                  <i class="fas fa-clipboard-list"
-                    style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
-                  <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay eventos de auditoría aún</div>
+                <td colspan="6" style="text-align:center;padding:60px;">
+                  <i class="fas fa-clipboard-list" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
+                  <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay eventos de seguridad registrados</div>
                 </td>
               </tr>
-              <tr th:each="a : ${auditorias}">
+              <tr th:each="a, iStat : ${auditorias}" class="audit-row"
+                  th:data-accion="${a.accion}"
+                  th:data-estado="${a.estado}"
+                  th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.ipAddress ?: '') + ' ' + (a.descripcion ?: '')}"
+                  th:data-severidad="${a.estado == 'FALLIDO' ? 'alta' : (a.accion == 'IMPERSONAR_USUARIO' ? 'media' : (a.accion == 'LOGIN' ? 'baja' : 'info'))}"
+                  th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
                 <td style="color:#9CA3AF;font-size:11px;white-space:nowrap;"
-                  th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—
+                    th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</td>
+                <td>
+                  <span th:if="${a.estado == 'FALLIDO'}" class="sev-alta"><i class="fas fa-exclamation-circle" style="font-size:8px;"></i> Alta</span>
+                  <span th:if="${a.accion == 'IMPERSONAR_USUARIO' and a.estado != 'FALLIDO'}" class="sev-media"><i class="fas fa-user-secret" style="font-size:8px;"></i> Media</span>
+                  <span th:if="${a.accion == 'BLOQUEAR_USUARIO' or a.accion == 'ELIMINAR_USUARIO'}" class="sev-alta"><i class="fas fa-ban" style="font-size:8px;"></i> Alta</span>
+                  <span th:if="${a.accion == 'CAMBIAR_PASSWORD' and a.estado != 'FALLIDO'}" class="sev-baja"><i class="fas fa-key" style="font-size:8px;"></i> Baja</span>
+                  <span th:if="${a.accion == 'LOGIN' and a.estado != 'FALLIDO'}" class="sev-info"><i class="fas fa-sign-in-alt" style="font-size:8px;"></i> Info</span>
+                  <span th:if="${a.accion == 'LOGOUT'}" class="sev-info"><i class="fas fa-sign-out-alt" style="font-size:8px;"></i> Info</span>
+                  <span th:unless="${a.estado == 'FALLIDO' or a.accion == 'IMPERSONAR_USUARIO' or a.accion == 'BLOQUEAR_USUARIO' or a.accion == 'ELIMINAR_USUARIO' or a.accion == 'CAMBIAR_PASSWORD' or a.accion == 'LOGIN' or a.accion == 'LOGOUT'}" class="sev-info">Info</span>
                 </td>
                 <td>
-                  <span class="pill"
-                    th:classappend="${a.estado != null and a.estado == 'FALLIDO'} ? 'pill-login-failed' : (${a.modulo == 'SEGURIDAD'} ? 'pill-impersonation' : 'pill-ok')"
-                    th:text="${a.accion ?: '—'}">—</span>
+                  <span style="font-size:12px;font-weight:600;color:#374151;" th:text="${a.accion ?: '—'}">—</span>
                 </td>
                 <td style="font-size:12px;">
-                  <div style="color:#374151;" th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
-                  <div style="color:#9CA3AF;" th:text="${a.ipAddress ?: 'N/A'}">—</div>
+                  <div style="color:#374151;font-weight:500;" th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
+                  <div style="color:#9CA3AF;font-family:monospace;font-size:11px;" th:text="${a.ipAddress ?: 'N/A'}">—</div>
                 </td>
-                <td style="font-size:12px;color:#6B7280;" th:text="${a.descripcion ?: '—'}">—</td>
+                <td style="font-size:12px;color:#6B7280;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${a.descripcion ?: '—'}">—</td>
                 <td>
-                  <span class="pill" th:classappend="${a.estado == 'EXITOSO'} ? 'pill-ok' : 'pill-blocked'"
-                    th:text="${a.estado == 'EXITOSO'} ? 'OK' : (${a.estado ?: 'Fallido'})">—</span>
+                  <span th:if="${a.estado == 'EXITOSO'}" class="pill-ok"><i class="fas fa-check" style="font-size:8px;"></i> OK</span>
+                  <span th:unless="${a.estado == 'EXITOSO'}" class="pill-blocked"><i class="fas fa-times" style="font-size:8px;"></i> <span th:text="${a.estado ?: 'Fallido'}">Fallido</span></span>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div
-            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+          <div style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
             <span id="conteo-auditoria">Mostrando registros</span>
             <div style="display:flex;gap:4px;" id="paginacion-auditoria"></div>
           </div>
         </div>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
@@ -472,8 +333,7 @@
     let paginaActual = 1;
 
     function getFilasActivas() {
-      return Array.from(document.querySelectorAll('#tabla-auditoria tr'))
-        .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+      return Array.from(document.querySelectorAll('#tabla-auditoria tr')).filter(function(tr) { return tr.dataset.filtrado !== '0'; });
     }
 
     function inicializarPaginacion() {
@@ -481,42 +341,30 @@
       var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
       if (totalPaginas < 1) totalPaginas = 1;
       paginaActual = 1;
-
       var conteoEl = document.getElementById('conteo-auditoria');
       if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
-
       var paginacionDiv = document.getElementById('paginacion-auditoria');
       paginacionDiv.innerHTML = '';
       if (totalPaginas <= 1) return;
-
       var btnAnterior = document.createElement('button');
       btnAnterior.textContent = '← Ant';
       btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-      btnAnterior.onclick = function () {
-        if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
-      };
+      btnAnterior.onclick = function() { if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); } };
       paginacionDiv.appendChild(btnAnterior);
-
       for (var i = 1; i <= totalPaginas; i++) {
-        (function (pageNum) {
+        (function(pageNum) {
           var btn = document.createElement('button');
           btn.textContent = pageNum;
           btn.id = 'btn-pagina-' + pageNum;
-          btn.style.cssText = (pageNum === 1)
-            ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-            : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-          btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+          btn.style.cssText = (pageNum === 1) ? 'padding:5px 10px;border:1px solid #E74C3C;border-radius:6px;background:#E74C3C;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+          btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
           paginacionDiv.appendChild(btn);
         })(i);
       }
-
       var btnSiguiente = document.createElement('button');
       btnSiguiente.textContent = 'Sig →';
       btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-      btnSiguiente.onclick = function () {
-        var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-        if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
-      };
+      btnSiguiente.onclick = function() { var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA); if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); } };
       paginacionDiv.appendChild(btnSiguiente);
     }
 
@@ -526,13 +374,9 @@
       var inicio = (numero - 1) * ITEMS_POR_PAGINA;
       var fin = inicio + ITEMS_POR_PAGINA;
       var conteo = 0;
-      filas.forEach(function (tr) {
-        if (tr.dataset.filtrado === '0') {
-          tr.style.display = 'none';
-        } else {
-          tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
-          conteo++;
-        }
+      filas.forEach(function(tr) {
+        if (tr.dataset.filtrado === '0') { tr.style.display = 'none'; }
+        else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
       });
       actualizarBotonesPaginacion();
     }
@@ -542,17 +386,54 @@
       for (var i = 1; i <= total; i++) {
         var btn = document.getElementById('btn-pagina-' + i);
         if (btn) {
-          btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
-          btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+          btn.style.background = (i === paginaActual) ? '#E74C3C' : '#fff';
+          btn.style.borderColor = (i === paginaActual) ? '#E74C3C' : '#E5E7EB';
           btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
         }
       }
     }
 
-    window.addEventListener('load', function () {
-      document.querySelectorAll('#tabla-auditoria tr').forEach(function (tr) {
-        tr.dataset.filtrado = '1';
+    document.getElementById('search-auditoria')?.addEventListener('input', filtrarAuditoria);
+    document.getElementById('filter-tipo-aud')?.addEventListener('change', filtrarAuditoria);
+    document.getElementById('filter-severidad-aud')?.addEventListener('change', filtrarAuditoria);
+    document.getElementById('filter-rango-aud')?.addEventListener('change', filtrarAuditoria);
+
+    function filtrarAuditoria() {
+      var texto = (document.getElementById('search-auditoria')?.value || '').toLowerCase();
+      var tipo = (document.getElementById('filter-tipo-aud')?.value || '').toLowerCase();
+      var severidad = (document.getElementById('filter-severidad-aud')?.value || '').toLowerCase();
+      var rango = document.getElementById('filter-rango-aud')?.value || '';
+      document.querySelectorAll('#tabla-auditoria tr').forEach(function(row) {
+        var matchTexto = !texto || (row.dataset.texto || '').toLowerCase().includes(texto);
+        var matchTipo = !tipo || (row.dataset.accion || '').toLowerCase().includes(tipo);
+        var matchSev = !severidad || (severidad === 'alta' && row.querySelector('.sev-alta'))
+          || (severidad === 'media' && row.querySelector('.sev-media'))
+          || (severidad === 'baja' && row.querySelector('.sev-baja'))
+          || (severidad === 'info' && row.querySelector('.sev-info'));
+        var ok = matchTexto && matchTipo && matchSev;
+        if (ok && rango) {
+          var fechaCelda = row.querySelector('td:first-child')?.textContent || '';
+          var fechaStr = fechaCelda.trim();
+          if (fechaStr && fechaStr !== '—') {
+            var fechaParts = fechaStr.split(' ')[0].split('-');
+            if (fechaParts.length === 3) {
+              var fechaRow = new Date(fechaParts[0], fechaParts[1] - 1, fechaParts[2]);
+              var ahora = new Date();
+              var diffMs = ahora - fechaRow;
+              if (rango === '' || rango === '24h') { if (diffMs > 86400000) ok = false; }
+              else if (rango === 'semana') { if (diffMs > 7 * 86400000) ok = false; }
+              else if (rango === 'mes') { if (diffMs > 30 * 86400000) ok = false; }
+            }
+          }
+        }
+        row.dataset.filtrado = ok ? '1' : '0';
       });
+      inicializarPaginacion();
+      mostrarPagina(1);
+    }
+
+    window.addEventListener('load', function() {
+      document.querySelectorAll('#tabla-auditoria tr').forEach(function(tr) { tr.dataset.filtrado = '1'; });
       inicializarPaginacion();
       mostrarPagina(1);
     });
