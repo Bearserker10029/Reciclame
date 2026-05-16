@@ -262,14 +262,41 @@
       transform: translateY(0);
     }
 
+    @keyframes waterWave {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg { position: relative; overflow: hidden; }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * { position: relative; z-index: 1; }
+
     .hero-section {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(135deg, #1B3A5C, #2c5282);
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
       border-radius: 20px;
       padding: 32px 36px;
       margin-bottom: 28px;
       animation: fadeUp .35s ease both;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
     }
 
     .hero-blob {
@@ -340,6 +367,7 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="hero-section">
