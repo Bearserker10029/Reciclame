@@ -73,9 +73,7 @@ public class ConfiguracionUiRolController {
     public ResponseEntity<Map<String, List<String>>> getConfig(@PathVariable String rol) {
         String rolUpper = rol.toUpperCase();
         return ResponseEntity.ok(Map.of(
-                "columnas_normativas", service.getColumnasNormativas(rolUpper),
-                "columnas_estudios",   service.getColumnasEstudios(rolUpper),
-                "modulos_sidebar",     service.getModulosSidebar(rolUpper)
+                "modulos_sidebar", service.getModulosSidebar(rolUpper)
         ));
     }
 
@@ -85,16 +83,9 @@ public class ConfiguracionUiRolController {
     public ResponseEntity<Void> guardarConfig(
             @PathVariable String rol,
             @RequestBody Map<String, List<String>> body) {
-
         String rolUpper = rol.toUpperCase();
-
-        if (body.containsKey("columnas_normativas"))
-            service.guardarColumnasNormativas(rolUpper, body.get("columnas_normativas"));
-        if (body.containsKey("columnas_estudios"))
-            service.guardarColumnasEstudios(rolUpper, body.get("columnas_estudios"));
         if (body.containsKey("modulos_sidebar"))
             service.guardarModulosSidebar(rolUpper, body.get("modulos_sidebar"));
-
         return ResponseEntity.ok().build();
     }
 }
