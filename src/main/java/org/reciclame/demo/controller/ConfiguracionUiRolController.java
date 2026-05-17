@@ -52,6 +52,7 @@ public class ConfiguracionUiRolController {
     @GetMapping("/superadmin/configuracion-vistas")
     @PreAuthorize("hasRole('SUPERADMIN')")
     public String paginaConfiguracion(Model model) {
+        model.addAttribute("rol", "SUPERADMIN");
         model.addAttribute("socioModulos",     service.getModulosSidebar("SOCIO"));
         model.addAttribute("vizModulos",       service.getModulosSidebar("VISUALIZADOR"));
         model.addAttribute("adminModulos",     service.getModulosSidebar("ADMINISTRADOR"));
