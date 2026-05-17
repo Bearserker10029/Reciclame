@@ -18,12 +18,17 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
 
 @Service
 public class BackupService {
@@ -212,23 +217,26 @@ public class BackupService {
                     "-P", extraerPuerto(datasourceUrl),
                     "-u", datasourceUsername,
                     "-p" + datasourcePassword,
-                    "--ssl-mode=DISABLED",
+                    "--ssl=0",
+                    "--no-create-db",
                     "--single-transaction",
                     "--quick",
                     "--lock-tables=false",
                     dbName);
 
-            pb.redirectErrorStream(true);
-
             Process process = pb.start();
 
             try (FileOutputStream fos = new FileOutputStream(archivoPath.toFile());
-                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                 BufferedOutputStream bos = new BufferedOutputStream(fos);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = process.getInputStream().read(buffer)) != -1) {
-                    bos.write(buffer, 0, bytesRead);
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.contains("Deprecated program name")) {
+                        continue;
+                    }
+                    bos.write(line.getBytes());
+                    bos.write('\n');
                 }
             }
 
@@ -299,35 +307,11 @@ public class BackupService {
             backup.setEstado("EN_PROCESO");
             backupRepository.save(backup);
 
-            String dbName = extraerDbName(datasourceUrl);
+            String jdbcUrl = buildJdbcUrl();
 
-            ProcessBuilder pbRestore = new ProcessBuilder();
-            pbRestore.command("mysql",
-                    "-h", extraerHost(datasourceUrl),
-                    "-P", extraerPuerto(datasourceUrl),
-                    "-u", datasourceUsername,
-                    "-p" + datasourcePassword,
-                    dbName);
+            log.info("Iniciando restauración via JDBC: db={}, archivo={}", extraerDbName(datasourceUrl), backup.getStorageKey());
 
-            pbRestore.redirectErrorStream(true);
-            Process process = pbRestore.start();
-
-            try (FileInputStream fis = new FileInputStream(archivoPath.toFile());
-                 BufferedInputStream bis = new BufferedInputStream(fis)) {
-
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = bis.read(buffer)) != -1) {
-                    process.getOutputStream().write(buffer, 0, bytesRead);
-                }
-                process.getOutputStream().flush();
-                process.getOutputStream().close();
-            }
-
-            int exitCode = process.waitFor();
-            if (exitCode != 0) {
-                throw new RuntimeException("mysql restore falló con código: " + exitCode);
-            }
+            ejecutarSqlViaJdbc(jdbcUrl, archivoPath, 300);
 
             backup.setRestauradoPor(usuario);
             backup.setFechaRestauracion(Instant.now());
@@ -345,6 +329,131 @@ public class BackupService {
             log.error("Restauración {} falló: {}", backupId, e.getMessage(), e);
             throw new RuntimeException("Restauración falló: " + e.getMessage(), e);
         }
+    }
+
+    private String buildJdbcUrl() {
+        String host = extraerHost(datasourceUrl);
+        String port = extraerPuerto(datasourceUrl);
+        String dbName = extraerDbName(datasourceUrl);
+        return "jdbc:mysql://" + host + ":" + port + "/" + dbName
+                + "?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true";
+    }
+
+    private void ejecutarSqlViaJdbc(String jdbcUrl, Path archivoPath, int timeoutSeconds) throws Exception {
+        List<String> sentencias = parsearSql(archivoPath);
+        log.info("Archivo SQL parseado: {} sentencias a ejecutar", sentencias.size());
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Future<?> future = executor.submit(() -> {
+            try (Connection conn = DriverManager.getConnection(jdbcUrl, datasourceUsername, datasourcePassword);
+                 Statement stmt = conn.createStatement()) {
+
+                stmt.execute("SET FOREIGN_KEY_CHECKS = 0");
+
+                int count = 0;
+                for (String sql : sentencias) {
+                    String trimmed = sql.trim();
+                    if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                        continue;
+                    }
+                    try {
+                        stmt.execute(trimmed);
+                        count++;
+                    } catch (SQLException e) {
+                        log.warn("Error ejecutando sentencia (continúa): {} - {}", e.getMessage(),
+                                trimmed.length() > 100 ? trimmed.substring(0, 100) + "..." : trimmed);
+                    }
+                }
+
+                stmt.execute("SET FOREIGN_KEY_CHECKS = 1");
+                log.info("Restauración JDBC completada: {} sentencias ejecutadas", count);
+            } catch (SQLException e) {
+                throw new RuntimeException("Error de conexión JDBC: " + e.getMessage(), e);
+            }
+        });
+
+        executor.shutdown();
+        if (!executor.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
+            executor.shutdownNow();
+            throw new RuntimeException("Restauración excedió el timeout de " + timeoutSeconds + " segundos");
+        }
+
+        try {
+            future.get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            throw new RuntimeException("Error ejecutando SQL: " + cause.getMessage(), cause);
+        }
+    }
+
+    private List<String> parsearSql(Path archivoPath) throws IOException {
+        List<String> sentencias = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inString = false;
+        char stringChar = 0;
+        boolean skipStatement = false;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(archivoPath.toFile())))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("--") || line.startsWith("/*") || line.startsWith("mysqldump:") || line.startsWith("mariadb-dump:")) {
+                    continue;
+                }
+
+                if (line.toUpperCase().startsWith("DROP TABLE")) {
+                    skipStatement = true;
+                    continue;
+                }
+
+                if (skipStatement && (line.toUpperCase().startsWith("CREATE TABLE") || line.toUpperCase().startsWith("INSERT"))) {
+                    skipStatement = false;
+                }
+
+                if (skipStatement) {
+                    continue;
+                }
+
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
+
+                    if (inString) {
+                        current.append(c);
+                        if (c == stringChar && i > 0 && line.charAt(i - 1) != '\\') {
+                            inString = false;
+                        }
+                    } else {
+                        if (c == '\'' || c == '"') {
+                            inString = true;
+                            stringChar = c;
+                            current.append(c);
+                        } else if (c == ';') {
+                            String stmt = current.toString().trim();
+                            if (!stmt.isEmpty()) {
+                                sentencias.add(stmt);
+                            }
+                            current = new StringBuilder();
+                        } else {
+                            current.append(c);
+                        }
+                    }
+                }
+
+                if (!inString && current.length() > 0) {
+                    current.append(" ");
+                }
+            }
+        }
+
+        String remaining = current.toString().trim();
+        if (!remaining.isEmpty()) {
+            sentencias.add(remaining);
+        }
+
+        return sentencias;
     }
 
     @Transactional
@@ -432,36 +541,53 @@ public class BackupService {
 
     private String extraerHost(String url) {
         if (url == null) return "localhost";
-        int hostIndex = url.indexOf("//");
-        if (hostIndex == -1) return "localhost";
-        String sinProtocolo = url.substring(hostIndex + 2);
-        int portIndex = sinProtocolo.indexOf(":");
-        int dbIndex = sinProtocolo.indexOf("/");
-        int endIndex = sinProtocolo.length();
+        String cleanUrl = url;
+        int paramIndex = cleanUrl.indexOf("?");
+        if (paramIndex != -1) {
+            cleanUrl = cleanUrl.substring(0, paramIndex);
+        }
+        int protocolEnd = cleanUrl.indexOf("//");
+        if (protocolEnd == -1) return "localhost";
+        String afterProtocol = cleanUrl.substring(protocolEnd + 2);
+        int portIndex = afterProtocol.indexOf(":");
+        int dbIndex = afterProtocol.indexOf("/");
+        int endIndex = afterProtocol.length();
         if (portIndex != -1 && portIndex < endIndex) endIndex = portIndex;
         if (dbIndex != -1 && dbIndex < endIndex) endIndex = dbIndex;
-        return sinProtocolo.substring(0, endIndex);
+        return afterProtocol.substring(0, endIndex);
     }
 
     private String extraerPuerto(String url) {
         if (url == null) return "3306";
-        int portIndex = url.lastIndexOf(":", url.indexOf("//") + 10);
+        String cleanUrl = url;
+        int paramIndex = cleanUrl.indexOf("?");
+        if (paramIndex != -1) {
+            cleanUrl = cleanUrl.substring(0, paramIndex);
+        }
+        int protocolEnd = cleanUrl.indexOf("//");
+        if (protocolEnd == -1) return "3306";
+        String afterProtocol = cleanUrl.substring(protocolEnd + 2);
+        int portIndex = afterProtocol.indexOf(":");
         if (portIndex == -1) return "3306";
-        int endIndex = url.indexOf("/", portIndex);
-        if (endIndex == -1) endIndex = url.length();
-        return url.substring(portIndex + 1, endIndex);
+        String afterPort = afterProtocol.substring(portIndex + 1);
+        int slashIndex = afterPort.indexOf("/");
+        if (slashIndex != -1) {
+            afterPort = afterPort.substring(0, slashIndex);
+        }
+        return afterPort;
     }
 
     private String extraerDbName(String url) {
         if (url == null) return "reciclame_db";
-        int dbIndex = url.lastIndexOf("/");
-        if (dbIndex == -1) return "reciclame_db";
-        String dbPart = url.substring(dbIndex + 1);
-        int paramIndex = dbPart.indexOf("?");
+        String cleanUrl = url;
+        int paramIndex = cleanUrl.indexOf("?");
         if (paramIndex != -1) {
-            dbPart = dbPart.substring(0, paramIndex);
+            cleanUrl = cleanUrl.substring(0, paramIndex);
         }
-        return dbPart.isEmpty() ? "reciclame_db" : dbPart;
+        int dbIndex = cleanUrl.lastIndexOf("/");
+        if (dbIndex == -1) return "reciclame_db";
+        String dbName = cleanUrl.substring(dbIndex + 1);
+        return dbName.isEmpty() ? "reciclame_db" : dbName;
     }
 
     private String generarNombreArchivo(String tipo) {

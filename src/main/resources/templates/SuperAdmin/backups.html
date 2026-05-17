@@ -689,11 +689,6 @@
                 </tbody>
               </table>
             </div>
-            <div
-              style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
-              <span id="conteo-backups">Sin datos</span>
-              <div style="display:flex;gap:4px;" id="paginacion-backups"></div>
-            </div>
             <div id="no-results-bkp" style="display:none;text-align:center;padding:32px;">
               <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
               <p style="color:#9CA3AF;font-size:13px;">No se encontraron backups con los filtros actuales.</p>
@@ -869,8 +864,8 @@
       <div style="display:flex;gap:10px;justify-content:flex-end;">
         <button onclick="cerrarModalConfirmarRestaurarPaso2()"
           style="padding:10px 20px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;color:#374151;">Cancelar</button>
-        <button id="btn-confirmar-restaurar" onclick="confirmarRestaurar()" disabled
-          style="padding:10px 24px;border-radius:8px;border:none;background:#E74C3C;color:#fff;font-size:13px;font-weight:600;cursor:not-allowed;font-family:inherit;opacity:0.5;">Restaurar</button>
+        <button id="btn-confirmar-restaurar" onclick="confirmarRestaurar()"
+          style="padding:10px 24px;border-radius:8px;border:none;background:#E74C3C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Restaurar</button>
       </div>
     </div>
   </div>
@@ -971,7 +966,8 @@
 
     async function cargarBackups() {
       try {
-        const resp = await fetch('/api/respaldos');
+        const resp = await fetch('/api/respaldos', { credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error cargando backups (' + resp.status + ')', 'error'); return; }
         backupsData = await resp.json();
         actualizarStats();
         applyBkpFilter();
@@ -980,7 +976,8 @@
 
     async function cargarProgramaciones() {
       try {
-        const resp = await fetch('/api/respaldos/programaciones');
+        const resp = await fetch('/api/respaldos/programaciones', { credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error cargando programaciones (' + resp.status + ')', 'error'); return; }
         programacionesData = await resp.json();
         renderProgramaciones();
         document.getElementById('badge-programaciones').textContent = programacionesData.length;
@@ -989,7 +986,8 @@
 
     async function actualizarStats() {
       try {
-        const resp = await fetch('/api/respaldos/stats');
+        const resp = await fetch('/api/respaldos/stats', { credentials: 'same-origin' });
+        if (!resp.ok) return;
         const stats = await resp.json();
         document.getElementById('stat-total').textContent = stats.total || 0;
         document.getElementById('stat-completados').textContent = stats.completados || 0;
@@ -1055,18 +1053,15 @@
 
     function renderBackups(backups) {
       const tbody = document.getElementById('tbody-backups');
-      const conteo = document.getElementById('conteo-backups');
       const noResults = document.getElementById('no-results-bkp');
 
       if (backups.length === 0) {
         tbody.innerHTML = '';
         noResults.style.display = 'block';
-        conteo.textContent = 'No hay backups';
         return;
       }
 
       noResults.style.display = 'none';
-      conteo.textContent = `Mostrando ${backups.length} backup(s)`;
 
       tbody.innerHTML = backups.map(b => {
         const estadoBadge = getEstadoBadge(b.estado);
@@ -1163,18 +1158,19 @@
       try {
         const resp = await fetch('/api/respaldos', {
           method: 'POST',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ tipo, notas })
         });
-        const data = await resp.json();
-        if (resp.ok) {
-          cerrarModalNuevoBackup();
-          showToast('Backup solicitado exitosamente', 'success');
-          cargarBackups();
-        } else {
-          errorEl.textContent = data.error || 'Error al solicitar backup';
+        if (!resp.ok) {
+          errorEl.textContent = resp.status === 401 ? 'Sesión expirada. Recarga la página.' : 'Error al solicitar backup';
           errorEl.style.display = 'block';
+          return;
         }
+        const data = await resp.json();
+        cerrarModalNuevoBackup();
+        showToast('Backup solicitado exitosamente', 'success');
+        cargarBackups();
       } catch (e) {
         errorEl.textContent = 'Error de conexión';
         errorEl.style.display = 'block';
@@ -1202,12 +1198,7 @@
       document.getElementById('restaurar-confirmacion').value = '';
       document.getElementById('restaurar-backup-seguridad').checked = true;
       document.getElementById('restaurar-error').style.display = 'none';
-      document.getElementById('btn-confirmar-restaurar').disabled = true;
       document.getElementById('modal-confirmar-restaurar-paso2').style.display = 'flex';
-
-      document.getElementById('restaurar-confirmacion').oninput = function () {
-        document.getElementById('btn-confirmar-restaurar').disabled = this.value !== 'RESTAURAR';
-      };
     }
 
     function cerrarModalConfirmarRestaurarPaso2() {
@@ -1218,19 +1209,27 @@
       const crearBackupSeguridad = document.getElementById('restaurar-backup-seguridad').checked;
       const errorEl = document.getElementById('restaurar-error');
 
+      const confirmacion = document.getElementById('restaurar-confirmacion').value.trim();
+      if (confirmacion !== 'RESTAURAR') {
+        errorEl.textContent = 'Debes escribir RESTAURAR correctamente para confirmar.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
       try {
         const resp = await fetch('/api/respaldos/' + idBackupSeleccionado + '/restaurar?crearBackupSeguridad=' + crearBackupSeguridad, {
-          method: 'POST'
+          method: 'POST',
+          credentials: 'same-origin'
         });
-        const data = await resp.json();
-        if (resp.ok) {
-          cerrarModalConfirmarRestaurarPaso2();
-          showToast('Restauración completada exitosamente', 'success');
-          cargarBackups();
-        } else {
-          errorEl.textContent = data.error || 'Error al restaurar';
+        if (!resp.ok) {
+          errorEl.textContent = resp.status === 401 ? 'Sesión expirada. Recarga la página.' : 'Error al restaurar';
           errorEl.style.display = 'block';
+          return;
         }
+        const data = await resp.json();
+        cerrarModalConfirmarRestaurarPaso2();
+        showToast('Restauración completada exitosamente', 'success');
+        cargarBackups();
       } catch (e) {
         errorEl.textContent = 'Error de conexión';
         errorEl.style.display = 'block';
@@ -1239,26 +1238,20 @@
 
     async function reintentarBackup(id) {
       try {
-        const resp = await fetch('/api/respaldos/' + id + '/reintentar', { method: 'POST' });
-        if (resp.ok) {
-          showToast('Backup reintentado', 'success');
-          cargarBackups();
-        } else {
-          showToast('Error al reintentar', 'error');
-        }
+        const resp = await fetch('/api/respaldos/' + id + '/reintentar', { method: 'POST', credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error al reintentar', 'error'); return; }
+        showToast('Backup reintentado', 'success');
+        cargarBackups();
       } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
     async function eliminarBackup(id) {
       if (!confirm('¿Eliminar este backup?')) return;
       try {
-        const resp = await fetch('/api/respaldos/' + id, { method: 'DELETE' });
-        if (resp.ok) {
-          showToast('Backup eliminado', 'success');
-          cargarBackups();
-        } else {
-          showToast('Error al eliminar', 'error');
-        }
+        const resp = await fetch('/api/respaldos/' + id, { method: 'DELETE', credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error al eliminar', 'error'); return; }
+        showToast('Backup eliminado', 'success');
+        cargarBackups();
       } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
@@ -1317,18 +1310,18 @@
         const method = id ? 'PUT' : 'POST';
         const resp = await fetch(url, {
           method,
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
-        const data = await resp.json();
-        if (resp.ok) {
-          cerrarModalProgramacion();
-          showToast(id ? 'Programación actualizada' : 'Programación creada', 'success');
-          cargarProgramaciones();
-        } else {
-          errorEl.textContent = data.error || 'Error al guardar';
+        if (!resp.ok) {
+          errorEl.textContent = resp.status === 401 ? 'Sesión expirada. Recarga la página.' : 'Error al guardar';
           errorEl.style.display = 'block';
+          return;
         }
+        cerrarModalProgramacion();
+        showToast(id ? 'Programación actualizada' : 'Programación creada', 'success');
+        cargarProgramaciones();
       } catch (e) {
         errorEl.textContent = 'Error de conexión';
         errorEl.style.display = 'block';
@@ -1337,26 +1330,20 @@
 
     async function toggleProgramacion(id) {
       try {
-        const resp = await fetch('/api/respaldos/programaciones/' + id + '/toggle', { method: 'POST' });
-        if (resp.ok) {
-          showToast('Programación actualizada', 'success');
-          cargarProgramaciones();
-        } else {
-          showToast('Error al actualizar', 'error');
-        }
+        const resp = await fetch('/api/respaldos/programaciones/' + id + '/toggle', { method: 'POST', credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error al actualizar', 'error'); return; }
+        showToast('Programación actualizada', 'success');
+        cargarProgramaciones();
       } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
     async function eliminarProgramacion(id) {
       if (!confirm('¿Eliminar esta programación?')) return;
       try {
-        const resp = await fetch('/api/respaldos/programaciones/' + id, { method: 'DELETE' });
-        if (resp.ok) {
-          showToast('Programación eliminada', 'success');
-          cargarProgramaciones();
-        } else {
-          showToast('Error al eliminar', 'error');
-        }
+        const resp = await fetch('/api/respaldos/programaciones/' + id, { method: 'DELETE', credentials: 'same-origin' });
+        if (!resp.ok) { showToast('Error al eliminar', 'error'); return; }
+        showToast('Programación eliminada', 'success');
+        cargarProgramaciones();
       } catch (e) { showToast('Error de conexión', 'error'); }
     }
 
