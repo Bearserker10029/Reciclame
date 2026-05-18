@@ -62,15 +62,15 @@
       <div class="nav-item" id="nav-estudios" data-module="estudios" onclick="navTo('estudios')">
         <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
       </div>
-      <div class="nav-item" id="nav-normativo" data-module="normativo" onclick="try{sessionStorage.setItem('reciclameNormativoTab','todos');}catch(e){}window.__normativoTab='todos';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('todos');},0);">
+      <div class="nav-item" id="nav-normativo" data-module="normativo" onclick="navTo('normativo');">
         <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio Normativo</span>
       </div>
       <div class="nav-sublist" data-module="normativo" aria-label="Submódulos de Repositorio Normativo">
-        <div class="nav-subitem" id="nav-nacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','nacional');}catch(e){}window.__normativoTab='nacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('nacional');},0);">
+        <div class="nav-subitem" id="nav-nacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','nacional');}catch(e){}window.__normativoTab='nacional';navTo('normativo');">
           <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Nacional</span>
         </div>
-        <div class="nav-subitem" id="nav-internacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','internacional');}catch(e){}window.__normativoTab='internacional';navTo('normativo');setTimeout(function(){if(window.showNormativoTab)window.showNormativoTab('internacional');},0);">
+        <div class="nav-subitem" id="nav-internacional" onclick="try{sessionStorage.setItem('reciclameNormativoTab','internacional');}catch(e){}window.__normativoTab='internacional';navTo('normativo');">
           <i class="fas fa-globe" style="width:16px;text-align:center;font-size:13px;"></i>
           <span>Internacional</span>
         </div>
@@ -231,6 +231,17 @@
       }
 
       sincronizarSubnavNormativo();
+
+      // ── Sincronizar tab de normativo cuando cambia en otra parte ──
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'reciclameNormativoTab') {
+          var val = e.newValue;
+          if (val === 'todos' || val === 'nacional' || val === 'internacional') {
+            window.__normativoTab = val;
+            sincronizarSubnavNormativo();
+          }
+        }
+      });
 
       // ── Aplicar config de módulos del sidebar (solo socio/visualizador) ──
       var _uiModulos = /*[[${uiModulosSidebar}]]*/ null;
