@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.time.Instant;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 @Controller
 public class SuperAdminController extends AdminController {
@@ -125,12 +126,8 @@ public class SuperAdminController extends AdminController {
 
     @Override
     @GetMapping("/superadmin")
-    public String inicio(Model model) {
-        model.addAttribute("rol", "SUPERADMIN");
-        model.addAttribute("rolNombre", "SuperAdmin");
-        model.addAttribute("usuarioNombre", "Super Admin");
-        model.addAttribute("noLeidasCount", 0);
-        return "SuperAdmin/inicio";
+    public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
+        return adminInicio(model, user);
     }
 
     @Override
@@ -268,6 +265,12 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("maxEstudios", maxEstudios);
         model.addAttribute("maxNormativas", maxNormativas);
 
+        var todosUsuariosR = usuarioService.listarUsuarios();
+        int pctUsuariosActivosBar = !todosUsuariosR.isEmpty()
+                ? (int)(usuariosActivos.size() * 100.0 / todosUsuariosR.size()) : 0;
+        model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
+        model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
+
         return "SuperAdmin/reportes";
     }
 
@@ -278,6 +281,27 @@ public class SuperAdminController extends AdminController {
         var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 50);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+
+        // Chips por módulo
+        var conteoPorModulo = auditoriasPage.getContent().stream()
+                .filter(a -> a.getModulo() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        a -> a.getModulo(), java.util.stream.Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    var m = new java.util.HashMap<String, Object>();
+                    m.put("modulo", e.getKey());
+                    m.put("count", e.getValue());
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("conteoPorModulo", conteoPorModulo);
+
+        // Actividad últimos 7 días
+        Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
+        var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace7d, Instant.now());
+        model.addAttribute("actividadDiaria", actividadDiaria != null ? actividadDiaria : java.util.Collections.emptyList());
+
         return "SuperAdmin/trazabilidad";
     }
 
@@ -329,6 +353,32 @@ return "redirect:/superadmin/notificaciones";
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("usuario", u);
+
+            String nombre = u.getNombreCompleto() != null ? u.getNombreCompleto().trim() : "";
+            String[] partes = nombre.split("\\s+");
+            String initiales = partes.length >= 2
+                    ? String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0))
+                    : (nombre.length() > 0 ? String.valueOf(nombre.charAt(0)) : "?");
+            model.addAttribute("initiales", initiales.toUpperCase());
+
+            if (u.getCreatedAt() != null) {
+                java.time.LocalDate ld = u.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", new java.util.Locale("es"));
+                model.addAttribute("createdAtMes", "Desde " + ld.format(fmt));
+                model.addAttribute("createdAtFormatted", ld.toString());
+            } else {
+                model.addAttribute("createdAtMes", "");
+                model.addAttribute("createdAtFormatted", "");
+            }
+
+            if (u.getUltimoLogin() != null) {
+                java.time.LocalDate ld = u.getUltimoLogin().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                model.addAttribute("ultimoAccesoFormatted", ld.toString());
+            } else {
+                model.addAttribute("ultimoAccesoFormatted", "No registrado");
+            }
+
             List<Auditoria> auditoriasUsuario = auditoriaService.listarAuditoriasPorUsuario(u.getId());
 
             long descargasCount = auditoriasUsuario.stream()
@@ -337,7 +387,7 @@ return "redirect:/superadmin/notificaciones";
             model.addAttribute("descargasCount", descargasCount);
 
             long busquedasCount = auditoriasUsuario.stream()
-                    .filter(a -> a.getAccion().contains("BUSQUEDA") || a.getAccion().contains("CONSULTA"))
+                    .filter(a -> a.getAccion() != null && (a.getAccion().contains("BUSQUEDA") || a.getAccion().contains("CONSULTA")))
                     .count();
             model.addAttribute("busquedasCount", busquedasCount);
 
@@ -351,10 +401,9 @@ return "redirect:/superadmin/notificaciones";
                     .count();
             model.addAttribute("normativasConsultadas", normativasConsultadas);
 
-            model.addAttribute("ultimoAcceso", u.getUltimoLogin());
-
             var auditoriasRecientes = auditoriaService.listarAuditoriasPorUsuarioPaginado(u.getId(), 0, 5);
             model.addAttribute("actividadReciente", auditoriasRecientes.getContent());
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
         return "SuperAdmin/perfil";
     }
@@ -512,6 +561,28 @@ return "redirect:/superadmin/notificaciones";
         model.addAttribute("topUsuariosFallidos", topUsuariosF != null ? topUsuariosF : java.util.Collections.emptyList());
 
         return "SuperAdmin/auditoria";
+    }
+
+    @Override
+    @GetMapping("/superadmin/auditoria/export.csv")
+    public void exportarAuditoriaCsv(HttpServletResponse response,
+                                      @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
+        var auditorias = auditoriaService.listarAuditoriasUltimas100();
+        var pw = response.getWriter();
+        pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
+        for (var a : auditorias) {
+            pw.printf("%s,%s,%s,%s,%s,\"%s\",%s,%s%n",
+                a.getId(),
+                a.getFechaAccion() != null ? a.getFechaAccion().toString().substring(0, 19).replace('T', ' ') : "",
+                a.getUsuarioNombre() != null ? a.getUsuarioNombre() : "",
+                a.getAccion() != null ? a.getAccion() : "",
+                a.getModulo() != null ? a.getModulo() : "",
+                a.getDescripcion() != null ? a.getDescripcion().replace("\"", "\"\"") : "",
+                a.getEstado() != null ? a.getEstado() : "",
+                a.getIpAddress() != null ? a.getIpAddress() : "");
+        }
     }
 
     @GetMapping("/superadmin/impersonar")
@@ -785,16 +856,6 @@ return "redirect:/superadmin/notificaciones";
     protected void exportarNormativasXLSX(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
         super.exportarNormativasXLSX(response, user);
-    }
-
-    @GetMapping("/superadmin/diccionarios")
-    public String diccionarios(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("tematicas", tematicaService.listarTematicasTodas());
-        model.addAttribute("etiquetas", etiquetaService.listarEtiquetasTodas());
-        model.addAttribute("tiposNormativa", tiposNormativaService.listarTiposTodos());
-        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstadosTodos());
-        return "SuperAdmin/diccionarios";
     }
 
     @GetMapping("/superadmin/legal/cookies")

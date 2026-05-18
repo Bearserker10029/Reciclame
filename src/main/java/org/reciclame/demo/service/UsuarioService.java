@@ -147,6 +147,14 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public long contarNuevosDesde(Instant desde) {
+        return usuarioRepository.contarNuevosDesde(desde);
+    }
+
+    public long contarEntreFechas(Instant desde, Instant hasta) {
+        return usuarioRepository.contarEntreFechas(desde, hasta);
+    }
+
     public List<Map<String, Object>> agregarPorEstado() {
         List<UsuarioResponseDTO> usuarios = listarUsuarios();
         return usuarios.stream()

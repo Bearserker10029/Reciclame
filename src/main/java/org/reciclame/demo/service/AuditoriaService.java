@@ -314,6 +314,10 @@ public class AuditoriaService {
         return Math.round((exitosos * 100.0 / auditorias24h.size()) * 10.0) / 10.0;
     }
 
+    public long contarEntreFechas(Instant desde, Instant hasta) {
+        return auditoriaRepository.contarEntreFechas(desde, hasta);
+    }
+
     // ── CONSTANTES ───────────────────────────────────────────────────
     public static final String ACCION_CREAR_USUARIO = "CREAR_USUARIO";
     public static final String ACCION_EDITAR_USUARIO = "EDITAR_USUARIO";

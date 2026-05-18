@@ -62,6 +62,9 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
            "GROUP BY a.usuarioId, a.usuarioNombre ORDER BY COUNT(a) DESC")
     List<Object[]> topUsuariosFallidos(Pageable pageable);
 
+    @Query("SELECT COUNT(a) FROM Auditoria a WHERE a.fechaAccion >= :desde AND a.fechaAccion < :hasta AND a.estadoActivo = true")
+    long contarEntreFechas(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
     @Query("SELECT COUNT(a) FROM Auditoria a WHERE a.estado = 'FALLIDO' " +
            "AND a.fechaAccion >= :desde AND a.estadoActivo = true")
     long contarFallidosDesde(@Param("desde") Instant desde);

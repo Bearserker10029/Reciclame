@@ -5,11 +5,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title th:text="${isEdit} ? 'Recíclame — Editar Estudio' : 'Recíclame — Nuevo Estudio'">Recíclame — Estudio</title>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/admin/' + p; } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -36,27 +36,70 @@
       }
     }
 
-    /* ── Page header ── */
-    .form-hero {
-      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
-      border-radius: 20px;
-      padding: 24px 32px;
-      margin-bottom: 28px;
-      box-shadow: 0 8px 32px rgba(27, 58, 92, .3);
-      animation: fadeUp .4s ease both;
+    @keyframes waterWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg {
       position: relative;
       overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Page header ── */
+    .form-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 55%, #0e3322 100%);
+      border-radius: 20px;
+      padding: 26px 32px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 48px rgba(27, 58, 92, .4);
+      animation: fadeUp .4s ease both;
     }
 
     .form-hero::before {
       content: '';
       position: absolute;
-      top: -50px;
+      top: -80px;
       right: -40px;
-      width: 220px;
-      height: 220px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(46, 204, 113, .18) 0%, transparent 70%);
+    }
+
+    .form-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: 15%;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
     }
 
     /* ── Back button ── */
@@ -99,9 +142,12 @@
 
     /* ── Cards ── */
     .form-card {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 16px;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
       padding: 24px 28px;
       margin-bottom: 20px;
       animation: fadeUp .4s ease both;
@@ -478,29 +524,30 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <!-- ══ HERO ══ -->
         <div class="form-hero">
-          <div
-            style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-            <div style="display:flex;align-items:center;gap:14px;">
-              <div
-                style="width:46px;height:46px;border-radius:13px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
-                <i th:class="${isEdit} ? 'fas fa-edit' : 'fas fa-plus-circle'"
-                  style="color:#2ECC71;font-size:19px;"></i>
-              </div>
-              <div>
-                <h1 style="font-size:20px;font-weight:800;color:#fff;margin:0;"
-                  th:text="${isEdit} ? 'Editar Estudio' : 'Nuevo Estudio'">Nuevo Estudio</h1>
-                <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
-                  th:text="${isEdit} ? ('Modificando: ' + estudio.titulo) : 'Completa los datos del nuevo documento'">
-                  Completa los datos del nuevo documento</p>
-              </div>
-            </div>
-            <a href="/admin/estudios" class="btn-back">
-              <i class="fas fa-arrow-left"></i> Volver a Estudios
+          <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
+            <a href="/admin/estudios" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
+                  display:flex;align-items:center;justify-content:center;text-decoration:none;
+                  color:#fff;transition:background .2s;" onmouseover="this.style.background='rgba(255,255,255,.25)'"
+              onmouseout="this.style.background='rgba(255,255,255,.15)'">
+              <i class="fas fa-arrow-left" style="font-size:15px;"></i>
             </a>
+            <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);
+                    display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+              <i th:class="${isEdit} ? 'fas fa-edit' : 'fas fa-plus-circle'"
+                style="color:#2ECC71;font-size:18px;"></i>
+            </div>
+            <div>
+              <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;"
+                th:text="${isEdit} ? 'Editar Estudio' : 'Nuevo Estudio'">Nuevo Estudio</h1>
+              <p style="font-size:12px;color:rgba(255,255,255,.6);margin:0;"
+                th:text="${isEdit} ? ('Modificando: ' + estudio.titulo) : 'Completa los datos del nuevo documento'">
+                Completa los datos del nuevo documento</p>
+            </div>
           </div>
         </div>
 
@@ -619,7 +666,7 @@
                   <div class="name">Archivo actual</div>
                   <div class="hint">Sube un nuevo archivo solo si quieres reemplazarlo</div>
                 </div>
-                <a th:href="${estudio.archivoUrl}" target="_blank"
+                <a th:href="@{/api/documentos/ver(url=${estudio.archivoUrl})}" target="_blank"
                   style="font-size:11px;color:#2ECC71;font-weight:600;text-decoration:none;">
                   <i class="fas fa-eye"></i> Ver
                 </a>
@@ -677,7 +724,8 @@
                 <span th:text="${isEdit} ? 'Guardar cambios' : 'Crear estudio'">Crear estudio</span>
               </button>
               <div style="margin-top:10px;text-align:center;">
-                <a href="/admin/estudios" style="font-size:12px;color:#9CA3AF;text-decoration:none;font-weight:500;">
+                <a href="/admin/estudios"
+                  style="font-size:12px;color:#9CA3AF;text-decoration:none;font-weight:500;">
                   Cancelar y volver
                 </a>
               </div>
@@ -686,6 +734,7 @@
           </div>
         </div><!-- /form-grid -->
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
@@ -726,15 +775,20 @@
     });
 
     // ─── File handlers ────────────────────────────────────────────
+    var selectedFile = null; // input.files es read-only en Firefox; usamos esta variable
+
     function onFileChange(input) {
-      if (input.files && input.files[0]) showFilePreview(input.files[0]);
+      if (input.files && input.files[0]) {
+        selectedFile = input.files[0];
+        showFilePreview(selectedFile);
+      }
     }
     function onFileDrop(e) {
       e.preventDefault();
       document.getElementById('drop-zone').classList.remove('drag-over');
       var file = e.dataTransfer.files[0];
       if (!file) return;
-      document.getElementById('f-archivo').files = e.dataTransfer.files;
+      selectedFile = file;
       showFilePreview(file);
     }
     function showFilePreview(file) {
@@ -792,7 +846,7 @@
       // Validación client-side básica (evita round-trip innecesario)
       var titulo = document.getElementById('f-titulo').value.trim();
       var tematica = document.getElementById('f-tematica').value;
-      var archivo = document.getElementById('f-archivo').files[0];
+      var archivo = selectedFile || document.getElementById('f-archivo').files[0];
 
       if (!titulo) {
         errBanner.textContent = 'El título es obligatorio.';

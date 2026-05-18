@@ -448,11 +448,11 @@
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Auditoría:</span>
-              <a href="/admin/reportes/export/auditoria.pdf" class="btn-export"
+              <a href="/superadmin/reportes/export/auditoria.pdf" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/auditoria.xlsx" class="btn-export"
+              <a href="/superadmin/reportes/export/auditoria.xlsx" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
@@ -460,11 +460,11 @@
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Usuarios:</span>
-              <a href="/admin/reportes/export/usuarios.pdf" class="btn-export"
+              <a href="/superadmin/reportes/export/usuarios.pdf" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/usuarios.xlsx" class="btn-export"
+              <a href="/superadmin/reportes/export/usuarios.xlsx" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
@@ -472,11 +472,11 @@
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Normativas:</span>
-              <a href="/admin/reportes/export/normativas.pdf" class="btn-export"
+              <a href="/superadmin/reportes/export/normativas.pdf" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-pdf"></i> PDF
               </a>
-              <a href="/admin/reportes/export/normativas.xlsx" class="btn-export"
+              <a href="/superadmin/reportes/export/normativas.xlsx" class="btn-export"
                 style="padding:8px 14px;font-size:12px;text-decoration:none;">
                 <i class="fas fa-file-excel"></i> XLSX
               </a>
@@ -537,7 +537,7 @@
               </div>
               <div style="height:4px;background:#F0F4F8;border-radius:2px;margin-top:14px;overflow:hidden;">
                 <div
-                  style="height:100%;width:60%;background:linear-gradient(90deg,#3498DB,#2980B9);border-radius:2px;transition:width 1.2s ease;">
+                  th:style="'height:100%;width:' + ${pctDescargasBar} + '%;background:linear-gradient(90deg,#3498DB,#2980B9);border-radius:2px;transition:width 1.2s ease;'">
                 </div>
               </div>
             </div>
@@ -559,7 +559,7 @@
               </div>
               <div style="height:4px;background:#F0F4F8;border-radius:2px;margin-top:14px;overflow:hidden;">
                 <div
-                  style="height:100%;width:42%;background:linear-gradient(90deg,#F39C12,#D68910);border-radius:2px;transition:width 1.2s ease;">
+                  th:style="'height:100%;width:' + ${pctUsuariosActivosBar} + '%;background:linear-gradient(90deg,#F39C12,#D68910);border-radius:2px;transition:width 1.2s ease;'">
                 </div>
               </div>
             </div>

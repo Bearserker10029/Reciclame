@@ -9,273 +9,184 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/admin/' + p; } }</script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { font-family: 'Inter', sans-serif; background: #F0F4F8; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px) } to { opacity: 1; transform: translateY(0) } }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,.4) } 50% { box-shadow: 0 0 0 8px rgba(46,204,113,0) } }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-12px) } to { opacity: 1; transform: translateX(0) } }
+    @keyframes barGrow { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+    @keyframes waterWave { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
+
+    .water-bg { position: relative; overflow: hidden; }
+    .water-bg::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg,rgba(46,204,113,.15) 0%,transparent 50%),
+                  linear-gradient(225deg,rgba(52,152,219,.12) 0%,transparent 50%),
+                  linear-gradient(315deg,rgba(41,128,185,.1) 0%,transparent 50%),
+                  linear-gradient(45deg,rgba(27,58,92,.08) 0%,transparent 50%);
+      background-size: 400% 400%; animation: waterWave 12s ease infinite;
+      pointer-events: none; z-index: 0; border-radius: inherit;
     }
+    .water-bg > * { position: relative; z-index: 1; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #F0F4F8;
-    }
-
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0)
-      }
-    }
-
-    @keyframes pulseGreen {
-
-      0%,
-      100% {
-        box-shadow: 0 0 0 0 rgba(46, 204, 113, .6)
-      }
-
-      60% {
-        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
-      }
-    }
-
-    @keyframes rowIn {
-      from {
-        opacity: 0;
-        transform: translateX(-12px)
-      }
-
-      to {
-        opacity: 1;
-        transform: translateX(0)
-      }
-    }
-
-    @keyframes blinkDot {
-
-      0%,
-      100% {
-        opacity: 1
-      }
-
-      50% {
-        opacity: .3
-      }
-    }
-
-    /* ── Hero Header ── */
     .traza-hero {
-      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 50%, #1a3a2a 100%);
-      border-radius: 20px;
-      padding: 24px 32px;
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
-      animation: fadeUp .4s ease both;
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px; padding: 28px 32px; margin-bottom: 28px;
+      position: relative; overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27,58,92,.35); animation: fadeUp .4s ease both;
     }
-
     .traza-hero::before {
-      content: '';
-      position: absolute;
-      top: -80px;
-      right: -40px;
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
+      content: ''; position: absolute; top: -60px; right: -60px; width: 280px; height: 280px;
+      border-radius: 50%; background: radial-gradient(circle,rgba(46,204,113,.25) 0%,transparent 70%);
     }
+    .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #2ECC71; animation: pulse 1.8s ease infinite; display: inline-block; }
 
-    .traza-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -60px;
-      left: 30%;
-      width: 180px;
-      height: 180px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
+    .stat-chip {
+      background: rgba(255,255,255,.12); backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 14px;
+      padding: 14px 20px; text-align: center; cursor: default;
+      transition: all .3s ease; animation: fadeUp .5s ease both;
     }
+    .stat-chip:hover { background: rgba(255,255,255,.22); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.2); }
+    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-top: 4px; }
 
-    /* ── Live dot ── */
-    .live-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #2ECC71;
-      animation: pulseGreen 1.8s ease infinite;
-      display: inline-block;
+    .module-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: 10px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15); transition: all .2s;
     }
+    .module-chip .m-val { font-size: 16px; font-weight: 800; color: #2ECC71; }
+    .module-chip .m-lbl { font-size: 11px; color: rgba(255,255,255,.7); font-weight: 600; }
 
-    /* ── Filter bar ── */
-    .filter-bar {
-      background: #fff;
-      border-radius: 14px;
-      padding: 14px 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      animation: fadeUp .45s ease both;
+    .filter-row {
+      background: rgba(255,255,255,.28); backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,.5); border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
     }
-
-    .filter-bar input,
-    .filter-bar select {
-      border: 1.5px solid #E5E7EB;
-      border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 13px;
-      font-family: inherit;
-      color: #374151;
-      transition: border-color .2s, box-shadow .2s;
-      background: #fff;
+    .filter-row input, .filter-row select {
+      border: 1.5px solid #E5E7EB; border-radius: 9px; padding: 8px 12px;
+      font-size: 12px; font-family: inherit; color: #374151;
+      transition: all .2s; background: #fff;
     }
-
-    .filter-bar input {
-      flex: 1;
-      min-width: 200px;
-      padding-left: 38px;
+    .filter-row input { padding-left: 34px; }
+    .filter-row input:focus, .filter-row select:focus {
+      outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46,204,113,.1);
     }
-
-    .filter-bar input:focus,
-    .filter-bar select:focus {
-      outline: none;
-      border-color: #2ECC71;
-      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
-    }
-
     .btn-limpiar {
-      padding: 9px 16px;
-      border-radius: 10px;
-      border: 1.5px solid #E5E7EB;
-      background: #fff;
-      cursor: pointer;
-      font-size: 12px;
-      color: #6B7280;
-      font-family: inherit;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all .2s ease;
+      padding: 9px 16px; border-radius: 10px; border: 1.5px solid #E5E7EB;
+      background: #fff; cursor: pointer; font-size: 12px; color: #6B7280;
+      font-family: inherit; display: flex; align-items: center; gap: 6px; transition: all .2s ease;
     }
+    .btn-limpiar:hover { border-color: #E74C3C; color: #E74C3C; background: rgba(231,76,60,.04); }
 
-    .btn-limpiar:hover {
-      border-color: #E74C3C;
-      color: #E74C3C;
-      background: rgba(231, 76, 60, .04);
-    }
-
-    /* ── Table container ── */
     .traza-table-wrap {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
-      overflow: hidden;
-      animation: fadeUp .5s .1s ease both;
+      background: #F0FAF4; border-radius: 16px; box-shadow: 0 2px 20px rgba(0,0,0,.08);
+      overflow: hidden; animation: fadeUp .5s .1s ease both;
     }
-
     .traza-table-wrap thead th {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: #6B7280;
-      padding: 13px 16px;
-      border: none;
-      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+      font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      color: #6B7280; padding: 13px 16px; border: none;
+      background: linear-gradient(90deg,#F8FAFC,#F0F4F8);
     }
-
     .audit-row {
-      border-bottom: 1px solid #F3F4F6;
-      transition: background .2s;
+      border-bottom: 1px solid #F3F4F6; transition: background .2s;
       animation: rowIn .35s ease both;
     }
+    .audit-row:hover { background: #F0FFF6; }
+    .audit-row td { padding: 12px 16px; vertical-align: middle; }
+    .audit-row:last-child { border-bottom: none; }
 
-    .audit-row:hover {
-      background: #F0FFF6;
-    }
-
-    .audit-row td {
-      padding: 12px 16px;
-      vertical-align: middle;
-    }
-
-    .audit-row:last-child {
-      border-bottom: none;
-    }
-
-    /* ── Action pills ── */
     .pill-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 700;
-      transition: transform .2s;
-      cursor: default;
+      display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+      border-radius: 999px; font-size: 11px; font-weight: 700; transition: transform .2s; cursor: default;
     }
-
-    .pill-action:hover {
-      transform: scale(1.05);
-    }
-
-    /* ── Status badges ── */
+    .pill-action:hover { transform: scale(1.05); }
     .badge-exitoso {
-      background: rgba(46, 204, 113, .1);
-      color: #27AE60;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      background: rgba(46,204,113,.1); color: #27AE60; padding: 4px 10px;
+      border-radius: 999px; font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
     }
-
     .badge-fallido {
-      background: rgba(231, 76, 60, .1);
-      color: #C0392B;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      background: rgba(231,76,60,.1); color: #C0392B; padding: 4px 10px;
+      border-radius: 999px; font-size: 10px; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
     }
-
-    /* ── Module tag ── */
     .mod-tag {
-      background: #F3F4F6;
-      color: #374151;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .04em;
+      background: #F3F4F6; color: #374151; padding: 3px 8px;
+      border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: .04em;
     }
 
-    /* ── Footer ── */
+    .activity-chart {
+      background: #fff; border-radius: 16px; padding: 20px 24px;
+      box-shadow: 0 2px 20px rgba(0,0,0,.06); margin-bottom: 24px;
+      animation: fadeUp .5s .15s ease both;
+    }
+    .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 12px; }
+    .chart-bar {
+      flex: 1; background: linear-gradient(180deg,#2ECC71 0%,#27AE60 100%);
+      border-radius: 4px 4px 0 0; min-height: 4px; transition: height .4s ease;
+      animation: barGrow .5s ease both; position: relative; cursor: default;
+    }
+    .chart-bar:hover { background: linear-gradient(180deg,#27AE60 0%,#1E8449 100%); }
+    .chart-bar .bar-tooltip {
+      display: none; position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%); background: #1B3A5C; color: #fff;
+      padding: 3px 8px; border-radius: 6px; font-size: 10px; white-space: nowrap;
+    }
+    .chart-bar:hover .bar-tooltip { display: block; }
+    .chart-labels { display: flex; gap: 6px; margin-top: 6px; }
+    .chart-labels span { flex: 1; text-align: center; font-size: 9px; color: #9CA3AF; }
+
+    .btn-detalle {
+      padding: 4px 10px; border-radius: 6px; border: 1px solid #E5E7EB;
+      background: #fff; cursor: pointer; font-size: 10px; color: #6B7280;
+      font-family: inherit; transition: all .2s;
+    }
+    .btn-detalle:hover { border-color: #1B3A5C; color: #1B3A5C; background: #F0F4F8; }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,.5); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-content {
+      background: #fff; border-radius: 16px; max-width: 600px; width: 90%;
+      max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      animation: fadeUp .3s ease both;
+    }
+    .modal-header {
+      padding: 20px 24px; border-bottom: 1px solid #F3F4F6;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h3 { font-size: 16px; font-weight: 700; color: #1B3A5C; margin: 0; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px; border: none;
+      background: #F3F4F6; cursor: pointer; font-size: 14px; color: #6B7280;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .modal-close:hover { background: #E5E7EB; }
+    .modal-body { padding: 20px 24px; }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section label { font-size: 11px; font-weight: 700; color: #6B7280; text-transform: uppercase; letter-spacing: .05em; display: block; margin-bottom: 4px; }
+    .detail-section .val { font-size: 13px; color: #374151; }
+    .json-block {
+      background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px;
+      padding: 12px; font-family: monospace; font-size: 11px; color: #374151;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+    }
+
     .traza-footer {
-      padding: 12px 20px;
-      background: #FAFBFC;
-      border-top: 1px solid #F3F4F6;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      padding: 12px 20px; background: #FAFBFC; border-top: 1px solid #F3F4F6;
+      display: flex; align-items: center; justify-content: space-between;
     }
   </style>
 </head>
@@ -286,46 +197,76 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ HERO HEADER ══ -->
         <div class="traza-hero">
-          <div
-            style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
-                <div
-                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
-                  <i class="fas fa-shield-alt" style="color:#2ECC71;font-size:18px;"></i>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-route" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Trazabilidad de Actividades</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Registro en tiempo real de todas las
-                    acciones del sistema</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Historial cronológico de todas las operaciones del sistema</p>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-                <span class="live-dot"></span>
-                <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:600;">En vivo</span>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" th:text="${totalElements != null ? totalElements : 0}">0</div>
+                <div class="lbl">Total</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" id="stat-exitosos" style="color:#34D399;">0</div>
+                <div class="lbl">Exitosos</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="val" id="stat-fallidos" style="color:#F87171;">0</div>
+                <div class="lbl">Fallidos</div>
               </div>
             </div>
-            <div th:if="${totalElements != null}"
-              style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);border-radius:14px;padding:16px 24px;text-align:center;">
-              <div style="font-size:32px;font-weight:800;color:#fff;" th:text="${totalElements}">0</div>
-              <div
-                style="font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);">
-                registros totales</div>
-            </div>
           </div>
+          <th:block th:if="${conteoPorModulo != null and !conteoPorModulo.isEmpty()}" style="position:relative;z-index:1;display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;display:flex;">
+            <th:block th:each="m : ${conteoPorModulo}">
+              <div class="module-chip">
+                <span class="m-val" th:text="${m.count}">0</span>
+                <span class="m-lbl" th:text="${m.modulo}">Módulo</span>
+              </div>
+            </th:block>
+          </th:block>
         </div>
 
-        <!-- ══ FILTER BAR ══ -->
-        <div class="filter-bar">
-          <div style="position:relative;flex:1;min-width:220px;">
-            <i class="fas fa-search"
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+        <div class="activity-chart" th:if="${actividadDiaria != null and !actividadDiaria.isEmpty()}">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#1B3A5C;">Actividad últimos 7 días</div>
+              <div style="font-size:11px;color:#9CA3AF;">Volumen de acciones por día</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="live-dot" style="width:8px;height:8px;"></span>
+              <span style="font-size:11px;color:#9CA3AF;">Actualizado</span>
+            </div>
+          </div>
+          <div class="chart-bars" id="chart-bars"></div>
+          <div class="chart-labels" id="chart-labels"></div>
+        </div>
+
+        <div class="filter-row">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
             <input id="searchTraza" placeholder="Buscar por usuario, acción o descripción..." />
           </div>
+          <select id="filterModuloTraza">
+            <option value="">Módulo: Todos</option>
+            <option value="USUARIOS">USUARIOS</option>
+            <option value="NORMATIVAS">NORMATIVAS</option>
+            <option value="ESTUDIOS">ESTUDIOS</option>
+            <option value="EMPRESAS">EMPRESAS</option>
+            <option value="SISTEMA">SISTEMA</option>
+            <option value="SEGURIDAD">SEGURIDAD</option>
+          </select>
           <select id="filterAccionTraza">
             <option value="">Acción: Todas</option>
             <option value="CREAR_USUARIO">Crear Usuario</option>
@@ -333,115 +274,94 @@
             <option value="ELIMINAR_USUARIO">Eliminar Usuario</option>
             <option value="BLOQUEAR_USUARIO">Bloquear Usuario</option>
             <option value="APROBAR_USUARIO">Aprobar Usuario</option>
+            <option value="LOGIN">Login</option>
+            <option value="LOGOUT">Logout</option>
+            <option value="DESCARGAR_DOCUMENTO">Descargar Doc</option>
           </select>
           <select id="filterEstadoTraza">
-            <option value="">Estado: Todos</option>
+            <option value="">Estado: Todas</option>
             <option value="EXITOSO">Exitoso</option>
             <option value="FALLIDO">Fallido</option>
           </select>
+          <input type="date" id="filterFechaDesde" style="width:140px;" />
+          <input type="date" id="filterFechaHasta" style="width:140px;" />
           <button class="btn-limpiar" onclick="limpiarFiltrosTraza()">
             <i class="fas fa-times"></i> Limpiar
           </button>
         </div>
 
-        <!-- ══ TABLE ══ -->
         <div class="traza-table-wrap">
           <div style="overflow-x:auto;">
-            <table class="table mb-0" style="min-width:900px;">
+            <table class="table mb-0" style="min-width:980px;">
               <thead>
                 <tr>
-                  <th><i class="fas fa-clock" style="margin-right:6px;"></i>Fecha y Hora</th>
+                  <th><i class="fas fa-clock" style="margin-right:6px;"></i>Fecha</th>
                   <th><i class="fas fa-user" style="margin-right:6px;"></i>Usuario</th>
                   <th><i class="fas fa-bolt" style="margin-right:6px;"></i>Acción</th>
                   <th><i class="fas fa-cube" style="margin-right:6px;"></i>Módulo</th>
                   <th>Descripción</th>
                   <th><i class="fas fa-network-wired" style="margin-right:6px;"></i>IP</th>
                   <th>Resultado</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="tablaAuditoria">
-
                 <tr th:if="${auditorias == null or auditorias.isEmpty()}">
-                  <td colspan="7" style="text-align:center;padding:60px;">
-                    <i class="fas fa-clipboard-list"
-                      style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
+                  <td colspan="8" style="text-align:center;padding:60px;">
+                    <i class="fas fa-clipboard-list" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
                     <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay registros de auditoría aún</div>
                   </td>
                 </tr>
-
-                <tr th:each="a, iStat : ${auditorias}" class="audit-row" th:data-accion="${a.accion}"
-                  th:data-estado="${a.estado}"
-                  th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.accion ?: '') + ' ' + (a.descripcion ?: '')}"
-                  th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
-
+                <tr th:each="a, iStat : ${auditorias}" class="audit-row"
+                    th:data-accion="${a.accion}" th:data-estado="${a.estado}"
+                    th:data-modulo="${a.modulo}"
+                    th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.accion ?: '') + ' ' + (a.descripcion ?: '')}"
+                    th:data-id="${a.id}"
+                    th:data-datos-anteriores="${a.datosAnteriores ?: ''}"
+                    th:data-datos-nuevos="${a.datosNuevos ?: ''}"
+                    th:data-user-agent="${a.userAgent ?: ''}"
+                    th:data-mensaje-error="${a.mensajeError ?: ''}"
+                    th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
                   <td>
                     <div style="font-size:12px;font-weight:600;color:#1B3A5C;white-space:nowrap;"
-                      th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">
-                      —</div>
-                    <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">UTC</div>
+                         th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</div>
                   </td>
-
                   <td>
                     <div style="display:flex;align-items:center;gap:8px;">
-                      <div
-                        style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2ECC71);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#1B3A5C,#2ECC71);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <span style="font-size:11px;font-weight:700;color:#fff;"
-                          th:text="${a.usuarioNombre != null and #strings.length(a.usuarioNombre) > 0 ? #strings.toUpperCase(#strings.substring(a.usuarioNombre,0,1)) : 'S'}">S</span>
+                              th:text="${a.usuarioNombre != null and #strings.length(a.usuarioNombre) > 0 ? #strings.toUpperCase(#strings.substring(a.usuarioNombre,0,1)) : 'S'}">S</span>
                       </div>
                       <div>
-                        <div style="font-weight:600;color:#1B3A5C;font-size:12px;"
-                          th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
-                        <div style="font-size:10px;color:#9CA3AF;"
-                          th:text="${a.usuarioId != null ? 'ID: ' + a.usuarioId : 'Sistema'}">—</div>
+                        <div style="font-weight:600;color:#1B3A5C;font-size:12px;" th:text="${a.usuarioNombre ?: 'Sistema'}">—</div>
+                        <div style="font-size:10px;color:#9CA3AF;" th:text="${a.usuarioId != null ? 'ID: ' + a.usuarioId : 'Sistema'}">—</div>
                       </div>
                     </div>
                   </td>
-
                   <td>
                     <span class="pill-action" th:style="${a.accion != null and #strings.contains(a.accion,'CREAR')} ? 'background:rgba(46,204,113,.12);color:#27AE60;' :
                                      (${a.accion != null and #strings.contains(a.accion,'EDITAR')} ? 'background:rgba(52,152,219,.12);color:#2471A3;' :
                                      (${a.accion != null and #strings.contains(a.accion,'ELIMINAR')} ? 'background:rgba(231,76,60,.12);color:#C0392B;' :
                                      (${a.accion != null and #strings.contains(a.accion,'BLOQUEAR')} ? 'background:rgba(243,156,18,.12);color:#C27C0E;' :
                                      'background:rgba(139,92,246,.12);color:#7C3AED;')))"
-                      th:text="${a.accion ?: '—'}">—</span>
+                          th:text="${a.accion ?: '—'}">—</span>
                   </td>
-
+                  <td><span class="mod-tag" th:text="${a.modulo ?: '—'}">—</span></td>
+                  <td style="color:#6B7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${a.descripcion ?: '—'}">—</td>
+                  <td><span style="font-family:monospace;font-size:11px;color:#6B7280;background:#F3F4F6;padding:3px 7px;border-radius:5px;" th:text="${a.ipAddress ?: 'N/A'}">—</span></td>
                   <td>
-                    <span class="mod-tag" th:text="${a.modulo ?: '—'}">—</span>
+                    <span th:if="${a.estado == 'EXITOSO'}" class="badge-exitoso"><i class="fas fa-check-circle" style="font-size:9px;"></i> Exitoso</span>
+                    <span th:unless="${a.estado == 'EXITOSO'}" class="badge-fallido"><i class="fas fa-times-circle" style="font-size:9px;"></i> <span th:text="${a.estado ?: 'Fallido'}">Fallido</span></span>
                   </td>
-
-                  <td
-                    style="color:#6B7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-                    th:text="${a.descripcion ?: '—'}">—</td>
-
-                  <td>
-                    <span
-                      style="font-family:monospace;font-size:11px;color:#6B7280;background:#F3F4F6;padding:3px 7px;border-radius:5px;"
-                      th:text="${a.ipAddress ?: 'N/A'}">—</span>
-                  </td>
-
-                  <td>
-                    <span th:if="${a.estado == 'EXITOSO'}" class="badge-exitoso">
-                      <i class="fas fa-check-circle" style="font-size:9px;"></i> Exitoso
-                    </span>
-                    <span th:unless="${a.estado == 'EXITOSO'}" class="badge-fallido">
-                      <i class="fas fa-times-circle" style="font-size:9px;"></i>
-                      <span th:text="${a.estado ?: 'Fallido'}">Fallido</span>
-                    </span>
-                  </td>
+                  <td><button class="btn-detalle" onclick="abrirDetalle(this)" title="Ver detalle"><i class="fas fa-eye"></i></button></td>
                 </tr>
-
               </tbody>
             </table>
           </div>
-
-          <!-- Paginación -->
-          <div
-            style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div style="padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
             <span id="conteo-traza" style="font-size:12px;color:#6B7280;"></span>
             <div id="paginacion-traza" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"></div>
           </div>
-
           <div class="traza-footer">
             <div style="display:flex;align-items:center;gap:6px;">
               <span class="live-dot" style="width:8px;height:8px;"></span>
@@ -453,13 +373,51 @@
           </div>
         </div>
 
+        <div class="modal-overlay" id="modalDetalle">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3><i class="fas fa-search" style="margin-right:8px;color:#2ECC71;"></i>Detalle de Auditoría</h3>
+              <button class="modal-close" onclick="cerrarDetalle()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+              <div class="detail-section">
+                <label>Acción</label>
+                <div class="val" id="det-accion">—</div>
+              </div>
+              <div class="detail-section">
+                <label>Módulo</label>
+                <div class="val" id="det-modulo">—</div>
+              </div>
+              <div class="detail-section">
+                <label>Descripción</label>
+                <div class="val" id="det-descripcion">—</div>
+              </div>
+              <div class="detail-section" id="sec-datos-anteriores" style="display:none;">
+                <label>Datos Anteriores</label>
+                <div class="json-block" id="det-datos-anteriores"></div>
+              </div>
+              <div class="detail-section" id="sec-datos-nuevos" style="display:none;">
+                <label>Datos Nuevos</label>
+                <div class="json-block" id="det-datos-nuevos"></div>
+              </div>
+              <div class="detail-section" id="sec-error" style="display:none;">
+                <label>Mensaje de Error</label>
+                <div class="json-block" id="det-error" style="border-color:rgba(231,76,60,.3);background:rgba(231,76,60,.04);"></div>
+              </div>
+              <div class="detail-section" id="sec-useragent" style="display:none;">
+                <label>User Agent</label>
+                <div class="val" id="det-useragent" style="font-size:11px;font-family:monospace;color:#6B7280;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <script>
           var ITEMS_POR_PAGINA = 5;
           var paginaActual = 1;
 
           function getFilasActivas() {
-            return Array.from(document.querySelectorAll('.audit-row'))
-              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+            return Array.from(document.querySelectorAll('.audit-row')).filter(function(tr) { return tr.dataset.filtrado !== '0'; });
           }
 
           function inicializarPaginacion() {
@@ -467,42 +425,30 @@
             var totalPaginas = Math.ceil(filasActivas.length / ITEMS_POR_PAGINA);
             if (totalPaginas < 1) totalPaginas = 1;
             paginaActual = 1;
-
             var conteoEl = document.getElementById('conteo-traza');
             if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
-
             var paginacionDiv = document.getElementById('paginacion-traza');
             paginacionDiv.innerHTML = '';
             if (totalPaginas <= 1) return;
-
             var btnAnterior = document.createElement('button');
             btnAnterior.textContent = '← Ant';
             btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-            btnAnterior.onclick = function () {
-              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
-            };
+            btnAnterior.onclick = function() { if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); } };
             paginacionDiv.appendChild(btnAnterior);
-
             for (var i = 1; i <= totalPaginas; i++) {
-              (function (pageNum) {
+              (function(pageNum) {
                 var btn = document.createElement('button');
                 btn.textContent = pageNum;
                 btn.id = 'btn-pagina-' + pageNum;
-                btn.style.cssText = (pageNum === 1)
-                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
-                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+                btn.style.cssText = (pageNum === 1) ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function() { paginaActual = pageNum; mostrarPagina(pageNum); };
                 paginacionDiv.appendChild(btn);
               })(i);
             }
-
             var btnSiguiente = document.createElement('button');
             btnSiguiente.textContent = 'Sig →';
             btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
-            btnSiguiente.onclick = function () {
-              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
-              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
-            };
+            btnSiguiente.onclick = function() { var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA); if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); } };
             paginacionDiv.appendChild(btnSiguiente);
           }
 
@@ -512,13 +458,9 @@
             var inicio = (numero - 1) * ITEMS_POR_PAGINA;
             var fin = inicio + ITEMS_POR_PAGINA;
             var conteo = 0;
-            filas.forEach(function (tr) {
-              if (tr.dataset.filtrado === '0') {
-                tr.style.display = 'none';
-              } else {
-                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
-                conteo++;
-              }
+            filas.forEach(function(tr) {
+              if (tr.dataset.filtrado === '0') { tr.style.display = 'none'; }
+              else { tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none'; conteo++; }
             });
             actualizarBotonesPaginacion();
           }
@@ -536,17 +478,30 @@
           }
 
           document.getElementById('searchTraza')?.addEventListener('input', filtrarTraza);
+          document.getElementById('filterModuloTraza')?.addEventListener('change', filtrarTraza);
           document.getElementById('filterAccionTraza')?.addEventListener('change', filtrarTraza);
           document.getElementById('filterEstadoTraza')?.addEventListener('change', filtrarTraza);
+          document.getElementById('filterFechaDesde')?.addEventListener('change', filtrarTraza);
+          document.getElementById('filterFechaHasta')?.addEventListener('change', filtrarTraza);
 
           function filtrarTraza() {
             var texto = (document.getElementById('searchTraza')?.value || '').toLowerCase();
+            var modulo = (document.getElementById('filterModuloTraza')?.value || '').toLowerCase();
             var accion = (document.getElementById('filterAccionTraza')?.value || '').toLowerCase();
             var estado = (document.getElementById('filterEstadoTraza')?.value || '').toLowerCase();
-            document.querySelectorAll('.audit-row').forEach(function (row) {
+            var fechaDesde = document.getElementById('filterFechaDesde')?.value || '';
+            var fechaHasta = document.getElementById('filterFechaHasta')?.value || '';
+            document.querySelectorAll('.audit-row').forEach(function(row) {
               var ok = (!texto || (row.dataset.texto || '').toLowerCase().includes(texto))
+                && (!modulo || (row.dataset.modulo || '').toLowerCase().includes(modulo))
                 && (!accion || (row.dataset.accion || '').toLowerCase().includes(accion))
                 && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
+              if (ok && (fechaDesde || fechaHasta)) {
+                var fechaCelda = row.querySelector('td:first-child div:first-child')?.textContent || '';
+                var fechaRow = fechaCelda.substring(0, 10);
+                if (fechaDesde && fechaRow < fechaDesde) ok = false;
+                if (fechaHasta && fechaRow > fechaHasta) ok = false;
+              }
               row.dataset.filtrado = ok ? '1' : '0';
             });
             inicializarPaginacion();
@@ -555,24 +510,62 @@
 
           function limpiarFiltrosTraza() {
             document.getElementById('searchTraza').value = '';
+            document.getElementById('filterModuloTraza').value = '';
             document.getElementById('filterAccionTraza').value = '';
             document.getElementById('filterEstadoTraza').value = '';
+            document.getElementById('filterFechaDesde').value = '';
+            document.getElementById('filterFechaHasta').value = '';
             filtrarTraza();
           }
 
-          window.addEventListener('load', function () {
-            document.querySelectorAll('.audit-row').forEach(function (tr) {
-              tr.dataset.filtrado = '1';
+          function abrirDetalle(btn) {
+            var row = btn.closest('.audit-row');
+            document.getElementById('det-accion').textContent = row.dataset.accion || '—';
+            document.getElementById('det-modulo').textContent = row.dataset.modulo || '—';
+            document.getElementById('det-descripcion').textContent = row.dataset.texto || '—';
+            var datosAnt = row.dataset.datosAnteriores || '';
+            var datosNue = row.dataset.datosNuevos || '';
+            var errorMsg = row.dataset.mensajeError || '';
+            var userAgent = row.dataset.userAgent || '';
+            var secAnt = document.getElementById('sec-datos-anteriores');
+            var secNue = document.getElementById('sec-datos-nuevos');
+            var secErr = document.getElementById('sec-error');
+            var secUA = document.getElementById('sec-useragent');
+            if (datosAnt) { secAnt.style.display = 'block'; try { document.getElementById('det-datos-anteriores').textContent = JSON.stringify(JSON.parse(datosAnt), null, 2); } catch(e) { document.getElementById('det-datos-anteriores').textContent = datosAnt; } } else { secAnt.style.display = 'none'; }
+            if (datosNue) { secNue.style.display = 'block'; try { document.getElementById('det-datos-nuevos').textContent = JSON.stringify(JSON.parse(datosNue), null, 2); } catch(e) { document.getElementById('det-datos-nuevos').textContent = datosNue; } } else { secNue.style.display = 'none'; }
+            if (errorMsg) { secErr.style.display = 'block'; document.getElementById('det-error').textContent = errorMsg; } else { secErr.style.display = 'none'; }
+            if (userAgent) { secUA.style.display = 'block'; document.getElementById('det-useragent').textContent = userAgent; } else { secUA.style.display = 'none'; }
+            document.getElementById('modalDetalle').classList.add('active');
+          }
+
+          function cerrarDetalle() { document.getElementById('modalDetalle').classList.remove('active'); }
+          document.getElementById('modalDetalle')?.addEventListener('click', function(e) { if (e.target === this) cerrarDetalle(); });
+
+          function renderChart() {
+            var chartData = [];
+            document.querySelectorAll('.activity-chart').forEach(function(el) {
+              var thBlocks = el.querySelectorAll('[th\\:each]');
             });
+          }
+
+          window.addEventListener('load', function() {
+            document.querySelectorAll('.audit-row').forEach(function(tr) { tr.dataset.filtrado = '1'; });
             inicializarPaginacion();
             mostrarPagina(1);
+            var exitosos = 0, fallidos = 0;
+            document.querySelectorAll('.audit-row[data-estado]').forEach(function(tr) {
+              var estado = (tr.dataset.estado || '').toUpperCase();
+              if (estado === 'EXITOSO') exitosos++; else fallidos++;
+            });
+            var elExitosos = document.getElementById('stat-exitosos');
+            var elFallidos = document.getElementById('stat-fallidos');
+            if (elExitosos) elExitosos.textContent = exitosos || '0';
+            if (elFallidos) elFallidos.textContent = fallidos || '0';
           });
         </script>
-
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
-
-    <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
