@@ -108,8 +108,14 @@ public class MiUnidadController {
                                 @AuthenticationPrincipal UserDetails user) {
         try {
             Usuario u = miUnidadService.requireUsuario(user.getUsername());
-            miUnidadService.crearCarpeta(u.getId(), parentId, nombre);
-            ra.addFlashAttribute("ok", "Carpeta creada.");
+            String solicitado = nombre == null ? "" : nombre.trim();
+            var creada = miUnidadService.crearCarpeta(u.getId(), parentId, nombre);
+            if (!solicitado.equalsIgnoreCase(creada.getNombre())) {
+                ra.addFlashAttribute("ok",
+                        "Carpeta creada como «" + creada.getNombre() + "» (ya existía otra con el mismo nombre).");
+            } else {
+                ra.addFlashAttribute("ok", "Carpeta creada.");
+            }
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
@@ -191,17 +197,48 @@ public class MiUnidadController {
     @PostMapping("/item/mover")
     public String mover(@RequestParam Long itemId,
                        @RequestParam(required = false) Long carpetaId,
-                       @RequestParam(required = false) Long nuevaCarpetaId,
+                       @RequestParam(required = false) String nuevaCarpetaId,
                        RedirectAttributes ra,
                        @AuthenticationPrincipal UserDetails user) {
         try {
             Usuario u = miUnidadService.requireUsuario(user.getUsername());
-            miUnidadService.moverItem(u.getId(), itemId, nuevaCarpetaId);
+            miUnidadService.moverItem(u.getId(), itemId, parseCarpetaIdOpcional(nuevaCarpetaId));
             ra.addFlashAttribute("ok", "Documento movido.");
         } catch (Exception ex) {
             ra.addFlashAttribute("error", ex.getMessage());
         }
         return redirectTrasCarpeta(carpetaId);
+    }
+
+    @PostMapping("/carpeta/mover")
+    public String moverCarpeta(@RequestParam Long carpetaMovidaId,
+                               @RequestParam(required = false) Long carpetaId,
+                               @RequestParam(required = false) String nuevaCarpetaId,
+                               RedirectAttributes ra,
+                               @AuthenticationPrincipal UserDetails user) {
+        try {
+            Usuario u = miUnidadService.requireUsuario(user.getUsername());
+            String nombreAntes = miUnidadService.findCarpetaIfOwned(u.getId(), carpetaMovidaId)
+                    .map(c -> c.getNombre())
+                    .orElse("");
+            var movida = miUnidadService.moverCarpeta(u.getId(), carpetaMovidaId, parseCarpetaIdOpcional(nuevaCarpetaId));
+            if (!nombreAntes.isEmpty() && !nombreAntes.equals(movida.getNombre())) {
+                ra.addFlashAttribute("ok",
+                        "Carpeta movida como «" + movida.getNombre() + "» (ya existía otra con el mismo nombre en el destino).");
+            } else {
+                ra.addFlashAttribute("ok", "Carpeta movida.");
+            }
+        } catch (Exception ex) {
+            ra.addFlashAttribute("error", ex.getMessage());
+        }
+        return redirectTrasCarpeta(carpetaId);
+    }
+
+    private static Long parseCarpetaIdOpcional(String raw) {
+        if (raw == null || raw.isBlank() || "null".equalsIgnoreCase(raw.trim())) {
+            return null;
+        }
+        return Long.parseLong(raw.trim());
     }
 
     private static String redirectTrasCarpeta(Long carpetaId) {
