@@ -32,6 +32,8 @@ public class NormativaService {
     private final EtiquetaRepository             etiquetaRepository;
     private final UsuarioRepository              usuarioRepository;
     private final NotificacionService            notificacionService;
+    private final AuditoriaService               auditoriaService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public NormativaService(NormativaRepository normativaRepository,
                             NormativasEtiquetaRepository normativasEtiquetaRepository,
@@ -40,7 +42,8 @@ public class NormativaService {
                             EstadosNormativaRepository estadosNormativaRepository,
                             EtiquetaRepository etiquetaRepository,
                             UsuarioRepository usuarioRepository,
-                            NotificacionService notificacionService) {
+                            NotificacionService notificacionService,
+                            AuditoriaService auditoriaService) {
         this.normativaRepository          = normativaRepository;
         this.normativasEtiquetaRepository = normativasEtiquetaRepository;
         this.tematicaRepository           = tematicaRepository;
@@ -49,6 +52,10 @@ public class NormativaService {
         this.etiquetaRepository           = etiquetaRepository;
         this.usuarioRepository            = usuarioRepository;
         this.notificacionService          = notificacionService;
+        this.auditoriaService             = auditoriaService;
+        this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -119,7 +126,11 @@ public class NormativaService {
     public NormativaResponseDTO crearNormativa(NormativaRequestDTO dto,
                                                String archivoUrl,
                                                String archivoTipoMime,
-                                               String correoAutor) {
+                                               String correoAutor,
+                                               Long auditorUsuarioId,
+                                               String auditorUsuarioNombre,
+                                               String ipAddress,
+                                               String userAgent) {
         Usuario creadaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
 
@@ -135,7 +146,31 @@ public class NormativaService {
         Normativa saved = normativaRepository.save(n);
         guardarEtiquetas(saved, dto.getEtiquetasIds());
         try { notificacionService.notificarNuevaNormativa(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
+
+        try {
+            String datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+                "Crear normativa: " + saved.getTitulo(),
+                null, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+        } catch (Exception e) {
+            System.err.println("Error al serializar datos de auditoría: " + e.getMessage());
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+                "Crear normativa: " + saved.getTitulo(),
+                null, null, "EXITOSO", null, ipAddress, userAgent);
+        }
+
         return toResponseDTO(saved);
+    }
+
+    // ── CREATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public NormativaResponseDTO crearNormativa(NormativaRequestDTO dto,
+                                               String archivoUrl,
+                                               String archivoTipoMime,
+                                               String correoAutor) {
+        return crearNormativa(dto, archivoUrl, archivoTipoMime, correoAutor, null, "Sistema", null, null);
     }
 
     // ── UPDATE ────────────────────────────────────────────────
@@ -143,9 +178,20 @@ public class NormativaService {
     public NormativaResponseDTO actualizarNormativa(Long id,
                                                     NormativaRequestDTO dto,
                                                     String archivoUrl,
-                                                    String archivoTipoMime) {
+                                                    String archivoTipoMime,
+                                                    Long auditorUsuarioId,
+                                                    String auditorUsuarioNombre,
+                                                    String ipAddress,
+                                                    String userAgent) {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
+
+        String datosAnteriores = null;
+        try {
+            datosAnteriores = objectMapper.writeValueAsString(toResponseDTO(n));
+        } catch (Exception e) {
+            System.err.println("Advertencia: No se pudo serializar datos anteriores: " + e.getMessage());
+        }
 
         mapDtoToEntity(dto, n, archivoUrl, archivoTipoMime);
         n.setUpdatedAt(Instant.now());
@@ -157,16 +203,51 @@ public class NormativaService {
             guardarEtiquetas(saved, dto.getEtiquetasIds());
         }
 
+        String datosNuevos = null;
+        try {
+            datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));
+        } catch (Exception e) {
+            System.err.println("Advertencia: No se pudo serializar datos nuevos: " + e.getMessage());
+        }
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_EDITAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+            "Editar normativa: " + saved.getTitulo() + " (ID: " + id + ")",
+            datosAnteriores, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+
         return toResponseDTO(saved);
     }
 
+    // ── UPDATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public NormativaResponseDTO actualizarNormativa(Long id,
+                                                    NormativaRequestDTO dto,
+                                                    String archivoUrl,
+                                                    String archivoTipoMime) {
+        return actualizarNormativa(id, dto, archivoUrl, archivoTipoMime, null, "Sistema", null, null);
+    }
+
     // ── DELETE lógico ─────────────────────────────────────────
-    public void eliminarNormativa(Long id) {
+    public void eliminarNormativa(Long id,
+                                  Long auditorUsuarioId,
+                                  String auditorUsuarioNombre,
+                                  String ipAddress,
+                                  String userAgent) {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
         n.setEstadoActivo(false);
         n.setUpdatedAt(Instant.now());
         normativaRepository.save(n);
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_ELIMINAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+            "Eliminar normativa: " + n.getTitulo() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
+    }
+
+    // ── DELETE (overload sin auditoría para compatibilidad) ────────────
+    public void eliminarNormativa(Long id) {
+        eliminarNormativa(id, null, "Sistema", null, null);
     }
 
     // ── HELPERS ───────────────────────────────────────────────

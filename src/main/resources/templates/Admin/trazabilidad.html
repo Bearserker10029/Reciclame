@@ -271,12 +271,16 @@
             <option value="">Acción: Todas</option>
             <option value="CREAR_USUARIO">Crear Usuario</option>
             <option value="EDITAR_USUARIO">Editar Usuario</option>
-            <option value="ELIMINAR_USUARIO">Eliminar Usuario</option>
             <option value="BLOQUEAR_USUARIO">Bloquear Usuario</option>
-            <option value="APROBAR_USUARIO">Aprobar Usuario</option>
             <option value="LOGIN">Login</option>
             <option value="LOGOUT">Logout</option>
             <option value="DESCARGAR_DOCUMENTO">Descargar Doc</option>
+            <option value="CREAR_NORMATIVA">Crear Normativa</option>
+            <option value="EDITAR_NORMATIVA">Editar Normativa</option>
+            <option value="ELIMINAR_NORMATIVA">Eliminar Normativa</option>
+            <option value="CREAR_ESTUDIO">Crear Estudio</option>
+            <option value="EDITAR_ESTUDIO">Editar Estudio</option>
+            <option value="ELIMINAR_ESTUDIO">Eliminar Estudio</option>
           </select>
           <select id="filterEstadoTraza">
             <option value="">Estado: Todas</option>
@@ -498,9 +502,12 @@
                 && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
               if (ok && (fechaDesde || fechaHasta)) {
                 var fechaCelda = row.querySelector('td:first-child div:first-child')?.textContent || '';
-                var fechaRow = fechaCelda.substring(0, 10);
-                if (fechaDesde && fechaRow < fechaDesde) ok = false;
-                if (fechaHasta && fechaRow > fechaHasta) ok = false;
+                var fechaParts = fechaCelda.substring(0, 10).split('/');
+                if (fechaParts.length === 3) {
+                  var fechaRow = fechaParts[2] + '-' + fechaParts[1] + '-' + fechaParts[0];
+                  if (fechaDesde && fechaRow < fechaDesde) ok = false;
+                  if (fechaHasta && fechaRow > fechaHasta) ok = false;
+                }
               }
               row.dataset.filtrado = ok ? '1' : '0';
             });

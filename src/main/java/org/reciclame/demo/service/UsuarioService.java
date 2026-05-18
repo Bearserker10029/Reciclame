@@ -101,6 +101,11 @@ public class UsuarioService {
                 null, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
         } catch (Exception e) {
             System.err.println("Error al serializar datos de auditoría: " + e.getMessage());
+            e.printStackTrace();
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
+                "Crear usuario: " + usuario.getNombreCompleto() + " (" + usuario.getCorreoCorporativo() + ")",
+                null, null, "EXITOSO", null, ipAddress, userAgent);
         }
 
         return toResponseDTO(usuarioGuardado);

@@ -321,7 +321,7 @@ public class MiUnidadService {
         return MiUnidadItem.TIPO_NORMATIVA;
     }
 
-    private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("d MMM yyyy", new Locale("es", "ES"));
+    private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("d MMM yyyy", new Locale.Builder().setLanguage("es").setRegion("ES").build());
 
     public int contarContenidoDirectoEnCarpeta(Long usuarioId, Long carpetaId) {
         long sub = carpetaRepository.countByUsuario_IdAndParent_Id(usuarioId, carpetaId);

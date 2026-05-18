@@ -7,6 +7,7 @@ import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.AuditoriaRepository;
 import org.reciclame.demo.repository.BackupRepository;
 import org.reciclame.demo.repository.ProgramacionBackupRepository;
+import org.reciclame.demo.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -100,6 +101,8 @@ public class BackupService {
     private final BackupRepository backupRepository;
     private final ProgramacionBackupRepository programacionRepository;
     private final AuditoriaRepository auditoriaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final NotificacionService notificacionService;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -115,10 +118,14 @@ public class BackupService {
 
     public BackupService(BackupRepository backupRepository,
                          ProgramacionBackupRepository programacionRepository,
-                         AuditoriaRepository auditoriaRepository) {
+                         AuditoriaRepository auditoriaRepository,
+                         UsuarioRepository usuarioRepository,
+                         NotificacionService notificacionService) {
         this.backupRepository = backupRepository;
         this.programacionRepository = programacionRepository;
         this.auditoriaRepository = auditoriaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.notificacionService = notificacionService;
     }
 
     @Transactional(readOnly = true)
@@ -323,6 +330,17 @@ public class BackupService {
 
             log.info("Restauración completada desde backup {} por usuario {}", backupId, usuario.getNombreCompleto());
 
+            List<Usuario> superAdmins = usuarioRepository.findByRolNombre("SUPERADMIN");
+            for (Usuario sa : superAdmins) {
+                notificacionService.crearNotificacion(
+                        sa.getId(),
+                        "Restauración de base de datos completada",
+                        "El usuario " + usuario.getNombreCompleto() + " restauró la base de datos desde el backup \"" + backup.getStorageKey() + "\". La restauración se completó exitosamente.",
+                        "SISTEMA"
+                );
+            }
+            log.info("Notificaciones enviadas a {} superadmins sobre la restauración", superAdmins.size());
+
         } catch (Exception e) {
             backup.setEstado("FALLIDO");
             backupRepository.save(backup);
@@ -394,7 +412,7 @@ public class BackupService {
         StringBuilder current = new StringBuilder();
         boolean inString = false;
         char stringChar = 0;
-        boolean skipStatement = false;
+        boolean skipSolicitudesRespaldo = false;
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(archivoPath.toFile())))) {
             String line;
@@ -404,16 +422,26 @@ public class BackupService {
                     continue;
                 }
 
-                if (line.toUpperCase().startsWith("DROP TABLE")) {
-                    skipStatement = true;
-                    continue;
+                String upperLine = line.toUpperCase();
+
+                if (upperLine.contains("`SOLICITUDES_RESPALDO`") || upperLine.contains("SOLICITUDES_RESPALDO")) {
+                    if (upperLine.startsWith("LOCK TABLES")) {
+                        skipSolicitudesRespaldo = true;
+                        continue;
+                    }
+                    if (upperLine.startsWith("UNLOCK TABLES")) {
+                        skipSolicitudesRespaldo = false;
+                        continue;
+                    }
+                    if (upperLine.startsWith("DROP TABLE") || upperLine.startsWith("CREATE TABLE") || upperLine.startsWith("INSERT INTO")) {
+                        skipSolicitudesRespaldo = true;
+                    }
+                    if (skipSolicitudesRespaldo) {
+                        continue;
+                    }
                 }
 
-                if (skipStatement && (line.toUpperCase().startsWith("CREATE TABLE") || line.toUpperCase().startsWith("INSERT"))) {
-                    skipStatement = false;
-                }
-
-                if (skipStatement) {
+                if (upperLine.startsWith("DROP TABLE")) {
                     continue;
                 }
 

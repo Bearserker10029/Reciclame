@@ -28,4 +28,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.createdAt < :hasta AND u.estadoActivo = true")
     long contarEntreFechas(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    List<Usuario> findByRolNombre(String nombre);
 }

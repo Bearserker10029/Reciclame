@@ -502,7 +502,7 @@
             <i class="fas fa-users" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
             <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay usuarios activos para impersonar</div>
           </div>
-          <div class="user-card" th:each="u, iStat : ${usuariosActivos}" th:with="colors=${ {'#2ECC71','#3498DB','#9B59B6','#E74C3C','#F39C12','#1ABC9C','#E91E63'} },
+          <div class="user-card" th:each="u, iStat : ${usuariosActivos}" th:if="${u.rolNombre != 'SUPERADMIN'}" th:with="colors=${ {'#2ECC71','#3498DB','#9B59B6','#E74C3C','#F39C12','#1ABC9C','#E91E63'} },
                      color=${colors[iStat.index % colors.size()]}">
             <div class="user-avatar" style="background:${color};"
               th:text="${u.nombreCompleto != null and #strings.length(u.nombreCompleto) > 0 ? #strings.toUpperCase(#strings.substring(u.nombreCompleto, 0, 1)) : 'U'}">

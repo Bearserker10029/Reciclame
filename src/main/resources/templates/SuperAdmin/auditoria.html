@@ -269,7 +269,7 @@
           <table class="table mb-0" style="min-width:800px;">
             <thead>
               <tr>
-                <th><i class="fas fa-clock" style="margin-right:6px;"></i>Timestamp</th>
+                <th><i class="fas fa-clock" style="margin-right:6px;"></i>Fecha</th>
                 <th><i class="fas fa-flag" style="margin-right:6px;"></i>Severidad</th>
                 <th><i class="fas fa-tag" style="margin-right:6px;"></i>Tipo evento</th>
                 <th><i class="fas fa-user" style="margin-right:6px;"></i>Usuario / IP</th>
@@ -415,9 +415,9 @@
           var fechaCelda = row.querySelector('td:first-child')?.textContent || '';
           var fechaStr = fechaCelda.trim();
           if (fechaStr && fechaStr !== '—') {
-            var fechaParts = fechaStr.split(' ')[0].split('-');
+            var fechaParts = fechaStr.split(' ')[0].split('/');
             if (fechaParts.length === 3) {
-              var fechaRow = new Date(fechaParts[0], fechaParts[1] - 1, fechaParts[2]);
+              var fechaRow = new Date(fechaParts[2], fechaParts[1] - 1, fechaParts[0]);
               var ahora = new Date();
               var diffMs = ahora - fechaRow;
               if (rango === '' || rango === '24h') { if (diffMs > 86400000) ok = false; }

@@ -328,6 +328,26 @@
       font-weight: 700;
     }
 
+    .badge-pre-restauracion {
+      background: rgba(155, 89, 182, .1);
+      color: #8E44AD;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .norm-row-pre {
+      background: rgba(155, 89, 182, .03);
+    }
+
+    .norm-row-pre td {
+      padding: 4px 14px 4px 60px !important;
+    }
+
     .btn-restaurar {
       display: inline-flex;
       align-items: center;
@@ -1030,7 +1050,6 @@
       const estado = document.getElementById('bkp-estado')?.value || '';
 
       let filtered = backupsData.filter(b => {
-        if (b.esBackupPreRestauracion) return false;
         const matchQ = !q || (b.tipo && b.tipo.toLowerCase().includes(q)) || (b.solicitadoPor && b.solicitadoPor.toLowerCase().includes(q));
         const matchTipo = !tipo || b.tipo === tipo;
         const matchEstado = !estado || b.estado === estado;
@@ -1067,6 +1086,7 @@
         const estadoBadge = getEstadoBadge(b.estado);
         const tipoBadge = getTipoBadge(b.tipo);
         const acciones = getAccionesBackup(b);
+        const preBadge = b.esBackupPreRestauracion ? '<span class="badge-pre-restauracion" title="Copia de seguridad creada automáticamente antes de una restauración"><i class="fas fa-shield-alt" style="font-size:8px;"></i> Pre-restauración</span>' : '';
         return `<tr class="norm-row">
           <td><span style="font-weight:700;color:#1B3A5C;">#${b.id}</span></td>
           <td>${tipoBadge}</td>
@@ -1076,7 +1096,7 @@
           <td>${b.createdAt || '—'}</td>
           <td>${b.fechaCompletado || '—'}</td>
           <td class="text-center">${acciones}</td>
-        </tr>`;
+        </tr>${preBadge ? `<tr class="norm-row norm-row-pre"><td colspan="9" style="padding:4px 14px 4px 60px;">${preBadge}</td></tr>` : ''}`;
       }).join('');
     }
 
@@ -1226,10 +1246,9 @@
           errorEl.style.display = 'block';
           return;
         }
-        const data = await resp.json();
         cerrarModalConfirmarRestaurarPaso2();
-        showToast('Restauración completada exitosamente', 'success');
-        cargarBackups();
+        showToast('Restauración iniciada. Se completará en aproximadamente 5 minutos.', 'success');
+        setTimeout(() => cargarBackups(), 30000);
       } catch (e) {
         errorEl.textContent = 'Error de conexión';
         errorEl.style.display = 'block';
