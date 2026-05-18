@@ -451,12 +451,10 @@
                 <td style="padding:14px 20px;">
                   <div style="display:flex;gap:6px;">
                     <button
+                      th:onclick="|location.href='/admin/estudios/editar/' + ${e.id}|"
+                      title="Editar estudio"
                       style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
                       <i class="fas fa-edit" style="color:#3498DB;"></i>
-                    </button>
-                    <button
-                      style="padding:5px 10px;border-radius:6px;border:1px solid #FFE4E4;background:#FFF5F5;cursor:pointer;font-size:11px;color:#E74C3C;">
-                      <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>
                 </td>
@@ -488,12 +486,10 @@
                 <td style="padding:14px 20px;">
                   <div style="display:flex;gap:6px;">
                     <button
+                      th:onclick="|location.href='/admin/normativo/editar/' + ${n.id}|"
+                      title="Editar normativa"
                       style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;">
                       <i class="fas fa-edit" style="color:#3498DB;"></i>
-                    </button>
-                    <button
-                      style="padding:5px 10px;border-radius:6px;border:1px solid #FFE4E4;background:#FFF5F5;cursor:pointer;font-size:11px;color:#E74C3C;">
-                      <i class="fas fa-trash-alt"></i>
                     </button>
                   </div>
                 </td>

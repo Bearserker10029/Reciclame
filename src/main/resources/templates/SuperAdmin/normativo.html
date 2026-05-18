@@ -1301,7 +1301,20 @@
               document.getElementById('mnorm-codigo').textContent = id || '—';
               document.getElementById('mnorm-anio').textContent = anio || '—';
               var link = document.getElementById('mnorm-link');
-              if (link) link.href = url || '#';
+              var legacyWarning = document.getElementById('mnorm-legacy-warning');
+              var isLegacy = url && url.indexOf('storage.googleapis.com') >= 0;
+              if (legacyWarning) legacyWarning.style.display = isLegacy ? 'flex' : 'none';
+              if (link) {
+                if (url && url !== '#' && !isLegacy) {
+                  link.href = '/api/documentos/ver?url=' + encodeURIComponent(url);
+                  link.style.pointerEvents = '';
+                  link.style.opacity = '';
+                } else {
+                  link.href = '#';
+                  link.style.pointerEvents = 'none';
+                  link.style.opacity = '0.4';
+                }
+              }
 
               var el = document.getElementById('modal-norma');
               // Reutilizar instancia existente; nunca crear dos sobre el mismo elemento
@@ -1590,6 +1603,10 @@
                 <span style="font-size:12px;color:#374151;">Documento disponible para visualización. Se abrirá en el
                   visor del navegador.</span>
               </div>
+            </div>
+            <div id="mnorm-legacy-warning" style="display:none;padding:10px 14px;border-radius:10px;background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.25);align-items:center;gap:8px;margin-top:8px;">
+              <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:13px;"></i>
+              <span style="font-size:12px;color:#7B241C;">Este documento fue almacenado en un sistema anterior y ya no está disponible. Edite la normativa y suba el archivo nuevamente.</span>
             </div>
           </div>
           <div
