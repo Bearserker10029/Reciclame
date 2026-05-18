@@ -169,7 +169,7 @@
     }
 
     .mu-folder-card {
-      cursor: default;
+      cursor: pointer;
     }
 
     .mu-doc-card {
@@ -397,6 +397,15 @@
 
     .mu-drive-table tbody tr:last-child td {
       border-bottom: none;
+    }
+
+    .mu-tr-folder {
+      cursor: pointer;
+    }
+
+    .mu-tr-folder.mu-dragging td,
+    .mu-folder-card.mu-dragging {
+      opacity: 0.55;
     }
 
     .mu-drive-table tbody tr.mu-dragging {
@@ -672,6 +681,23 @@
       background: rgba(46, 204, 113, .22);
     }
 
+    .mu-modal-submit--danger {
+      border-color: #E74C3C;
+      background: rgba(231, 76, 60, .12);
+      color: #C0392B;
+    }
+
+    .mu-modal-submit--danger:hover {
+      background: rgba(231, 76, 60, .22);
+    }
+
+    .mu-modal-confirm-msg {
+      font-size: 14px;
+      color: #4B5563;
+      line-height: 1.5;
+      margin: 0;
+    }
+
     /* Últimos accesos: misma card + rejilla que Repositorio Normativo / Estudios */
     .mu-rec-grid {
       display: grid;
@@ -823,6 +849,23 @@
           </form>
         </dialog>
 
+        <dialog id="muModalConfirmar" class="mu-modal" aria-labelledby="muModalConfirmarTitulo">
+          <div class="mu-modal-panel">
+            <h2 id="muModalConfirmarTitulo">
+              <span
+                style="width:36px;height:36px;border-radius:10px;background:rgba(231,76,60,.12);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-exclamation-triangle" style="color:#E74C3C;"></i>
+              </span>
+              Recíclame
+            </h2>
+            <p id="muModalConfirmarMensaje" class="mu-modal-confirm-msg">¿Confirmar acción?</p>
+            <div class="mu-modal-actions">
+              <button type="button" class="mu-modal-cancel" id="muModalConfirmarCancelar">Cancelar</button>
+              <button type="button" class="mu-modal-submit mu-modal-submit--danger" id="muModalConfirmarAceptar">Eliminar</button>
+            </div>
+          </div>
+        </dialog>
+
         <div class="mu-drive-shell">
           <div class="mu-drive-shell-head">
             <div class="mu-top-bar">
@@ -888,13 +931,13 @@
                     </td>
                   </tr>
                   <th:block th:each="row : ${contenidoFilas}">
-                    <tr th:if="${row.esCarpeta}" class="mu-tr-folder mu-drop-folder"
-                      th:attr="data-folder-id=${row.carpetaId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                    <tr th:if="${row.esCarpeta}" class="mu-tr-folder mu-drop-folder mu-draggable-folder" draggable="true"
+                      th:attr="data-folder-id=${row.carpetaId},data-folder-open-url=@{/socio/mi-unidad(carpeta=${row.carpetaId})},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
                       <td>
-                        <a class="mu-td-name" th:href="@{/socio/mi-unidad(carpeta=${row.carpetaId})}" draggable="false">
+                        <span class="mu-td-name">
                           <i class="fas fa-folder mu-file-ico" style="color:#F5A623;"></i>
                           <span th:text="${row.nombre}">Carpeta</span>
-                        </a>
+                        </span>
                       </td>
                       <td class="mu-prop-cell" th:text="${row.propietario}">Recíclame</td>
                       <td th:text="${row.fechaPublicacion}">—</td>
@@ -902,7 +945,9 @@
                       <td class="mu-col-actions">
                         <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post"
                           style="margin:0;display:inline;"
-                          onsubmit="return confirm('¿Eliminar esta carpeta y todo su contenido?');">
+                          class="mu-form-confirm"
+                          data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?"
+                          data-confirm-btn="Eliminar">
                           <input type="hidden" name="id" th:value="${row.carpetaId}" />
                           <input type="hidden" name="parentId" th:value="${carpetaId}" />
                           <button type="submit" class="btn-mu btn-mu-danger" style="padding:4px 10px;font-size:11px;"
@@ -939,7 +984,9 @@
                           style="text-decoration:none;padding:4px 10px;font-size:11px;margin-left:6px;"
                           draggable="false"><i class="fas fa-external-link-alt"></i></a>
                         <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
-                          onsubmit="return confirm('¿Quitar este documento de Mi Unidad?');">
+                          class="mu-form-confirm"
+                          data-confirm-msg="¿Quitar este documento de Mi Unidad?"
+                          data-confirm-btn="Quitar">
                           <input type="hidden" name="itemId" th:value="${row.itemId}" />
                           <input type="hidden" name="carpetaId" th:value="${carpetaId}" />
                           <button type="submit" class="btn-mu btn-mu-danger"
@@ -963,14 +1010,13 @@
                 <strong>Estudios</strong>.
               </div>
               <th:block th:each="row : ${contenidoFilas}">
-                <div th:if="${row.esCarpeta}" class="mu-grid-card mu-folder-card mu-drop-folder"
-                  th:attr="data-folder-id=${row.carpetaId},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
+                <div th:if="${row.esCarpeta}" class="mu-grid-card mu-folder-card mu-drop-folder mu-draggable-folder" draggable="true"
+                  th:attr="data-folder-id=${row.carpetaId},data-folder-open-url=@{/socio/mi-unidad(carpeta=${row.carpetaId})},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
                   <div
                     style="width:54px;height:54px;border-radius:14px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
                     <i class="fas fa-folder" style="font-size:28px;color:#F5A623;"></i>
                   </div>
-                  <a class="mu-grid-card-title" th:href="@{/socio/mi-unidad(carpeta=${row.carpetaId})}"
-                    th:text="${row.nombre}">Carpeta</a>
+                  <span class="mu-grid-card-title" th:text="${row.nombre}">Carpeta</span>
                   <div style="font-size:11px;color:#9CA3AF;margin-top:8px;line-height:1.45;">
                     <span th:text="${row.propietario}">Recíclame</span> · <span
                       th:text="${row.fechaPublicacion}">—</span><br />
@@ -978,7 +1024,9 @@
                   </div>
                   <div class="mu-grid-card-actions">
                     <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post" style="margin:0;"
-                      onsubmit="return confirm('¿Eliminar esta carpeta y todo su contenido?');">
+                      class="mu-form-confirm"
+                      data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?"
+                      data-confirm-btn="Eliminar">
                       <input type="hidden" name="id" th:value="${row.carpetaId}" />
                       <input type="hidden" name="parentId" th:value="${carpetaId}" />
                       <button type="submit" class="btn-mu btn-mu-danger" style="padding:6px 12px;font-size:11px;"><i
@@ -1015,7 +1063,9 @@
                       class="btn-mu btn-mu-primary" style="text-decoration:none;padding:6px 10px;font-size:11px;"><i
                         class="fas fa-external-link-alt"></i></a>
                     <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
-                      onsubmit="return confirm('¿Quitar este documento de Mi Unidad?');">
+                      class="mu-form-confirm"
+                      data-confirm-msg="¿Quitar este documento de Mi Unidad?"
+                      data-confirm-btn="Quitar">
                       <input type="hidden" name="itemId" th:value="${row.itemId}" />
                       <input type="hidden" name="carpetaId" th:value="${carpetaId}" />
                       <button type="submit" class="btn-mu btn-mu-danger" style="padding:6px 10px;font-size:11px;"><i
@@ -1046,43 +1096,90 @@
     window.__baseRole = 'socio';
 
     (function () {
-      function muSubmitMove(itemId, nuevaCarpetaId) {
+      var MU_DRAG_ITEM = 'item:';
+      var MU_DRAG_FOLDER = 'folder:';
+
+      function muIdValido(id) {
+        return id != null && id !== '' && String(id) !== 'null' && /^\d+$/.test(String(id));
+      }
+
+      function muPostForm(action, fields) {
         var f = document.createElement('form');
         f.method = 'POST';
-        f.action = '/socio/mi-unidad/item/mover';
-        function add(name, val) {
+        f.action = action;
+        Object.keys(fields).forEach(function (name) {
+          var val = fields[name];
           var i = document.createElement('input');
           i.type = 'hidden';
           i.name = name;
           i.value = val === undefined || val === null ? '' : String(val);
           f.appendChild(i);
-        }
-        add('itemId', itemId);
-        add('carpetaId', window.__muCarpetaId != null ? window.__muCarpetaId : '');
-        add('nuevaCarpetaId', nuevaCarpetaId);
+        });
         document.body.appendChild(f);
         f.submit();
+      }
+
+      function muSubmitMoveItem(itemId, nuevaCarpetaId) {
+        if (!muIdValido(itemId)) return;
+        muPostForm('/socio/mi-unidad/item/mover', {
+          itemId: itemId,
+          carpetaId: window.__muCarpetaId != null ? window.__muCarpetaId : '',
+          nuevaCarpetaId: nuevaCarpetaId
+        });
+      }
+
+      function muSubmitMoveFolder(folderId, nuevaCarpetaId) {
+        if (!muIdValido(folderId)) return;
+        if (String(folderId) === String(nuevaCarpetaId)) return;
+        muPostForm('/socio/mi-unidad/carpeta/mover', {
+          carpetaMovidaId: folderId,
+          carpetaId: window.__muCarpetaId != null ? window.__muCarpetaId : '',
+          nuevaCarpetaId: nuevaCarpetaId
+        });
       }
 
       function clearDragOver() {
         document.querySelectorAll('.mu-drag-over').forEach(function (n) { n.classList.remove('mu-drag-over'); });
       }
 
+      var muDragEnCurso = false;
+      document.addEventListener('dragstart', function () { muDragEnCurso = true; });
       document.addEventListener('dragend', function () {
         document.querySelectorAll('.mu-dragging').forEach(function (n) { n.classList.remove('mu-dragging'); });
         clearDragOver();
+        setTimeout(function () { muDragEnCurso = false; }, 80);
       });
 
       var muDriveShell = document.querySelector('.mu-drive-shell');
       if (muDriveShell) {
+        muDriveShell.addEventListener('click', function (e) {
+          if (muDragEnCurso) return;
+          var folder = e.target.closest('tr.mu-tr-folder, .mu-folder-card');
+          if (!folder) return;
+          if (e.target.closest('button, form, .mu-grid-card-actions, .btn-mu')) return;
+          var url = folder.getAttribute('data-folder-open-url');
+          if (url) window.location.href = url;
+        });
+      }
+
+      if (muDriveShell) {
         muDriveShell.addEventListener('dragstart', function (e) {
-          var el = e.target.closest('tr.mu-draggable-doc') || e.target.closest('.mu-grid-card.mu-draggable-doc');
-          if (!el) return;
-          var id = el.getAttribute('data-item-id');
-          if (!id) return;
-          e.dataTransfer.setData('text/plain', id);
+          var folderEl = e.target.closest('tr.mu-draggable-folder') || e.target.closest('.mu-draggable-folder.mu-folder-card');
+          if (folderEl) {
+            var fid = folderEl.getAttribute('data-folder-id');
+            if (!muIdValido(fid)) return;
+            e.dataTransfer.setData('text/plain', MU_DRAG_FOLDER + fid);
+            e.dataTransfer.effectAllowed = 'move';
+            folderEl.classList.add('mu-dragging');
+            return;
+          }
+          var docEl = e.target.closest('tr.mu-draggable-doc') || e.target.closest('.mu-grid-card.mu-draggable-doc');
+          if (!docEl) return;
+          var id = docEl.getAttribute('data-item-id');
+          if (!muIdValido(id)) return;
+          e.dataTransfer.setData('text/plain', MU_DRAG_ITEM + id);
           e.dataTransfer.effectAllowed = 'move';
-          el.classList.add('mu-dragging');
+          docEl.classList.add('mu-dragging');
         });
       }
 
@@ -1113,18 +1210,26 @@
         el.addEventListener('drop', function (e) {
           e.preventDefault();
           clearDragOver();
-          var itemId = e.dataTransfer.getData('text/plain');
-          if (!itemId) return;
-          var cur = window.__muCarpetaId != null ? String(window.__muCarpetaId) : '';
+          var payload = e.dataTransfer.getData('text/plain');
+          if (!payload) return;
           var dest = nuevaCarpetaId === '' || nuevaCarpetaId === undefined ? '' : String(nuevaCarpetaId);
+          if (payload.indexOf(MU_DRAG_FOLDER) === 0) {
+            var folderId = payload.slice(MU_DRAG_FOLDER.length);
+            if (dest !== '' && String(folderId) === dest) return;
+            muSubmitMoveFolder(folderId, dest);
+            return;
+          }
+          var itemId = payload.indexOf(MU_DRAG_ITEM) === 0 ? payload.slice(MU_DRAG_ITEM.length) : payload;
+          if (!muIdValido(itemId)) return;
+          var cur = window.__muCarpetaId != null ? String(window.__muCarpetaId) : '';
           if (dest !== '' && cur === dest) return;
-          muSubmitMove(itemId, dest);
+          muSubmitMoveItem(itemId, dest);
         });
       }
 
       document.querySelectorAll('.mu-drop-folder').forEach(function (el) {
         var fid = el.getAttribute('data-folder-id');
-        if (fid) bindDrop(el, fid);
+        if (fid && muIdValido(fid)) bindDrop(el, fid);
       });
 
       document.querySelectorAll('.mu-drop-breadcrumb').forEach(function (el) {
@@ -1186,6 +1291,61 @@
     })();
 
     (function () {
+      var dlgConfirm = document.getElementById('muModalConfirmar');
+      var msgConfirm = document.getElementById('muModalConfirmarMensaje');
+      var btnConfirmOk = document.getElementById('muModalConfirmarAceptar');
+      var btnConfirmCancel = document.getElementById('muModalConfirmarCancelar');
+      var pendingForm = null;
+
+      function closeConfirm() {
+        if (dlgConfirm && typeof dlgConfirm.close === 'function') {
+          dlgConfirm.close();
+        }
+        pendingForm = null;
+      }
+
+      document.querySelectorAll('form.mu-form-confirm').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          pendingForm = form;
+          var msg = form.getAttribute('data-confirm-msg') || '¿Confirmar esta acción?';
+          var btnLabel = form.getAttribute('data-confirm-btn') || 'Confirmar';
+          if (msgConfirm) {
+            msgConfirm.textContent = msg;
+          }
+          if (btnConfirmOk) {
+            btnConfirmOk.textContent = btnLabel;
+          }
+          if (dlgConfirm && typeof dlgConfirm.showModal === 'function') {
+            dlgConfirm.showModal();
+          }
+        });
+      });
+
+      if (btnConfirmOk) {
+        btnConfirmOk.addEventListener('click', function () {
+          if (pendingForm) {
+            var f = pendingForm;
+            closeConfirm();
+            f.submit();
+          }
+        });
+      }
+      if (btnConfirmCancel) {
+        btnConfirmCancel.addEventListener('click', closeConfirm);
+      }
+      if (dlgConfirm) {
+        dlgConfirm.addEventListener('click', function (e) {
+          if (e.target === dlgConfirm) {
+            closeConfirm();
+          }
+        });
+        dlgConfirm.addEventListener('cancel', function (e) {
+          e.preventDefault();
+          closeConfirm();
+        });
+      }
+
       var dlg = document.getElementById('muModalNuevaCarpeta');
       var btnOpen = document.getElementById('muBtnAbrirModalCarpeta');
       var btnClose = document.getElementById('muModalCarpetaCerrar');

@@ -27,9 +27,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service
 public class MiUnidadService {
+
+    private static final int MAX_NOMBRE_CARPETA = 255;
+    /** Sufijo automático al duplicar: "Nombre_(2)", "Nombre_(3)", … */
+    private static final Pattern SUFIJO_ENUMERACION = Pattern.compile("_\\((\\d+)\\)$", Pattern.CASE_INSENSITIVE);
 
     private final MiUnidadCarpetaRepository carpetaRepository;
     private final MiUnidadItemRepository itemRepository;
@@ -203,10 +208,11 @@ public class MiUnidadService {
 
     @Transactional
     public MiUnidadCarpeta crearCarpeta(Long usuarioId, Long parentId, String nombre) {
-        String n = nombre == null ? "" : nombre.trim();
-        if (n.isEmpty()) {
+        String solicitado = nombre == null ? "" : nombre.trim();
+        if (solicitado.isEmpty()) {
             throw new IllegalArgumentException("El nombre de la carpeta es obligatorio");
         }
+        String n = resolverNombreCarpetaUnico(usuarioId, parentId, solicitado);
         Usuario u = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalStateException("Usuario no válido"));
         MiUnidadCarpeta carpeta = new MiUnidadCarpeta();
@@ -219,6 +225,57 @@ public class MiUnidadService {
             carpeta.setParent(parent);
         }
         return carpetaRepository.save(carpeta);
+    }
+
+    /**
+     * Si el nombre ya existe entre carpetas hermanas (mismo usuario y mismo padre),
+     * asigna el siguiente disponible: {@code Nombre_(2)}, {@code Nombre_(3)}, …
+     */
+    String resolverNombreCarpetaUnico(Long usuarioId, Long parentId, String nombre) {
+        List<MiUnidadCarpeta> hermanas = listarCarpetasHermanas(usuarioId, parentId);
+        if (!existeCarpetaConNombre(nombre, hermanas)) {
+            return recortarNombreCarpeta(nombre);
+        }
+        String base = nombreBaseEnumeracion(nombre);
+        int n = 2;
+        String candidato;
+        do {
+            candidato = recortarNombreCarpeta(base + "_(" + n + ")");
+            n++;
+        } while (existeCarpetaConNombre(candidato, hermanas));
+        return candidato;
+    }
+
+    private List<MiUnidadCarpeta> listarCarpetasHermanas(Long usuarioId, Long parentId) {
+        if (parentId == null) {
+            return carpetaRepository.findByUsuario_IdAndParentIsNullOrderByNombreAsc(usuarioId);
+        }
+        return carpetaRepository.findByUsuario_IdAndParent_IdOrderByNombreAsc(usuarioId, parentId);
+    }
+
+    private static boolean existeCarpetaConNombre(String nombre, List<MiUnidadCarpeta> hermanas) {
+        for (MiUnidadCarpeta c : hermanas) {
+            if (c.getNombre().equalsIgnoreCase(nombre)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Quita un sufijo {@code _(n)} final para calcular el nombre base. */
+    private static String nombreBaseEnumeracion(String nombre) {
+        var m = SUFIJO_ENUMERACION.matcher(nombre);
+        if (m.find()) {
+            return nombre.substring(0, m.start());
+        }
+        return nombre;
+    }
+
+    private static String recortarNombreCarpeta(String nombre) {
+        if (nombre.length() <= MAX_NOMBRE_CARPETA) {
+            return nombre;
+        }
+        return nombre.substring(0, MAX_NOMBRE_CARPETA);
     }
 
     @Transactional
@@ -312,6 +369,50 @@ public class MiUnidadService {
         }
         it.setCarpeta(destino);
         itemRepository.save(it);
+    }
+
+    @Transactional
+    public MiUnidadCarpeta moverCarpeta(Long usuarioId, Long carpetaId, Long nuevaCarpetaId) {
+        MiUnidadCarpeta carpeta = carpetaRepository.findByIdAndUsuario_Id(carpetaId, usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Carpeta no encontrada"));
+        if (nuevaCarpetaId != null && nuevaCarpetaId.equals(carpetaId)) {
+            throw new IllegalArgumentException("No puedes mover una carpeta dentro de sí misma");
+        }
+        MiUnidadCarpeta destino = null;
+        if (nuevaCarpetaId != null) {
+            destino = carpetaRepository.findByIdAndUsuario_Id(nuevaCarpetaId, usuarioId)
+                    .orElseThrow(() -> new IllegalArgumentException("Carpeta destino no encontrada"));
+            if (esSubcarpetaDe(usuarioId, nuevaCarpetaId, carpetaId)) {
+                throw new IllegalArgumentException("No puedes mover una carpeta dentro de una de sus subcarpetas");
+            }
+        }
+        Long parentActual = carpeta.getParent() == null ? null : carpeta.getParent().getId();
+        Long parentDestino = destino == null ? null : destino.getId();
+        if (java.util.Objects.equals(parentActual, parentDestino)) {
+            return carpeta;
+        }
+        String nombreOriginal = carpeta.getNombre();
+        String nombreEnDestino = resolverNombreCarpetaUnico(usuarioId, parentDestino, nombreOriginal);
+        carpeta.setParent(destino);
+        carpeta.setNombre(nombreEnDestino);
+        return carpetaRepository.save(carpeta);
+    }
+
+    /** {@code posibleHijoId} está dentro del árbol de {@code ancestroId} (incluye el mismo id). */
+    private boolean esSubcarpetaDe(Long usuarioId, Long posibleHijoId, Long ancestroId) {
+        if (posibleHijoId == null || ancestroId == null) {
+            return false;
+        }
+        Long actual = posibleHijoId;
+        while (actual != null) {
+            if (actual.equals(ancestroId)) {
+                return true;
+            }
+            actual = carpetaRepository.findByIdAndUsuario_Id(actual, usuarioId)
+                    .map(c -> c.getParent() == null ? null : c.getParent().getId())
+                    .orElse(null);
+        }
+        return false;
     }
 
     private static String normalizarTipo(String raw) {
