@@ -413,7 +413,8 @@ return "redirect:/superadmin/notificaciones";
             @RequestParam String nombreCompleto,
             @RequestParam String correoCorporativo,
             @AuthenticationPrincipal UserDetails user,
-            RedirectAttributes ra) {
+            RedirectAttributes ra,
+            HttpSession session) {
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
             return "redirect:/superadmin/perfil";
@@ -431,7 +432,10 @@ return "redirect:/superadmin/notificaciones";
                 var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
                 dto.setNombreCompleto(nombreCompleto);
                 dto.setCorreoCorporativo(correoCorporativo);
-                usuarioService.actualizarUsuario(id, dto);
+                var updated = usuarioService.actualizarUsuario(id, dto);
+                session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                        updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
+                        updated.getRolNombre(), null, null));
                 ra.addFlashAttribute("exitoPerfil", "Información personal actualizada correctamente");
             });
         } catch (Exception e) {
