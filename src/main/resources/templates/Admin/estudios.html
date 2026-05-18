@@ -9,7 +9,7 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/admin/' + p; } }</script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -24,7 +24,6 @@
       background: #F0F4F8;
     }
 
-    /* ── Animations ── */
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -103,12 +102,42 @@
       }
     }
 
-    @keyframes glowGreen {
+@keyframes glowGreen {
+      0%, 100% { box-shadow: 0 4px 20px rgba(46, 204, 113, .15); }
+      50% { box-shadow: 0 4px 32px rgba(46, 204, 113, .4); }
+    }
 
-      0%,
-      100% {
-        box-shadow: 0 4px 20px rgba(46, 204, 113, .15)
-      }
+    @keyframes waterWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * {
+      position: relative;
+      z-index: 1;
+    }
 
       50% {
         box-shadow: 0 4px 32px rgba(46, 204, 113, .4)
@@ -123,7 +152,6 @@
       animation: countUp .4s ease both;
     }
 
-    /* ── Header hero ── */
     .estudios-hero {
       background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
       border-radius: 20px;
@@ -157,7 +185,6 @@
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
 
-    /* ── Stat chips ── */
     .stat-chip {
       background: rgba(255, 255, 255, .12);
       backdrop-filter: blur(8px);
@@ -192,58 +219,60 @@
       margin-top: 4px;
     }
 
-    /* ── Filter bar ── */
-    .filter-bar {
-      background: #fff;
-      border-radius: 14px;
-      padding: 14px 20px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 16px rgba(0, 0, 0, .07);
+    .filter-row {
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
-      animation: fadeUp .5s .1s ease both;
+      animation: fadeUp .5s .05s ease both;
     }
 
-    .filter-bar input {
-      flex: 1;
-      min-width: 200px;
+    .filter-row input,
+    .filter-row select {
       border: 1.5px solid #E5E7EB;
-      border-radius: 10px;
-      padding: 9px 14px 9px 38px;
-      font-size: 13px;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
       font-family: inherit;
-      transition: border-color .2s, box-shadow .2s;
       color: #374151;
+      transition: all .2s;
+      background: #fff;
     }
 
-    .filter-bar input:focus {
+    .filter-row input {
+      padding-left: 34px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
       outline: none;
       border-color: #2ECC71;
-      box-shadow: 0 0 0 3px rgba(46, 204, 113, .12);
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
     }
 
-    .filter-bar select {
-      border: 1.5px solid #E5E7EB;
-      border-radius: 10px;
-      padding: 9px 14px;
-      font-size: 13px;
-      font-family: inherit;
-      color: #374151;
+    .filter-row input[type="date"]:focus {
+      outline: none;
+    }
+
+    .filter-row input[type="date"]::-webkit-calendar-picker-indicator {
       cursor: pointer;
-      background: #fff;
-      transition: border-color .2s;
+      opacity: 0.6;
     }
 
-    .filter-bar select:focus {
-      outline: none;
-      border-color: #2ECC71;
+    .filter-row input[type="date"]::-webkit-calendar-picker-indicator:hover {
+      opacity: 1;
     }
 
-    /* ── Table card ── */
     .table-card {
-      background: #fff;
+      background: #F0FAF4;
       border-radius: 16px;
       box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
       overflow: hidden;
@@ -255,7 +284,7 @@
     }
 
     .table-card table thead th {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
@@ -280,7 +309,6 @@
       vertical-align: middle;
     }
 
-    /* ── Badges ── */
     .badge-pdf {
       background: rgba(231, 76, 60, .1);
       color: #C0392B;
@@ -335,7 +363,6 @@
       font-weight: 600;
     }
 
-    /* ── Buttons ── */
     .btn-ver {
       display: inline-flex;
       align-items: center;
@@ -379,7 +406,6 @@
       transform: translateY(0);
     }
 
-    /* ── File icon boxes ── */
     .file-icon {
       width: 38px;
       height: 38px;
@@ -395,7 +421,6 @@
       transform: rotate(-5deg) scale(1.1);
     }
 
-    /* ── Modal ── */
     .modal-content {
       border: none;
       border-radius: 20px;
@@ -484,7 +509,6 @@
       border-color: #D1D5DB;
     }
 
-    /* ── Empty state ── */
     .empty-state {
       text-align: center;
       padding: 60px 32px;
@@ -503,7 +527,119 @@
       font-size: 14px;
     }
 
-    /* ── Read-only ribbon ── */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .grid-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      overflow: hidden;
+      transition: all .2s ease;
+      animation: fadeUp .4s ease both;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .grid-card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+      border-color: #D1D5DB;
+    }
+
+    .grid-card-icon-area {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .grid-card-icon-area i {
+      font-size: 48px;
+    }
+
+    .grid-card-info {
+      padding: 10px 12px;
+      border-top: 1px solid #F3F4F6;
+    }
+
+    .grid-card-info .card-title {
+      font-weight: 500;
+      color: #1F2937;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .grid-card-info .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6B7280;
+    }
+
+    .grid-card-info .card-meta .badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 10px;
+    }
+
+    .badge-pdf { background: rgba(231,76,60,.1); color: #E74C3C; }
+    .badge-excel { background: rgba(39,174,96,.1); color: #27AE60; }
+    .badge-word { background: rgba(41,128,185,.1); color: #2980B9; }
+    .badge-pptx { background: rgba(52,152,219,.1); color: #3498DB; }
+    .badge-otro { background: rgba(156,163,175,.12); color: #6B7280; }
+
+    .grid-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
+    }
+
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
+
+    .grid-card-actions button,
+    .grid-card-actions a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 2px 6px rgba(0,0,0,.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .grid-card-actions .btn-view { color: #3498DB; }
+    .grid-card-actions .btn-edit { color: #F39C12; }
+    .grid-card-actions .btn-delete { color: #E74C3C; }
+
+    .grid-card-actions button:hover,
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
     .readonly-badge {
       display: inline-flex;
       align-items: center;
@@ -513,6 +649,43 @@
       background: rgba(231, 76, 60, .07);
       border: 1px solid rgba(231, 76, 60, .2);
       animation: rotateBadge .4s ease both;
+    }
+
+    /* ── Toggle switch para vista lista/grid (estilo Google Drive) ── */
+    .vista-toggle-group {
+      display: inline-flex;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .vista-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn + .vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
     }
 
     .readonly-badge span {
@@ -529,9 +702,9 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ HERO HEADER ══ -->
         <div class="estudios-hero">
           <div
             style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
@@ -560,26 +733,24 @@
                 </a>
               </div>
             </div>
-
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
               <div class="stat-chip" style="animation-delay:.1s">
-                <div class="val" id="stats-total">—</div>
+                <div class="val" id="stats-total">0</div>
                 <div class="lbl">Total</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" id="stats-pdf" style="color:#F87171;">—</div>
+                <div class="val" id="stats-pdf" style="color:#F87171;">0</div>
                 <div class="lbl">PDF</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
-                <div class="val" id="stats-otros" style="color:#34D399;">—</div>
+                <div class="val" id="stats-otros" style="color:#34D399;">0</div>
                 <div class="lbl">Otros</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ══ FILTER BAR ══ -->
-        <div class="filter-bar">
+        <div class="filter-row">
           <div style="position:relative;flex:1;min-width:220px;">
             <i class="fas fa-search"
               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
@@ -593,8 +764,19 @@
             <option value="word">Word</option>
             <option value="otro">Otros</option>
           </select>
+          <select id="filter-anio" onchange="filtrarEstudios()">
+            <option value="">Todos los años</option>
+          </select>
+          <div class="vista-toggle-group">
+            <button class="vista-toggle-btn active" id="btn-vista-lista" onclick="setVista('lista')" title="Lista">
+              <i class="fas fa-list"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setVista('grid')" title="Cuadrícula">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
           <button
-            onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';filtrarEstudios();"
+            onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';document.getElementById('filter-anio').value='';filtrarEstudios();"
             style="padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
             onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
             onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
@@ -602,8 +784,7 @@
           </button>
         </div>
 
-        <!-- ══ TABLE CARD ══ -->
-        <div class="table-card">
+        <div id="estudios-lista" class="table-card">
           <div style="overflow-x:auto;">
             <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
               <thead>
@@ -620,12 +801,12 @@
               <tbody id="table-body">
                 <tr th:each="e, iStat : ${estudios}" class="estudio-row"
                   th:with="tipo=${#strings.contains(e.archivoTipoMime,'pdf') ? 'pdf' :
-                            (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel')) ? 'excel' :
-                            (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
-                            (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}" th:data-id="${e.id}"
-                  th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}" th:data-anio="${e.anio}"
-                  th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}" th:data-url="${e.archivoUrl}"
-                  th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                                (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel')) ? 'excel' :
+                                (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
+                                (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
+                  th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                  th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
+                  th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                   <td>
                     <div style="display:flex;align-items:center;gap:10px;">
                       <th:block th:switch="${tipo}">
@@ -667,13 +848,12 @@
                   </td>
                   <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
                       lectura</span></td>
-                  <!-- Ver -->
                   <td class="text-center">
-                    <button class="btn-ver" onclick="openModalFromRow(this)">
+                    <a class="btn-ver" th:href="@{/admin/estudios/{id}/ver(id=${e.id})}"
+                      style="text-decoration:none;">
                       <i class="fas fa-eye"></i> Ver
-                    </button>
+                    </a>
                   </td>
-                  <!-- Editar / Eliminar -->
                   <td class="text-center">
                     <div style="display:flex;gap:6px;justify-content:center;">
                       <a th:href="@{/admin/estudios/editar/{id}(id=${e.id})}"
@@ -702,16 +882,13 @@
               </tbody>
             </table>
           </div>
+          <!-- ══ PAGINACIÓN ══ -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+            <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+            <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+          </div>
         </div>
 
-        <!-- ══ PAGINACIÓN ══ -->
-        <div
-          style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;flex-wrap:wrap;gap:8px;">
-          <span id="conteo-estudios" style="font-size:12px;color:#6B7280;font-family:inherit;"></span>
-          <div id="paginacion-estudios" style="display:flex;align-items:center;gap:2px;flex-wrap:wrap;"></div>
-        </div>
-
-        <!-- ══ MODAL ══ -->
         <div class="modal fade" id="modal-estudio" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -898,16 +1075,21 @@
           function filtrarEstudios() {
             var q = (document.getElementById('search-estudios').value || '').toLowerCase();
             var fmt = (document.getElementById('filter-formato').value || '').toLowerCase();
+            var anio = (document.getElementById('filter-anio').value || '');
+
             document.querySelectorAll('.estudio-row').forEach(function (row) {
               var titulo = (row.dataset.titulo || '').toLowerCase();
               var desc = (row.dataset.descripcion || '').toLowerCase();
               var tipo = row.dataset.tipo || '';
+              var rAnio = row.dataset.anio || '';
               var matchQ = !q || titulo.includes(q) || desc.includes(q);
               var matchF = !fmt || tipo === fmt;
-              row.dataset.filtrado = (matchQ && matchF) ? '1' : '0';
+              var matchAnio = !anio || rAnio === anio;
+              row.dataset.filtrado = (matchQ && matchF && matchAnio) ? '1' : '0';
             });
             inicializarPaginacion();
             mostrarPagina(1);
+            if (vistaActual === 'grid') renderGrid();
           }
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
@@ -996,7 +1178,6 @@
             modal.show();
           }
 
-          // Construye el nombre de archivo para kkfileview: título sanitizado + extensión de la URL
           function kkNombreArchivo(titulo, url) {
             var ext = '';
             var m = (url || '').split('?')[0].match(/\.([a-zA-Z0-9]+)$/);
@@ -1031,6 +1212,104 @@
             return data.previewUrl || '';
           }
 
+          var vistaActual = 'lista';
+
+          function setVista(vista) {
+            var listaDiv = document.getElementById('estudios-lista');
+            var gridDiv = document.getElementById('estudios-grid');
+            var btnLista = document.getElementById('btn-vista-lista');
+            var btnGrid = document.getElementById('btn-vista-grid');
+            var paginacion = document.getElementById('paginacion-estudios');
+            var conteo = document.getElementById('conteo-estudios');
+
+            vistaActual = vista;
+
+            if (vista === 'grid') {
+              listaDiv.style.display = 'none';
+              gridDiv.style.display = '';
+              paginacion.style.display = 'none';
+              conteo.style.display = 'none';
+              btnLista.classList.remove('active');
+              btnGrid.classList.add('active');
+              renderGrid();
+            } else {
+              listaDiv.style.display = '';
+              gridDiv.style.display = 'none';
+              paginacion.style.display = '';
+              conteo.style.display = '';
+              btnLista.classList.add('active');
+              btnGrid.classList.remove('active');
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
+          }
+
+          function toggleVista() {
+            setVista(vistaActual === 'lista' ? 'grid' : 'lista');
+          }
+
+          function renderGrid() {
+            var gridDiv = document.getElementById('estudios-grid');
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function(tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+
+            if (filas.length === 0) {
+              gridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 24px;"><i class="fas fa-folder-open" style="font-size:44px;color:#D1D5DB;display:block;margin-bottom:12px;"></i><p style="color:#9CA3AF;font-size:14px;">No se encontraron estudios con los filtros actuales.</p></div>';
+              return;
+            }
+
+            var iconMap = {
+              pdf: { bg: 'rgba(231,76,60,.08)', cls: 'fas fa-file-pdf', color: '#E74C3C' },
+              excel: { bg: 'rgba(39,174,96,.08)', cls: 'fas fa-file-excel', color: '#27AE60' },
+              word: { bg: 'rgba(41,128,185,.08)', cls: 'fas fa-file-word', color: '#2980B9' },
+              ppt: { bg: 'rgba(52,152,219,.08)', cls: 'fas fa-file-powerpoint', color: '#3498DB' },
+              otro: { bg: 'rgba(156,163,175,.08)', cls: 'fas fa-file', color: '#6B7280' }
+            };
+            var badgeMap = {
+              pdf: '<span class="badge badge-pdf">PDF</span>',
+              excel: '<span class="badge badge-excel">Excel</span>',
+              word: '<span class="badge badge-word">Word</span>',
+              ppt: '<span class="badge badge-pptx">PPT</span>',
+              otro: '<span class="badge badge-otro">Otro</span>'
+            };
+
+            gridDiv.innerHTML = filas.map(function(row, idx) {
+              var tipo = row.dataset.tipo || 'otro';
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var id = row.dataset.id || '';
+
+              var ic = iconMap[tipo] || iconMap.otro;
+              var badge = badgeMap[tipo] || badgeMap.otro;
+
+              return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms" onclick="abrirVisor(\'' + id + '\')">' +
+                '<div class="grid-card-actions">' +
+                  '<a href="/admin/estudios/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-eye"></i></a>' +
+                  '<a href="/admin/estudios/editar/' + id + '" class="btn-edit" title="Editar" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-edit"></i></a>' +
+                  '<button class="btn-delete" title="Eliminar" onclick="event.stopPropagation();eliminarEstudio(\'' + id + '\')"><i class="fas fa-trash"></i></button>' +
+                '</div>' +
+                '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
+                  '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
+                '</div>' +
+                '<div class="grid-card-info">' +
+                  '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                  '<div class="card-meta">' +
+                    '<span>' + escapeHtml(anio) + '</span>' +
+                    '<span>·</span>' +
+                    badge +
+                  '</div>' +
+                '</div>' +
+              '</div>';
+            }).join('');
+          }
+
+          function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+          }
+
           async function eliminarEstudio(id) {
             if (!confirm('¿Desactivar este estudio? Dejará de ser visible para los socios.')) return;
             try {
@@ -1050,12 +1329,26 @@
               alert('Error: ' + e.message);
             }
           }
+
+          // ── Populate year filter ──
+          (function populateAnios() {
+            var rows = document.querySelectorAll('.estudio-row');
+            var years = new Set();
+            rows.forEach(function(r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            var sel = document.getElementById('filter-anio');
+            if (!sel) return;
+            var sorted = Array.from(years).sort(function(a,b){ return b - a; });
+            sorted.forEach(function(y) {
+              var opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            });
+          })();
         </script>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
-
-    <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 

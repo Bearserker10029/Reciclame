@@ -710,9 +710,9 @@
               </div>
               <div class="stat-row" style="animation-delay:.25s">
                 <span style="font-size:12px;color:#6B7280;">Último acceso</span>
-                <span th:if="${ultimoAcceso != null}" style="font-size:12px;color:#6B7280;font-style:italic;"
-                  th:text="${#temporals.format(ultimoAcceso, 'dd/MM/yyyy HH:mm')}">—</span>
-                <span th:if="${ultimoAcceso == null}" style="font-size:12px;color:#6B7280;font-style:italic;">Sin registros</span>
+                <span th:if="${ultimoAccesoFormatted != null and ultimoAccesoFormatted != 'No registrado'}" style="font-size:12px;color:#6B7280;font-style:italic;"
+                  th:text="${ultimoAccesoFormatted}">—</span>
+                <span th:if="${ultimoAccesoFormatted == null or ultimoAccesoFormatted == 'No registrado'}" style="font-size:12px;color:#6B7280;font-style:italic;">Sin registros</span>
               </div>
             </div>
           </div>

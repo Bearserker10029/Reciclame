@@ -2,6 +2,7 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.service.EtiquetaService;
 import org.reciclame.demo.service.EstadosNormativaService;
+import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.TiposNormativaService;
 import org.reciclame.demo.service.UsuarioService;
@@ -19,31 +20,49 @@ public class DiccionariosController {
     private final TiposNormativaService tiposNormativaService;
     private final EstadosNormativaService estadosNormativaService;
     private final UsuarioService usuarioService;
+    private final NotificacionService notificacionService;
 
     public DiccionariosController(TematicaService tematicaService,
                                    EtiquetaService etiquetaService,
                                    TiposNormativaService tiposNormativaService,
                                    EstadosNormativaService estadosNormativaService,
-                                   UsuarioService usuarioService) {
+                                   UsuarioService usuarioService,
+                                   NotificacionService notificacionService) {
         this.tematicaService         = tematicaService;
         this.etiquetaService         = etiquetaService;
         this.tiposNormativaService   = tiposNormativaService;
         this.estadosNormativaService = estadosNormativaService;
         this.usuarioService          = usuarioService;
+        this.notificacionService     = notificacionService;
     }
 
     @GetMapping("/admin/diccionarios")
     public String diccionarios(Model model, @AuthenticationPrincipal UserDetails user) {
-        model.addAttribute("rol",      "ADMIN");
-        model.addAttribute("rolNombre", "Administrador");
-        model.addAttribute("notifUrl", "/admin/notificaciones");
-        usuarioService.findByCorreo(user.getUsername())
-                .ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
-
-        model.addAttribute("tematicas",         tematicaService.listarTematicasTodas());
-        model.addAttribute("etiquetas",         etiquetaService.listarEtiquetasTodas());
-        model.addAttribute("tiposNormativa",    tiposNormativaService.listarTiposTodos());
-        model.addAttribute("estadosNormativa",  estadosNormativaService.listarEstadosTodos());
+        cargarModelo(model, user, "ADMIN", "Administrador", "/admin/notificaciones");
         return "Admin/diccionarios";
+    }
+
+    @GetMapping("/superadmin/diccionarios")
+    public String diccionariosSuperAdmin(Model model, @AuthenticationPrincipal UserDetails user) {
+        cargarModelo(model, user, "SUPERADMIN", "Super Administrador", "/superadmin/notificaciones");
+        return "SuperAdmin/diccionarios";
+    }
+
+    private void cargarModelo(Model model, UserDetails user, String rol, String rolNombre, String notifUrl) {
+        model.addAttribute("rol",      rol);
+        model.addAttribute("rolNombre", rolNombre);
+        model.addAttribute("notifUrl", notifUrl);
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("usuarioNombre", u.getNombreCompleto());
+            try {
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+            } catch (Exception e) {
+                model.addAttribute("noLeidasCount", 0);
+            }
+        });
+        model.addAttribute("tematicas",        tematicaService.listarTematicasTodas());
+        model.addAttribute("etiquetas",        etiquetaService.listarEtiquetasTodas());
+        model.addAttribute("tiposNormativa",   tiposNormativaService.listarTiposTodos());
+        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstadosTodos());
     }
 }

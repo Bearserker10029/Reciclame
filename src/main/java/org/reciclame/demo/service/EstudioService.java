@@ -166,6 +166,14 @@ public class EstudioService {
         minioStorageService.eliminarArchivo(archivoUrl);
     }
 
+    public long contarNuevosDesde(Instant desde) {
+        return estudioRepository.contarNuevosDesde(desde);
+    }
+
+    public long contarEntreFechas(Instant desde, Instant hasta) {
+        return estudioRepository.contarEntreFechas(desde, hasta);
+    }
+
     // ── HELPERS ───────────────────────────────────────────────
 
     private void mapDtoToEntity(EstudioRequestDTO dto, Estudio e,

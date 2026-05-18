@@ -19,6 +19,199 @@
       font-family: 'Inter', sans-serif;
       background: #F5F6FA;
     }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
+    }
+
+    @keyframes waterWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(155, 89, 182, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(231, 76, 60, .18);
+      border: 1px solid rgba(231, 76, 60, .3);
+      color: #FCA5A5;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .btn-primary-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #9B59B6, #8E44AD);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(155, 89, 182, .35);
+      transition: all .25s;
+    }
+
+    .btn-primary-hero:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(155, 89, 182, .5);
+    }
+
+    .notif-card {
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      transition: all .3s ease;
+      animation: fadeUp .4s ease both;
+    }
+
+    .notif-card:hover {
+      background: rgba(255, 255, 255, 0.42);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .12);
+    }
+
+    .notif-card.unread {
+      background: rgba(255, 255, 255, 0.42);
+      border-color: rgba(46, 204, 113, 0.4);
+    }
   </style>
 </head>
 
@@ -30,160 +223,157 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
 
-      <main
+<main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
-        <th:block th:fragment="notificaciones-content">
 
-          <!-- Flash messages -->
-          <div th:if="${enviado}"
-            style="background:#D4EDDA;border:1px solid #C3E6CB;color:#155724;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-check-circle"></i> <span th:text="${enviado}">Enviado</span>
-          </div>
-          <div th:if="${error}"
-            style="background:#F8D7DA;border:1px solid #F5C6CB;color:#721C24;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error</span>
-          </div>
+        <!-- Flash messages -->
+        <div th:if="${enviado}"
+          style="background:#D4EDDA;border:1px solid #C3E6CB;color:#155724;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-check-circle"></i> <span th:text="${enviado}">Enviado</span>
+        </div>
+        <div th:if="${error}"
+          style="background:#F8D7DA;border:1px solid #F5C6CB;color:#721C24;padding:12px 16px;border-radius:8px;margin-bottom:16px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error</span>
+        </div>
 
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div class="estudios-hero">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
-              <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">
-                Notificaciones
-                <span th:if="${noLeidasCount > 0}"
-                  style="margin-left:8px;background:#E74C3C;color:#fff;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;"
-                  th:text="${noLeidasCount}">0</span>
-              </h1>
-              <p style="color:#6B7280;font-size:13px;">Mantente al día con las actualizaciones del repositorio</p>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <button onclick="document.getElementById('modalNotif').style.display='flex'"
-                style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">
-                <i class="fas fa-paper-plane"></i> Nueva notificación
-              </button>
-              <a th:href="@{/admin/notificaciones/configuracion}" href="/admin/notificaciones/configuracion"
-                style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;font-size:13px;color:#374151;text-decoration:none;">
-                <i class="fas fa-cog" style="color:#6B7280;"></i>Configurar
-              </a>
-            </div>
-          </div>
-
-          <!-- Modal enviar notificación -->
-          <div id="modalNotif"
-            style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
-            <div
-              style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-              <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
                 <div
-                  style="width:48px;height:48px;background:linear-gradient(135deg,#1B3A5C,#2c5282);border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                  <i class="fas fa-paper-plane" style="color:#fff;font-size:18px;"></i>
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(155,89,182,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-bell" style="color:#9B59B6;font-size:18px;"></i>
                 </div>
                 <div>
-                  <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Nueva notificación</h3>
-                  <p style="margin:4px 0 0;font-size:12px;color:#6B7280;">Envía un mensaje a uno o todos los usuarios
-                  </p>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Notificaciones</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Mantente al día con las
+                    actualizaciones del repositorio</p>
                 </div>
-                <button onclick="document.getElementById('modalNotif').style.display='none'"
-                  style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
               </div>
-              <form th:action="@{/admin/notificaciones/enviar}" method="post">
-                <div style="margin-bottom:14px;">
-                  <label
-                    style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Destinatario</label>
-                  <select name="destinatario"
-                    style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;">
-                    <option value="todos">Todos los usuarios</option>
-                    <option th:each="u : ${todosUsuarios}" th:value="${u.id}"
-                      th:text="${u.nombreCompleto + ' (' + u.correoCorporativo + ')'}">Usuario</option>
-                  </select>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-shield-alt" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Panel de administración</span>
                 </div>
-                <div style="margin-bottom:14px;">
-                  <label
-                    style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Título</label>
-                  <input name="titulo" required maxlength="120" placeholder="Ej: Nuevo documento disponible"
-                    style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;" />
+                <button onclick="document.getElementById('modalNotif').style.display='flex'" class="btn-primary-hero">
+                  <i class="fas fa-paper-plane"></i> Nueva notificación
+                </button>
+                <a th:href="@{/admin/notificaciones/configuracion}" href="/admin/notificaciones/configuracion"
+                  style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);backdrop-filter:blur(8px);color:rgba(255,255,255,.85);font-size:13px;font-weight:600;text-decoration:none;transition:all .25s;"
+                  onmouseover="this.style.background='rgba(255,255,255,.2)'"
+                  onmouseout="this.style.background='rgba(255,255,255,.1)'">
+                  <i class="fas fa-cog"></i>Configurar
+                </a>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" th:text="${noLeidasCount != null ? noLeidasCount : 0}">0</div>
+                <div class="lbl">No leídas</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" th:text="${notificaciones != null ? notificaciones.size() : 0}">0</div>
+                <div class="lbl">Totales</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal enviar notificación -->
+        <div id="modalNotif"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div
+                style="width:48px;height:48px;background:linear-gradient(135deg,#1B3A5C,#2c5282);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-paper-plane" style="color:#fff;font-size:18px;"></i>
+              </div>
+              <div>
+                <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Nueva notificación</h3>
+                <p style="margin:4px 0 0;font-size:12px;color:#6B7280;">Envía un mensaje a uno o todos los usuarios</p>
+              </div>
+              <button onclick="document.getElementById('modalNotif').style.display='none'"
+                style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+            </div>
+            <form th:action="@{/admin/notificaciones/enviar}" method="post">
+              <div style="margin-bottom:14px;">
+                <label
+                  style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Destinatario</label>
+                <select name="destinatario"
+                  style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;">
+                  <option value="todos">Todos los usuarios</option>
+                  <option th:each="u : ${todosUsuarios}" th:value="${u.id}"
+                    th:text="${u.nombreCompleto + ' (' + u.correoCorporativo + ')'}">Usuario</option>
+                </select>
+              </div>
+              <div style="margin-bottom:14px;">
+                <label
+                  style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Título</label>
+                <input name="titulo" required maxlength="120" placeholder="Ej: Nuevo documento disponible"
+                  style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;" />
+              </div>
+              <div style="margin-bottom:20px;">
+                <label
+                  style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Mensaje</label>
+                <textarea name="mensaje" required rows="3" maxlength="500" placeholder="Escribe el mensaje..."
+                  style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;resize:vertical;"></textarea>
+              </div>
+              <div style="display:flex;gap:12px;justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('modalNotif').style.display='none'"
+                  style="padding:10px 20px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Cancelar</button>
+                <button type="submit"
+                  style="padding:10px 20px;border:none;border-radius:8px;background:#1B3A5C;color:#fff;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Enviar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div th:each="n : ${notificaciones}" th:class="${!n.leida} ? 'notif-card unread' : 'notif-card read'">
+
+            <div class="notif-icon" th:switch="${n.tipo}">
+              <span th:case="'NUEVO_ESTUDIO'" style="background:rgba(46,204,113,.12);">
+                <i class="fas fa-file-alt" style="color:#2ECC71;font-size:16px;"></i></span>
+              <span th:case="'NUEVA_NORMATIVA'" style="background:rgba(52,152,219,.12);">
+                <i class="fas fa-balance-scale" style="color:#3498DB;font-size:16px;"></i></span>
+              <span th:case="'DOCUMENTO_VALIDADO'" style="background:rgba(46,204,113,.12);">
+                <i class="fas fa-check-circle" style="color:#2ECC71;font-size:16px;"></i></span>
+              <span th:case="'MENSAJE_ADMIN'" style="background:#F3F4F6;">
+                <i class="fas fa-user-shield" style="color:#9CA3AF;font-size:16px;"></i></span>
+              <span th:case="*" style="background:rgba(243,156,18,.12);">
+                <i class="fas fa-bell" style="color:#F39C12;font-size:16px;"></i></span>
+            </div>
+
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
+                <span style="font-size:13px;font-weight:600;color:#1B3A5C;" th:text="${n.titulo}">Título</span>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+                  <span th:if="${!n.leida}" class="notif-badge-unread">No leída</span>
+                  <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;" th:text="${n.tiempoRelativo}">—</span>
                 </div>
-                <div style="margin-bottom:20px;">
-                  <label
-                    style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Mensaje</label>
-                  <textarea name="mensaje" required rows="3" maxlength="500" placeholder="Escribe el mensaje..."
-                    style="width:100%;padding:10px 12px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:13px;font-family:inherit;color:#374151;resize:vertical;"></textarea>
-                </div>
-                <div style="display:flex;gap:12px;justify-content:flex-end;">
-                  <button type="button" onclick="document.getElementById('modalNotif').style.display='none'"
-                    style="padding:10px 20px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Cancelar</button>
-                  <button type="submit"
-                    style="padding:10px 20px;border:none;border-radius:8px;background:#1B3A5C;color:#fff;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;">Enviar</button>
-                </div>
+              </div>
+              <p style="font-size:12px;color:#6B7280;line-height:1.5;" th:text="${n.mensaje}">Mensaje</p>
+              <form th:if="${!n.leida}" method="post" th:action="@{/admin/notificaciones/marcar/{id}(id=${n.id})}"
+                style="display:inline;">
+                <button type="submit" class="btn-mark-read">
+                  <i class="fas fa-check" style="margin-right:4px;"></i>Marcar como leída
+                </button>
               </form>
             </div>
+
           </div>
 
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div th:each="n : ${notificaciones}" th:class="${!n.leida} ? 'notif-card unread' : 'notif-card read'">
-
-              <div class="notif-icon" th:switch="${n.tipo}">
-                <span th:case="'NUEVO_ESTUDIO'" style="background:rgba(46,204,113,.12);">
-                  <i class="fas fa-file-alt" style="color:#2ECC71;font-size:16px;"></i></span>
-                <span th:case="'NUEVA_NORMATIVA'" style="background:rgba(52,152,219,.12);">
-                  <i class="fas fa-balance-scale" style="color:#3498DB;font-size:16px;"></i></span>
-                <span th:case="'DOCUMENTO_VALIDADO'" style="background:rgba(46,204,113,.12);">
-                  <i class="fas fa-check-circle" style="color:#2ECC71;font-size:16px;"></i></span>
-                <span th:case="'MENSAJE_ADMIN'" style="background:#F3F4F6;">
-                  <i class="fas fa-user-shield" style="color:#9CA3AF;font-size:16px;"></i></span>
-                <span th:case="*" style="background:rgba(243,156,18,.12);">
-                  <i class="fas fa-bell" style="color:#F39C12;font-size:16px;"></i></span>
-              </div>
-
-              <div style="flex:1;min-width:0;">
-                <div
-                  style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px;">
-                  <span style="font-size:13px;font-weight:600;color:#1B3A5C;" th:text="${n.titulo}">Título</span>
-                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
-                    <span th:if="${!n.leida}" class="notif-badge-unread">No leída</span>
-                    <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;"
-                      th:text="${n.tiempoRelativo}">—</span>
-                  </div>
-                </div>
-                <p style="font-size:12px;color:#6B7280;line-height:1.5;" th:text="${n.mensaje}">Mensaje</p>
-                <form th:if="${!n.leida}" method="post" th:action="@{/admin/notificaciones/marcar/{id}(id=${n.id})}"
-                  style="display:inline;">
-                  <button type="submit" class="btn-mark-read">
-                    <i class="fas fa-check" style="margin-right:4px;"></i>Marcar como leída
-                  </button>
-                </form>
-              </div>
-
-            </div>
-
-            <div th:if="${#lists.isEmpty(notificaciones)}"
-              style="text-align:center;padding:48px;background:#fff;border-radius:12px;color:#9CA3AF;">
-              <i class="fas fa-bell-slash" style="font-size:32px;margin-bottom:12px;display:block;"></i>
-              No tienes notificaciones por el momento.
-            </div>
+          <div th:if="${#lists.isEmpty(notificaciones)}"
+            style="text-align:center;padding:48px;background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;color:#9CA3AF;">
+            <i class="fas fa-bell-slash" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+            No tienes notificaciones por el momento.
           </div>
+        </div>
 
-          <script>
-            function toggleChatbot() {
-              var panel = document.getElementById('chatbot-panel');
-              var bubble = document.getElementById('chatbot-bubble');
-              if (panel.style.display === 'flex') { panel.style.display = 'none'; bubble.style.display = 'flex'; }
-              else { panel.style.display = 'flex'; bubble.style.display = 'none'; }
-            }
-            function sendChatMessage() {
-              var input = document.getElementById('chat-input');
-              var msg = input.value.trim();
-              if (!msg) return;
-              var div = document.getElementById('chat-messages');
-              div.innerHTML += '<div class="chat-msg user"><div class="bubble">' + msg + '</div></div>';
-              input.value = '';
-              div.scrollTop = div.scrollHeight;
-              setTimeout(function () {
-                div.innerHTML += '<div class="chat-msg bot"><div class="bubble">Gracias por tu mensaje. Estoy en modo demo.</div></div>';
-                div.scrollTop = div.scrollHeight;
-              }, 800);
-            }
-          </script>
-
-        </th:block>
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
@@ -218,17 +408,36 @@
   </div>
 
   <script>
-    // Solo define navTo si no existe ya (evita sobreescribir el SPA de inicio.html)
     if (typeof navTo === 'undefined') {
       function navTo(page) {
         var map = { 'admin-docs': 'documentos' };
+        var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin';
         var target = map[page] || page;
-        window.location.href = '/' + (window.__baseRole || 'admin') + '/' + target;
+        window.location.href = base + '/' + target;
       }
     }
+    function toggleChatbot() {
+      var panel = document.getElementById('chatbot-panel');
+      var bubble = document.getElementById('chatbot-bubble');
+      if (panel.style.display === 'flex') { panel.style.display = 'none'; bubble.style.display = 'flex'; }
+      else { panel.style.display = 'flex'; bubble.style.display = 'none'; }
+    }
+    function sendChatMessage() {
+      var input = document.getElementById('chat-input');
+      var msg = input.value.trim();
+      if (!msg) return;
+      var div = document.getElementById('chat-messages');
+      div.innerHTML += '<div class="chat-msg user"><div class="bubble">' + msg + '</div></div>';
+      input.value = '';
+      div.scrollTop = div.scrollHeight;
+      setTimeout(function () {
+        div.innerHTML += '<div class="chat-msg bot"><div class="bubble">Gracias por tu mensaje. Estoy en modo demo.</div></div>';
+        div.scrollTop = div.scrollHeight;
+      }, 800);
+    }
     document.getElementById('chatbot-bubble').style.display = 'flex';
-    window.__baseRole = 'admin';
   </script>
+
 </body>
 
 </html>

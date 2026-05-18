@@ -9,7 +9,10 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -18,10 +21,470 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
+      background: #F0F4F8;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(.8)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4)
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0)
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
+      }
+    }
+
+    @keyframes glowGreen {
+
+      0%,
+      100% {
+        box-shadow: 0 4px 20px rgba(46, 204, 113, .15)
+      }
+
+      50% {
+        box-shadow: 0 4px 32px rgba(46, 204, 113, .4)
+      }
+    }
+
+    @keyframes waterWave {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-enter {
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-enter {
+      animation: countUp .4s ease both;
+    }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-card:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-card .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-card .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+.filter-row {
+      background: rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
+    }
+
+    .filter-row input,
+    .filter-row select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      color: #374151;
+      transition: all .2s;
+      background: #fff;
+    }
+
+    .filter-row input {
+      padding-left: 34px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .filter-bar input {
+      flex: 1;
+      min-width: 200px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 9px 14px 9px 38px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      color: #374151;
+    }
+
+    .filter-bar input:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .12);
+    }
+
+    .filter-bar select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #374151;
+      cursor: pointer;
+      background: #fff;
+      transition: border-color .2s;
+    }
+
+    .filter-bar select:focus {
+      outline: none;
+      border-color: #2ECC71;
+    }
+
+    .table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .table-card table thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .table-card table thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 14px 16px;
+      border: none;
+    }
+
+    .table-card table tbody tr {
+      transition: background .2s, transform .2s;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .table-card table tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .table-card table tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
+
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-solo {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .badge-publico {
+      background: rgba(46, 204, 113, .1);
+      color: #27AE60;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-restringido {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .btn-agregar {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-agregar:hover {
+      background: #2ECC71;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46, 204, 113, .4);
+      animation: glowGreen 1.5s ease infinite;
+    }
+
+    .btn-agregar:hover::after {
+      transform: translateX(100%);
+    }
+
+    .btn-agregar:active {
+      transform: translateY(0);
+    }
+
+    .btn-upload {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      background: #2ECC71;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .25s ease;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, .3);
+    }
+
+    .btn-upload:hover {
+      background: #27AE60;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46, 204, 113, .4);
     }
   </style>
-  <script>if (typeof navTo === 'undefined') { function navTo(p) { window.location.href = '/admin/' + p; } }</script>
 </head>
 
 <body>
@@ -30,60 +493,63 @@
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       <main
+        class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-          <div>
-            <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Documentos</h1>
-            <p style="color:#6B7280;font-size:13px;">Gestiona estudios y normativas del repositorio</p>
-          </div>
-          <button
-            style="padding:10px 20px;border-radius:8px;border:none;background:#2ECC71;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-cloud-upload-alt"></i> Subir documento
-          </button>
-        </div>
-
-        <!-- Stats -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
-          <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${#lists.size(estudios)}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Estudios cargados</div>
-          </div>
-          <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${#lists.size(normativas)}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Normativas indexadas</div>
-          </div>
-          <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;" th:text="${totalDescargas}">0
+        <div class="estudios-hero">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-file-alt" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Panel de Documentos</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Gestiona estudios y normativas del
+                    repositorio</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Repositorio de documentos técnicos</span>
+                </div>
+                <button class="btn-upload" style="animation:fadeUp .5s .1s ease both;" onclick="openUploadModal()">
+                  <i class="fas fa-cloud-upload-alt"></i> Subir documento
+                </button>
+              </div>
             </div>
-            <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
-          </div>
-          <div style="background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-            <div style="font-size:28px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${#lists.size(estudios) + #lists.size(normativas)}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Total documentos</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" id="stats-total">0</div>
+                <div class="lbl">Total</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" id="stats-pdf" style="color:#F87171;">0</div>
+                <div class="lbl">PDF</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="val" id="stats-pptx" style="color:#34D399;">0</div>
+                <div class="lbl">PPTX</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- Filters -->
-        <div
-          style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div class="filter-row">
           <div style="position:relative;flex:1;min-width:200px;">
             <i class="fas fa-search"
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-            <input id="search-docs" class="form-control" placeholder="Buscar documentos..." style="padding-left:36px;"
-              oninput="filtrarDocumentos()" />
+              style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
+            <input id="search-docs" placeholder="Buscar documentos..." oninput="filtrarDocumentos()" />
           </div>
-          <select id="filter-seccion" class="form-control" style="width:auto;padding:10px 14px;"
-            onchange="filtrarDocumentos()">
+          <select id="filter-seccion" onchange="filtrarDocumentos()">
             <option value="">Sección: Todas</option>
             <option value="Estudio">Estudios</option>
             <option value="Normativa">Repositorio Normativo</option>
           </select>
-          <select id="filter-categoria" class="form-control" style="width:auto;padding:10px 14px;"
-            onchange="filtrarDocumentos()">
+          <select id="filter-categoria" onchange="filtrarDocumentos()">
             <option value="">Categoría: Todas</option>
             <option value="EC">EC</option>
             <option value="GR">GR</option>
@@ -91,13 +557,15 @@
             <option value="REP">REP</option>
           </select>
           <button onclick="limpiarFiltrosDocumentos()"
-            style="padding:10px 16px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#374151;font-family:inherit;">Limpiar
-            filtros</button>
+            style="padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
+            onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+            onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
         </div>
 
-        <!-- Table -->
-        <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow-x:auto;">
-          <table class="table table-striped table-hover">
+        <div class="table-card" style="max-height:400px;overflow-y:auto;">
+          <table class="table table-striped table-hover" style="margin-bottom:0;">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -108,26 +576,22 @@
                 <th>Acciones</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- Estudios -->
-              <tr class="doc-row" th:each="e : ${estudios}" th:data-nombre="${e.titulo}" th:data-seccion="Estudio"
-                th:data-categoria="">
+            <tbody id="documentos-tbody">
+              <tr th:each="e : ${estudios}" class="doc-row" th:data-nombre="${e.titulo}" th:data-seccion="'Estudio'"
+                th:data-categoria="${e.tematicaCodigo}" th:data-mime="${e.archivoTipoMime}">
                 <td style="font-weight:600;color:#1B3A5C;">
-                  <span class="tag"
-                    style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;">Estudio</span>
+                  <span
+                    style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Estudio</span>
                   <span th:text="${e.titulo}">—</span>
                 </td>
                 <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${e.descripcionBreve}">—</td>
                 <td th:text="${e.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="pill"
-                      th:style="${e.archivoTipoMime != null and #strings.contains(e.archivoTipoMime,'pdf')} ? 'background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;' : 'background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;'"
-                      th:text="${e.archivoTipoMime != null ? #strings.toUpperCase(e.archivoTipoMime) : '—'}">—</span>
+                    <span class="badge-pdf">PDF</span>
                   </div>
                 </td>
-                <td><span class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i
-                      class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
+                <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
                 <td>
                   <div style="display:flex;gap:6px;">
                     <a th:href="@{/admin/estudios/editar/{id}(id=${e.id})}"
@@ -140,29 +604,21 @@
                   </div>
                 </td>
               </tr>
-              <!-- Normativas -->
-              <tr class="doc-row" th:each="n : ${normativas}" th:data-nombre="${n.titulo}" th:data-seccion="Normativa"
-                th:data-categoria="">
+              <tr th:each="n : ${normativas}" class="doc-row" th:data-nombre="${n.titulo}" th:data-seccion="'Normativa'"
+                th:data-categoria="${n.tematicaCodigo}" th:data-mime="${n.archivoTipoMime}">
                 <td style="font-weight:600;color:#1B3A5C;">
-                  <span class="tag"
-                    style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;">Normativa</span>
+                  <span
+                    style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Normativa</span>
                   <span th:text="${n.titulo}">—</span>
                 </td>
                 <td style="color:#6B7280;font-size:12px;max-width:240px;" th:text="${n.descripcionBreve}">—</td>
                 <td th:text="${n.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span>
+                    <span class="badge-pdf">PDF</span>
                   </div>
                 </td>
-                <td>
-                  <span th:if="${n.esPublica}" class="pill"
-                    style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;"><i class="fas fa-globe"
-                      style="font-size:8px;"></i> Público</span>
-                  <span th:unless="${n.esPublica}" class="pill"
-                    style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-lock"
-                      style="font-size:8px;"></i> Restringido</span>
-                </td>
+                <td><span class="badge-publico"><i class="fas fa-globe" style="font-size:8px;"></i> Público</span></td>
                 <td>
                   <div style="display:flex;gap:6px;">
                     <a th:href="@{/admin/normativo/editar/{id}(id=${n.id})}"
@@ -175,17 +631,91 @@
                   </div>
                 </td>
               </tr>
-              <tr th:if="${#lists.isEmpty(estudios) and #lists.isEmpty(normativas)}">
-                <td colspan="6" style="text-align:center;padding:30px;color:#9CA3AF;">No hay documentos registrados.
-                </td>
-              </tr>
             </tbody>
           </table>
+          <div
+            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+            <span id="conteo-documentos">Mostrando documentos</span>
+            <div style="display:flex;gap:4px;" id="paginacion-documentos"></div>
+          </div>
         </div>
 
-        <!-- Modal de confirmación para eliminar -->
+        <!-- Modal Subir Documento -->
+        <div id="uploadModal"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div
+                style="width:56px;height:56px;background:linear-gradient(135deg,#2ECC71,#27AE60);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-cloud-upload-alt" style="color:#fff;font-size:24px;"></i>
+              </div>
+              <div>
+                <h3 style="margin:0;font-size:20px;font-weight:800;color:#1B3A5C;">Subir Documento</h3>
+                <p style="margin:4px 0 0 0;font-size:13px;color:#6B7280;">Selecciona el tipo de documento a cargar</p>
+              </div>
+              <button onclick="closeUploadModal()"
+                style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+            </div>
+            <div style="display:flex;gap:16px;">
+              <div onclick="alert('Funcionalidad de upload de Estudios')"
+                style="flex:1;padding:24px;background:linear-gradient(135deg,#F0FFF4,#E8F8F0);border:2px dashed #2ECC71;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
+                <i class="fas fa-file-alt" style="font-size:36px;color:#2ECC71;margin-bottom:12px;"></i>
+                <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Estudios</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:4px;">Reportes, presentaciones, infografías</div>
+              </div>
+              <div onclick="alert('Funcionalidad de upload de Normativas')"
+                style="flex:1;padding:24px;background:linear-gradient(135deg,#EBF5FF,#D6E9FF);border:2px dashed #3498DB;border-radius:12px;cursor:pointer;text-align:center;transition:all .2s;">
+                <i class="fas fa-balance-scale" style="font-size:36px;color:#3498DB;margin-bottom:12px;"></i>
+                <div style="font-weight:700;color:#1B3A5C;font-size:14px;">Normativas</div>
+                <div style="font-size:12px;color:#6B7280;margin-top:4px;">Leyes, reglamentos, directivas</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Editar Documento -->
+        <div id="editModal"
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+          <div
+            style="background:#fff;border-radius:16px;padding:32px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div
+                style="width:56px;height:56px;background:linear-gradient(135deg,#3498DB,#2471A3);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-edit" style="color:#fff;font-size:24px;"></i>
+              </div>
+              <div>
+                <h3 style="margin:0;font-size:20px;font-weight:800;color:#1B3A5C;">Editar Documento</h3>
+                <p style="margin:4px 0 0 0;font-size:13px;color:#6B7280;">Modifica los datos del documento</p>
+              </div>
+              <button onclick="closeEditModal()"
+                style="margin-left:auto;padding:8px;border:none;background:#F3F4F6;border-radius:8px;cursor:pointer;font-size:16px;color:#6B7280;">✕</button>
+            </div>
+            <div style="margin-bottom:16px;">
+              <label
+                style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Título</label>
+              <input id="editTitulo"
+                style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;" />
+            </div>
+            <div style="margin-bottom:20px;">
+              <label
+                style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Descripción</label>
+              <textarea id="editDescripcion"
+                style="width:100%;padding:12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:14px;color:#374151;min-height:80px;resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;">
+              <button onclick="closeEditModal()"
+                style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+              <button
+                style="padding:12px 24px;border:none;border-radius:8px;background:#3498DB;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Guardar
+                cambios</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Eliminar Documento -->
         <div id="deleteModal"
-          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+          style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
           <div
             style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
             <div style="text-align:center;margin-bottom:20px;">
@@ -193,13 +723,12 @@
                 style="width:72px;height:72px;background:linear-gradient(135deg,#FEE2E2,#FECACA);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
                 <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:32px;"></i>
               </div>
-              <h3 id="deleteModalTitle" style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar
-                Documento</h3>
-              <p id="deleteModalMsg" style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro? Esta acción
-                no se puede deshacer.</p>
+              <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Documento</h3>
+              <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este
+                documento? Esta acción no se puede deshacer.</p>
             </div>
             <div style="display:flex;gap:12px;justify-content:center;">
-              <button onclick="cerrarDeleteModal()"
+              <button onclick="closeDeleteModal()"
                 style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
               <button id="deleteConfirmBtn"
                 style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Eliminar</button>
@@ -207,29 +736,55 @@
           </div>
         </div>
 
-        <!-- ── Script para filtrado de documentos ── -->
         <script>
+          function openUploadModal() { document.getElementById('uploadModal').style.display = 'flex'; }
+          function closeUploadModal() { document.getElementById('uploadModal').style.display = 'none'; }
+          function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+          function closeDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+          document.getElementById('uploadModal')?.addEventListener('click', function (e) { if (e.target === this) closeUploadModal(); });
+          document.getElementById('editModal')?.addEventListener('click', function (e) { if (e.target === this) closeEditModal(); });
+          document.getElementById('deleteModal')?.addEventListener('click', function (e) { if (e.target === this) closeDeleteModal(); });
+
+          (function () {
+            var rows = document.querySelectorAll('tr[data-nombre]');
+            var total = rows.length, pdf = 0, pptx = 0;
+            rows.forEach(function (r) {
+              var mime = (r.dataset.mime || '').toLowerCase();
+              if (mime.indexOf('pdf') > -1) pdf++; else pptx++;
+            });
+            function animateCount(id, target) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              var start = 0, dur = 800, step = 16;
+              var timer = setInterval(function () {
+                start += Math.ceil(target / (dur / step));
+                if (start >= target) { start = target; clearInterval(timer); }
+                el.textContent = start;
+              }, step);
+            }
+            animateCount('stats-total', total);
+            animateCount('stats-pdf', pdf);
+            animateCount('stats-pptx', pptx);
+          })();
+
           function confirmarEliminarBtn(btn) {
             confirmarEliminar(btn.getAttribute('data-tipo'), btn.getAttribute('data-id'), btn.getAttribute('data-titulo'));
           }
 
           function confirmarEliminar(tipo, id, titulo) {
-            document.getElementById('deleteModalMsg').textContent = '¿Eliminar "' + titulo + '"? Esta acción no se puede deshacer.';
+            document.querySelector('#deleteModal p').textContent = '¿Eliminar "' + titulo + '"? Esta acción no se puede deshacer.';
             document.getElementById('deleteModal').style.display = 'flex';
             document.getElementById('deleteConfirmBtn').onclick = function () {
               var url = tipo === 'estudio' ? '/api/estudios/' + id : '/api/normativas/' + id;
               fetch(url, { method: 'DELETE' })
                 .then(function (r) {
-                  cerrarDeleteModal();
+                  closeDeleteModal();
                   if (r.ok) { window.location.reload(); }
-                  else { alert('Error al eliminar el documento. Inténtalo de nuevo.'); }
+                  else { alert('Error al eliminar el documento.'); }
                 })
-                .catch(function () { cerrarDeleteModal(); alert('Error de conexión.'); });
+                .catch(function () { closeDeleteModal(); alert('Error de conexión.'); });
             };
           }
-
-          function cerrarDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
-          document.getElementById('deleteModal').addEventListener('click', function (e) { if (e.target === this) cerrarDeleteModal(); });
 
           function filtrarDocumentos() {
             var texto = document.getElementById('search-docs')?.value.toLowerCase().trim() || '';
@@ -241,36 +796,101 @@
               var rowSeccion = (row.dataset.seccion || '').toLowerCase();
               var rowCategoria = (row.dataset.categoria || '').toLowerCase();
 
-              // Criterios de coincidencia
               var matchTexto = !texto || nombre.includes(texto);
               var matchSeccion = !seccion || rowSeccion === seccion;
               var matchCategoria = !categoria || rowCategoria === categoria;
 
-              // Mostrar/ocultar según coincidan todos los criterios
-              if (matchTexto && matchSeccion && matchCategoria) {
-                row.style.display = '';
-              } else {
-                row.style.display = 'none';
-              }
+              row.dataset.filtrado = (matchTexto && matchSeccion && matchCategoria) ? '1' : '0';
             });
+            inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
           }
 
-          /**
-           * limpiarFiltrosDocumentos()
-           * Restablece todos los filtros y muestra la tabla completa.
-           */
           function limpiarFiltrosDocumentos() {
             document.getElementById('search-docs').value = '';
             document.getElementById('filter-seccion').value = '';
             document.getElementById('filter-categoria').value = '';
             filtrarDocumentos();
           }
+
+          // Paginación de Documentos (5 por página)
+          const DOCUMENTOS_POR_PAGINA = 5;
+          let paginaDocumentosActual = 1;
+
+          function inicializarPaginacionDocumentos() {
+            var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaDocumentosActual = 1;
+
+            var paginacionDiv = document.getElementById('paginacion-documentos');
+            paginacionDiv.innerHTML = '';
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = 'Anterior';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnAnterior.onclick = function () { if (paginaDocumentosActual > 1) { paginaDocumentosActual--; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btnPagina = document.createElement('button');
+              btnPagina.textContent = i;
+              btnPagina.id = 'btn-doc-pagina-' + i;
+              var estaActiva = (i === paginaDocumentosActual);
+              btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+              btnPagina.onclick = (function (pageNum) { return function () { paginaDocumentosActual = pageNum; mostrarPaginaDocumentos(pageNum); actualizarBotonesPaginacionDocumentos(); }; })(i);
+              paginacionDiv.appendChild(btnPagina);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Siguiente';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function () { if (paginaDocumentosActual < totalPaginas) { paginaDocumentosActual++; mostrarPaginaDocumentos(paginaDocumentosActual); actualizarBotonesPaginacionDocumentos(); } };
+            paginacionDiv.appendChild(btnSiguiente);
+
+            document.getElementById('conteo-documentos').textContent = 'Mostrando ' + filasVisibles + ' documentos';
+          }
+
+          function mostrarPaginaDocumentos(numero) {
+            var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
+            var inicio = (numero - 1) * DOCUMENTOS_POR_PAGINA;
+            var fin = inicio + DOCUMENTOS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+          }
+
+          function actualizarBotonesPaginacionDocumentos() {
+            var filas = document.querySelectorAll('#documentos-tbody tr.doc-row');
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / DOCUMENTOS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btn = document.getElementById('btn-doc-pagina-' + i);
+              if (btn) { btn.style.background = (i === paginaDocumentosActual) ? '#2ECC71' : '#fff'; btn.style.borderColor = (i === paginaDocumentosActual) ? '#2ECC71' : '#E5E7EB'; btn.style.color = (i === paginaDocumentosActual) ? '#fff' : '#6B7280'; }
+            }
+          }
+
+          // Inicializar paginación al cargar
+          window.addEventListener('load', function () {
+            document.querySelectorAll('#documentos-tbody tr.doc-row').forEach(function (tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacionDocumentos();
+            mostrarPaginaDocumentos(1);
+          });
         </script>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
-
-    <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
