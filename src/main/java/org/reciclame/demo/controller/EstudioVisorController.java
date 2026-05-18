@@ -56,14 +56,14 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "SuperAdmin/estudios-visor", "/superadmin/estudios");
     }
 
-    // ── Socio (solo documentos públicos) ──────────────────────
+    // ── Socio (todos los estudios activos) ────────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
                                    @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
-        return cargarVisorPublico(id, model, "Socio/estudios-visor", "/socio/estudios");
+        return cargarVisor(id, model, "Socio/estudios-visor", "/socio/estudios");
     }
 
     // ── Visualizador (solo documentos públicos) ───────────────
