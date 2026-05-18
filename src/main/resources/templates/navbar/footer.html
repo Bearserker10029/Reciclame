@@ -127,10 +127,10 @@
 
       </div>
       <div class="sa-footer-links">
-        <a th:href="@{/superadmin/legal/cookies}">Política de Cookies</a>
-        <a th:href="@{/superadmin/legal/privacidad}">Política de Privacidad</a>
-        <a th:href="@{/superadmin/legal/terminos}">Términos y Condiciones</a>
-        <a th:href="@{/superadmin/legal/nosotros}">Nosotros</a>
+        <a th:href="${session.usuarioSesion != null and session.usuarioSesion.rolNombre == 'SUPERADMIN'} ? @{/superadmin/legal/cookies} : @{/legal/cookies}">Política de Cookies</a>
+        <a th:href="${session.usuarioSesion != null and session.usuarioSesion.rolNombre == 'SUPERADMIN'} ? @{/superadmin/legal/privacidad} : @{/legal/privacidad}">Política de Privacidad</a>
+        <a th:href="${session.usuarioSesion != null and session.usuarioSesion.rolNombre == 'SUPERADMIN'} ? @{/superadmin/legal/terminos} : @{/legal/terminos}">Términos y Condiciones</a>
+        <a th:href="${session.usuarioSesion != null and session.usuarioSesion.rolNombre == 'SUPERADMIN'} ? @{/superadmin/legal/nosotros} : @{/legal/nosotros}">Nosotros</a>
       </div>
       <div class="sa-footer-social">
         <a href="https://www.facebook.com/ReciclamePlaneta" target="_blank" title="Facebook"><i

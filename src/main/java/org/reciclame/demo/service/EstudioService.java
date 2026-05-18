@@ -25,6 +25,8 @@ public class EstudioService {
     private final UsuarioRepository           usuarioRepository;
     private final MinioStorageService         minioStorageService;
     private final NotificacionService         notificacionService;
+    private final AuditoriaService            auditoriaService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public EstudioService(EstudioRepository estudioRepository,
                           EstudiosEtiquetaRepository estudiosEtiquetaRepository,
@@ -33,7 +35,8 @@ public class EstudioService {
                           NormativaRepository normativaRepository,
                           UsuarioRepository usuarioRepository,
                           MinioStorageService minioStorageService,
-                          NotificacionService notificacionService) {
+                          NotificacionService notificacionService,
+                          AuditoriaService auditoriaService) {
         this.estudioRepository          = estudioRepository;
         this.estudiosEtiquetaRepository = estudiosEtiquetaRepository;
         this.tematicaRepository         = tematicaRepository;
@@ -42,6 +45,10 @@ public class EstudioService {
         this.usuarioRepository          = usuarioRepository;
         this.minioStorageService        = minioStorageService;
         this.notificacionService        = notificacionService;
+        this.auditoriaService           = auditoriaService;
+        this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -84,7 +91,11 @@ public class EstudioService {
     public EstudioResponseDTO crearEstudio(EstudioRequestDTO dto,
                                            String archivoUrl,
                                            String archivoTipoMime,
-                                           String correoAutor) {
+                                           String correoAutor,
+                                           Long auditorUsuarioId,
+                                           String auditorUsuarioNombre,
+                                           String ipAddress,
+                                           String userAgent) {
         Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
@@ -103,7 +114,31 @@ public class EstudioService {
         Estudio saved = estudioRepository.save(e);
         guardarEtiquetas(saved, dto.getEtiquetasIds());
         try { notificacionService.notificarNuevoEstudio(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
+
+        try {
+            String datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                "Crear estudio: " + saved.getTitulo(),
+                null, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+        } catch (Exception ex) {
+            System.err.println("Error al serializar datos de auditoría: " + ex.getMessage());
+            auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                "Crear estudio: " + saved.getTitulo(),
+                null, null, "EXITOSO", null, ipAddress, userAgent);
+        }
+
         return toResponseDTO(saved);
+    }
+
+    // ── CREATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public EstudioResponseDTO crearEstudio(EstudioRequestDTO dto,
+                                           String archivoUrl,
+                                           String archivoTipoMime,
+                                           String correoAutor) {
+        return crearEstudio(dto, archivoUrl, archivoTipoMime, correoAutor, null, "Sistema", null, null);
     }
 
     // ── UPDATE ────────────────────────────────────────────────
@@ -111,9 +146,20 @@ public class EstudioService {
     public EstudioResponseDTO actualizarEstudio(Long id,
                                                 EstudioRequestDTO dto,
                                                 String archivoUrl,
-                                                String archivoTipoMime) {
+                                                String archivoTipoMime,
+                                                Long auditorUsuarioId,
+                                                String auditorUsuarioNombre,
+                                                String ipAddress,
+                                                String userAgent) {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
+
+        String datosAnteriores = null;
+        try {
+            datosAnteriores = objectMapper.writeValueAsString(toResponseDTO(e));
+        } catch (Exception ex) {
+            System.err.println("Advertencia: No se pudo serializar datos anteriores: " + ex.getMessage());
+        }
 
         Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
@@ -129,7 +175,28 @@ public class EstudioService {
             guardarEtiquetas(saved, dto.getEtiquetasIds());
         }
 
+        String datosNuevos = null;
+        try {
+            datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));
+        } catch (Exception ex) {
+            System.err.println("Advertencia: No se pudo serializar datos nuevos: " + ex.getMessage());
+        }
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_EDITAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+            "Editar estudio: " + saved.getTitulo() + " (ID: " + id + ")",
+            datosAnteriores, datosNuevos, "EXITOSO", null, ipAddress, userAgent);
+
         return toResponseDTO(saved);
+    }
+
+    // ── UPDATE (overload sin auditoría para compatibilidad) ────────────────
+    @Transactional
+    public EstudioResponseDTO actualizarEstudio(Long id,
+                                                EstudioRequestDTO dto,
+                                                String archivoUrl,
+                                                String archivoTipoMime) {
+        return actualizarEstudio(id, dto, archivoUrl, archivoTipoMime, null, "Sistema", null, null);
     }
 
     // ── VISUALIZACIONES ───────────────────────────────────────
@@ -153,10 +220,19 @@ public class EstudioService {
 
     // ── DELETE físico ─────────────────────────────────────────
     @Transactional
-    public void eliminarEstudio(Long id) {
+    public void eliminarEstudio(Long id,
+                                Long auditorUsuarioId,
+                                String auditorUsuarioNombre,
+                                String ipAddress,
+                                String userAgent) {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
         String archivoUrl = e.getArchivoUrl();
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+            AuditoriaService.ACCION_ELIMINAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+            "Eliminar estudio: " + e.getTitulo() + " (ID: " + id + ")",
+            null, null, "EXITOSO", null, ipAddress, userAgent);
 
         // Eliminar etiquetas de la tabla intermedia antes de borrar el registro
         estudiosEtiquetaRepository.deleteByEstudioId(id);
@@ -164,6 +240,12 @@ public class EstudioService {
 
         // Eliminar archivo de MinIO (fuera de la transacción JPA, no revierte el DELETE)
         minioStorageService.eliminarArchivo(archivoUrl);
+    }
+
+    // ── DELETE (overload sin auditoría para compatibilidad) ────────────
+    @Transactional
+    public void eliminarEstudio(Long id) {
+        eliminarEstudio(id, null, "Sistema", null, null);
     }
 
     public long contarNuevosDesde(Instant desde) {

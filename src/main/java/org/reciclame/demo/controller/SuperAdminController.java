@@ -124,13 +124,13 @@ public class SuperAdminController extends AdminController {
         }
     }
 
-    @Override
+
     @GetMapping("/superadmin")
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         return adminInicio(model, user);
     }
 
-    @Override
+
     @GetMapping({ "/superadmin/inicio", "/superadmin/" })
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
@@ -149,7 +149,7 @@ public class SuperAdminController extends AdminController {
         }).collect(java.util.stream.Collectors.toList());
         model.addAttribute("donutData", donutData);
         model.addAttribute("estudios", estudioService.listarEstudios());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
@@ -172,7 +172,7 @@ public class SuperAdminController extends AdminController {
     /*  ⠀⠀        MEGA KIRBY                  */    @GetMapping("/superadmin/usuarios")
     /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠶⠦⡄⠀⠀⠀⠀⠀⠀⡴⠀⠀⠀     */    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
     /*⠀⢀⣀⠀⠀⠀⣀⠤⠖⠒⠋⡉⠙⢲⣺⢅⡀⠀⠹⡀⠀⠀⠀⢀⡜⠁⠀     */        setupCommonAttributes(model, user.getUsername());
-    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
     /*⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⡀⠄⠠⢀⠈⢣⡀⠀⠁⠀⢀⡤⠊⠀⠀  */          model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
     /*⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⠎⠀⠀⠀⠘⡇⠀⢧⠀⠐⠊⠁⠀⠀⠀⠀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
     /*⠀⢸⠳⣄⠀⠀⠀⠀⠀⠀⠀⠈⢺⠀⠀⠀⠀⠀⡇⠀⢸⠀⠀⠀⠀⢀⣀⣀⡀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
@@ -278,7 +278,7 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 50);
+        var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 100);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
 
@@ -316,7 +316,6 @@ public class SuperAdminController extends AdminController {
         return "SuperAdmin/notificaciones";
     }
 
-    @Override
     @PostMapping("/superadmin/notificaciones/enviar")
     public String enviarNotificacion(
             @RequestParam String destinatario,
@@ -528,7 +527,7 @@ return "redirect:/superadmin/notificaciones";
 
     @Override
     @GetMapping("/superadmin/estudios/editar/{id}")
-    public String estudiosEditar(@PathVariable Long id, Model model,
+    public String editarEstudio(@PathVariable Long id, Model model,
             @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("isEdit", true);
@@ -589,7 +588,7 @@ return "redirect:/superadmin/notificaciones";
     public String impersonar(Model model, @AuthenticationPrincipal UserDetails user,
             HttpSession session) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("estaImpersonando", session.getAttribute("ORIGINAL_USER") != null);
         if (session.getAttribute("IMPERSONATED_USER") != null) {
             model.addAttribute("usuarioImpersonado", session.getAttribute("IMPERSONATED_USER"));

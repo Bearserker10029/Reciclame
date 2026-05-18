@@ -17,8 +17,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://minio:9000
-      - MINIO_INTERNAL_URL=http://minio:9000
+      - MINIO_URL=http://reciclame-minio.duckdns.org
+      - MINIO_INTERNAL_URL=http://reciclame-minio.duckdns.org
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=reciclame-docs
@@ -53,8 +53,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://minio:9000
-      - MINIO_INTERNAL_URL=http://minio:9000
+      - MINIO_URL=http://reciclame-minio.duckdns.org
+      - MINIO_INTERNAL_URL=http://reciclame-minio.duckdns.org
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=reciclame-docs
@@ -89,8 +89,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_USERNAME=admin
       - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://minio:9000
-      - MINIO_INTERNAL_URL=http://minio:9000
+      - MINIO_URL=http://reciclame-minio.duckdns.org
+      - MINIO_INTERNAL_URL=http://reciclame-minio.duckdns.org
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin
       - MINIO_BUCKET=reciclame-docs

@@ -149,7 +149,7 @@ public class DocumentosRecientesService {
         if (d < 7) {
             return d == 1 ? "ayer" : "hace " + d + " días";
         }
-        return java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy", new Locale("es", "PE"))
+        return java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy", new Locale.Builder().setLanguage("es").setRegion("PE").build())
                 .withZone(ZONA)
                 .format(cuando);
     }

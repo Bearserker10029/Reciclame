@@ -673,7 +673,7 @@
             <select id="filtro-rol" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
               onchange="filtrarUsuarios()">
               <option value="">Rol: Todos</option>
-              <option th:each="r : ${roles}" th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
+              <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
             </select>
             <select id="filtro-estado" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
               onchange="filtrarUsuarios()">
@@ -815,7 +815,7 @@
                 <select th:id="|rol-sel-${usuario.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
                   <option value="">Asignar rol...</option>
-                  <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                  <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
                 </select>
                 <select th:id="|emp-sel-${usuario.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
@@ -1448,7 +1448,7 @@
                 <div class="input-icon-wrap"><i class="fas fa-shield-alt inp-icon"></i>
                   <select id="crear-rol" class="form-control" required>
                     <option value="">Seleccionar rol...</option>
-                    <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
                   </select>
                 </div>
               </div>
@@ -1524,7 +1524,7 @@
                 <div class="input-icon-wrap"><i class="fas fa-shield-alt inp-icon"></i>
                   <select id="edit-rol" class="form-control" required>
                     <option value="">Seleccionar rol...</option>
-                    <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
                   </select>
                 </div>
               </div>

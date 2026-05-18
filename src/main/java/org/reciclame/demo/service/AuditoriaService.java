@@ -79,7 +79,12 @@ public class AuditoriaService {
     // ── READ ─────────────────────────────────────────────────────────
     public List<Auditoria> listarAuditorias() {
         var result = auditoriaRepository.findAll();
-        return result != null ? result : java.util.Collections.emptyList();
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .filter(a -> a.getAccion() == null ||
+                        (!"IMPERSONAR_USUARIO".equals(a.getAccion()) &&
+                         !"SALIR_IMPERSONACION".equals(a.getAccion())))
+                .collect(Collectors.toList());
     }
 
     public Page<Auditoria> listarAuditoriasPaginado(int page, int size) {
@@ -112,6 +117,11 @@ public class AuditoriaService {
     public Page<Auditoria> listarAuditoriasPorModuloPaginado(String modulo, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return auditoriaRepository.findByModuloPaginado(modulo, pageable);
+    }
+
+    public Page<Auditoria> listarAuditoriasPorUsuarioId(int page, int size, Long usuarioId) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findByUsuarioIdExcludingImpersonacion(usuarioId, pageable);
     }
 
     public List<Auditoria> listarAuditoriasPorAccion(String accion) {
@@ -333,6 +343,16 @@ public class AuditoriaService {
     public static final String ACCION_SALIR_IMPERSONACION = "SALIR_IMPERSONACION";
     public static final String ACCION_REACTIVAR_USUARIO = "REACTIVAR_USUARIO";
     public static final String ACCION_DESCARGAR_DOCUMENTO = "DESCARGAR_DOCUMENTO";
+
+    // ── NORMATIVAS ───────────────────────────────────────────────
+    public static final String ACCION_CREAR_NORMATIVA = "CREAR_NORMATIVA";
+    public static final String ACCION_EDITAR_NORMATIVA = "EDITAR_NORMATIVA";
+    public static final String ACCION_ELIMINAR_NORMATIVA = "ELIMINAR_NORMATIVA";
+
+    // ── ESTUDIOS ─────────────────────────────────────────────────
+    public static final String ACCION_CREAR_ESTUDIO = "CREAR_ESTUDIO";
+    public static final String ACCION_EDITAR_ESTUDIO = "EDITAR_ESTUDIO";
+    public static final String ACCION_ELIMINAR_ESTUDIO = "ELIMINAR_ESTUDIO";
 
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";

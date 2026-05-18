@@ -334,9 +334,7 @@
             </div>
             <div class="donut-row" style="display:flex;align-items:center;gap:32px;">
               <div style="flex-shrink:0;position:relative;width:150px;height:150px;">
-                <canvas id="donut-admin" width="150" height="150"
-                  th:data-ec="${normEC}" th:data-gr="${normGR}" th:data-ee="${normEE}"
-                  th:data-rep="${normREP}" th:data-otro="${normOtro}"></canvas>
+                <canvas id="donut-admin" width="150" height="150"></canvas>
                 <div id="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
                   <div style="font-size:22px;font-weight:800;color:#1B3A5C;" th:text="${totalNormativas}">0</div>
                   <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">normas</div>
@@ -446,7 +444,7 @@
                     <select th:id="|dash-rol-sel-${u.id}|"
                             style="flex:1;padding:6px 8px;border:1px solid rgba(255,255,255,0.4);border-radius:6px;font-size:11px;font-family:inherit;background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
                       <option value="">Asignar rol...</option>
-                      <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                      <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
                     </select>
                     <select th:id="|dash-emp-sel-${u.id}|"
                             style="flex:1;padding:6px 8px;border:1px solid rgba(255,255,255,0.4);border-radius:6px;font-size:11px;font-family:inherit;background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);">
@@ -479,10 +477,11 @@
           </div><!-- /two-col -->
 
         </div><!-- /z-index:1 wrapper -->
+
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
-    <th:block th:replace="~{navbar/footer :: footer}"></th:block>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
@@ -533,20 +532,29 @@
     (function () {
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
-      var _ec   = parseInt(ctx.dataset.ec   || '0');
-      var _gr   = parseInt(ctx.dataset.gr   || '0');
-      var _ee   = parseInt(ctx.dataset.ee   || '0');
-      var _rep  = parseInt(ctx.dataset.rep  || '0');
-      var _otro = parseInt(ctx.dataset.otro || '0');
-      var _total = _ec + _gr + _ee + _rep + _otro;
 
-      var labels = [], data = [], colors = [];
-      if (_ec > 0)   { labels.push('EC — Economía Circular'); data.push(_ec); colors.push('#27AE60'); }
-      if (_gr > 0)   { labels.push('GR — Gestión de Residuos'); data.push(_gr); colors.push('#3498DB'); }
-      if (_ee > 0)   { labels.push('EE — Envases y Embalajes'); data.push(_ee); colors.push('#F39C12'); }
-      if (_rep > 0)  { labels.push('REP — Responsabilidad Ext.'); data.push(_rep); colors.push('#E74C3C'); }
-      if (_otro > 0) { labels.push('Otro'); data.push(_otro); colors.push('#95A5A6'); }
-      if (labels.length === 0) { labels = ['Sin datos']; data = [1]; colors = ['#E5E7EB']; }
+      var donutData = /*[[${donutData}]]*/ [];
+
+      var labels = [];
+      var data = [];
+      var colors = [];
+
+      if (donutData && donutData.length > 0) {
+        donutData.forEach(function (item) {
+          var count = Number(item.count) || 0;
+          if (count > 0) {
+            labels.push(item.codigo + ' — ' + item.nombre);
+            data.push(count);
+            colors.push(item.colorHex || '#95A5A6');
+          }
+        });
+      }
+
+      if (labels.length === 0) {
+        labels = ['Sin datos'];
+        data = [1];
+        colors = ['#E5E7EB'];
+      }
 
       new Chart(ctx, {
         type: 'doughnut',

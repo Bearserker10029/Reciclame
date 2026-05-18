@@ -20,28 +20,41 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
 
     List<Auditoria> findByModulo(String modulo);
 
-    @Query("SELECT a FROM Auditoria a WHERE a.fechaAccion >= :desde AND a.fechaAccion <= :hasta AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
+    @Query("SELECT a FROM Auditoria a WHERE a.fechaAccion >= :desde AND a.fechaAccion <= :hasta " +
+           "AND a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
+           "ORDER BY a.fechaAccion DESC")
     List<Auditoria> findByFechaRango(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
 
     @Query("SELECT a FROM Auditoria a WHERE a.usuarioId = :usuarioId AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")    
     Page<Auditoria> findByUsuarioIdPaginado(@Param("usuarioId") Long usuarioId, Pageable pageable);
 
-    @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true ORDER BY a.fechaAccion DESC")
+    @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
+           "ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findAllPaginado(Pageable pageable);
 
     @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true " +
            "AND a.modulo != 'SEGURIDAD' " +
-           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO') " +
            "ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findAllExcludingSeguridad(Pageable pageable);
 
     @Query("SELECT a FROM Auditoria a WHERE a.modulo = :modulo AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findByModuloPaginado(@Param("modulo") String modulo, Pageable pageable);
 
+    @Query("SELECT a FROM Auditoria a WHERE a.usuarioId = :usuarioId " +
+           "AND a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO') " +
+           "ORDER BY a.fechaAccion DESC")
+    Page<Auditoria> findByUsuarioIdExcludingImpersonacion(@Param("usuarioId") Long usuarioId, Pageable pageable);
+
     @Query("SELECT a FROM Auditoria a WHERE a.accion = :accion AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findByAccionPaginado(@Param("accion") String accion, Pageable pageable);
 
-    @Query(value = "SELECT a FROM Auditoria a WHERE a.estadoActivo = true ORDER BY a.fechaAccion DESC LIMIT 100")
+    @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
+           "ORDER BY a.fechaAccion DESC LIMIT 100")
     List<Auditoria> findTop100ByOrderByFechaAccionDesc();
 
     @Query("SELECT a FROM Auditoria a WHERE (a.modulo = 'SEGURIDAD' OR a.estado = 'FALLIDO' " +
@@ -75,11 +88,13 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
 
     @Query("SELECT a.modulo, COUNT(a) FROM Auditoria a " +
            "WHERE a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
            "GROUP BY a.modulo ORDER BY COUNT(a) DESC")
     List<Object[]> conteoPorModulo();
 
     @Query("SELECT a.accion, COUNT(a) FROM Auditoria a " +
            "WHERE a.estadoActivo = true " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION') " +
            "GROUP BY a.accion ORDER BY COUNT(a) DESC")
     List<Object[]> conteoPorAccion();
 

@@ -1,6 +1,7 @@
 package org.reciclame.demo.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.reciclame.demo.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -172,6 +173,16 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("pctEE",  totalNorm > 0 ? (int) Math.round(normEE  * 100.0 / totalNorm) : 0);
         model.addAttribute("pctREP", totalNorm > 0 ? (int) Math.round(normREP * 100.0 / totalNorm) : 0);
         model.addAttribute("conteoPorTematica", byTematica);
+        var tematicas = tematicaService.listarTematicas();
+        List<Map<String, Object>> donutData = tematicas.stream().map(t -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("codigo", t.getCodigo());
+            item.put("nombre", t.getNombre());
+            item.put("colorHex", t.getColorHex());
+            item.put("count", byTematica.getOrDefault(t.getCodigo(), 0L));
+            return item;
+        }).collect(java.util.stream.Collectors.toList());
+        model.addAttribute("donutData", donutData);
 
         return "Admin/inicio";
     }
@@ -327,11 +338,13 @@ public class AdminController extends BaseReportesController {
             if (usuariosMap.containsKey(u.getId())) {
                 usuariosMap.get(u.getId()).put("nombre", u.getNombreCompleto());
                 usuariosMap.get(u.getId()).put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
+                usuariosMap.get(u.getId()).put("rolNombre", u.getRolNombre());
             } else {
                 Map<String, Object> usrData = new HashMap<>();
                 usrData.put("id", u.getId());
                 usrData.put("nombre", u.getNombreCompleto());
                 usrData.put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
+                usrData.put("rolNombre", u.getRolNombre());
                 usrData.put("interacciones", 0);
                 usuariosMap.put(u.getId(), usrData);
             }
@@ -340,7 +353,7 @@ public class AdminController extends BaseReportesController {
         topUsuarios.sort((a, b) -> ((Integer) b.get("interacciones")).compareTo((Integer) a.get("interacciones")));
         int maxInteracciones = topUsuarios.isEmpty() ? 1 : ((Integer) topUsuarios.get(0).get("interacciones")).intValue();
         List<Map<String, Object>> topUsuariosFinal = new ArrayList<>();
-        topUsuarios.stream().filter(usr -> usr.get("nombre") != null).limit(5).forEach(usr -> {
+        topUsuarios.stream().filter(usr -> usr.get("nombre") != null && !"SUPERADMIN".equalsIgnoreCase(String.valueOf(usr.get("rolNombre")))).limit(5).forEach(usr -> {
             usr.put("porcentaje", (int) (maxInteracciones > 0 ? ((Integer) usr.get("interacciones") * 100.0) / maxInteracciones : 0));
             topUsuariosFinal.add(usr);
         });
@@ -387,26 +400,29 @@ public class AdminController extends BaseReportesController {
     @GetMapping("/admin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditorias = auditoriaService.listarAuditoriasPaginado(0, 50);
-        model.addAttribute("auditorias", auditorias.getContent());
-        model.addAttribute("currentPage", 0);
-        model.addAttribute("totalPages", auditorias.getTotalPages());
-        model.addAttribute("totalElements", auditorias.getTotalElements());
+        var adminOpt = usuarioService.findByCorreo(user.getUsername());
+        var auditoriasPage = adminOpt.map(u -> auditoriaService.listarAuditoriasPorUsuarioId(0, 100, u.getId()))
+                .orElse(null);
+        model.addAttribute("auditorias", auditoriasPage != null ? auditoriasPage.getContent() : java.util.Collections.emptyList());
+        model.addAttribute("totalElements", auditoriasPage != null ? auditoriasPage.getTotalElements() : 0);
 
-        // Conteo por módulo para chips del hero
-        var conteoPorModulo = auditorias.getContent().stream()
-                .filter(a -> a.getModulo() != null)
-                .collect(java.util.stream.Collectors.groupingBy(
-                        a -> a.getModulo(), java.util.stream.Collectors.counting()))
-                .entrySet().stream()
-                .map(e -> {
-                    var m = new java.util.HashMap<String, Object>();
-                    m.put("modulo", e.getKey());
-                    m.put("count", e.getValue());
-                    return m;
-                })
-                .collect(java.util.stream.Collectors.toList());
-        model.addAttribute("conteoPorModulo", conteoPorModulo);
+        if (auditoriasPage != null && !auditoriasPage.isEmpty()) {
+            var conteoPorModulo = auditoriasPage.getContent().stream()
+                    .filter(a -> a.getModulo() != null)
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            a -> a.getModulo(), java.util.stream.Collectors.counting()))
+                    .entrySet().stream()
+                    .map(e -> {
+                        var m = new java.util.HashMap<String, Object>();
+                        m.put("modulo", e.getKey());
+                        m.put("count", e.getValue());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("conteoPorModulo", conteoPorModulo);
+        } else {
+            model.addAttribute("conteoPorModulo", java.util.Collections.emptyList());
+        }
 
         // Actividad últimos 7 días
         Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
@@ -632,40 +648,45 @@ public class AdminController extends BaseReportesController {
     }
 
     @GetMapping("/admin/estudios/editar/{id}")
-    public String estudiosEditar(@PathVariable Long id, Model model,
-                                  @AuthenticationPrincipal UserDetails user) {
+    public String editarEstudio(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("isEdit",     true);
-        model.addAttribute("estudio",    estudioService.obtenerEstudioPorId(id));
-        model.addAttribute("tematicas",  tematicaService.listarTematicas());
-        model.addAttribute("etiquetas",  etiquetaService.listarEtiquetas());
+        try {
+            model.addAttribute("estudio", estudioService.obtenerEstudioPorId(id));
+        } catch (Exception e) {
+            model.addAttribute("estudio", null);
+        }
+        model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
         model.addAttribute("normativas", normativaService.listarNormativasParaSelector());
+        model.addAttribute("isEdit", true);
         return "Admin/estudios-form";
     }
 
-    @PostMapping("/admin/notificaciones/enviar")
-    public String enviarNotificacion(
-            @RequestParam String destinatario,
-            @RequestParam String titulo,
-            @RequestParam String mensaje,
-            @AuthenticationPrincipal UserDetails user,
-            RedirectAttributes ra) {
-        if ("todos".equals(destinatario)) {
-            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
-            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
-        } else {
-            try {
-                Long id = Long.parseLong(destinatario);
-                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
-                ra.addFlashAttribute("enviado", "Notificación enviada.");
-            } catch (NumberFormatException e) {
-                ra.addFlashAttribute("error", "Destinatario inválido.");
-            }
-        }
-        return "redirect:/admin/notificaciones";
+    @GetMapping("/admin/legal/cookies")
+    public String legalCookies(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/cookies";
     }
 
-    /* 
+    @GetMapping("/admin/legal/privacidad")
+    public String legalPrivacidad(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/privacidad";
+    }
+
+    @GetMapping("/admin/legal/terminos")
+    public String legalTerminos(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/terminos";
+    }
+
+    @GetMapping("/admin/legal/nosotros")
+    public String legalNosotros(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        return "legal/nosotros";
+    }
+
+    /*
                                                 w#dUCw*&r   vd#a*qdoMZ
                             IW#mzZ8%}          Z#{>><_<<~{oQ,&X+~~~-_?f%;
                           j&0i!l!!!lfbQ       |a\i}vCOZL\ivb8]+_?{t1}-_ha
