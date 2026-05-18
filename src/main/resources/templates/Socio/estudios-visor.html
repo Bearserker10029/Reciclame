@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="'Recíclame — ' + ${estudio.titulo}">Recíclame — Visor</title>
+  <title th:text="'Reciclame — ' + (${estudio != null and estudio.titulo != null ? estudio.titulo : 'Visor de Estudio'})">Reciclame — Visor</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:#F5F6FA;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
     .visor-header{
       display:flex;align-items:center;justify-content:space-between;
-      background:#1B3A5C;padding:12px 24px;flex-shrink:0;flex-wrap:wrap;gap:8px;
+      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);padding:12px 24px;flex-shrink:0;flex-wrap:wrap;gap:8px;
     }
     .visor-header-left{display:flex;align-items:center;gap:12px;}
     .btn-back{
@@ -32,23 +33,34 @@
     }
     .btn-download:hover{opacity:.9;color:#fff;}
     iframe{flex:1;border:none;width:100%;}
+    .visor-not-available{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);
+    }
+    .visor-not-available i{font-size:56px;color:rgba(255,255,255,.4);}
+    .visor-not-available p{font-size:15px;font-weight:700;color:#fff;margin:0;}
+    .visor-not-available p+p{font-size:13px;color:rgba(255,255,255,.7);text-align:center;max-width:340px;margin:0;line-height:1.6;}
   </style>
 </head>
 <body>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+  </div>
+
   <div class="visor-header">
     <div class="visor-header-left">
-      <a th:href="${urlRetorno}" class="btn-back">
+      <a th:href="${urlRetorno != null ? urlRetorno : '/socio/estudios'}" class="btn-back">
         <i class="fas fa-arrow-left"></i> Volver
       </a>
       <div>
-        <div class="doc-title" th:text="${estudio.titulo}">Título</div>
+        <div class="doc-title" th:text="${estudio != null ? estudio.titulo : 'Estudio'}">Titulo</div>
         <div class="doc-meta">
-          <span th:if="${estudio.anio}" th:text="${estudio.anio + ' · '}"></span>
-          <span th:if="${estudio.tematicaNombre}" th:text="${estudio.tematicaNombre}"></span>
+          <span th:if="${estudio != null and estudio.anio}" th:text="${estudio.anio + ' · '}"></span>
+          <span th:if="${estudio != null and estudio.tematicaNombre}" th:text="${estudio.tematicaNombre}"></span>
         </div>
       </div>
     </div>
-    <a th:if="${archivoDisponible}"
+    <a th:if="${archivoDisponible and estudio != null}"
        th:href="@{/api/documentos/descargar(url=${estudio.archivoUrl},titulo=${estudio.titulo})}" target="_blank" class="btn-download">
       <i class="fas fa-download"></i> Descargar
     </a>
@@ -58,21 +70,20 @@
     </span>
   </div>
 
-  <div th:unless="${archivoDisponible}"
-       style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#6B7280;">
-    <i class="fas fa-file-slash" style="font-size:56px;color:rgba(255,255,255,.4);"></i>
-    <p style="font-size:15px;font-weight:700;color:#fff;margin:0;">Archivo no disponible</p>
-    <p style="font-size:13px;color:rgba(255,255,255,.7);text-align:center;max-width:340px;margin:0;line-height:1.6;">
-      Este estudio aún no tiene un archivo disponible en el sistema.
-    </p>
-    <a th:href="${urlRetorno}" class="btn-back" style="margin-top:8px;">
+  <div th:unless="${archivoDisponible}" class="visor-not-available">
+    <i class="fas fa-file-slash"></i>
+    <p>Archivo no disponible</p>
+    <p>Este estudio aun no tiene un archivo disponible en el sistema.</p>
+    <a th:href="${urlRetorno != null ? urlRetorno : '/socio/estudios'}" class="btn-back" style="margin-top:8px;">
       <i class="fas fa-arrow-left"></i> Volver al listado
     </a>
   </div>
 
-  <iframe th:if="${archivoDisponible}"
+  <iframe th:if="${archivoDisponible and estudio != null}"
     th:src="@{/api/documentos/visor(url=${estudio.archivoUrl},titulo=${estudio.titulo},mime=${estudio.archivoTipoMime})}"
     allowfullscreen>
   </iframe>
+
+  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </body>
 </html>

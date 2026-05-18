@@ -473,54 +473,8 @@ CREATE TABLE `estudios` (
 --
 
 LOCK TABLES `estudios` WRITE;
-/*!40000 ALTER TABLE `estudios` DISABLE KEYS */
-;
-INSERT INTO
-    `estudios`
-VALUES (
-        1,
-        'estudio_1',
-        NULL,
-        NULL,
-        3,
-        NULL,
-        '2026-04-30',
-        NULL,
-        'http://localhost:9000/reciclame-docs/1777348603513_PROPA__1_.pdf',
-        'application/pdf',
-        NULL,
-        1,
-        NULL,
-        1,
-        0,
-        0,
-        1,
-        '2026-04-28 07:29:38',
-        '2026-04-28 08:56:44'
-    ),
-    (
-        2,
-        'estudio_2',
-        NULL,
-        NULL,
-        2,
-        'der',
-        '2026-04-28',
-        2026,
-        'http://localhost:9000/reciclame-docs/1777346837584_TEL138_Gu_a_Lab1_2026_1-Teor_a__2_.pdf',
-        'application/pdf',
-        NULL,
-        1,
-        NULL,
-        0,
-        0,
-        0,
-        1,
-        '2026-04-28 08:27:18',
-        '2026-04-28 08:27:18'
-    );
-/*!40000 ALTER TABLE `estudios` ENABLE KEYS */
-;
+/*!40000 ALTER TABLE `estudios` DISABLE KEYS */;
+/*!40000 ALTER TABLE `estudios` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -1818,17 +1772,6 @@ SET SQL_SAFE_UPDATES = 0;
 -- bucket MinIO (reciclame-docs) antes de ejecutar este script.
 -- Si los archivos no fueron migrados de GCP a MinIO, el visor
 -- mostrará error al intentar abrirlos.
-
-UPDATE estudios
-SET
-    archivo_url =
-REPLACE (
-        archivo_url,
-        'https://storage.googleapis.com/reciclame-docs/',
-        'http://localhost:9000/reciclame-docs/'
-    )
-WHERE
-    archivo_url LIKE 'https://storage.googleapis.com/reciclame-docs/%';
 
 UPDATE normativas
 SET

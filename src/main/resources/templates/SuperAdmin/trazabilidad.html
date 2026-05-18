@@ -238,21 +238,6 @@
           </th:block>
         </div>
 
-        <div class="activity-chart" th:if="${actividadDiaria != null and !actividadDiaria.isEmpty()}">
-          <div style="display:flex;align-items:center;justify-content:space-between;">
-            <div>
-              <div style="font-size:13px;font-weight:700;color:#1B3A5C;">Actividad últimos 7 días</div>
-              <div style="font-size:11px;color:#9CA3AF;">Volumen de acciones por día</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:6px;">
-              <span class="live-dot" style="width:8px;height:8px;"></span>
-              <span style="font-size:11px;color:#9CA3AF;">Actualizado</span>
-            </div>
-          </div>
-          <div class="chart-bars" id="chart-bars"></div>
-          <div class="chart-labels" id="chart-labels"></div>
-        </div>
-
         <div class="filter-row">
           <div style="position:relative;flex:1;min-width:200px;">
             <i class="fas fa-search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
@@ -272,8 +257,6 @@
             <option value="CREAR_USUARIO">Crear Usuario</option>
             <option value="EDITAR_USUARIO">Editar Usuario</option>
             <option value="BLOQUEAR_USUARIO">Bloquear Usuario</option>
-            <option value="LOGIN">Login</option>
-            <option value="LOGOUT">Logout</option>
             <option value="DESCARGAR_DOCUMENTO">Descargar Doc</option>
             <option value="CREAR_NORMATIVA">Crear Normativa</option>
             <option value="EDITAR_NORMATIVA">Editar Normativa</option>

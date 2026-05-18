@@ -145,6 +145,13 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponseDTO> listarUsuariosNoSuperadmin() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getRol() == null || !"SUPERADMIN".equals(u.getRol().getNombre()))
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<UsuarioResponseDTO> listarUsuariosPendientes() {
         return usuarioRepository.findAll().stream()
                 .filter(u -> "PENDIENTE".equals(u.getEstadoCuenta()))
