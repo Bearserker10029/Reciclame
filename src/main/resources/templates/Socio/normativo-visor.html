@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title th:text="'Reciclame — ' + (${normativa != null and normativa.titulo != null ? normativa.titulo : 'Visor de Normativa'})">Reciclame — Visor</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#F5F6FA;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
+    .visor-header{
+      display:flex;align-items:center;justify-content:space-between;
+      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);padding:12px 24px;flex-shrink:0;flex-wrap:wrap;gap:8px;
+    }
+    .visor-header-left{display:flex;align-items:center;gap:12px;}
+    .btn-back{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:7px 16px;border-radius:8px;
+      border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);
+      color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s;
+    }
+    .btn-back:hover{background:rgba(255,255,255,.2);color:#fff;}
+    .doc-title{font-size:14px;font-weight:700;color:#fff;max-width:460px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .doc-meta{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
+    .btn-download{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:7px 16px;border-radius:8px;border:none;
+      background:linear-gradient(135deg,#2ECC71,#27AE60);
+      color:#fff;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;
+    }
+    .btn-download:hover{opacity:.9;color:#fff;}
+    iframe{flex:1;border:none;width:100%;}
+    .visor-not-available{
+      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);
+    }
+    .visor-not-available i{font-size:56px;color:rgba(255,255,255,.4);}
+    .visor-not-available p{font-size:15px;font-weight:700;color:#fff;margin:0;}
+    .visor-not-available p+p{font-size:13px;color:rgba(255,255,255,.7);text-align:center;max-width:340px;margin:0;line-height:1.6;}
+  </style>
+</head>
+<body>
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+  </div>
+
+  <div class="visor-header">
+    <div class="visor-header-left">
+      <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+      <div>
+        <div class="doc-title" th:text="${normativa != null ? normativa.titulo : 'Normativa'}">Titulo</div>
+        <div class="doc-meta">
+          <span th:if="${normativa != null and normativa.anio}" th:text="${normativa.anio + ' · '}"></span>
+          <span th:if="${normativa != null and normativa.tematicaNombre}" th:text="${normativa.tematicaNombre}"></span>
+        </div>
+      </div>
+    </div>
+    <a th:if="${archivoDisponible and normativa != null}"
+       th:href="@{/api/documentos/descargar(url=${normativa.archivoUrl},titulo=${normativa.titulo})}" target="_blank" class="btn-download">
+      <i class="fas fa-download"></i> Descargar
+    </a>
+    <span th:unless="${archivoDisponible}"
+          style="font-size:12px;color:#F87171;font-weight:600;">
+      <i class="fas fa-exclamation-triangle"></i> No disponible
+    </span>
+  </div>
+
+  <div th:unless="${archivoDisponible}" class="visor-not-available">
+    <i class="fas fa-file-slash"></i>
+    <p>Archivo no disponible</p>
+    <p>Esta normativa aún no tiene un archivo disponible en el sistema.</p>
+    <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back" style="margin-top:8px;">
+      <i class="fas fa-arrow-left"></i> Volver al listado
+    </a>
+  </div>
+
+  <iframe th:if="${archivoDisponible and normativa != null}"
+    th:src="@{/api/documentos/visor(url=${normativa.archivoUrl},titulo=${normativa.titulo},mime=${normativa.archivoTipoMime})}"
+    allowfullscreen>
+  </iframe>
+
+  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+</body>
+</html>

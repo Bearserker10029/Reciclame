@@ -58,6 +58,12 @@ public class EstudioService {
                 .collect(Collectors.toList());
     }
 
+    public List<EstudioResponseDTO> listarEstudiosPublicos() {
+        return estudioRepository.findByEsPublicoTrue().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public List<EstudioResponseDTO> listarEstudiosUltimos100() {
         return estudioRepository.findTop100ByOrderByCreatedAtDesc()
                 .stream()
