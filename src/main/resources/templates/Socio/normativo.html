@@ -753,24 +753,16 @@
                       </td>
 
                       <td class="text-center">
-                        <div style="display:inline-flex;align-items:center;gap:6px;">
-                          <button class="btn-ver" onclick="openNormVisorFromRow(this)">
-                            <i class="fas fa-eye"></i> Ver
+                        <div style="display:inline-flex;align-items:center;gap:5px;">
+                          <a class="btn-ver" title="Ver" th:href="@{/socio/normativo/{id}/ver(id=${n.id})}">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <button class="btn-ver" title="Compartir" th:attr="onclick=|shareNormRow([[${n.id}]])|">
+                            <i class="fas fa-share-alt"></i>
                           </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" th:attr="onclick=|toggleDriveDropdown(event, 'drive-dd-n-' + ${n.id})|"><i class="fas fa-ellipsis-v"></i></button>
-                            <div class="drive-dropdown" onclick="event.stopPropagation();" th:id="|drive-dd-n-${n.id}|">
-                              <button type="button" th:attr="onclick=|shareNormRow([[${n.id}]]); closeAllDriveDropdowns();|">
-                                <i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir
-                              </button>
-                              <div class="drive-add-entry" th:data-mu-tipo="NORMATIVA" th:data-mu-id="${n.id}" th:data-mu-titulo="${n.titulo}">
-                                <button type="button" class="drive-add-trigger"
-                                  onclick="event.preventDefault(); event.stopPropagation(); if (window.openMuAddModal) { window.openMuAddModal(this.closest('.drive-add-entry')); }">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
+                          <button class="btn-ver" title="Añadir a carpeta" th:data-id="${n.id}" th:data-titulo="${n.titulo}" onclick="openModalCarpetaFromData('NORMATIVA', this.getAttribute('data-id'), this.getAttribute('data-titulo'))">
+                            <i class="fas fa-folder-plus"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -1010,6 +1002,17 @@
             if (navigator.clipboard && navigator.clipboard.writeText) {
               navigator.clipboard.writeText(text).then(function () { alert('Copiado al portapapeles.'); }).catch(function () { window.prompt('Copia manualmente:', text); });
             } else { window.prompt('Copia manualmente:', text); }
+          }
+
+          function openModalCarpetaFromData(tipo, id, titulo) {
+            var tmp = document.createElement('div');
+            tmp.className = 'drive-add-entry';
+            tmp.setAttribute('data-mu-tipo', tipo);
+            tmp.setAttribute('data-mu-id', id);
+            tmp.setAttribute('data-mu-titulo', titulo);
+            if (window.openMuAddModal) {
+              window.openMuAddModal(tmp);
+            }
           }
 
           function openNormVisorFromRow(btn) {
@@ -1339,6 +1342,10 @@
             document.querySelectorAll('.norm-row').forEach(function (tr) {
               if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
             });
+            var savedTab = window.__normativoTab;
+            if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
+              showNormativoTab(savedTab);
+            }
             inicializarPaginacion();
             mostrarPagina(1);
           });
