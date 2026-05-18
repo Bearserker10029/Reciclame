@@ -329,6 +329,10 @@ public class MiUnidadService {
         return (int) (sub + docs);
     }
 
+    public int contarItemsUsuario(Long usuarioId) {
+        return (int) itemRepository.countByUsuario_Id(usuarioId);
+    }
+
     public List<MiUnidadContenidoFila> listarFilasContenido(Long usuarioId, Long carpetaId,
                                                             List<MiUnidadCarpeta> subcarpetas,
                                                             List<MiUnidadItem> items) {

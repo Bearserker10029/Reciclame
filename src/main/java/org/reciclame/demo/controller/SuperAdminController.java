@@ -538,7 +538,6 @@ return "redirect:/superadmin/notificaciones";
         return "SuperAdmin/estudios-form";
     }
 
-    @Override
     @GetMapping("/superadmin/auditoria")
     public String auditoria(
             @RequestParam(defaultValue = "0") int page,
@@ -857,28 +856,5 @@ return "redirect:/superadmin/notificaciones";
         super.exportarNormativasXLSX(response, user);
     }
 
-    @GetMapping("/superadmin/legal/cookies")
-    public String legalCookies(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/cookies";
-    }
-
-    @GetMapping("/superadmin/legal/privacidad")
-    public String legalPrivacidad(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/privacidad";
-    }
-
-    @GetMapping("/superadmin/legal/terminos")
-    public String legalTerminos(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/terminos";
-    }
-
-    @GetMapping("/superadmin/legal/nosotros")
-    public String legalNosotros(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/nosotros";
-    }
 
 }

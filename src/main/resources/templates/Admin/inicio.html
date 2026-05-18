@@ -485,7 +485,7 @@
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <script>
+  <script th:inline="javascript">
     function navTo(page) {
       var map = { 'admin-docs': 'documentos' };
       window.location.href = '/admin/' + (map[page] || page);

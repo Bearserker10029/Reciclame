@@ -173,7 +173,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("pctEE",  totalNorm > 0 ? (int) Math.round(normEE  * 100.0 / totalNorm) : 0);
         model.addAttribute("pctREP", totalNorm > 0 ? (int) Math.round(normREP * 100.0 / totalNorm) : 0);
         model.addAttribute("conteoPorTematica", byTematica);
-        var tematicas = tematicaService.listarTematicas();
+        var tematicas = tematicaService.listarTematicasTodas();
         List<Map<String, Object>> donutData = tematicas.stream().map(t -> {
             Map<String, Object> item = new HashMap<>();
             item.put("codigo", t.getCodigo());
@@ -196,20 +196,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
         return "Admin/usuarios";
-    }
-
-    @GetMapping("/admin/auditoria")
-    public String auditoria(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        var auditorias = auditoriaService.listarAuditoriasPaginado(page, size);
-        model.addAttribute("auditorias", auditorias.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", auditorias.getTotalPages());
-        model.addAttribute("totalElements", auditorias.getTotalElements());
-        return "Admin/auditoria";
     }
 
     @GetMapping("/admin/documentos")
@@ -438,8 +424,30 @@ public class AdminController extends BaseReportesController {
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
         });
-        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         return "Admin/notificaciones";
+    }
+
+    @PostMapping("/admin/notificaciones/enviar")
+    public String enviarNotificacion(
+            @RequestParam String destinatario,
+            @RequestParam String titulo,
+            @RequestParam String mensaje,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if ("todos".equals(destinatario)) {
+            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
+            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
+        } else {
+            try {
+                Long id = Long.parseLong(destinatario);
+                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
+                ra.addFlashAttribute("enviado", "Notificación enviada.");
+            } catch (NumberFormatException e) {
+                ra.addFlashAttribute("error", "Destinatario inválido.");
+            }
+        }
+        return "redirect:/admin/notificaciones";
     }
 
     @GetMapping("/admin/perfil")
@@ -660,30 +668,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("normativas", normativaService.listarNormativasParaSelector());
         model.addAttribute("isEdit", true);
         return "Admin/estudios-form";
-    }
-
-    @GetMapping("/admin/legal/cookies")
-    public String legalCookies(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/cookies";
-    }
-
-    @GetMapping("/admin/legal/privacidad")
-    public String legalPrivacidad(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/privacidad";
-    }
-
-    @GetMapping("/admin/legal/terminos")
-    public String legalTerminos(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/terminos";
-    }
-
-    @GetMapping("/admin/legal/nosotros")
-    public String legalNosotros(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        return "legal/nosotros";
     }
 
     /*

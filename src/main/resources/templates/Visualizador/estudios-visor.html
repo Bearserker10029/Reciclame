@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="'Recíclame — ' + ${estudio.titulo}">Recíclame — Visor</title>
+  <title th:text="${estudio != null and estudio.titulo != null ? estudio.titulo : 'Visor de Estudio'}">Recíclame — Visor</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
