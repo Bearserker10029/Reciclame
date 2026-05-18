@@ -201,9 +201,7 @@
                           <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" th:data-mu-tipo="ESTUDIO" th:data-mu-id="${e.id}" th:data-mu-titulo="${e.titulo}">
                             <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
                               <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                              <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
                             </button>
-                            <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
                           </div>
                         </div>
                       </div>
@@ -259,7 +257,6 @@
                       <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" th:attr="data-mu-tipo="'ESTUDIO', data-mu-id=${e.id}, data-mu-titulo=${e.titulo}">
                         <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
                           <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                          <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
                         </button>
                         <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
                       </div>

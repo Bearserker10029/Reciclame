@@ -211,7 +211,23 @@
       background: #F0FAF4;
       border-radius: 16px;
       box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
-      overflow: hidden;
+      overflow: visible;
+    }
+
+    .norm-table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .norm-table-card td:has(.drive-row-actions),
+    .norm-table-card .drive-dropdown,
+    .norm-table-card .drive-add-entry {
+      overflow: visible;
+    }
+
+    .norm-row.norm-row--menu-open {
+      position: relative;
+      z-index: 10060;
     }
 
     .norm-table-card thead { background: linear-gradient(90deg, #F8FAFC, #F0F4F8); }
@@ -444,14 +460,30 @@
     .drive-kebab:hover { background: rgba(0,0,0,.07); color: #1B3A5C; }
 
     .drive-dropdown {
-      display: none; position: absolute; right: 0; top: 100%;
-      margin-top: 4px; min-width: 228px;
-      background: #fff; border-radius: 10px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.14);
-      border: 1px solid #E8ECF0; z-index: 10050; padding: 6px 0;
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      min-width: 228px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #E8ECF0;
+      z-index: 10050;
+      padding: 6px 0;
+      overflow: visible;
     }
 
-    .drive-dropdown.is-open { display: block; }
+    .drive-dropdown.is-open {
+      display: block !important;
+    }
+
+    .drive-dropdown.is-portaled {
+      position: fixed;
+      margin-top: 0;
+      z-index: 200000;
+    }
 
     .drive-dropdown button {
       display: flex; align-items: center; gap: 10px;
@@ -582,12 +614,6 @@
                   <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Marco regulatorio de economía circular y gestión de residuos</p>
                 </div>
               </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
-                <div class="readonly-badge">
-                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
-                  <span>Solo lectura</span>
-                </div>
-              </div>
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
               <div class="stat-chip" style="animation-delay:.1s">
@@ -670,7 +696,7 @@
         <div class="norm-layout">
           <div id="table-col">
             <div class="norm-table-card">
-              <div style="overflow-x:auto;">
+              <div class="norm-table-scroll">
                 <table class="table mb-0" id="norm-table" style="min-width:820px;">
                   <thead>
                     <tr>
@@ -738,11 +764,10 @@
                                 <i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir
                               </button>
                               <div class="drive-add-entry" th:data-mu-tipo="NORMATIVA" th:data-mu-id="${n.id}" th:data-mu-titulo="${n.titulo}">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
+                                <button type="button" class="drive-add-trigger"
+                                  onclick="event.preventDefault(); event.stopPropagation(); if (window.openMuAddModal) { window.openMuAddModal(this.closest('.drive-add-entry')); }">
                                   <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
                                 </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
                               </div>
                             </div>
                           </div>
@@ -891,22 +916,91 @@
         </div>
 
         <script>
+          function restoreDriveDropdownDom(menu) {
+            if (!menu || !menu.__muHome) return;
+            menu.classList.remove('is-open', 'is-portaled');
+            menu.style.position = '';
+            menu.style.left = '';
+            menu.style.top = '';
+            menu.style.right = '';
+            menu.style.bottom = '';
+            menu.style.marginTop = '';
+            menu.style.zIndex = '';
+            menu.style.display = '';
+            if (menu.parentElement !== menu.__muHome.parent && menu.__muHome.parent) {
+              if (menu.__muHome.next) {
+                menu.__muHome.parent.insertBefore(menu, menu.__muHome.next);
+              } else {
+                menu.__muHome.parent.appendChild(menu);
+              }
+            }
+          }
+
+          function positionDriveDropdown(menu, kebabBtn) {
+            if (!menu || !kebabBtn) return;
+            if (!menu.__muHome) {
+              menu.__muHome = { parent: menu.parentElement, next: menu.nextSibling };
+            }
+            document.body.appendChild(menu);
+            menu.classList.add('is-open', 'is-portaled');
+            menu.style.display = 'block';
+            var r = kebabBtn.getBoundingClientRect();
+            var mw = 240;
+            var left = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
+            var top = r.bottom + 4;
+            if (top + 120 > window.innerHeight) {
+              top = Math.max(8, r.top - 4 - 120);
+            }
+            menu.style.position = 'fixed';
+            menu.style.left = Math.round(left) + 'px';
+            menu.style.top = Math.round(top) + 'px';
+            menu.style.right = 'auto';
+            menu.style.marginTop = '0';
+            menu.style.zIndex = '200000';
+          }
+
           window.closeAllDriveDropdowns = function () {
-            document.querySelectorAll('.drive-dropdown.is-open').forEach(function (el) { el.classList.remove('is-open'); });
+            document.querySelectorAll('.drive-dropdown.is-open').forEach(restoreDriveDropdownDom);
+            document.querySelectorAll('.norm-row--menu-open').forEach(function (row) {
+              row.classList.remove('norm-row--menu-open');
+            });
           };
+
           window.toggleDriveDropdown = function (ev, id) {
-            if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+            if (ev) {
+              ev.preventDefault();
+              ev.stopPropagation();
+            }
             var menu = document.getElementById(id);
             if (!menu) return;
             var willOpen = !menu.classList.contains('is-open');
             window.closeAllDriveDropdowns();
             if (!willOpen) return;
-            menu.classList.add('is-open');
+            var kebab = ev && ev.currentTarget ? ev.currentTarget : (menu.__muHome && menu.__muHome.parent
+              ? menu.__muHome.parent.querySelector('.drive-kebab')
+              : menu.parentElement.querySelector('.drive-kebab'));
+            var row = kebab ? kebab.closest('.norm-row') : null;
+            positionDriveDropdown(menu, kebab);
+            if (row) row.classList.add('norm-row--menu-open');
           };
+
           if (!window.__reciclameDriveOutsideClick) {
             window.__reciclameDriveOutsideClick = true;
-            document.addEventListener('click', function () { window.closeAllDriveDropdowns(); });
+            document.addEventListener('click', function (e) {
+              if (e.target.closest('.drive-kebab, .drive-dropdown, .drive-add-entry, .drive-add-submenu, .drive-add-cols-wrap, #muAddModal')) {
+                return;
+              }
+              window.closeAllDriveDropdowns();
+            });
           }
+          if (!window.__reciclameDriveScrollCloseNorm) {
+            window.__reciclameDriveScrollCloseNorm = true;
+            window.addEventListener('scroll', function (e) {
+              if (e.target && e.target.closest && e.target.closest('.drive-dropdown')) return;
+              window.closeAllDriveDropdowns();
+            }, true);
+          }
+          window.addEventListener('resize', function () { window.closeAllDriveDropdowns(); });
 
           function shareNormRow(id) {
             var row = document.querySelector('.norm-row[data-id="' + id + '"]');
@@ -1257,6 +1351,7 @@
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
+  <th:block th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
   <script>
     window.__muRegistrarAccesoNormativa = function (documentoId) {
       if (!documentoId) return;

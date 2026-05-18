@@ -414,14 +414,22 @@
     .drive-kebab:hover { background: rgba(0,0,0,.07); color: #1B3A5C; }
 
     .drive-dropdown {
-      display: none; position: absolute; right: 0; top: 100%;
-      margin-top: 4px; min-width: 228px;
-      background: #fff; border-radius: 10px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.14);
-      border: 1px solid #E8ECF0; z-index: 10050; padding: 6px 0;
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      min-width: 228px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #E8ECF0;
+      z-index: 10050;
+      padding: 6px 0;
+      overflow: visible;
     }
 
-    .drive-dropdown.is-open { display: block; }
+    .drive-dropdown.is-open { display: block !important; }
 
     .drive-dropdown button {
       display: flex; align-items: center; gap: 10px;
@@ -576,12 +584,6 @@
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Estudios Recíclame</h1>
                   <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Reportes, infografías y ayudas memoria del equipo técnico</p>
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
-                <div class="readonly-badge">
-                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
-                  <span>Repositorio de documentos técnicos</span>
                 </div>
               </div>
             </div>
