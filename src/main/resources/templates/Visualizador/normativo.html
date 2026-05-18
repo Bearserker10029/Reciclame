@@ -1655,6 +1655,10 @@
             document.querySelectorAll('.norm-row').forEach(function (tr) {
               if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
             });
+            var savedTab = window.__normativoTab;
+            if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
+              showNormativoTab(savedTab);
+            }
             inicializarPaginacion();
             mostrarPagina(1);
           });
