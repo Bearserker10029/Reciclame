@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
+import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.HttpStatus;
@@ -23,10 +24,14 @@ import java.util.Map;
 public class NormativaRestController {
 
     private final NormativaService normativaService;
+    private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
 
-    public NormativaRestController(NormativaService normativaService, UsuarioService usuarioService) {
+    public NormativaRestController(NormativaService normativaService,
+                                   MinioStorageService minioStorageService,
+                                   UsuarioService usuarioService) {
         this.normativaService = normativaService;
+        this.minioStorageService = minioStorageService;
         this.usuarioService = usuarioService;
     }
 
@@ -127,12 +132,8 @@ public class NormativaRestController {
         }
     }
 
-    // ── Stub subida (reemplazar con S3/GCP) ───────────────────
+    // ── Subida a MinIO ────────────────────────────────────────
     private String simularSubida(MultipartFile archivo) {
-        String nombre = archivo.getOriginalFilename() != null
-                ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
-                : "documento";
-        return "https://storage.googleapis.com/reciclame-docs/"
-                + System.currentTimeMillis() + "_" + nombre;
+        return minioStorageService.subirArchivo(archivo);
     }
 }
