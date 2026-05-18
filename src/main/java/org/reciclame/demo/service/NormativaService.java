@@ -115,10 +115,26 @@ public class NormativaService {
                 .collect(Collectors.toList());
     }
 
+    public List<NormativaResponseDTO> listarNormativasPublicas() {
+        return normativaRepository.findByEstadoActivoTrueAndEsPublicaTrue()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // ── READ ONE ──────────────────────────────────────────────
     public NormativaResponseDTO obtenerNormativaPorId(Long id) {
         return toResponseDTO(normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id)));
+    }
+
+    public NormativaResponseDTO obtenerNormativaPublicaPorId(Long id) {
+        Normativa n = normativaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
+        if (!Boolean.TRUE.equals(n.getEsPublica())) {
+            throw new RuntimeException("Esta normativa no es de acceso público");
+        }
+        return toResponseDTO(n);
     }
 
     // ── CREATE ────────────────────────────────────────────────

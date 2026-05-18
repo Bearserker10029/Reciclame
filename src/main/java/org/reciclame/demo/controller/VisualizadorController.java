@@ -73,8 +73,8 @@ public class VisualizadorController {
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupVisualizadorAttributes(model, user);
 
-        model.addAttribute("normativas", normativaService.listarNormativas());
-        model.addAttribute("estudios", estudioService.listarEstudios());
+        model.addAttribute("normativas", normativaService.listarNormativasPublicas());
+        model.addAttribute("estudios", estudioService.listarEstudiosPublicos());
 
         var tematicas = tematicaService.listarTematicasTodas();
         model.addAttribute("tematicas", tematicas);
@@ -109,7 +109,7 @@ public class VisualizadorController {
     @GetMapping("/visualizador/normativo")
     public String normativo(Model model, @AuthenticationPrincipal UserDetails user) {
         setupVisualizadorAttributes(model, user);
-        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("normativas", normativaService.listarNormativasPublicas());
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
                 model.addAttribute("ultimosAccesos", documentosRecientesService.listarUltimos(u.getId(), 4));
@@ -123,7 +123,7 @@ public class VisualizadorController {
     @GetMapping("/visualizador/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupVisualizadorAttributes(model, user);
-        model.addAttribute("estudios", estudioService.listarEstudios());
+        model.addAttribute("estudios", estudioService.listarEstudiosPublicos());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {

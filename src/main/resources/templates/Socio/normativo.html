@@ -1015,10 +1015,8 @@
           function openNormVisorFromRow(btn) {
             var row = btn.closest('tr');
             if (!row) return;
-            var titleEl = document.getElementById('visor-title-viz');
-            if (titleEl) titleEl.textContent = (row.dataset.titulo || '—') + ' (' + (row.dataset.anio || '—') + ')';
-            var modal = document.getElementById('visor-modal-viz');
-            if (modal) modal.classList.add('show');
+            var id = row.dataset.id;
+            if (id) window.location.href = '/socio/normativo/' + id + '/ver';
           }
 
           function closeVisorViz() {
