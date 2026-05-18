@@ -3,144 +3,129 @@
 <body>
 <th:block th:fragment="perfil-content">
   <style>
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pulseAvatar {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
-      60% { box-shadow: 0 0 0 12px rgba(46, 204, 113, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46,204,113,.4); }
+      60% { box-shadow: 0 0 0 12px rgba(46,204,113,0); }
     }
-
-    @keyframes shimmerCard {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
-    }
-
     @keyframes floatCard {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-6px); }
     }
 
-    @keyframes ringFill {
-      from { stroke-dashoffset: var(--total); }
-      to { stroke-dashoffset: var(--offset); }
+    .form-card {
+      background: rgba(255,255,255,0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.5);
+      border-radius: 16px;
+      padding: 26px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.08);
+      transition: box-shadow .3s;
     }
-
-    .perfil-hero {
-      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 55%, #1a4a30 100%);
-      border-radius: 20px;
-      padding: 32px;
-      margin-bottom: 24px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 10px 48px rgba(27, 58, 92, .4);
-      animation: fadeUp .4s ease both;
-    }
-
-    .perfil-hero::before {
-      content: '';
-      position: absolute;
-      top: -100px;
-      right: -60px;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
-    }
-
-    .perfil-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -80px;
-      left: 40%;
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
-    }
-
-    .avatar-ring {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #2ECC71, #1B3A5C);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      font-weight: 800;
-      color: #fff;
-      flex-shrink: 0;
-      box-shadow: 0 0 0 4px rgba(255, 255, 255, .15);
-      animation: pulseAvatar 3s ease infinite;
-      cursor: default;
-      transition: transform .3s ease;
-    }
-
-    .avatar-ring:hover {
-      transform: scale(1.08) rotate(-5deg);
-    }
-
-    .cred-card {
-      background: linear-gradient(135deg, #1B3A5C 0%, #0d2035 50%, #1a4a30 100%);
-      border-radius: 18px;
-      padding: 22px;
-      color: #fff;
-      box-shadow: 0 12px 40px rgba(27, 58, 92, .35);
-      position: relative;
-      overflow: hidden;
-      animation: floatCard 4s ease infinite;
-      cursor: default;
-    }
-
-    .cred-card::before {
-      content: '';
-      position: absolute;
-      top: -50px;
-      right: -30px;
-      width: 160px;
-      height: 160px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(46, 204, 113, .2) 0%, transparent 70%);
-    }
-
-    .cred-card::after {
-      content: '';
-      position: absolute;
-      bottom: -40px;
-      left: 10px;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(52, 152, 219, .15) 0%, transparent 70%);
-    }
+    .form-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.1); }
 
     .section-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1B3A5C;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      font-size: 14px; font-weight: 700; color: #1B3A5C;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .icon-dot {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
 
-    .section-title .icon-dot {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: #9CA3AF;
     }
+    .form-group input {
+      border: 1.5px solid #E5E7EB; border-radius: 10px; padding: 10px 14px;
+      font-size: 13px; font-family: inherit; color: #374151;
+      transition: all .2s ease; background: #fff;
+    }
+    .form-group input:focus { outline: none; border-color: #2ECC71; box-shadow: 0 0 0 3px rgba(46,204,113,.1); }
+    .form-group input:disabled { background: #F9FAFB; color: #9CA3AF; cursor: not-allowed; }
+
+    .btn-save {
+      padding: 11px 24px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg,#2ECC71,#27AE60);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all .25s ease;
+      box-shadow: 0 4px 16px rgba(46,204,113,.3);
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(46,204,113,.45); }
+
+    .btn-pwd {
+      padding: 11px 24px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg,#1B3A5C,#2c5282);
+      color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: all .25s ease;
+      box-shadow: 0 4px 16px rgba(27,58,92,.25);
+    }
+    .btn-pwd:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,58,92,.4); }
+
+    .btn-cancel {
+      padding: 11px 20px; border-radius: 12px; border: 1.5px solid #E5E7EB;
+      background: #fff; color: #6B7280; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all .2s; font-family: inherit;
+    }
+    .btn-cancel:hover { background: #F3F4F6; border-color: #D1D5DB; }
 
     .cred-card {
+      background: linear-gradient(135deg,#1B3A5C 0%,#0d2035 50%,#1a4a30 100%);
+      border-radius: 18px; padding: 22px; color: #fff;
+      box-shadow: 0 12px 40px rgba(27,58,92,.35);
+      position: relative; overflow: hidden;
+      animation: floatCard 4s ease infinite; cursor: default;
+    }
+    .cred-card::before {
+      content: ''; position: absolute; top: -50px; right: -30px;
+      width: 160px; height: 160px; border-radius: 50%;
+      background: radial-gradient(circle,rgba(46,204,113,.2) 0%,transparent 70%);
+    }
+    .cred-card::after {
+      content: ''; position: absolute; bottom: -40px; left: 10px;
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle,rgba(52,152,219,.15) 0%,transparent 70%);
+    }
+
+    .qr-container {
+      background: #fff; border-radius: 12px; padding: 12px;
+      display: flex; align-items: center; justify-content: center;
+      width: 180px; height: 180px; margin: 12px auto;
+    }
+
+    .stat-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid #F3F4F6;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-bar-wrap { width: 80px; height: 5px; background: #F0F4F8; border-radius: 999px; overflow: hidden; margin-left: 12px; }
+    .stat-bar { height: 100%; border-radius: 999px; width: 0; transition: width 1.2s cubic-bezier(.22,.61,.36,1); }
+
+    .act-item {
+      padding: 12px 14px; border-radius: 10px; background: #F9FAFB;
+      border-left: 3px solid; margin-bottom: 8px;
+      transition: all .25s ease; cursor: default;
+    }
+    .act-item:hover { transform: translateX(4px); background: #F0F4F8; }
+    .act-item:last-child { margin-bottom: 0; }
+  </style>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
+
+    <!-- Columna izquierda -->
     <div style="display:flex;flex-direction:column;gap:20px;">
-      <div class="form-card anim-1">
-        <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-user" style="color:#2ECC71;margin-right:8px;"></i>Informacion personal</h2>
+
+      <!-- Información personal -->
+      <div class="form-card">
+        <div class="section-title">
+          <div class="icon-dot" style="background:rgba(46,204,113,.12);">
+            <i class="fas fa-user" style="color:#2ECC71;font-size:13px;"></i>
+          </div>
+          Información personal
+        </div>
         <div th:if="${errorPerfil}" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#E74C3C;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;">
           <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i><span th:text="${errorPerfil}"></span>
         </div>
@@ -150,7 +135,7 @@
         <form id="perfilForm" th:action="@{/socio/perfil/actualizar}" method="post">
           <input type="hidden" name="id" th:value="${usuario != null ? usuario.id : ''}" />
           <input type="hidden" id="correoOriginal" th:value="${usuario != null ? usuario.correoCorporativo : ''}" />
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
             <div class="form-group">
               <label>Nombre completo</label>
               <input type="text" name="nombreCompleto" th:value="${usuario != null ? usuario.nombreCompleto : ''}" required />
@@ -169,22 +154,30 @@
             </div>
             <div class="form-group">
               <label>Rol</label>
-              <input type="text" th:value="${rolNombre != null ? rolNombre : 'Usuario'}" disabled />
+              <input type="text" th:value="${rolNombre != null ? rolNombre : 'Socio'}" disabled />
             </div>
             <div class="form-group">
               <label>Fecha de registro</label>
               <input type="text" th:value="${usuario != null and usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : 'N/A'}" disabled />
             </div>
           </div>
-          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:18px;border-top:1px solid #F3F4F6;">
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #F3F4F6;">
             <button type="button" class="btn-cancel" onclick="window.location.reload()">Cancelar</button>
-            <button type="button" class="btn-save" onclick="handleGuardarCambios()"><i class="fas fa-save" style="margin-right:6px;"></i>Guardar cambios</button>
+            <button type="button" class="btn-save" onclick="handleGuardarCambios()">
+              <i class="fas fa-save" style="margin-right:6px;"></i>Guardar cambios
+            </button>
           </div>
         </form>
       </div>
 
-      <div class="form-card anim-1" style="animation-delay:.1s">
-        <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;"><i class="fas fa-lock" style="color:#1B3A5C;margin-right:8px;"></i>Cambiar contrasenia</h2>
+      <!-- Cambiar contraseña -->
+      <div class="form-card">
+        <div class="section-title">
+          <div class="icon-dot" style="background:rgba(27,58,92,.1);">
+            <i class="fas fa-lock" style="color:#1B3A5C;font-size:13px;"></i>
+          </div>
+          Cambiar contraseña
+        </div>
         <div th:if="${errorPassword}" style="background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.3);color:#E74C3C;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;">
           <i class="fas fa-exclamation-circle" style="margin-right:6px;"></i><span th:text="${errorPassword}"></span>
         </div>
@@ -194,40 +187,48 @@
         <form th:action="@{/socio/perfil/cambiar-password}" method="post">
           <div style="display:flex;flex-direction:column;gap:14px;">
             <div class="form-group">
-              <label>Contrasenia actual</label>
-              <input type="password" id="currentPassword" name="currentPassword" placeholder="........" required />
+              <label>Contraseña actual</label>
+              <input type="password" id="currentPassword" name="currentPassword" placeholder="••••••••" required />
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
               <div class="form-group">
-                <label>Nueva contrasenia</label>
-                <input type="password" id="newPassword" name="newPassword" placeholder="........" required minlength="8" />
+                <label>Nueva contraseña</label>
+                <input type="password" id="newPassword" name="newPassword" placeholder="••••••••" required minlength="8" />
               </div>
               <div class="form-group">
-                <label>Confirmar contrasenia</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="........" required minlength="8" />
+                <label>Confirmar contraseña</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••" required minlength="8" />
               </div>
             </div>
           </div>
           <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid #F3F4F6;">
             <button type="button" class="btn-cancel" onclick="clearPasswordFields()">Limpiar</button>
-            <button type="submit" class="btn-pwd"><i class="fas fa-key" style="margin-right:6px;"></i>Actualizar contrasenia</button>
+            <button type="submit" class="btn-pwd">
+              <i class="fas fa-key" style="margin-right:6px;"></i>Actualizar contraseña
+            </button>
           </div>
         </form>
       </div>
 
-      <div class="form-card anim-1" style="animation-delay:.15s">
-        <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-history" style="color:#3498DB;margin-right:8px;"></i>Actividad reciente</h3>
+      <!-- Actividad reciente -->
+      <div class="form-card">
+        <div class="section-title">
+          <div class="icon-dot" style="background:rgba(52,152,219,.1);">
+            <i class="fas fa-history" style="color:#3498DB;font-size:13px;"></i>
+          </div>
+          Actividad reciente
+        </div>
         <div th:if="${actividadReciente != null and !#lists.isEmpty(actividadReciente)}">
           <div class="act-item" th:each="act, iterStat : ${actividadReciente}"
             th:with="statusColor=${act.estado == 'EXITOSO'} ? '#2ECC71' : (${act.estado == 'FALLIDO'} ? '#E74C3C' : '#F39C12')"
-            th:style="'border-color:' + ${statusColor} + ';animation-delay:' + ${(iterStat.index * 0.05) + 0.1} + 's'">
+            th:style="'border-color:' + ${statusColor}">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div>
                 <div style="font-weight:600;color:#1B3A5C;font-size:13px;margin-bottom:2px;">
                   <i class="fas fa-circle" th:style="'color:' + ${statusColor} + ';margin-right:6px;font-size:11px;'"></i>
-                  <span th:text="${act.accion}">Accion</span>
+                  <span th:text="${act.accion}">Acción</span>
                 </div>
-                <div style="color:#9CA3AF;font-size:12px;" th:text="${act.descripcion}">Descripcion</div>
+                <div style="color:#9CA3AF;font-size:12px;" th:text="${act.descripcion}">Descripción</div>
               </div>
               <span style="font-size:11px;color:#9CA3AF;white-space:nowrap;"
                 th:text="${act.fechaAccion != null} ? ${#temporals.format(act.fechaAccion, 'dd/MM/yyyy HH:mm')} : '—'">Fecha</span>
@@ -238,46 +239,64 @@
           <div style="text-align:center;color:#9CA3AF;padding:24px 14px;">
             <i class="fas fa-history" style="font-size:28px;margin-bottom:10px;display:block;color:#D1D5DB;"></i>
             <div style="font-weight:600;font-size:13px;color:#6B7280;margin-bottom:4px;">Sin actividad reciente</div>
-            <div style="font-size:12px;">Tus acciones apareceran aqui cuando interactues con el repositorio</div>
+            <div style="font-size:12px;">Tus acciones aparecerán aquí cuando interactúes con el repositorio</div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- Columna derecha -->
     <div style="display:flex;flex-direction:column;gap:20px;">
-      <div class="form-card anim-1" style="animation-delay:.2s;">
-        <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-id-card" style="color:#2ECC71;margin-right:8px;"></i>Credencial de socio</h3>
+
+      <!-- Credencial -->
+      <div class="form-card">
+        <div class="section-title">
+          <div class="icon-dot" style="background:rgba(46,204,113,.12);">
+            <i class="fas fa-id-card" style="color:#2ECC71;font-size:13px;"></i>
+          </div>
+          Credencial de socio
+        </div>
         <div class="cred-card">
-                <div style="position:relative;z-index:1;">
-                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
-                    <div>
-                      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.65);">Repositorio Circular</div>
-                      <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;">Recíclame Perú</div>
-                    </div>
-                    <span style="background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.3);color:#34D399;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;" th:text="${rolNombre != null ? rolNombre : 'Usuario'}">Socio</span>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-                    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2ECC71,#27AE60);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;" th:text="${usuario != null and usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : 'U'}">U</div>
-                    <div>
-                      <div style="font-size:15px;font-weight:700;color:#fff;min-height:18px;" th:text="${usuario != null ? usuario.nombreCompleto : 'Usuario'}">Usuario</div>
-                      <div style="font-size:11px;color:rgba(255,255,255,.65);min-height:14px;" th:text="${usuario != null ? usuario.correoCorporativo : 'correo@empresa.com'}">correo@empresa.com</div>
-                    </div>
-                  </div>
-                  <div class="qr-container">
-                    <div id="qr-code"></div>
-                  </div>
-                  <div style="font-size:10px;color:rgba(255,255,255,.5);text-align:center;margin-top:4px;"><i class="fas fa-qrcode" style="margin-right:4px;"></i>Escanea para verificar credencial</div>
-                  <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:12px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:11px;color:rgba(255,255,255,.6);"><i class="fas fa-shield-alt" style="margin-right:4px;"></i>Verificado</span>
-                    <span style="font-size:11px;color:rgba(255,255,255,.6);">2026</span>
-                  </div>
-                </div>
+          <div style="position:relative;z-index:1;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+              <div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.65);">Repositorio Circular</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;">Recíclame Perú</div>
               </div>
+              <span style="background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.3);color:#34D399;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;"
+                th:text="${rolNombre != null ? rolNombre : 'Socio'}">Socio</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+              <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#2ECC71,#27AE60);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;"
+                th:text="${usuario != null and usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : 'U'}">U</div>
+              <div>
+                <div style="font-size:15px;font-weight:700;color:#fff;" th:text="${usuario != null ? usuario.nombreCompleto : 'Usuario'}">Usuario</div>
+                <div style="font-size:11px;color:rgba(255,255,255,.65);" th:text="${usuario != null ? usuario.correoCorporativo : 'correo@empresa.com'}">correo@empresa.com</div>
+              </div>
+            </div>
+            <div class="qr-container">
+              <div id="qr-code"></div>
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);text-align:center;margin-top:4px;">
+              <i class="fas fa-qrcode" style="margin-right:4px;"></i>Escanea para verificar credencial
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,.15);padding-top:12px;margin-top:12px;display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:11px;color:rgba(255,255,255,.6);"><i class="fas fa-shield-alt" style="margin-right:4px;"></i>Verificado</span>
+              <span style="font-size:11px;color:rgba(255,255,255,.6);">2026</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="form-card anim-1" style="animation-delay:.25s">
-        <h3 style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;"><i class="fas fa-chart-bar" style="color:#3498DB;margin-right:8px;"></i>Estadisticas de uso</h3>
-        <div class="stat-row" style="animation-delay:.1s">
+      <!-- Estadísticas -->
+      <div class="form-card">
+        <div class="section-title">
+          <div class="icon-dot" style="background:rgba(52,152,219,.1);">
+            <i class="fas fa-chart-bar" style="color:#3498DB;font-size:13px;"></i>
+          </div>
+          Estadísticas de uso
+        </div>
+        <div class="stat-row">
           <span style="font-size:12px;color:#6B7280;">Documentos vistos</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="stat-bar-wrap">
@@ -288,8 +307,8 @@
               th:text="${documentosVistos != null ? documentosVistos : 0}">0</span>
           </div>
         </div>
-        <div class="stat-row" style="animation-delay:.15s">
-          <span style="font-size:12px;color:#6B7280;">Busquedas totales</span>
+        <div class="stat-row">
+          <span style="font-size:12px;color:#6B7280;">Búsquedas totales</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="stat-bar-wrap">
               <div class="stat-bar" style="background:linear-gradient(90deg,#3498DB,#2980B9);"
@@ -299,7 +318,7 @@
               th:text="${busquedasCount != null ? busquedasCount : 0}">0</span>
           </div>
         </div>
-        <div class="stat-row" style="animation-delay:.2s">
+        <div class="stat-row">
           <span style="font-size:12px;color:#6B7280;">Normativas consultadas</span>
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="stat-bar-wrap">
@@ -310,67 +329,20 @@
               th:text="${normativasConsultadas != null ? normativasConsultadas : 0}">0</span>
           </div>
         </div>
-        <div class="stat-row" style="animation-delay:.25s">
-          <span style="font-size:12px;color:#6B7280;">Ultimo acceso</span>
-          <span th:if="${ultimoAccesoFormatted != null and ultimoAccesoFormatted != 'No registrado'}" style="font-size:12px;color:#6B7280;font-style:italic;"
-            th:text="${ultimoAccesoFormatted}">—</span>
-          <span th:if="${ultimoAccesoFormatted == null or ultimoAccesoFormatted == 'No registrado'}" style="font-size:12px;color:#6B7280;font-style:italic;">Sin registros</span>
+        <div class="stat-row">
+          <span style="font-size:12px;color:#6B7280;">Último acceso</span>
+          <span th:if="${ultimoAccesoFormatted != null and ultimoAccesoFormatted != 'No registrado'}"
+            style="font-size:12px;color:#6B7280;font-style:italic;" th:text="${ultimoAccesoFormatted}">—</span>
+          <span th:unless="${ultimoAccesoFormatted != null and ultimoAccesoFormatted != 'No registrado'}"
+            style="font-size:12px;color:#6B7280;font-style:italic;">Sin registros</span>
         </div>
       </div>
     </div>
   </div>
 
-  <script th:inline="javascript">
-    var qrUserId = /*[[${usuario != null ? usuario.id : 'USER'}]]*/ 'USER';
-    var qrUserDni = /*[[${usuario != null ? usuario.dni : '00000000'}]]*/ '00000000';
-
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(function () {
-        try {
-          document.querySelectorAll('.stat-bar[data-w]').forEach(function (b) { b.style.width = b.dataset.w; });
-        } catch (e) { console.error('Error animando stat-bar:', e); }
-      }, 500);
-
-      try {
-        if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
-          new QRCode(document.getElementById('qr-code'), {
-            text: 'RECICLAME-' + qrUserId + '-' + qrUserDni,
-            width: 152, height: 152,
-            colorDark: '#1B3A5C', colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
-          });
-        }
-      } catch (e) { console.error('Error generando QR:', e); }
-    });
-
-    function clearPasswordFields() {
-      var pwd = document.getElementById('currentPassword');
-      var newPwd = document.getElementById('newPassword');
-      var confirmPwd = document.getElementById('confirmPassword');
-      [pwd, newPwd, confirmPwd].forEach(function (input) {
-        if (input) { input.value = ''; }
-      });
-    }
-    function handleGuardarCambios() {
-      var correoOriginal = document.getElementById('correoOriginal').value;
-      var correoNuevo = document.querySelector('input[name="correoCorporativo"]').value;
-      if (correoOriginal !== correoNuevo) {
-        document.getElementById('correoModal').style.display = 'flex';
-      } else {
-        document.getElementById('perfilForm').submit();
-      }
-    }
-    function cerrarCorreoModal() {
-      document.getElementById('correoModal').style.display = 'none';
-    }
-    function confirmarCambioCorreo() {
-      cerrarCorreoModal();
-      document.getElementById('perfilForm').submit();
-    }
-  </script>
-
+  <!-- Modal cambio de correo -->
   <div id="correoModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeUp .3s ease both;">
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
         <div style="width:40px;height:40px;border-radius:50%;background:rgba(243,156,18,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
           <i class="fas fa-exclamation-triangle" style="color:#F39C12;font-size:18px;"></i>
@@ -378,7 +350,7 @@
         <h3 style="font-size:16px;font-weight:700;color:#1B3A5C;margin:0;">Confirmar cambio de correo</h3>
       </div>
       <p style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:12px;">
-        Estas a punto de cambiar tu correo corporativo. Este correo se usa para <strong style="color:#1B3A5C;">iniciar sesion</strong>. Despues del cambio, deberas usar el nuevo correo para acceder.
+        Estás a punto de cambiar tu correo corporativo. Este correo se usa para <strong style="color:#1B3A5C;">iniciar sesión</strong>. Después del cambio, deberás usar el nuevo correo para acceder.
       </p>
       <div style="background:#F9FAFB;border-radius:8px;padding:10px 14px;margin-bottom:20px;font-size:12px;">
         <div style="color:#9CA3AF;margin-bottom:2px;">De:</div>
@@ -395,17 +367,52 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
+  <script th:inline="javascript">
+    var qrUserId  = /*[[${usuario != null ? usuario.id : 'USER'}]]*/ 'USER';
+    var qrUserDni = /*[[${usuario != null ? usuario.dni : '00000000'}]]*/ '00000000';
+
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        document.querySelectorAll('.stat-bar[data-w]').forEach(function (b) { b.style.width = b.dataset.w; });
+      }, 500);
+
+      try {
+        if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
+          new QRCode(document.getElementById('qr-code'), {
+            text: 'RECICLAME-' + qrUserId + '-' + qrUserDni,
+            width: 152, height: 152,
+            colorDark: '#1B3A5C', colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+          });
+        }
+      } catch (e) { console.error('Error generando QR:', e); }
+
       var correoInput = document.querySelector('input[name="correoCorporativo"]');
       if (correoInput) {
-        correoInput.addEventListener('input', function() {
+        correoInput.addEventListener('input', function () {
           document.getElementById('modalCorreoNuevo').textContent = correoInput.value;
         });
         document.getElementById('modalCorreoAntiguo').textContent = document.getElementById('correoOriginal').value;
         document.getElementById('modalCorreoNuevo').textContent = correoInput.value;
       }
     });
+
+    function clearPasswordFields() {
+      ['currentPassword','newPassword','confirmPassword'].forEach(function (id) {
+        var el = document.getElementById(id); if (el) el.value = '';
+      });
+    }
+    function handleGuardarCambios() {
+      var orig  = document.getElementById('correoOriginal').value;
+      var nuevo = document.querySelector('input[name="correoCorporativo"]').value;
+      if (orig !== nuevo) {
+        document.getElementById('correoModal').style.display = 'flex';
+      } else {
+        document.getElementById('perfilForm').submit();
+      }
+    }
+    function cerrarCorreoModal()    { document.getElementById('correoModal').style.display = 'none'; }
+    function confirmarCambioCorreo() { cerrarCorreoModal(); document.getElementById('perfilForm').submit(); }
   </script>
 </th:block>
 </body>
