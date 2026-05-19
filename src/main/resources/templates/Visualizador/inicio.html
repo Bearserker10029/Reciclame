@@ -25,14 +25,29 @@
     }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes waterWave {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     .water-bg {
@@ -43,12 +58,15 @@
     .water-bg::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background:
-        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
-        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
-        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
       background-size: 400% 400%;
       animation: waterWave 12s ease infinite;
       pointer-events: none;
@@ -56,15 +74,15 @@
       border-radius: inherit;
     }
 
-    .water-bg > * {
+    .water-bg>* {
       position: relative;
       z-index: 1;
     }
 
     .glass-card {
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 14px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
@@ -159,8 +177,13 @@
     }
 
     @keyframes shimmerCard {
-      0% { background-position: -200% center; }
-      100% { background-position: 200% center; }
+      0% {
+        background-position: -200% center;
+      }
+
+      100% {
+        background-position: 200% center;
+      }
     }
 
     .readonly-badge {
@@ -180,8 +203,13 @@
     }
 
     @keyframes rotateBadge {
-      0% { transform: rotate(-3deg) scale(.95); }
-      100% { transform: rotate(0) scale(1); }
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
     }
   </style>
 </head>
@@ -192,23 +220,25 @@
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main
-        class="water-bg"
+      <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div th:if="${session.IMPERSONATED_USER != null}"
           style="background:linear-gradient(135deg,#FEF3C7 0%,#FDE68A 100%);border:1px solid #F59E0B;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(245,158,11,.2);">
           <div style="display:flex;align-items:center;gap:14px;">
-            <div style="width:40px;height:40px;background:#F59E0B;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <div
+              style="width:40px;height:40px;background:#F59E0B;border-radius:10px;display:flex;align-items:center;justify-content:center;">
               <i class="fas fa-user-secret" style="color:#fff;font-size:18px;"></i>
             </div>
             <div>
               <div style="font-weight:700;color:#92400E;font-size:14px;">Modo Soporte Activo</div>
-              <div style="font-size:12px;color:#B45309;">Estas operando como: <span th:text="${session.IMPERSONATED_USER}">Usuario</span></div>
+              <div style="font-size:12px;color:#B45309;">Estas operando como: <span
+                  th:text="${session.IMPERSONATED_USER}">Usuario</span></div>
             </div>
           </div>
           <form th:action="@{/superadmin/impersonar/salir}" method="post">
-            <button type="submit" style="background:#F59E0B;border:none;padding:10px 18px;border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s;">
+            <button type="submit"
+              style="background:#F59E0B;border:none;padding:10px 18px;border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s;">
               <i class="fas fa-sign-out-alt"></i> Volver a mi sesion
             </button>
           </form>
@@ -217,7 +247,8 @@
         <!-- DASHBOARD INICIO -->
         <div style="margin-bottom:24px;">
           <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">
-            Bienvenido, <span th:text="${usuario != null ? usuario.nombreCompleto : 'Visualizador'}">Visualizador</span> 👋
+            Bienvenido, <span th:text="${usuario != null ? usuario.nombreCompleto : 'Visualizador'}">Visualizador</span>
+            👋
           </h1>
           <p style="color:#6B7280;font-size:14px;">Selecciona una seccion para comenzar a explorar el repositorio</p>
         </div>
@@ -228,23 +259,33 @@
             style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
-            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
-            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+            <div
+              style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;">
+            </div>
+            <div
+              style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;">
+            </div>
             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-folder-open" style="color:#fff;font-size:22px;"></i>
               </div>
-              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;"
+              <span
+                style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;"
                 th:text="${rolNombre != null ? rolNombre : 'Visualizador'}">Visualizador</span>
             </div>
             <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Estudios Recíclame</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Reportes, infografias y ayudas memoria del equipo técnico Recíclame.</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Reportes,
+              infografias y ayudas memoria del equipo técnico Recíclame.</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="display:flex;gap:8px;">
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PDF</span>
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
+                <span
+                  style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PDF</span>
+                <span
+                  style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
               </div>
-              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
               </div>
             </div>
@@ -254,25 +295,38 @@
             style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
-            <div style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;"></div>
-            <div style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;"></div>
+            <div
+              style="position:absolute;width:160px;height:160px;border-radius:50%;border:1px solid rgba(255,255,255,.08);top:-40px;right:-40px;pointer-events:none;">
+            </div>
+            <div
+              style="position:absolute;width:100px;height:100px;border-radius:50%;border:1px solid rgba(255,255,255,.05);bottom:-20px;right:40px;pointer-events:none;">
+            </div>
             <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-              <div style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:50px;height:50px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-balance-scale" style="color:#fff;font-size:22px;"></i>
               </div>
-              <span style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;"
+              <span
+                style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.85);font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;letter-spacing:.04em;text-transform:uppercase;"
                 th:text="${rolNombre != null ? rolNombre : 'Visualizador'}">Visualizador</span>
             </div>
             <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">Repositorio Normativo</div>
-            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Acceso a la base de datos legal de economia circular: nacional e internacional.</div>
+            <div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px;line-height:1.5;">Acceso a la base
+              de datos legal de economia circular: nacional e internacional.</div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="display:flex;gap:8px;">
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-flag" style="font-size:9px;margin-right:3px;"></i>Nacional</span>
-                <span style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional</span>
-                <span style="background:rgba(46,204,113,.25);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"
+                <span
+                  style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i
+                    class="fas fa-flag" style="font-size:9px;margin-right:3px;"></i>Nacional</span>
+                <span
+                  style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i
+                    class="fas fa-globe" style="font-size:9px;margin-right:3px;"></i>Internacional</span>
+                <span
+                  style="background:rgba(46,204,113,.25);color:#A7F3D0;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"
                   th:text="${normativas != null ? normativas.size() + ' normas' : '0 normas'}">0 normas</span>
               </div>
-              <div style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:30px;height:30px;background:rgba(255,255,255,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-arrow-right" style="color:rgba(255,255,255,.8);font-size:12px;"></i>
               </div>
             </div>
@@ -283,7 +337,46 @@
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
           <div class="stat-card">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
+              <div
+                style="width:44px;height:44px;border-radius:10px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-globe" style="color:#3498DB;font-size:18px;"></i>
+              </div>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
+              th:text="${normativas != null ? normativas.size() : 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;">Normativas disponibles</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div
+                style="width:44px;height:44px;border-radius:10px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-eye" style="color:#F39C12;font-size:18px;"></i>
+              </div>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
+              th:text="${documentosVistos != null ? documentosVistos : 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;">Documentos vistos</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div
+                style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-bell" style="color:#9B59B6;font-size:18px;"></i>
+              </div>
+              <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;"
+                th:if="${noLeidasCount != null and noLeidasCount > 0}" th:text="${noLeidasCount}">0</span>
+            </div>
+            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
+              th:text="${noLeidasCount != null ? noLeidasCount : 0}">0</div>
+            <div style="font-size:12px;color:#6B7280;">Notificaciones sin leer</div>
+          </div>
+
+          <div class="stat-card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+              <div
+                style="width:44px;height:44px;border-radius:10px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
                 <i class="fas fa-file-alt" style="color:#2ECC71;font-size:18px;"></i>
               </div>
             </div>
@@ -291,64 +384,32 @@
               th:text="${estudios != null ? estudios.size() : 0}">0</div>
             <div style="font-size:12px;color:#6B7280;">Estudios disponibles</div>
           </div>
-
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-download" style="color:#F39C12;font-size:18px;"></i>
-              </div>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${descargasCount != null ? descargasCount : 0}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Descargas realizadas</div>
-          </div>
-
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-folder" style="color:#3498DB;font-size:18px;"></i>
-              </div>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${itemsMiUnidad != null ? itemsMiUnidad : 0}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Items en Mi Unidad</div>
-          </div>
-
-          <div class="stat-card">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:10px;background:rgba(155,89,182,.1);display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-bell" style="color:#9B59B6;font-size:18px;"></i>
-              </div>
-              <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;"
-                th:if="${noLeidasCount != null and noLeidasCount > 0}"
-                th:text="${noLeidasCount}">0</span>
-            </div>
-            <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${noLeidasCount != null ? noLeidasCount : 0}">0</div>
-            <div style="font-size:12px;color:#6B7280;">Notificaciones sin leer</div>
-          </div>
         </div>
 
         <!-- DONUT CHART -->
         <div class="glass-card" style="padding:24px;margin-bottom:24px;">
-          <div style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
+          <div
+            style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:20px;display:flex;align-items:center;gap:8px;">
             <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:14px;"></i>
             Distribucion de normativas por tematica
           </div>
           <div style="display:flex;align-items:center;gap:32px;">
             <div style="flex-shrink:0;position:relative;width:150px;height:150px;">
               <canvas id="donut-admin" width="150" height="150"></canvas>
-              <div id="donut-center" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+              <div id="donut-center"
+                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
                 <div style="font-size:22px;font-weight:800;color:#1B3A5C;"
                   th:text="${normativas != null ? normativas.size() : 0}">0</div>
-                <div style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">
+                <div
+                  style="font-size:10px;color:#9CA3AF;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">
                   normas
                 </div>
               </div>
             </div>
             <div style="flex:1;">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <div class="legend-item" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;"
+                <div class="legend-item"
+                  style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;"
                   th:each="t : ${tematicas}" th:data-color="${t.colorHex}">
                   <div style="width:12px;height:12px;border-radius:3px;flex-shrink:0;background:#95A5A6;"
                     th:style="'background:' + (${t.colorHex != null ? t.colorHex : '#95A5A6'})"></div>
@@ -382,12 +443,14 @@
           <div style="display:flex;flex-direction:column;gap:4px;"
             th:if="${notificacionesRecientes != null and !notificacionesRecientes.isEmpty()}">
             <div class="update-item" th:each="n : ${notificacionesRecientes}">
-              <div style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
+              <div
+                style="width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                 th:style="${!n.leida} ? 'background:rgba(46,204,113,.1)' : 'background:rgba(156,163,175,.1)'">
                 <i class="fas fa-bell" style="color:#F39C12;font-size:14px;"></i>
               </div>
               <div style="flex:1;min-width:0;">
-                <div style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                <div
+                  style="font-size:13px;font-weight:600;color:#1B3A5C;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                   th:text="${n.titulo}">—</div>
                 <div style="font-size:11px;color:#9CA3AF;" th:text="${n.tiempoRelativo}">—</div>
               </div>
@@ -421,7 +484,7 @@
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
 
-      var donutData = /*[[${donutData}]]*/ [];
+      var donutData = /*[[${donutData}]]*/[];
 
       var labels = [];
       var data = [];

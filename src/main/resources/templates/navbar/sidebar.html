@@ -156,7 +156,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       var currentPath = window.location.pathname;
       try {
-        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo' || currentPath === '/superadmin/normativo') {
+        if (currentPath === '/socio/normativo' || currentPath === '/admin/normativo' || currentPath === '/superadmin/normativo' || currentPath === '/visualizador/normativo') {
           var storedTab = sessionStorage.getItem('reciclameNormativoTab');
           if (storedTab === 'todos' || storedTab === 'nacional' || storedTab === 'internacional') {
             window.__normativoTab = storedTab;
@@ -193,7 +193,7 @@
 
       function normativoVistaActiva() {
         var p = window.location.pathname;
-        if (p === '/admin/normativo' || p === '/socio/normativo' || p === '/superadmin/normativo') return true;
+        if (p === '/admin/normativo' || p === '/socio/normativo' || p === '/superadmin/normativo' || p === '/visualizador/normativo') return true;
         var sp = document.getElementById('page-normativo');
         if (sp && sp.classList.contains('active')) return true;
         return false;

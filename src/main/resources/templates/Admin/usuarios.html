@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <meta charset="UTF-8" />
@@ -96,8 +95,8 @@
       display: flex;
       gap: 4px;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
       padding: 5px;
       border-radius: 14px;
@@ -149,9 +148,8 @@
     }
 
     .filter-row {
+      overflow: hidden;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       padding: 12px 16px;
@@ -228,8 +226,15 @@
 
     /* ── Modal Redesign ─────────────────────────────────── */
     @keyframes modalIn {
-      from { opacity: 0; transform: scale(.93) translateY(10px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
+      from {
+        opacity: 0;
+        transform: scale(.93) translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .modal-overlay {
@@ -249,13 +254,13 @@
       border-radius: 20px;
       width: 100%;
       max-width: 540px;
-      box-shadow: 0 40px 100px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.06);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, .32), 0 0 0 1px rgba(255, 255, 255, .06);
       position: relative;
       max-height: 92vh;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      animation: modalIn .26s cubic-bezier(.34,1.4,.64,1) both;
+      animation: modalIn .26s cubic-bezier(.34, 1.4, .64, 1) both;
     }
 
     .modal-header-banner {
@@ -269,41 +274,53 @@
     .modal-header-banner::before {
       content: '';
       position: absolute;
-      top: -40px; right: -40px;
-      width: 160px; height: 160px;
-      background: radial-gradient(circle, rgba(46,204,113,.18) 0%, transparent 70%);
+      top: -40px;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(46, 204, 113, .18) 0%, transparent 70%);
       border-radius: 50%;
     }
 
     .modal-header-banner::after {
       content: '';
       position: absolute;
-      bottom: -25px; left: 30px;
-      width: 100px; height: 100px;
-      background: radial-gradient(circle, rgba(46,204,113,.09) 0%, transparent 70%);
+      bottom: -25px;
+      left: 30px;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(46, 204, 113, .09) 0%, transparent 70%);
       border-radius: 50%;
     }
 
     .modal-header-icon {
-      width: 46px; height: 46px;
+      width: 46px;
+      height: 46px;
       border-radius: 12px;
-      background: rgba(46,204,113,.18);
-      border: 1px solid rgba(46,204,113,.32);
-      display: flex; align-items: center; justify-content: center;
+      background: rgba(46, 204, 113, .18);
+      border: 1px solid rgba(46, 204, 113, .32);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       margin-bottom: 12px;
-      position: relative; z-index: 1;
+      position: relative;
+      z-index: 1;
     }
 
     .modal-close-btn {
       position: absolute;
-      top: 14px; right: 14px;
-      width: 30px; height: 30px;
+      top: 14px;
+      right: 14px;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,.15);
-      background: rgba(255,255,255,.08);
-      color: rgba(255,255,255,.65);
+      border: 1px solid rgba(255, 255, 255, .15);
+      background: rgba(255, 255, 255, .08);
+      color: rgba(255, 255, 255, .65);
       cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 13px;
       line-height: 1;
       transition: background .15s, color .15s;
@@ -311,7 +328,7 @@
     }
 
     .modal-close-btn:hover {
-      background: rgba(255,255,255,.2);
+      background: rgba(255, 255, 255, .2);
       color: #fff;
     }
 
@@ -321,7 +338,9 @@
       flex: 1;
     }
 
-    .modal-section + .modal-section { margin-top: 18px; }
+    .modal-section+.modal-section {
+      margin-top: 18px;
+    }
 
     .modal-section-label {
       display: flex;
@@ -348,9 +367,15 @@
       gap: 12px;
     }
 
-    .field-group .full { grid-column: 1 / -1; }
+    .field-group .full {
+      grid-column: 1 / -1;
+    }
 
-    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .field-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
     .field-wrap label {
       font-size: 11.5px;
@@ -361,9 +386,15 @@
       gap: 3px;
     }
 
-    .field-wrap label .req { color: #EF4444; font-size: 13px; line-height: 1; }
+    .field-wrap label .req {
+      color: #EF4444;
+      font-size: 13px;
+      line-height: 1;
+    }
 
-    .input-icon-wrap { position: relative; }
+    .input-icon-wrap {
+      position: relative;
+    }
 
     .input-icon-wrap .inp-icon {
       position: absolute;
@@ -377,9 +408,13 @@
       z-index: 1;
     }
 
-    .input-icon-wrap .form-control { padding-left: 32px !important; }
+    .input-icon-wrap .form-control {
+      padding-left: 32px !important;
+    }
 
-    .input-icon-wrap:focus-within .inp-icon { color: #2ECC71; }
+    .input-icon-wrap:focus-within .inp-icon {
+      color: #2ECC71;
+    }
 
     .pw-toggle {
       position: absolute;
@@ -396,7 +431,9 @@
       transition: color .15s;
     }
 
-    .pw-toggle:hover { color: #1B3A5C; }
+    .pw-toggle:hover {
+      color: #1B3A5C;
+    }
 
     .modal-footer {
       display: flex;
@@ -440,71 +477,128 @@
       align-items: center;
       gap: 7px;
       transition: transform .15s, box-shadow .15s;
-      box-shadow: 0 4px 14px rgba(27,58,92,.3);
+      box-shadow: 0 4px 14px rgba(27, 58, 92, .3);
     }
 
     .btn-modal-primary:hover {
-      box-shadow: 0 8px 22px rgba(27,58,92,.4);
+      box-shadow: 0 8px 22px rgba(27, 58, 92, .4);
       transform: translateY(-1px);
     }
 
-    .btn-modal-primary:active { transform: translateY(0); }
+    .btn-modal-primary:active {
+      transform: translateY(0);
+    }
 
     .btn-modal-edit {
       background: linear-gradient(135deg, #2471a3 0%, #3498DB 100%);
-      box-shadow: 0 4px 14px rgba(52,152,219,.3);
+      box-shadow: 0 4px 14px rgba(52, 152, 219, .3);
     }
 
-    .btn-modal-edit:hover { box-shadow: 0 8px 22px rgba(52,152,219,.4); }
+    .btn-modal-edit:hover {
+      box-shadow: 0 8px 22px rgba(52, 152, 219, .4);
+    }
 
     /* ── Highlight fila nueva ───────────────────────────── */
     @keyframes rowHighlight {
-      0%   { background: rgba(52, 152, 219, .18); box-shadow: inset 3px 0 0 #3498DB; }
-      70%  { background: rgba(52, 152, 219, .08); box-shadow: inset 3px 0 0 #3498DB; }
-      100% { background: transparent;             box-shadow: inset 3px 0 0 transparent; }
+      0% {
+        background: rgba(52, 152, 219, .18);
+        box-shadow: inset 3px 0 0 #3498DB;
+      }
+
+      70% {
+        background: rgba(52, 152, 219, .08);
+        box-shadow: inset 3px 0 0 #3498DB;
+      }
+
+      100% {
+        background: transparent;
+        box-shadow: inset 3px 0 0 transparent;
+      }
     }
 
-    .fila-nueva td { animation: rowHighlight 2.8s ease-out forwards; }
+    .fila-nueva td {
+      animation: rowHighlight 2.8s ease-out forwards;
+    }
 
     /* ── Entry animations ───────────────────────────────── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
-      50%       { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+      }
     }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px) }
-      to   { opacity: 1; transform: translateY(0) }
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
     }
 
     @keyframes rotateBadge {
-      0%   { transform: rotate(-3deg) scale(.95) }
-      100% { transform: rotate(0) scale(1) }
+      0% {
+        transform: rotate(-3deg) scale(.95)
+      }
+
+      100% {
+        transform: rotate(0) scale(1)
+      }
     }
 
     @keyframes waterWave {
-      0%   { background-position: 0% 50%; }
-      50%  { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     /* ── Animated water background ──────────────────────── */
-    .water-bg { position: relative; overflow: hidden; }
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
 
     .water-bg::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background:
-        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
-        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
-        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
       background-size: 400% 400%;
       animation: waterWave 12s ease infinite;
       pointer-events: none;
@@ -512,7 +606,10 @@
       border-radius: inherit;
     }
 
-    .water-bg > * { position: relative; z-index: 1; }
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
 
     /* ── Hero banner ────────────────────────────────────── */
     .estudios-hero {
@@ -529,8 +626,10 @@
     .estudios-hero::before {
       content: '';
       position: absolute;
-      top: -60px; right: -60px;
-      width: 280px; height: 280px;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
     }
@@ -538,8 +637,10 @@
     .estudios-hero::after {
       content: '';
       position: absolute;
-      bottom: -80px; left: 20%;
-      width: 200px; height: 200px;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
@@ -563,8 +664,21 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
     }
 
-    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
-    .stat-chip .lbl { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.65); margin-top: 4px; }
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
 
     /* ── Readonly badge ─────────────────────────────────── */
     .readonly-badge {
@@ -578,7 +692,11 @@
       animation: rotateBadge .4s ease both;
     }
 
-    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
 
     /* ── Table row hover ────────────────────────────────── */
     #tab-activos-table tbody tr:hover td,
@@ -596,21 +714,23 @@
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main
-        class="water-bg"
+      <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <!-- ═══ HERO BANNER ═══ -->
         <div class="estudios-hero">
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
                   <i class="fas fa-users" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Gestión de Usuarios</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Administra el acceso de socios al repositorio</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Administra el acceso de socios al
+                    repositorio</p>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
@@ -662,20 +782,24 @@
         <div id="utab-activos">
           <!-- Filtros -->
           <div class="filter-row">
-            <input type="text" style="display:none;position:absolute;left:-9999px;" autocomplete="username" tabindex="-1" aria-hidden="true" />
+            <input type="text" style="display:none;position:absolute;left:-9999px;" autocomplete="username"
+              tabindex="-1" aria-hidden="true" />
             <div style="position:relative;flex:1;min-width:200px;">
               <i class="fas fa-search"
                 style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
               <input id="buscar-usuario" name="buscar-usuario" placeholder="Buscar por nombre o correo..."
-                style="flex:1;min-width:200px;border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px 8px 34px;font-size:12px;font-family:inherit;color:#374151;transition:border-color .2s,box-shadow .2s;background:#fff;" oninput="filtrarUsuarios()" autocomplete="search" spellcheck="false"
-                data-lpignore="true" />
+                style="flex:1;min-width:200px;border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px 8px 34px;font-size:12px;font-family:inherit;color:#374151;transition:border-color .2s,box-shadow .2s;background:#fff;"
+                oninput="filtrarUsuarios()" autocomplete="search" spellcheck="false" data-lpignore="true" />
             </div>
-            <select id="filtro-rol" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
+            <select id="filtro-rol"
+              style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
               onchange="filtrarUsuarios()">
               <option value="">Rol: Todos</option>
-              <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
+              <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}"
+                th:value="${r.nombre.toLowerCase()}" th:text="${r.nombre}">Rol</option>
             </select>
-            <select id="filtro-estado" style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
+            <select id="filtro-estado"
+              style="border:1.5px solid #E5E7EB;border-radius:9px;padding:8px 12px;font-size:12px;"
               onchange="filtrarUsuarios()">
               <option value="">Estado: Todos</option>
               <option value="activo">Activo</option>
@@ -691,93 +815,96 @@
           <!-- Tabla -->
           <div class="norm-table-card">
             <div style="overflow-x:auto;">
-            <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
-              <thead>
-                <tr>
-                  <th><input type="checkbox" id="check-all" style="cursor:pointer;" onclick="toggleCheckAll(this)" />
-                  </th>
-                  <th>Usuario</th>
-                  <th>DNI</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                  <th>Empresa</th>
-                  <th>Registro</th>
-                  <th class="text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tbody-activos">
-                <tr th:each="usuario : ${usuariosActivos}" th:data-id="${usuario.id}"
-                  th:data-nombre="${usuario.nombreCompleto != null ? usuario.nombreCompleto.toLowerCase() : ''}"
-                  th:data-correo="${usuario.correoCorporativo != null ? usuario.correoCorporativo.toLowerCase() : ''}"
-                  th:data-rol="${(usuario.rolNombre != null ? usuario.rolNombre : '').toLowerCase()}"
-                  th:data-estado="${(usuario.estadoCuenta != null ? usuario.estadoCuenta : '').toLowerCase()}">
-                  <td><input type="checkbox" class="row-check" /></td>
-                  <td>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                      <div
-                        style="width:34px;height:34px;border-radius:50%;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;"
-                        th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '?'}">??</div>
-                      <div>
-                        <div style="font-weight:600;color:#1B3A5C;font-size:13px;" th:text="${usuario.nombreCompleto}">
-                          Nombre</div>
-                        <div style="font-size:11px;color:#9CA3AF;" th:text="${usuario.correoCorporativo}">
-                          correo@empresa.com</div>
+              <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" id="check-all" style="cursor:pointer;" onclick="toggleCheckAll(this)" />
+                    </th>
+                    <th>Usuario</th>
+                    <th>DNI</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Empresa</th>
+                    <th>Registro</th>
+                    <th class="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-activos">
+                  <tr th:each="usuario : ${usuariosActivos}" th:data-id="${usuario.id}"
+                    th:data-nombre="${usuario.nombreCompleto != null ? usuario.nombreCompleto.toLowerCase() : ''}"
+                    th:data-correo="${usuario.correoCorporativo != null ? usuario.correoCorporativo.toLowerCase() : ''}"
+                    th:data-rol="${(usuario.rolNombre != null ? usuario.rolNombre : '').toLowerCase()}"
+                    th:data-estado="${(usuario.estadoCuenta != null ? usuario.estadoCuenta : '').toLowerCase()}">
+                    <td><input type="checkbox" class="row-check" /></td>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <div
+                          style="width:34px;height:34px;border-radius:50%;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;"
+                          th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '?'}">
+                          ??</div>
+                        <div>
+                          <div style="font-weight:600;color:#1B3A5C;font-size:13px;"
+                            th:text="${usuario.nombreCompleto}">
+                            Nombre</div>
+                          <div style="font-size:11px;color:#9CA3AF;" th:text="${usuario.correoCorporativo}">
+                            correo@empresa.com</div>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td style="color:#6B7280;font-size:12px;" th:text="${usuario.dni}">00000000</td>
-                  <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"
-                      th:text="${usuario.rolNombre}">Rol</span></td>
-                  <td>
-                    <span class="pill"
-                      th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(46,204,113,.12);color:#27AE60;'}">
-                      <i class="fas fa-circle" style="font-size:6px;"></i>
-                      <span
-                        th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO')}">Activo</span>
-                    </span>
-                  </td>
-                  <td style="color:#6B7280;font-size:12px;"
-                    th:text="${usuario.empresaNombre != null ? usuario.empresaNombre : '—'}">—</td>
-                  <td style="color:#9CA3AF;font-size:11px;"
-                    th:text="${usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : '—'}">—
-                  </td>
-                  <td>
-                    <div style="display:flex;gap:6px;">
-                      <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
-                        th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
-                        th:data-correo="${usuario.correoCorporativo}"
-                        th:data-cargo="${usuario.cargo != null ? usuario.cargo : ''}"
-                        th:data-rol-id="${usuario.rolId != null ? usuario.rolId : ''}"
-                        th:data-empresa-id="${usuario.empresaId != null ? usuario.empresaId : ''}"
-                        title="Editar usuario"
-                        style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
-                        <i class="fas fa-edit" style="color:#3498DB;"></i>
-                      </button>
-                      <button onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
-                        th:data-bloqueado="${usuario.cuentaBloqueada != null ? usuario.cuentaBloqueada : false}"
-                        th:title="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Desbloquear usuario' : 'Bloquear usuario'}"
-                        style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
-                        <i th:class="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'fas fa-unlock' : 'fas fa-ban'}"
-                          th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
-                      </button>
-                      <!-- Eliminar (solo SUPERADMIN) -->
-                      <button sec:authorize="hasRole('SUPERADMIN')"
-                        th:onclick="|eliminarUsuario(${usuario.id})|" title="Eliminar usuario"
-                        style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
-                        <i class="fas fa-trash" style="color:#E74C3C;"></i>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <tr id="fila-sin-usuarios" th:if="${#lists.isEmpty(usuariosActivos)}">
-                  <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;">No hay usuarios activos.</td>
-                </tr>
-                <tr id="fila-sin-resultados" style="display:none;">
-                  <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;">No hay usuarios que coincidan
-                    con la búsqueda.</td>
-                </tr>
-              </tbody>
-            </table>
+                    </td>
+                    <td style="color:#6B7280;font-size:12px;" th:text="${usuario.dni}">00000000</td>
+                    <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"
+                        th:text="${usuario.rolNombre}">Rol</span></td>
+                    <td>
+                      <span class="pill"
+                        th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(46,204,113,.12);color:#27AE60;'}">
+                        <i class="fas fa-circle" style="font-size:6px;"></i>
+                        <span
+                          th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO')}">Activo</span>
+                      </span>
+                    </td>
+                    <td style="color:#6B7280;font-size:12px;"
+                      th:text="${usuario.empresaNombre != null ? usuario.empresaNombre : '—'}">—</td>
+                    <td style="color:#9CA3AF;font-size:11px;"
+                      th:text="${usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy') : '—'}">
+                      —
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:6px;">
+                        <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
+                          th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
+                          th:data-correo="${usuario.correoCorporativo}"
+                          th:data-cargo="${usuario.cargo != null ? usuario.cargo : ''}"
+                          th:data-rol-id="${usuario.rolId != null ? usuario.rolId : ''}"
+                          th:data-empresa-id="${usuario.empresaId != null ? usuario.empresaId : ''}"
+                          title="Editar usuario"
+                          style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
+                          <i class="fas fa-edit" style="color:#3498DB;"></i>
+                        </button>
+                        <button onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
+                          th:data-bloqueado="${usuario.cuentaBloqueada != null ? usuario.cuentaBloqueada : false}"
+                          th:title="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Desbloquear usuario' : 'Bloquear usuario'}"
+                          style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
+                          <i th:class="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'fas fa-unlock' : 'fas fa-ban'}"
+                            th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
+                        </button>
+                        <!-- Eliminar (solo SUPERADMIN) -->
+                        <button sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
+                          title="Eliminar usuario"
+                          style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
+                          <i class="fas fa-trash" style="color:#E74C3C;"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr id="fila-sin-usuarios" th:if="${#lists.isEmpty(usuariosActivos)}">
+                    <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;">No hay usuarios activos.</td>
+                  </tr>
+                  <tr id="fila-sin-resultados" style="display:none;">
+                    <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;">No hay usuarios que coincidan
+                      con la búsqueda.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
             <div
               style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
@@ -796,7 +923,8 @@
               <!-- Avatar -->
               <div
                 style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;"
-                th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '??'}">??</div>
+                th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '??'}">
+                ??</div>
               <!-- Info -->
               <div style="flex:1;min-width:180px;">
                 <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;"
@@ -815,7 +943,8 @@
                 <select th:id="|rol-sel-${usuario.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
                   <option value="">Asignar rol...</option>
-                  <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                  <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}"
+                    th:text="${r.nombre}">Rol</option>
                 </select>
                 <select th:id="|emp-sel-${usuario.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
@@ -842,7 +971,8 @@
 
         <!-- ═══ TAB: HISTORIAL ═══ -->
         <div id="utab-historial" style="display:none;">
-          <div style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
+          <div
+            style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
             <table class="table table-striped table-hover">
               <thead>
                 <tr>
@@ -1200,15 +1330,15 @@
             _bloqueoAccion = bloqueado ? 'desbloquear' : 'bloquear';
 
             var wrap = document.getElementById('bloqueo-icono-wrap');
-            var ico  = document.getElementById('bloqueo-icono');
-            var tit  = document.getElementById('bloqueo-titulo');
-            var msg  = document.getElementById('bloqueo-msg');
-            var avi  = document.getElementById('bloqueo-aviso');
+            var ico = document.getElementById('bloqueo-icono');
+            var tit = document.getElementById('bloqueo-titulo');
+            var msg = document.getElementById('bloqueo-msg');
+            var avi = document.getElementById('bloqueo-aviso');
             var btn2 = document.getElementById('btn-confirmar-bloqueo');
 
             if (bloqueado) {
               wrap.style.background = 'linear-gradient(135deg,#D6EAF8,#AED6F1)';
-              ico.className  = 'fas fa-unlock';
+              ico.className = 'fas fa-unlock';
               ico.style.color = '#3498DB';
               tit.textContent = 'Desbloquear usuario';
               msg.textContent = '¿Confirmas desbloquear este usuario? Podrá volver a iniciar sesión.';
@@ -1217,7 +1347,7 @@
               btn2.style.background = '#3498DB';
             } else {
               wrap.style.background = 'linear-gradient(135deg,#FDEBD0,#FAD7A0)';
-              ico.className  = 'fas fa-ban';
+              ico.className = 'fas fa-ban';
               ico.style.color = '#E67E22';
               tit.textContent = 'Bloquear usuario';
               msg.textContent = '¿Confirmas bloquear este usuario? No podrá iniciar sesión mientras esté bloqueado.';
@@ -1387,7 +1517,7 @@
           });
         </script>
 
-      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
@@ -1399,24 +1529,31 @@
           <div class="modal-header-icon">
             <i class="fas fa-user-plus" style="color:#2ECC71;font-size:19px;position:relative;z-index:1;"></i>
           </div>
-          <div style="color:#fff;font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:1;">Crear nuevo usuario</div>
-          <div style="color:rgba(255,255,255,.48);font-size:12px;margin-top:3px;position:relative;z-index:1;">El usuario quedará activo de inmediato</div>
+          <div style="color:#fff;font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:1;">
+            Crear nuevo usuario</div>
+          <div style="color:rgba(255,255,255,.48);font-size:12px;margin-top:3px;position:relative;z-index:1;">El usuario
+            quedará activo de inmediato</div>
         </div>
         <div class="modal-body">
-          <div id="crear-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;"></div>
+          <div id="crear-error"
+            style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;">
+          </div>
           <div class="modal-section">
-            <div class="modal-section-label"><i class="fas fa-id-card" style="font-size:9px;"></i> Datos personales</div>
+            <div class="modal-section-label"><i class="fas fa-id-card" style="font-size:9px;"></i> Datos personales
+            </div>
             <div class="field-group">
               <div class="field-wrap full">
                 <label>Nombre completo <span class="req">*</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-user inp-icon"></i>
-                  <input id="crear-nombre" type="text" class="form-control" placeholder="Ej: María López Torres" required />
+                  <input id="crear-nombre" type="text" class="form-control" placeholder="Ej: María López Torres"
+                    required />
                 </div>
               </div>
               <div class="field-wrap">
                 <label>DNI <span class="req">*</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-id-badge inp-icon"></i>
-                  <input id="crear-dni" type="text" class="form-control" placeholder="12345678" maxlength="8" required />
+                  <input id="crear-dni" type="text" class="form-control" placeholder="12345678" maxlength="8"
+                    required />
                 </div>
               </div>
               <div class="field-wrap">
@@ -1428,7 +1565,8 @@
               <div class="field-wrap full">
                 <label>Correo corporativo <span class="req">*</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-envelope inp-icon"></i>
-                  <input id="crear-correo" type="email" class="form-control" placeholder="usuario@empresa.com" required />
+                  <input id="crear-correo" type="email" class="form-control" placeholder="usuario@empresa.com"
+                    required />
                 </div>
               </div>
             </div>
@@ -1439,8 +1577,10 @@
               <div class="field-wrap full">
                 <label>Contraseña inicial <span class="req">*</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-lock inp-icon"></i>
-                  <input id="crear-password" type="password" class="form-control" placeholder="Mínimo 6 caracteres" required style="padding-right:36px!important;" />
-                  <button type="button" class="pw-toggle" onclick="togglePw('crear-password',this)"><i class="fas fa-eye"></i></button>
+                  <input id="crear-password" type="password" class="form-control" placeholder="Mínimo 6 caracteres"
+                    required style="padding-right:36px!important;" />
+                  <button type="button" class="pw-toggle" onclick="togglePw('crear-password',this)"><i
+                      class="fas fa-eye"></i></button>
                 </div>
               </div>
               <div class="field-wrap">
@@ -1448,7 +1588,8 @@
                 <div class="input-icon-wrap"><i class="fas fa-shield-alt inp-icon"></i>
                   <select id="crear-rol" class="form-control" required>
                     <option value="">Seleccionar rol...</option>
-                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}"
+                      th:text="${r.nombre}">Rol</option>
                   </select>
                 </div>
               </div>
@@ -1476,19 +1617,26 @@
     <!-- Modal Editar Usuario -->
     <div id="modal-editar" class="modal-overlay">
       <div class="modal-box">
-        <div class="modal-header-banner" style="background:linear-gradient(135deg,#1a3d6e 0%,#2471a3 60%,#2980b9 100%);">
+        <div class="modal-header-banner"
+          style="background:linear-gradient(135deg,#1a3d6e 0%,#2471a3 60%,#2980b9 100%);">
           <button onclick="cerrarModalEditar()" class="modal-close-btn"><i class="fas fa-times"></i></button>
           <div class="modal-header-icon" style="background:rgba(93,173,226,.2);border-color:rgba(93,173,226,.35);">
             <i class="fas fa-user-edit" style="color:#5dade2;font-size:19px;position:relative;z-index:1;"></i>
           </div>
-          <div style="color:#fff;font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:1;">Editar usuario</div>
-          <div id="edit-subtitulo" style="color:rgba(255,255,255,.48);font-size:12px;margin-top:3px;position:relative;z-index:1;">Modificar datos del usuario</div>
+          <div style="color:#fff;font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative;z-index:1;">
+            Editar usuario</div>
+          <div id="edit-subtitulo"
+            style="color:rgba(255,255,255,.48);font-size:12px;margin-top:3px;position:relative;z-index:1;">Modificar
+            datos del usuario</div>
         </div>
         <div class="modal-body">
           <input type="hidden" id="edit-id" />
-          <div id="editar-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;"></div>
+          <div id="editar-error"
+            style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;">
+          </div>
           <div class="modal-section">
-            <div class="modal-section-label"><i class="fas fa-id-card" style="font-size:9px;"></i> Datos personales</div>
+            <div class="modal-section-label"><i class="fas fa-id-card" style="font-size:9px;"></i> Datos personales
+            </div>
             <div class="field-group">
               <div class="field-wrap full">
                 <label>Nombre completo <span class="req">*</span></label>
@@ -1499,7 +1647,8 @@
               <div class="field-wrap">
                 <label>DNI</label>
                 <div class="input-icon-wrap"><i class="fas fa-id-badge inp-icon"></i>
-                  <input id="edit-dni" type="text" class="form-control" readonly style="background:#F9FAFB;color:#9CA3AF;cursor:not-allowed;" />
+                  <input id="edit-dni" type="text" class="form-control" readonly
+                    style="background:#F9FAFB;color:#9CA3AF;cursor:not-allowed;" />
                 </div>
               </div>
               <div class="field-wrap">
@@ -1511,7 +1660,8 @@
               <div class="field-wrap full">
                 <label>Correo corporativo</label>
                 <div class="input-icon-wrap"><i class="fas fa-envelope inp-icon"></i>
-                  <input id="edit-correo" type="email" class="form-control" readonly style="background:#F9FAFB;color:#9CA3AF;cursor:not-allowed;" />
+                  <input id="edit-correo" type="email" class="form-control" readonly
+                    style="background:#F9FAFB;color:#9CA3AF;cursor:not-allowed;" />
                 </div>
               </div>
             </div>
@@ -1524,7 +1674,8 @@
                 <div class="input-icon-wrap"><i class="fas fa-shield-alt inp-icon"></i>
                   <select id="edit-rol" class="form-control" required>
                     <option value="">Seleccionar rol...</option>
-                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
+                    <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}"
+                      th:text="${r.nombre}">Rol</option>
                   </select>
                 </div>
               </div>
@@ -1538,10 +1689,13 @@
                 </div>
               </div>
               <div class="field-wrap full">
-                <label>Nueva contraseña <span style="color:#9CA3AF;font-weight:400;">(dejar vacío para no cambiar)</span></label>
+                <label>Nueva contraseña <span style="color:#9CA3AF;font-weight:400;">(dejar vacío para no
+                    cambiar)</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-lock inp-icon"></i>
-                  <input id="edit-password" type="password" class="form-control" placeholder="Nueva contraseña..." style="padding-right:36px!important;" />
-                  <button type="button" class="pw-toggle" onclick="togglePw('edit-password',this)"><i class="fas fa-eye"></i></button>
+                  <input id="edit-password" type="password" class="form-control" placeholder="Nueva contraseña..."
+                    style="padding-right:36px!important;" />
+                  <button type="button" class="pw-toggle" onclick="togglePw('edit-password',this)"><i
+                      class="fas fa-eye"></i></button>
                 </div>
               </div>
             </div>

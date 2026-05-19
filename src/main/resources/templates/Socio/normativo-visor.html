@@ -1,89 +1,174 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title th:text="'Reciclame — ' + (${normativa != null and normativa.titulo != null ? normativa.titulo : 'Visor de Normativa'})">Reciclame — Visor</title>
+  <title th:text="'Recíclame — ' + ${normativa.titulo}">Recíclame — Visor</title>
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/socio'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Inter',sans-serif;background:#F5F6FA;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
-    .visor-header{
-      display:flex;align-items:center;justify-content:space-between;
-      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);padding:12px 24px;flex-shrink:0;flex-wrap:wrap;gap:8px;
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-    .visor-header-left{display:flex;align-items:center;gap:12px;}
-    .btn-back{
-      display:inline-flex;align-items:center;gap:7px;
-      padding:7px 16px;border-radius:8px;
-      border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);
-      color:#fff;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s;
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
     }
-    .btn-back:hover{background:rgba(255,255,255,.2);color:#fff;}
-    .doc-title{font-size:14px;font-weight:700;color:#fff;max-width:460px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .doc-meta{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;}
-    .btn-download{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:7px 16px;border-radius:8px;border:none;
-      background:linear-gradient(135deg,#2ECC71,#27AE60);
-      color:#fff;font-size:12px;font-weight:700;text-decoration:none;transition:all .2s;
+
+    .visor-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      padding: 12px 24px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .08);
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .btn-download:hover{opacity:.9;color:#fff;}
-    iframe{flex:1;border:none;width:100%;}
-    .visor-not-available{
-      flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-      background:linear-gradient(135deg,#1B3A5C,#2C5F8A);
+
+    .visor-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
-    .visor-not-available i{font-size:56px;color:rgba(255,255,255,.4);}
-    .visor-not-available p{font-size:15px;font-weight:700;color:#fff;margin:0;}
-    .visor-not-available p+p{font-size:13px;color:rgba(255,255,255,.7);text-align:center;max-width:340px;margin:0;line-height:1.6;}
+
+    .visor-topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #E5E7EB;
+      background: #fff;
+      color: #374151;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+    }
+
+    .btn-back:hover {
+      border-color: #1B3A5C;
+      color: #1B3A5C;
+      background: #F8FAFC;
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all .2s;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, .3);
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(46, 204, 113, .45);
+      color: #fff;
+    }
+
+    .doc-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1B3A5C;
+      max-width: 500px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .doc-meta {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-top: 2px;
+    }
   </style>
 </head>
+
 <body>
   <div style="display:flex;flex-direction:column;min-height:100vh;">
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
-  </div>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;display:flex;flex-direction:column;overflow:hidden;">
 
-  <div class="visor-header">
-    <div class="visor-header-left">
-      <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back">
-        <i class="fas fa-arrow-left"></i> Volver
-      </a>
-      <div>
-        <div class="doc-title" th:text="${normativa != null ? normativa.titulo : 'Normativa'}">Titulo</div>
-        <div class="doc-meta">
-          <span th:if="${normativa != null and normativa.anio}" th:text="${normativa.anio + ' · '}"></span>
-          <span th:if="${normativa != null and normativa.tematicaNombre}" th:text="${normativa.tematicaNombre}"></span>
+        <!-- Barra superior del visor -->
+        <div class="visor-topbar">
+          <div class="visor-topbar-left">
+            <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            <div>
+              <div class="doc-title" th:text="${normativa.titulo}">Título del documento</div>
+              <div class="doc-meta">
+                <span th:if="${normativa.anio}" th:text="${normativa.anio + ' · '}"></span>
+                <span th:if="${normativa.autor}" th:text="${normativa.autor + ' · '}"></span>
+                <span th:if="${normativa.tematicaNombre}" th:text="${normativa.tematicaNombre}"></span>
+              </div>
+            </div>
+          </div>
+          <div class="visor-topbar-right">
+            <a th:if="${archivoDisponible}"
+               th:href="@{/api/documentos/descargar(url=${normativa.archivoUrl},titulo=${normativa.titulo})}" target="_blank" class="btn-download">
+              <i class="fas fa-download"></i> Descargar
+            </a>
+            <span th:unless="${archivoDisponible}"
+                  style="font-size:12px;color:#EF4444;font-weight:600;">
+              <i class="fas fa-exclamation-triangle"></i> Archivo no disponible
+            </span>
+          </div>
         </div>
-      </div>
+
+        <!-- Error state: archivo no existe en MinIO -->
+        <div th:unless="${archivoDisponible}"
+             style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#6B7280;background:#F8FAFC;">
+          <i class="fas fa-file-slash" style="font-size:56px;color:#D1D5DB;"></i>
+          <p style="font-size:16px;font-weight:700;color:#374151;margin:0;">Archivo no disponible</p>
+          <p style="font-size:13px;text-align:center;max-width:380px;margin:0;line-height:1.6;">
+            El archivo no existe en el almacenamiento MinIO del contenedor.<br>
+            Solicita al administrador que suba el archivo nuevamente.
+          </p>
+          <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back" style="margin-top:8px;">
+            <i class="fas fa-arrow-left"></i> Volver al listado
+          </a>
+        </div>
+
+        <!-- iframe fullscreen (solo cuando el archivo existe) -->
+        <iframe th:if="${archivoDisponible}"
+          th:src="@{/api/documentos/visor(url=${normativa.archivoUrl},titulo=${normativa.titulo},mime=${normativa.archivoTipoMime})}"
+          style="flex:1;border:none;width:100%;min-height:calc(100vh - 130px);" allowfullscreen>
+        </iframe>
+
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+      </main>
     </div>
-    <a th:if="${archivoDisponible and normativa != null}"
-       th:href="@{/api/documentos/descargar(url=${normativa.archivoUrl},titulo=${normativa.titulo})}" target="_blank" class="btn-download">
-      <i class="fas fa-download"></i> Descargar
-    </a>
-    <span th:unless="${archivoDisponible}"
-          style="font-size:12px;color:#F87171;font-weight:600;">
-      <i class="fas fa-exclamation-triangle"></i> No disponible
-    </span>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <div th:unless="${archivoDisponible}" class="visor-not-available">
-    <i class="fas fa-file-slash"></i>
-    <p>Archivo no disponible</p>
-    <p>Esta normativa aún no tiene un archivo disponible en el sistema.</p>
-    <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back" style="margin-top:8px;">
-      <i class="fas fa-arrow-left"></i> Volver al listado
-    </a>
-  </div>
-
-  <iframe th:if="${archivoDisponible and normativa != null}"
-    th:src="@{/api/documentos/visor(url=${normativa.archivoUrl},titulo=${normativa.titulo},mime=${normativa.archivoTipoMime})}"
-    allowfullscreen>
-  </iframe>
-
-  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </body>
+
 </html>
