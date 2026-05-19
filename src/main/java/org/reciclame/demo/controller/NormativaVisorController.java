@@ -1,6 +1,8 @@
 package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.NormativaResponseDTO;
+import org.reciclame.demo.model.MiUnidadItem;
+import org.reciclame.demo.service.DocumentosRecientesService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.NotificacionService;
@@ -22,15 +24,18 @@ public class NormativaVisorController {
     private final NormativaService normativaService;
     private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
+    private final DocumentosRecientesService documentosRecientesService;
     private final NotificacionService notificacionService;
 
     public NormativaVisorController(NormativaService normativaService,
                                     MinioStorageService minioStorageService,
                                     UsuarioService usuarioService,
+                                    DocumentosRecientesService documentosRecientesService,
                                     NotificacionService notificacionService) {
         this.normativaService = normativaService;
         this.minioStorageService = minioStorageService;
         this.usuarioService = usuarioService;
+        this.documentosRecientesService = documentosRecientesService;
         this.notificacionService = notificacionService;
     }
 
@@ -39,7 +44,9 @@ public class NormativaVisorController {
     public String verNormativaSocio(@PathVariable Long id, Model model,
                                     @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
-        return cargarVisor(id, model, "Socio/normativo-visor", "/socio/normativo");
+        usuarioService.findByCorreo(user.getUsername())
+                .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id));
+        return cargarVisorPublico(id, model, "Socio/normativo-visor", "/socio/normativo");
     }
 
     // ── Visualizador (solo normativas públicas) ───────────────

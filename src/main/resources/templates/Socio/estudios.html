@@ -13,67 +13,138 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-    body { font-family: 'Inter', sans-serif; background: #F0F4F8; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
+    }
 
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     @keyframes countUp {
-      from { opacity: 0; transform: scale(.8); }
-      to { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .4); }
-      50% { box-shadow: 0 0 0 8px rgba(46, 204, 113, 0); }
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+      }
     }
 
     @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
     }
 
     @keyframes waterWave {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     @keyframes rotateBadge {
-      0% { transform: rotate(-3deg) scale(.95); }
-      100% { transform: rotate(0) scale(1); }
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
     }
 
     @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes glowGreen {
-      0%, 100% { box-shadow: 0 4px 20px rgba(46, 204, 113, .15); }
-      50% { box-shadow: 0 4px 32px rgba(46, 204, 113, .4); }
+
+      0%,
+      100% {
+        box-shadow: 0 4px 20px rgba(46, 204, 113, .15);
+      }
+
+      50% {
+        box-shadow: 0 4px 32px rgba(46, 204, 113, .4);
+      }
     }
 
-    .water-bg { position: relative; overflow: hidden; }
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
 
     .water-bg::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background:
-        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
-        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
-        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
       background-size: 400% 400%;
       animation: waterWave 12s ease infinite;
       pointer-events: none;
@@ -81,7 +152,10 @@
       border-radius: inherit;
     }
 
-    .water-bg > * { position: relative; z-index: 1; }
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
 
     .page-enter {
       animation: fadeUp .5s ease both;
@@ -105,8 +179,10 @@
     .estudios-hero::before {
       content: '';
       position: absolute;
-      top: -60px; right: -60px;
-      width: 280px; height: 280px;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
     }
@@ -114,8 +190,10 @@
     .estudios-hero::after {
       content: '';
       position: absolute;
-      bottom: -80px; left: 20%;
-      width: 200px; height: 200px;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
@@ -138,17 +216,25 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
     }
 
-    .stat-chip .val { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
     .stat-chip .lbl {
-      font-size: 10px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: rgba(255, 255, 255, .65); margin-top: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
     }
 
     .filter-row {
+      overflow: hidden;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       padding: 12px 16px;
@@ -173,7 +259,9 @@
       background: #fff;
     }
 
-    .filter-row input { padding-left: 34px; }
+    .filter-row input {
+      padding-left: 34px;
+    }
 
     .filter-row input:focus,
     .filter-row select:focus {
@@ -190,12 +278,18 @@
       animation: fadeUp .5s .15s ease both;
     }
 
-    .table-card table thead { background: linear-gradient(90deg, #F8FAFC, #F0F4F8); }
+    .table-card table thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
 
     .table-card table thead th {
-      font-size: 11px; font-weight: 700;
-      letter-spacing: .08em; text-transform: uppercase;
-      color: #6B7280; padding: 14px 16px; border: none;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 14px 16px;
+      border: none;
     }
 
     .table-card table tbody tr {
@@ -204,64 +298,146 @@
       animation: slideDown .35s ease both;
     }
 
-    .table-card table tbody tr:hover { background: #F0FFF6; transform: scale(1.002); }
-    .table-card table tbody td { padding: 13px 16px; vertical-align: middle; }
+    .table-card table tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .table-card table tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
 
     .file-icon {
-      width: 38px; height: 38px;
+      width: 38px;
+      height: 38px;
       border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
       transition: transform .25s ease;
     }
 
-    .table-card table tbody tr:hover .file-icon { transform: rotate(-5deg) scale(1.1); }
+    .table-card table tbody tr:hover .file-icon {
+      transform: rotate(-5deg) scale(1.1);
+    }
 
-    .badge-pdf { background: rgba(231, 76, 60, .1); color: #C0392B; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .badge-pptx { background: rgba(52, 152, 219, .1); color: #2471A3; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .badge-excel { background: rgba(39, 174, 96, .1); color: #1E8449; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .badge-word { background: rgba(41, 128, 185, .1); color: #1A5276; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .badge-otro { background: rgba(156, 163, 175, .12); color: #6B7280; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 700; }
-    .badge-solo { background: rgba(156, 163, 175, .12); color: #6B7280; padding: 4px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; }
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-excel {
+      background: rgba(39, 174, 96, .1);
+      color: #1E8449;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-word {
+      background: rgba(41, 128, 185, .1);
+      color: #1A5276;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-otro {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-solo {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
 
     .btn-ver {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 8px 16px; border-radius: 10px;
-      border: 1.5px solid #2ECC71; background: rgba(46, 204, 113, .07);
-      color: #27AE60; font-size: 12px; font-weight: 700;
-      cursor: pointer; font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
       transition: all .25s ease;
-      position: relative; overflow: hidden;
+      position: relative;
+      overflow: hidden;
       text-decoration: none;
     }
 
     .btn-ver::after {
       content: '';
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
       transform: translateX(-100%);
       transition: transform .4s ease;
     }
 
     .btn-ver:hover {
-      background: #2ECC71; color: #fff;
+      background: #2ECC71;
+      color: #fff;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(46, 204, 113, .4);
       animation: glowGreen 1.5s ease infinite;
     }
 
-    .btn-ver:hover::after { transform: translateX(100%); }
-    .btn-ver:active { transform: translateY(0); }
+    .btn-ver:hover::after {
+      transform: translateX(100%);
+    }
 
-    .empty-state { text-align: center; padding: 60px 32px; }
+    .btn-ver:active {
+      transform: translateY(0);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 32px;
+    }
 
     .empty-state i {
-      font-size: 52px; color: #D1D5DB;
-      display: block; margin-bottom: 16px;
+      font-size: 52px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 16px;
       animation: pulse 2s ease infinite;
     }
 
-    .empty-state p { color: #9CA3AF; font-size: 14px; }
+    .empty-state p {
+      color: #9CA3AF;
+      font-size: 14px;
+    }
 
     .grid-container {
       display: grid;
@@ -271,11 +447,14 @@
     }
 
     .grid-card {
-      background: #fff; border-radius: 8px;
-      border: 1px solid #E5E7EB; overflow: hidden;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+      overflow: hidden;
       transition: all .2s ease;
       animation: fadeUp .4s ease both;
-      cursor: pointer; position: relative;
+      cursor: pointer;
+      position: relative;
     }
 
     .grid-card:hover {
@@ -284,106 +463,228 @@
     }
 
     .grid-card-icon-area {
-      height: 120px; display: flex;
-      align-items: center; justify-content: center;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
     }
 
-    .grid-card-icon-area i { font-size: 48px; }
+    .grid-card-icon-area i {
+      font-size: 48px;
+    }
 
-    .grid-card-info { padding: 10px 12px; border-top: 1px solid #F3F4F6; }
+    .grid-card-info {
+      padding: 10px 12px;
+      border-top: 1px solid #F3F4F6;
+    }
 
     .grid-card-info .card-title {
-      font-weight: 500; color: #1F2937; font-size: 13px;
-      white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis; margin-bottom: 4px;
+      font-weight: 500;
+      color: #1F2937;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
     }
 
     .grid-card-info .card-meta {
-      display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6B7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6B7280;
     }
 
     .grid-card-info .card-meta .badge {
-      padding: 2px 6px; border-radius: 4px;
-      font-weight: 600; font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 10px;
     }
 
-    .badge-pdf { background: rgba(231,76,60,.1); color: #E74C3C; }
-    .badge-excel { background: rgba(39,174,96,.1); color: #27AE60; }
-    .badge-word { background: rgba(41,128,185,.1); color: #2980B9; }
-    .badge-pptx { background: rgba(52,152,219,.1); color: #3498DB; }
-    .badge-otro { background: rgba(156,163,175,.12); color: #6B7280; }
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #E74C3C;
+    }
+
+    .badge-excel {
+      background: rgba(39, 174, 96, .1);
+      color: #27AE60;
+    }
+
+    .badge-word {
+      background: rgba(41, 128, 185, .1);
+      color: #2980B9;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #3498DB;
+    }
+
+    .badge-otro {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+    }
 
     .grid-card-actions {
-      position: absolute; top: 8px; right: 8px;
-      display: flex; gap: 4px;
-      opacity: 0; transition: opacity .2s; z-index: 10;
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
     }
 
-    .grid-card:hover .grid-card-actions { opacity: 1; }
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
 
     .grid-card-actions button,
     .grid-card-actions a {
-      width: 32px; height: 32px; border-radius: 50%;
-      border: none; background: rgba(255,255,255,.95);
-      box-shadow: 0 2px 6px rgba(0,0,0,.18);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; cursor: pointer; text-decoration: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
       transition: all .15s;
     }
 
-    .grid-card-actions .btn-view { color: #3498DB; }
+    .grid-card-actions .btn-view {
+      color: #3498DB;
+    }
+
     .grid-card-actions button:hover,
-    .grid-card-actions a:hover { background: #fff; transform: scale(1.1); }
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
 
     .readonly-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 5px 12px; border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
       background: rgba(231, 76, 60, .07);
       border: 1px solid rgba(231, 76, 60, .2);
       animation: rotateBadge .4s ease both;
     }
 
-    .readonly-badge span { font-size: 11px; color: #C0392B; font-weight: 700; }
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+    .btn-action-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(46, 204, 113, .3);
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .2s;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .btn-action-icon:hover {
+      background: #2ECC71;
+      color: #fff;
+      border-color: #2ECC71;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, .3);
+    }
+
+    .btn-action-icon i {
+      pointer-events: none;
+    }
 
     .vista-toggle-group {
       display: inline-flex;
       border: 1px solid #E5E7EB;
-      border-radius: 8px; overflow: hidden;
+      border-radius: 8px;
+      overflow: hidden;
       background: #fff;
     }
 
     .vista-toggle-btn {
-      display: flex; align-items: center; justify-content: center;
-      width: 36px; height: 34px; border: none;
-      background: transparent; color: #9CA3AF;
-      cursor: pointer; font-size: 14px; transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
     }
 
-    .vista-toggle-btn:hover { background: #F3F4F6; color: #6B7280; }
-    .vista-toggle-btn.active { background: #2ECC71; color: #fff; }
-    .vista-toggle-btn + .vista-toggle-btn { border-left: 1px solid #E5E7EB; }
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn+.vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
+    }
 
     .side-card {
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 14px; padding: 20px;
+      border-radius: 14px;
+      padding: 20px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
       margin-bottom: 16px;
       transition: box-shadow .3s;
     }
 
-    .side-card:hover { box-shadow: 0 8px 28px rgba(0, 0, 0, .11); }
-    .side-card:last-child { margin-bottom: 0; }
+    .side-card:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .11);
+    }
+
+    .side-card:last-child {
+      margin-bottom: 0;
+    }
 
     .kpi-topic {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; padding: 9px 10px;
-      border-radius: 10px; background: #FAFBFC;
-      border: 1px solid #F0F4F8; margin-bottom: 6px;
-      transition: all .2s; cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      background: #FAFBFC;
+      border: 1px solid #F0F4F8;
+      margin-bottom: 6px;
+      transition: all .2s;
+      cursor: default;
       animation: fadeUp .4s ease both;
     }
 
@@ -393,25 +694,46 @@
       transform: translateX(3px);
     }
 
-    .kpi-topic:last-child { margin-bottom: 0; }
+    .kpi-topic:last-child {
+      margin-bottom: 0;
+    }
 
     .summary-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 0; border-bottom: 1px solid #F3F4F6;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
     }
 
-    .summary-row:last-child { border-bottom: none; }
+    .summary-row:last-child {
+      border-bottom: none;
+    }
 
-    .drive-row-actions { position: relative; display: inline-flex; vertical-align: middle; z-index: 50; }
+    .drive-row-actions {
+      position: relative;
+      display: inline-flex;
+      vertical-align: middle;
+      z-index: 50;
+    }
 
     .drive-kebab {
-      width: 32px; height: 32px;
-      border: none; border-radius: 8px;
-      background: transparent; color: #64748B;
-      cursor: pointer; font-size: 16px; line-height: 1; padding: 0;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748B;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
     }
 
-    .drive-kebab:hover { background: rgba(0,0,0,.07); color: #1B3A5C; }
+    .drive-kebab:hover {
+      background: rgba(0, 0, 0, .07);
+      color: #1B3A5C;
+    }
 
     .drive-dropdown {
       display: none;
@@ -429,50 +751,94 @@
       overflow: visible;
     }
 
-    .drive-dropdown.is-open { display: block !important; }
+    .drive-dropdown.is-open {
+      display: block !important;
+    }
 
     .drive-dropdown button {
-      display: flex; align-items: center; gap: 10px;
-      width: 100%; padding: 10px 14px;
-      border: none; background: none;
-      cursor: pointer; font-size: 13px;
-      color: #374151; font-family: inherit; text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
     }
 
-    .drive-dropdown button:hover:not(:disabled) { background: #F3F4F6; }
-    .drive-dropdown button:disabled { opacity: .48; cursor: not-allowed; }
+    .drive-dropdown button:hover:not(:disabled) {
+      background: #F3F4F6;
+    }
 
-    .drive-add-entry { position: relative; }
+    .drive-dropdown button:disabled {
+      opacity: .48;
+      cursor: not-allowed;
+    }
+
+    .drive-add-entry {
+      position: relative;
+    }
 
     .drive-add-trigger {
-      display: flex; align-items: center; justify-content: space-between;
-      width: 100%; padding: 10px 14px;
-      border: none; background: none;
-      cursor: pointer; font-size: 13px;
-      color: #374151; font-family: inherit; text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
     }
 
-    .drive-add-trigger:hover { background: #F3F4F6; }
+    .drive-add-trigger:hover {
+      background: #F3F4F6;
+    }
 
     .drive-add-submenu {
-      display: none; position: absolute; left: 100%; top: 0;
-      margin-left: 4px; min-width: 200px;
-      background: #fff; border-radius: 10px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.14);
-      border: 1px solid #E8ECF0; z-index: 10051; padding: 6px 0;
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      margin-left: 4px;
+      min-width: 200px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #E8ECF0;
+      z-index: 10051;
+      padding: 6px 0;
     }
 
-    .drive-add-submenu.is-open { display: block; }
+    .drive-add-submenu.is-open {
+      display: block;
+    }
 
     .drive-add-submenu button {
-      display: flex; align-items: center; gap: 10px;
-      width: 100%; padding: 10px 14px;
-      border: none; background: none;
-      cursor: pointer; font-size: 13px;
-      color: #374151; font-family: inherit; text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
     }
 
-    .drive-add-submenu button:hover { background: #F3F4F6; }
+    .drive-add-submenu button:hover {
+      background: #F3F4F6;
+    }
 
     .info-row {
       display: flex;
@@ -570,20 +936,22 @@
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main
-        class="water-bg"
+      <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="estudios-hero">
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
                   <i class="fas fa-folder-open" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Estudios Recíclame</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Reportes, infografías y ayudas memoria del equipo técnico</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Reportes, infografías y ayudas memoria
+                    del equipo técnico</p>
                 </div>
               </div>
             </div>
@@ -606,7 +974,8 @@
 
         <div class="filter-row">
           <div style="position:relative;flex:1;min-width:220px;">
-            <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+            <i class="fas fa-search"
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
             <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
           </div>
           <select id="filter-formato" onchange="filtrarEstudios()">
@@ -628,7 +997,8 @@
               <i class="fas fa-th"></i>
             </button>
           </div>
-          <button onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';document.getElementById('filter-anio').value='';filtrarEstudios();"
+          <button
+            onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';document.getElementById('filter-anio').value='';filtrarEstudios();"
             style="padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
             onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
             onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
@@ -636,7 +1006,8 @@
           </button>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;animation:fadeUp .5s .1s ease both;">
+        <div
+          style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;animation:fadeUp .5s .1s ease both;">
 
           <div>
             <div id="estudios-lista" class="table-card">
@@ -664,49 +1035,56 @@
                       <td>
                         <div style="display:flex;align-items:center;gap:10px;">
                           <th:block th:switch="${tipo}">
-                            <div th:case="'pdf'" class="file-icon" style="background:rgba(231,76,60,.1);"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:16px;"></i></div>
-                            <div th:case="'excel'" class="file-icon" style="background:rgba(39,174,96,.1);"><i class="fas fa-file-excel" style="color:#27AE60;font-size:16px;"></i></div>
-                            <div th:case="'word'" class="file-icon" style="background:rgba(41,128,185,.1);"><i class="fas fa-file-word" style="color:#2980B9;font-size:16px;"></i></div>
-                            <div th:case="'ppt'" class="file-icon" style="background:rgba(52,152,219,.1);"><i class="fas fa-file-powerpoint" style="color:#3498DB;font-size:16px;"></i></div>
-                            <div th:case="*" class="file-icon" style="background:rgba(156,163,175,.12);"><i class="fas fa-file" style="color:#6B7280;font-size:16px;"></i></div>
+                            <div th:case="'pdf'" class="file-icon" style="background:rgba(231,76,60,.1);"><i
+                                class="fas fa-file-pdf" style="color:#E74C3C;font-size:16px;"></i></div>
+                            <div th:case="'excel'" class="file-icon" style="background:rgba(39,174,96,.1);"><i
+                                class="fas fa-file-excel" style="color:#27AE60;font-size:16px;"></i></div>
+                            <div th:case="'word'" class="file-icon" style="background:rgba(41,128,185,.1);"><i
+                                class="fas fa-file-word" style="color:#2980B9;font-size:16px;"></i></div>
+                            <div th:case="'ppt'" class="file-icon" style="background:rgba(52,152,219,.1);"><i
+                                class="fas fa-file-powerpoint" style="color:#3498DB;font-size:16px;"></i></div>
+                            <div th:case="*" class="file-icon" style="background:rgba(156,163,175,.12);"><i
+                                class="fas fa-file" style="color:#6B7280;font-size:16px;"></i></div>
                           </th:block>
-                          <span style="font-weight:700;color:#1B3A5C;font-size:13px;" th:text="${e.titulo}">Título</span>
+                          <span style="font-weight:700;color:#1B3A5C;font-size:13px;"
+                            th:text="${e.titulo}">Título</span>
                         </div>
                       </td>
-                      <td style="color:#6B7280;font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                      <td
+                        style="color:#6B7280;font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                         th:text="${e.descripcionBreve}">—</td>
                       <td>
-                        <span style="font-weight:700;color:#1B3A5C;font-size:13px;background:#EEF2FF;padding:3px 10px;border-radius:6px;"
+                        <span
+                          style="font-weight:700;color:#1B3A5C;font-size:13px;background:#EEF2FF;padding:3px 10px;border-radius:6px;"
                           th:text="${e.anio}">—</span>
                       </td>
                       <td>
                         <th:block th:switch="${tipo}">
-                          <span th:case="'pdf'" class="badge-pdf"><i class="fas fa-file-pdf" style="font-size:9px;margin-right:3px;"></i>PDF</span>
-                          <span th:case="'excel'" class="badge-excel"><i class="fas fa-file-excel" style="font-size:9px;margin-right:3px;"></i>Excel</span>
-                          <span th:case="'word'" class="badge-word"><i class="fas fa-file-word" style="font-size:9px;margin-right:3px;"></i>Word</span>
-                          <span th:case="'ppt'" class="badge-pptx"><i class="fas fa-file-powerpoint" style="font-size:9px;margin-right:3px;"></i>PPT</span>
-                          <span th:case="*" class="badge-otro"><i class="fas fa-file" style="font-size:9px;margin-right:3px;"></i>Otro</span>
+                          <span th:case="'pdf'" class="badge-pdf"><i class="fas fa-file-pdf"
+                              style="font-size:9px;margin-right:3px;"></i>PDF</span>
+                          <span th:case="'excel'" class="badge-excel"><i class="fas fa-file-excel"
+                              style="font-size:9px;margin-right:3px;"></i>Excel</span>
+                          <span th:case="'word'" class="badge-word"><i class="fas fa-file-word"
+                              style="font-size:9px;margin-right:3px;"></i>Word</span>
+                          <span th:case="'ppt'" class="badge-pptx"><i class="fas fa-file-powerpoint"
+                              style="font-size:9px;margin-right:3px;"></i>PPT</span>
+                          <span th:case="*" class="badge-otro"><i class="fas fa-file"
+                              style="font-size:9px;margin-right:3px;"></i>Otro</span>
                         </th:block>
                       </td>
-                      <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo lectura</span></td>
+                      <td><span class="badge-solo"><i class="fas fa-eye"
+                            style="font-size:8px;margin-right:3px;"></i>Solo lectura</span></td>
                       <td class="text-center">
-                        <div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
-                          <a class="btn-ver" th:href="@{/socio/estudios/{id}/ver(id=${e.id})}" style="text-decoration:none;">
-                            <i class="fas fa-eye"></i> Ver
+                        <div style="display:inline-flex;align-items:center;gap:6px;">
+                          <a class="btn-action-icon" title="Ver" th:href="@{/socio/estudios/{id}/ver(id=${e.id})}">
+                            <i class="fas fa-eye"></i>
                           </a>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" th:attr="onclick=|toggleDriveDropdown(event, 'drive-dd-e-' + ${iStat.index})|"><i class="fas fa-ellipsis-v"></i></button>
-                            <div th:id="'drive-dd-e-' + ${iStat.index}" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" th:attr="onclick=|driveShareEstudio('${e.titulo}'); closeAllDriveDropdowns();|"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div class="drive-add-entry" th:data-mu-tipo="ESTUDIO" th:data-mu-id="${e.id}" th:data-mu-titulo="${e.titulo}">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
+                          <button class="btn-action-icon" title="Compartir" th:attr="onclick=|driveShareEstudio('${e.titulo}')|">
+                            <i class="fas fa-share-alt"></i>
+                          </button>
+                          <button class="btn-action-icon" title="Añadir a carpeta" th:attr="onclick=|openModalCarpetaFromData('ESTUDIO', '${e.id}', &quot;${e.titulo}&quot;)|">
+                            <i class="fas fa-folder-plus"></i>
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -722,7 +1100,8 @@
                 </table>
               </div>
 
-              <div id="paginacion-wrapper" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+              <div id="paginacion-wrapper"
+                style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
                 <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
                 <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
               </div>
@@ -733,14 +1112,17 @@
 
           <div>
             <div class="side-card" style="animation:fadeUp .5s .2s ease both;">
-              <div style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
                 <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:12px;"></i> Distribución por temática
               </div>
               <div style="position:relative;width:180px;height:100px;margin:0 auto 16px;">
                 <canvas id="donut-est" width="180" height="100"></canvas>
                 <div style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);text-align:center;">
                   <div id="donut-center-est" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
-                  <div style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">Estudios</div>
+                  <div
+                    style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
+                    Estudios</div>
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;">
@@ -788,7 +1170,8 @@
             </div>
 
             <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
-              <div style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
                 <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
               </div>
               <div class="summary-row">
@@ -1049,7 +1432,7 @@
 
           function renderGrid() {
             var gridDiv = document.getElementById('estudios-grid');
-            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function(tr) {
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function (tr) {
               return tr.dataset.filtrado !== '0';
             });
 
@@ -1074,7 +1457,7 @@
               otro: '<span class="badge badge-otro">Otro</span>'
             };
 
-            gridDiv.innerHTML = filas.map(function(row, idx) {
+            gridDiv.innerHTML = filas.map(function (row, idx) {
               var tipo = row.dataset.tipo || 'otro';
               var titulo = row.dataset.titulo || '';
               var anio = row.dataset.anio || '';
@@ -1084,20 +1467,20 @@
 
               return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
                 '<div class="grid-card-actions">' +
-                  '<a href="/socio/estudios/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-eye"></i></a>' +
+                '<a href="/socio/estudios/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-eye"></i></a>' +
                 '</div>' +
                 '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
-                  '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
+                '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
                 '</div>' +
                 '<div class="grid-card-info">' +
-                  '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
-                  '<div class="card-meta">' +
-                    '<span>' + escapeHtml(anio) + '</span>' +
-                    '<span>·</span>' +
-                    badge +
-                  '</div>' +
+                '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                '<div class="card-meta">' +
+                '<span>' + escapeHtml(anio) + '</span>' +
+                '<span>·</span>' +
+                badge +
                 '</div>' +
-              '</div>';
+                '</div>' +
+                '</div>';
             }).join('');
           }
 
@@ -1110,11 +1493,11 @@
           (function populateAnios() {
             var rows = document.querySelectorAll('.estudio-row');
             var years = new Set();
-            rows.forEach(function(r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            rows.forEach(function (r) { if (r.dataset.anio) years.add(r.dataset.anio); });
             var sel = document.getElementById('filter-anio');
             if (!sel) return;
-            var sorted = Array.from(years).sort(function(a,b){ return b - a; });
-            sorted.forEach(function(y) {
+            var sorted = Array.from(years).sort(function (a, b) { return b - a; });
+            sorted.forEach(function (y) {
               var opt = document.createElement('option');
               opt.value = y; opt.textContent = y;
               sel.appendChild(opt);
@@ -1122,7 +1505,7 @@
           })();
         </script>
 
-      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>

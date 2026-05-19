@@ -90,8 +90,9 @@ public class DocumentoViewController {
         }
 
         HttpURLConnection conn = (HttpURLConnection) new URL(firmadaInterna).openConnection();
-        conn.setConnectTimeout(10_000);
-        conn.setReadTimeout(120_000);
+conn.setInstanceFollowRedirects(true);
+        conn.setConnectTimeout(30_000);
+        conn.setReadTimeout(300_000);
         conn.setRequestMethod("GET");
 
         int status = conn.getResponseCode();
@@ -102,7 +103,7 @@ public class DocumentoViewController {
         }
 
         String contentType = conn.getContentType();
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpStatus.OK);
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline");
         if (contentType != null && !contentType.isBlank()) {
             response.setContentType(contentType);
@@ -187,8 +188,9 @@ public class DocumentoViewController {
         }
 
         HttpURLConnection conn = (HttpURLConnection) new URL(firmadaInterna).openConnection();
-        conn.setConnectTimeout(10_000);
-        conn.setReadTimeout(120_000);
+        conn.setInstanceFollowRedirects(true);
+        conn.setConnectTimeout(30_000);
+        conn.setReadTimeout(300_000);
         conn.setRequestMethod("GET");
 
         int status = conn.getResponseCode();

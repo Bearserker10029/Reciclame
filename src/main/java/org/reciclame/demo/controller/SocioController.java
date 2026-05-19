@@ -78,7 +78,7 @@ public class SocioController {
     @GetMapping("/socio")
     public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("normativas", normativaService.listarNormativas());
+        model.addAttribute("normativas", normativaService.listarNormativasPublicas());
         return "Socio/inicio";
     }
 
@@ -89,8 +89,8 @@ public class SocioController {
         Optional<UsuarioResponseDTO> userOpt = usuarioService.findByCorreo(user.getUsername());
         Long userId = userOpt.map(UsuarioResponseDTO::getId).orElse(null);
         
-        model.addAttribute("normativas", normativaService.listarNormativas());
-        model.addAttribute("estudios", estudioService.listarEstudios());
+        model.addAttribute("normativas", normativaService.listarNormativasPublicas());
+        model.addAttribute("estudios", estudioService.listarEstudiosPublicos());
         
         var tematicas = tematicaService.listarTematicasTodas();
         model.addAttribute("tematicas", tematicas);

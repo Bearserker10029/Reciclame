@@ -19,32 +19,66 @@
     body {
       background: #F5F6FA;
     }
+
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .anim-1 { animation: fadeInUp .5s ease both; }
-    .anim-2 { animation: fadeInUp .5s .1s ease both; }
-    .anim-3 { animation: fadeInUp .5s .2s ease both; }
-    .anim-4 { animation: fadeInUp .5s .3s ease both; }
+
+    .anim-1 {
+      animation: fadeInUp .5s ease both;
+    }
+
+    .anim-2 {
+      animation: fadeInUp .5s .1s ease both;
+    }
+
+    .anim-3 {
+      animation: fadeInUp .5s .2s ease both;
+    }
+
+    .anim-4 {
+      animation: fadeInUp .5s .3s ease both;
+    }
 
     @keyframes waterWave {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
-    .water-bg { position: relative; overflow: hidden; }
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
 
     .water-bg::before {
       content: '';
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
       background:
-        linear-gradient(135deg, rgba(46,204,113,0.15) 0%, transparent 50%),
-        linear-gradient(225deg, rgba(52,152,219,0.12) 0%, transparent 50%),
-        linear-gradient(315deg, rgba(41,128,185,0.1) 0%, transparent 50%),
-        linear-gradient(45deg, rgba(27,58,92,0.08) 0%, transparent 50%);
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
       background-size: 400% 400%;
       animation: waterWave 12s ease infinite;
       pointer-events: none;
@@ -52,7 +86,10 @@
       border-radius: inherit;
     }
 
-    .water-bg > * { position: relative; z-index: 1; }
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
 
     .estudios-hero {
       background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
@@ -98,8 +135,8 @@
     /* rutas + tabla en una sola card (mismo criterio que Normativo / tabla de estudios). */
     .mu-drive-shell {
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
@@ -759,20 +796,22 @@
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main
-        class="water-bg"
+      <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
         <div class="estudios-hero" style="margin-bottom:20px;">
-          <div style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
-                <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;">
                   <i class="fas fa-cloud" style="color:#2ECC71;font-size:18px;"></i>
                 </div>
                 <div>
                   <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Mi Unidad</h1>
-                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Organiza carpetas y documentos como en un explorador</p>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Organiza carpetas y documentos como en
+                    un explorador</p>
                 </div>
               </div>
             </div>
@@ -861,7 +900,8 @@
             <p id="muModalConfirmarMensaje" class="mu-modal-confirm-msg">¿Confirmar acción?</p>
             <div class="mu-modal-actions">
               <button type="button" class="mu-modal-cancel" id="muModalConfirmarCancelar">Cancelar</button>
-              <button type="button" class="mu-modal-submit mu-modal-submit--danger" id="muModalConfirmarAceptar">Eliminar</button>
+              <button type="button" class="mu-modal-submit mu-modal-submit--danger"
+                id="muModalConfirmarAceptar">Eliminar</button>
             </div>
           </div>
         </dialog>
@@ -931,7 +971,8 @@
                     </td>
                   </tr>
                   <th:block th:each="row : ${contenidoFilas}">
-                    <tr th:if="${row.esCarpeta}" class="mu-tr-folder mu-drop-folder mu-draggable-folder" draggable="true"
+                    <tr th:if="${row.esCarpeta}" class="mu-tr-folder mu-drop-folder mu-draggable-folder"
+                      draggable="true"
                       th:attr="data-folder-id=${row.carpetaId},data-folder-open-url=@{/socio/mi-unidad(carpeta=${row.carpetaId})},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
                       <td>
                         <span class="mu-td-name">
@@ -944,10 +985,8 @@
                       <td th:text="${row.tamanoEtiqueta}">—</td>
                       <td class="mu-col-actions">
                         <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post"
-                          style="margin:0;display:inline;"
-                          class="mu-form-confirm"
-                          data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?"
-                          data-confirm-btn="Eliminar">
+                          style="margin:0;display:inline;" class="mu-form-confirm"
+                          data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?" data-confirm-btn="Eliminar">
                           <input type="hidden" name="id" th:value="${row.carpetaId}" />
                           <input type="hidden" name="parentId" th:value="${carpetaId}" />
                           <button type="submit" class="btn-mu btn-mu-danger" style="padding:4px 10px;font-size:11px;"
@@ -984,8 +1023,7 @@
                           style="text-decoration:none;padding:4px 10px;font-size:11px;margin-left:6px;"
                           draggable="false"><i class="fas fa-external-link-alt"></i></a>
                         <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
-                          class="mu-form-confirm"
-                          data-confirm-msg="¿Quitar este documento de Mi Unidad?"
+                          class="mu-form-confirm" data-confirm-msg="¿Quitar este documento de Mi Unidad?"
                           data-confirm-btn="Quitar">
                           <input type="hidden" name="itemId" th:value="${row.itemId}" />
                           <input type="hidden" name="carpetaId" th:value="${carpetaId}" />
@@ -1010,7 +1048,8 @@
                 <strong>Estudios</strong>.
               </div>
               <th:block th:each="row : ${contenidoFilas}">
-                <div th:if="${row.esCarpeta}" class="mu-grid-card mu-folder-card mu-drop-folder mu-draggable-folder" draggable="true"
+                <div th:if="${row.esCarpeta}" class="mu-grid-card mu-folder-card mu-drop-folder mu-draggable-folder"
+                  draggable="true"
                   th:attr="data-folder-id=${row.carpetaId},data-folder-open-url=@{/socio/mi-unidad(carpeta=${row.carpetaId})},data-sort-nombre=${row.ordenNombre},data-sort-fecha=${row.ordenFechaMillis}">
                   <div
                     style="width:54px;height:54px;border-radius:14px;background:rgba(245,166,35,.12);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
@@ -1024,8 +1063,7 @@
                   </div>
                   <div class="mu-grid-card-actions">
                     <form th:action="@{/socio/mi-unidad/carpeta/eliminar}" method="post" style="margin:0;"
-                      class="mu-form-confirm"
-                      data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?"
+                      class="mu-form-confirm" data-confirm-msg="¿Eliminar esta carpeta y todo su contenido?"
                       data-confirm-btn="Eliminar">
                       <input type="hidden" name="id" th:value="${row.carpetaId}" />
                       <input type="hidden" name="parentId" th:value="${carpetaId}" />
@@ -1063,8 +1101,7 @@
                       class="btn-mu btn-mu-primary" style="text-decoration:none;padding:6px 10px;font-size:11px;"><i
                         class="fas fa-external-link-alt"></i></a>
                     <form th:action="@{/socio/mi-unidad/item/quitar}" method="post" style="margin:0;display:inline;"
-                      class="mu-form-confirm"
-                      data-confirm-msg="¿Quitar este documento de Mi Unidad?"
+                      class="mu-form-confirm" data-confirm-msg="¿Quitar este documento de Mi Unidad?"
                       data-confirm-btn="Quitar">
                       <input type="hidden" name="itemId" th:value="${row.itemId}" />
                       <input type="hidden" name="carpetaId" th:value="${carpetaId}" />

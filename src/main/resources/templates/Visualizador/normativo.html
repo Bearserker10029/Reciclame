@@ -200,8 +200,8 @@
       display: flex;
       gap: 4px;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 14px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
@@ -254,9 +254,8 @@
 
     /* ── Filters ── */
     .filter-row {
+      overflow: hidden;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       padding: 12px 16px;
@@ -481,8 +480,8 @@
     /* ── Sidebar cards ── */
     .side-card {
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+
+
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 14px;
       padding: 20px;
@@ -1664,11 +1663,10 @@
           });
         </script>
 
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
-    <th:block th:replace="~{navbar/footer :: footer}"></th:block>
-  </div>
-  <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </body>
 
 </html>
