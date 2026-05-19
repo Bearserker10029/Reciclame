@@ -204,7 +204,15 @@
           </div>
         </div>
 
-        <button id="btn-submit" type="submit" class="btn btn-primary">
+        <div style="margin-bottom:18px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;color:rgba(255,255,255,.55);font-size:12px;line-height:1.5;">
+            <input type="checkbox" id="check-terminos" name="aceptaTerminos" value="true"
+                   style="margin-top:3px;flex-shrink:0;width:16px;height:16px;accent-color:var(--green);cursor:pointer;" />
+            <span>He leído y acepto los <a href="/legal/terminos?from=registro" target="_blank" style="color:var(--green);font-weight:600;text-decoration:none;">Términos y Condiciones</a></span>
+          </label>
+        </div>
+
+        <button id="btn-submit" type="submit" class="btn btn-primary" disabled>
           <i class="fas fa-paper-plane"></i> Solicitar acceso
         </button>
       </form>
@@ -330,6 +338,14 @@
   document.addEventListener('DOMContentLoaded', function() {
     var inp = document.getElementById('inp-correo');
     if (inp && inp.value) validateCorreo();
+
+    var check = document.getElementById('check-terminos');
+    var btn = document.getElementById('btn-submit');
+    if (check && btn) {
+      check.addEventListener('change', function() {
+        btn.disabled = !check.checked;
+      });
+    }
   });
 </script>
 </body>

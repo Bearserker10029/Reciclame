@@ -63,6 +63,9 @@
 				<seriesColor order="5" color="#00356A"/>
 			</plot>
 		</element>
+		<element kind="image" uuid="99a6cd2a-1ff4-436a-98eb-8f4ccc5b09f0" positionType="FixRelativeToBottom" stretchType="NoStretch" mode="Transparent" x="100" y="291" width="640" height="220" linkType="None" linkTarget="Self">
+			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
+		</element>
 	</background>
 	<title height="60" splitType="Stretch">
 		<element kind="staticText" uuid="bf6cc639-1826-4184-b101-9deb3fdeab9a" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">

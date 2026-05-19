@@ -24,7 +24,7 @@ RUN addgroup -S reciclame && adduser -S reciclame -G reciclame
 COPY --from=builder /app/target/*.jar app.jar
 COPY --from=builder /app/src/main/resources/db/*.sql ./db/
 
-RUN apk add --no-cache mariadb-client fontconfig ttf-dejavu
+RUN apk add --no-cache mysql-client fontconfig ttf-dejavu
 
 RUN chown -R reciclame:reciclame /app
 

@@ -33,7 +33,7 @@ import java.util.Map;
 public class SocioReportesService {
 
     private static final ZoneId ZONA = ZoneId.of("America/Lima");
-    private static final Locale LOCALE_PE = new Locale("es", "PE");
+    private static final Locale LOCALE_PE = new Locale.Builder().setLanguage("es").setRegion("PE").build();
     private static final DateTimeFormatter FMT_FECHA_HORA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm").withZone(ZONA);
     private static final DateTimeFormatter FMT_SOLO_FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(ZONA);
 

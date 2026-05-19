@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recíclame — En Mantenimiento</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #F5F6FA;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(46, 204, 113, .35); }
+      50% { box-shadow: 0 0 0 12px rgba(46, 204, 113, 0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .maintenance-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.08);
+      padding: 48px 40px;
+      max-width: 480px;
+      width: 90%;
+      text-align: center;
+      animation: fadeInUp .5s ease both;
+    }
+
+    .maintenance-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(46,204,113,.12), rgba(52,152,219,.12));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      animation: pulse 2.5s ease infinite;
+    }
+    .maintenance-icon i {
+      font-size: 32px;
+      color: #2ECC71;
+    }
+
+    .maintenance-card h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin-bottom: 10px;
+    }
+    .maintenance-card p {
+      font-size: 14px;
+      color: #6B7280;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      border: none;
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .15s, transform .12s;
+      box-shadow: 0 4px 14px rgba(46,204,113,.35);
+      text-decoration: none;
+    }
+    .btn-back:hover { opacity: .9; transform: translateY(-1px); }
+
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 10px;
+      border: 2px solid #E5E7EB;
+      background: #fff;
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .15s;
+      text-decoration: none;
+      margin-left: 10px;
+    }
+    .btn-home:hover { border-color: #D1D5DB; background: #F9FAFB; color: #1B3A5C; }
+  </style>
+</head>
+<body>
+  <div class="maintenance-card">
+    <div class="maintenance-icon">
+      <i class="fas fa-tools"></i>
+    </div>
+    <h1>Esta sección está en mantenimiento</h1>
+    <p>
+      El administrador ha desactivado temporalmente esta funcionalidad.
+      Pronto estará disponible nuevamente. Disculpa las molestias.
+    </p>
+    <div>
+      <a class="btn-back" href="javascript:history.back()">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+      <a class="btn-home" th:href="${homeUrl}">
+        <i class="fas fa-home"></i> Inicio
+      </a>
+    </div>
+  </div>
+</body>
+</html>

@@ -78,12 +78,23 @@ public class AuditoriaService {
 
     // ── READ ─────────────────────────────────────────────────────────
     public List<Auditoria> listarAuditorias() {
-        return auditoriaRepository.findAll();
+        var result = auditoriaRepository.findAll();
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .filter(a -> a.getAccion() == null ||
+                        (!"IMPERSONAR_USUARIO".equals(a.getAccion()) &&
+                         !"SALIR_IMPERSONACION".equals(a.getAccion())))
+                .collect(Collectors.toList());
     }
 
     public Page<Auditoria> listarAuditoriasPaginado(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return auditoriaRepository.findAllPaginado(pageable);
+    }
+
+    public Page<Auditoria> listarAuditoriasParaTrazabilidad(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findAllExcludingSeguridad(pageable);
     }
 
     public List<Auditoria> listarAuditoriasUltimas100() {
@@ -106,6 +117,11 @@ public class AuditoriaService {
     public Page<Auditoria> listarAuditoriasPorModuloPaginado(String modulo, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return auditoriaRepository.findByModuloPaginado(modulo, pageable);
+    }
+
+    public Page<Auditoria> listarAuditoriasPorUsuarioId(int page, int size, Long usuarioId) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findByUsuarioIdExcludingImpersonacion(usuarioId, pageable);
     }
 
     public List<Auditoria> listarAuditoriasPorAccion(String accion) {
@@ -148,12 +164,168 @@ public class AuditoriaService {
     }
 
     public List<Auditoria> listarAuditoriasPorFechaRango(Instant desde, Instant hasta) {
-        return auditoriaRepository.findByFechaRango(desde, hasta);
+        var result = auditoriaRepository.findByFechaRango(desde, hasta);
+        return result != null ? result : java.util.Collections.emptyList();
+    }
+
+    public List<Map<String, Object>> obtenerActividadDiaria(Instant desde, Instant hasta) {
+        var auditorias = listarAuditoriasPorFechaRango(desde, hasta);
+        if (auditorias == null || auditorias.isEmpty()) return java.util.Collections.emptyList();
+        return auditorias.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getFechaAccion().toString().substring(0, 10),
+                        Collectors.counting()))
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("fecha", e.getKey());
+                    item.put("count", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> obtenerTopUsuariosActivos(int limit) {
+        var auditorias = listarAuditorias();
+        if (auditorias == null || auditorias.isEmpty()) return java.util.Collections.emptyList();
+        Map<Long, String> nombrePorId = new HashMap<>();
+        Map<Long, Long> conteoPorId = new HashMap<>();
+
+        for (Auditoria a : auditorias) {
+            if (a.getUsuarioId() != null && a.getUsuarioNombre() != null) {
+                nombrePorId.put(a.getUsuarioId(), a.getUsuarioNombre());
+                conteoPorId.put(a.getUsuarioId(), conteoPorId.getOrDefault(a.getUsuarioId(), 0L) + 1);
+            }
+        }
+
+        return conteoPorId.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(limit)
+                .map(e -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("usuarioId", e.getKey());
+                    item.put("usuarioNombre", nombrePorId.get(e.getKey()));
+                    item.put("interacciones", e.getValue().intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
     }
 
     public Auditoria obtenerAuditoriaPorId(Long id) {
         return auditoriaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Auditoría no encontrada con id: " + id));
+    }
+
+    // ── AUDITORÍA DE SEGURIDAD ───────────────────────────────────────
+    public Page<Auditoria> listarEventosSeguridad(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findEventosSeguridad(pageable);
+    }
+
+    public List<Map<String, Object>> obtenerTopIPsFallidas(int limit) {
+        var result = auditoriaRepository.topIPsFallidas(PageRequest.of(0, limit));
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("ip", row[0]);
+                    item.put("count", ((Number) row[1]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> obtenerTopUsuariosFallidos(int limit) {
+        var result = auditoriaRepository.topUsuariosFallidos(PageRequest.of(0, limit));
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("usuarioId", row[0]);
+                    item.put("usuarioNombre", row[1]);
+                    item.put("count", ((Number) row[2]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public long contarIntentosFallidosHoy() {
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        return auditoriaRepository.contarFallidosDesde(hace24h);
+    }
+
+    public long contarImpersonaciones() {
+        return auditoriaRepository.contarImpersonaciones();
+    }
+
+    public List<Map<String, Object>> obtenerConteoPorModulo() {
+        var result = auditoriaRepository.conteoPorModulo();
+        if (result == null) return java.util.Collections.emptyList();
+        return result.stream()
+                .map(row -> {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("modulo", row[0]);
+                    item.put("count", ((Number) row[1]).intValue());
+                    return item;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<String> obtenerModulosDistinct() {
+        var result = auditoriaRepository.modulosDistinct();
+        return result != null ? result : java.util.Collections.emptyList();
+    }
+
+    public List<String> generarAlertasSeguridad() {
+        List<String> alertas = new java.util.ArrayList<>();
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        var todas = listarAuditoriasPorFechaRango(hace24h, Instant.now());
+        if (todas == null) return alertas;
+        List<Auditoria> fallidos24h = todas.stream()
+                .filter(a -> "FALLIDO".equals(a.getEstado()))
+                .collect(Collectors.toList());
+
+        Map<String, Long> fallosPorIP = fallidos24h.stream()
+                .filter(a -> a.getIpAddress() != null)
+                .collect(Collectors.groupingBy(Auditoria::getIpAddress, Collectors.counting()));
+
+        fallosPorIP.forEach((ip, count) -> {
+            if (count >= 3) {
+                alertas.add("⚠ " + count + " intentos fallidos desde IP " + ip + " en las últimas 24h");
+            }
+        });
+
+        Map<String, Long> fallosPorUsuario = fallidos24h.stream()
+                .filter(a -> a.getUsuarioNombre() != null)
+                .collect(Collectors.groupingBy(Auditoria::getUsuarioNombre, Collectors.counting()));
+
+        fallosPorUsuario.forEach((usuario, count) -> {
+            if (count >= 3) {
+                alertas.add("⚠ Usuario " + usuario + " tiene " + count + " acciones fallidas en 24h");
+            }
+        });
+
+        long impersonaciones = contarImpersonaciones();
+        if (impersonaciones > 0) {
+            alertas.add("ℹ " + impersonaciones + " sesión(es) de impersonación registrada(s)");
+        }
+
+        return alertas;
+    }
+
+    public double obtenerTasaExito24h() {
+        Instant hace24h = Instant.now().minusSeconds(86400);
+        var auditorias24h = listarAuditoriasPorFechaRango(hace24h, Instant.now());
+        if (auditorias24h == null || auditorias24h.isEmpty()) return 100.0;
+        long exitosos = auditorias24h.stream()
+                .filter(a -> "EXITOSO".equals(a.getEstado()))
+                .count();
+        return Math.round((exitosos * 100.0 / auditorias24h.size()) * 10.0) / 10.0;
+    }
+
+    public long contarEntreFechas(Instant desde, Instant hasta) {
+        return auditoriaRepository.contarEntreFechas(desde, hasta);
     }
 
     // ── CONSTANTES ───────────────────────────────────────────────────
@@ -171,6 +343,16 @@ public class AuditoriaService {
     public static final String ACCION_SALIR_IMPERSONACION = "SALIR_IMPERSONACION";
     public static final String ACCION_REACTIVAR_USUARIO = "REACTIVAR_USUARIO";
     public static final String ACCION_DESCARGAR_DOCUMENTO = "DESCARGAR_DOCUMENTO";
+
+    // ── NORMATIVAS ───────────────────────────────────────────────
+    public static final String ACCION_CREAR_NORMATIVA = "CREAR_NORMATIVA";
+    public static final String ACCION_EDITAR_NORMATIVA = "EDITAR_NORMATIVA";
+    public static final String ACCION_ELIMINAR_NORMATIVA = "ELIMINAR_NORMATIVA";
+
+    // ── ESTUDIOS ─────────────────────────────────────────────────
+    public static final String ACCION_CREAR_ESTUDIO = "CREAR_ESTUDIO";
+    public static final String ACCION_EDITAR_ESTUDIO = "EDITAR_ESTUDIO";
+    public static final String ACCION_ELIMINAR_ESTUDIO = "ELIMINAR_ESTUDIO";
 
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";

@@ -5,6 +5,7 @@ import org.reciclame.demo.model.MiUnidadItem;
 import org.reciclame.demo.service.DocumentosRecientesService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
+import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,15 +26,18 @@ public class EstudioVisorController {
     private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
     private final DocumentosRecientesService documentosRecientesService;
+    private final NotificacionService notificacionService;
 
     public EstudioVisorController(EstudioService estudioService,
                                    MinioStorageService minioStorageService,
                                    UsuarioService usuarioService,
-                                   DocumentosRecientesService documentosRecientesService) {
+                                   DocumentosRecientesService documentosRecientesService,
+                                   NotificacionService notificacionService) {
         this.estudioService = estudioService;
         this.minioStorageService = minioStorageService;
         this.usuarioService = usuarioService;
         this.documentosRecientesService = documentosRecientesService;
+        this.notificacionService = notificacionService;
     }
 
     // ── Admin ─────────────────────────────────────────────────
@@ -52,7 +56,7 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "SuperAdmin/estudios-visor", "/superadmin/estudios");
     }
 
-    // ── Socio (solo documentos públicos) ──────────────────────
+    // ── Socio (solo estudios públicos) ────────────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
                                    @AuthenticationPrincipal UserDetails user) {
@@ -112,8 +116,10 @@ public class EstudioVisorController {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("rolNombre", "Administrador");
         model.addAttribute("notifUrl", "/admin/notificaciones");
-        usuarioService.findByCorreo(correo)
-                .ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        usuarioService.findByCorreo(correo).ifPresent(u -> {
+            model.addAttribute("usuarioNombre", u.getNombreCompleto());
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
     }
 
     private void setupSuperAdmin(Model model, String correo) {

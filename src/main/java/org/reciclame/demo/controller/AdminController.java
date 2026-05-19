@@ -1,5 +1,7 @@
 package org.reciclame.demo.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.reciclame.demo.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Controller
@@ -70,15 +74,23 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("rol", "ADMIN");
         model.addAttribute("rolNombre", "Administrador");
         model.addAttribute("notifUrl", "/admin/notificaciones");
-        usuarioService.findByCorreo(correo).ifPresent(u -> model.addAttribute("usuarioNombre", u.getNombreCompleto()));
+        try {
+            usuarioService.findByCorreo(correo).ifPresent(u -> {
+                model.addAttribute("usuarioNombre", u.getNombreCompleto());
+                try {
+                    model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+                } catch (Exception e) {
+                    model.addAttribute("noLeidasCount", 0);
+                }
+            });
+        } catch (Exception e) {
+            model.addAttribute("noLeidasCount", 0);
+        }
     }
 
     @GetMapping("/admin")
-    public String inicio(Model model) {
-        model.addAttribute("rol", "ADMIN");
-        model.addAttribute("rolNombre", "Administrador");
-        model.addAttribute("usuarioNombre", "Admin General");
-        return "Admin/inicio";
+    public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
+        return adminInicio(model, user);
     }
 
     @GetMapping("/admin/inicio")
@@ -94,11 +106,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
 
-        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-            model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-        });
-
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
         int totalDescargas = estudios.stream()
@@ -107,11 +114,75 @@ public class AdminController extends BaseReportesController {
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
         model.addAttribute("totalDescargas", totalDescargas);
 
+        // ── Tendencias reales ──
+        Instant ahora = Instant.now();
+        Instant hoyInicio = ahora.truncatedTo(ChronoUnit.DAYS);
+        Instant semanaInicio = ahora.minus(7, ChronoUnit.DAYS);
+        Instant mesInicio = ahora.minus(30, ChronoUnit.DAYS);
+        Instant mesAnteriorInicio = ahora.minus(60, ChronoUnit.DAYS);
+
+        long usuariosNuevosHoy = usuarioService.contarNuevosDesde(hoyInicio);
+        long usuariosNuevosSemana = usuarioService.contarNuevosDesde(semanaInicio);
+        long usuariosMesAnterior = usuarioService.contarEntreFechas(mesAnteriorInicio, mesInicio);
+        long usuariosEsteMes = usuarioService.contarEntreFechas(mesInicio, ahora);
+
+        long estudiosNuevosSemana = estudioService.contarNuevosDesde(semanaInicio);
+        long estudiosMesAnterior = estudioService.contarEntreFechas(mesAnteriorInicio, mesInicio);
+        long estudiosEsteMes = estudioService.contarEntreFechas(mesInicio, ahora);
+
+        model.addAttribute("usuariosNuevosHoy", usuariosNuevosHoy);
+        model.addAttribute("usuariosNuevosSemana", usuariosNuevosSemana);
+        model.addAttribute("pctUsuariosCrecimiento", usuariosMesAnterior > 0
+                ? (int) Math.round((usuariosEsteMes - usuariosMesAnterior) * 100.0 / usuariosMesAnterior)
+                : 0);
+
+        model.addAttribute("estudiosNuevosSemana", estudiosNuevosSemana);
+        model.addAttribute("pctEstudiosCrecimiento", estudiosMesAnterior > 0
+                ? (int) Math.round((estudiosEsteMes - estudiosMesAnterior) * 100.0 / estudiosMesAnterior)
+                : 0);
+
+        // Descargas mes anterior (aproximado por auditorías)
+        long auditoriasMesAnterior = auditoriaService.contarEntreFechas(mesAnteriorInicio, mesInicio);
+        long auditoriasEsteMes = auditoriaService.contarEntreFechas(mesInicio, ahora);
+        model.addAttribute("pctDescargasCrecimiento", auditoriasMesAnterior > 0
+                ? (int) Math.round((auditoriasEsteMes - auditoriasMesAnterior) * 100.0 / auditoriasMesAnterior)
+                : 0);
+
         var auditorias = auditoriaService.listarAuditoriasPaginado(0, 50);
         model.addAttribute("auditorias", auditorias.getContent());
         model.addAttribute("currentPage", 0);
         model.addAttribute("totalPages", auditorias.getTotalPages());
         model.addAttribute("totalElements", auditorias.getTotalElements());
+
+        // ── Distribución real por temática para el donut chart ──
+        Map<String, Long> byTematica = normativaService.contarPorTematica();
+        long normEC   = byTematica.getOrDefault("EC",  0L);
+        long normGR   = byTematica.getOrDefault("GR",  0L);
+        long normEE   = byTematica.getOrDefault("EE",  0L);
+        long normREP  = byTematica.getOrDefault("REP", 0L);
+        long totalNorm = byTematica.values().stream().mapToLong(Long::longValue).sum();
+        long normOtro  = Math.max(0L, totalNorm - normEC - normGR - normEE - normREP);
+        model.addAttribute("normEC",   normEC);
+        model.addAttribute("normGR",   normGR);
+        model.addAttribute("normEE",   normEE);
+        model.addAttribute("normREP",  normREP);
+        model.addAttribute("normOtro", normOtro);
+        model.addAttribute("totalNormativas", totalNorm);
+        model.addAttribute("pctEC",  totalNorm > 0 ? (int) Math.round(normEC  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctGR",  totalNorm > 0 ? (int) Math.round(normGR  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctEE",  totalNorm > 0 ? (int) Math.round(normEE  * 100.0 / totalNorm) : 0);
+        model.addAttribute("pctREP", totalNorm > 0 ? (int) Math.round(normREP * 100.0 / totalNorm) : 0);
+        model.addAttribute("conteoPorTematica", byTematica);
+        var tematicas = tematicaService.listarTematicasTodas();
+        List<Map<String, Object>> donutData = tematicas.stream().map(t -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("codigo", t.getCodigo());
+            item.put("nombre", t.getNombre());
+            item.put("colorHex", t.getColorHex());
+            item.put("count", byTematica.getOrDefault(t.getCodigo(), 0L));
+            return item;
+        }).collect(java.util.stream.Collectors.toList());
+        model.addAttribute("donutData", donutData);
 
         return "Admin/inicio";
     }
@@ -125,20 +196,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
         return "Admin/usuarios";
-    }
-
-    @GetMapping("/admin/auditoria")
-    public String auditoria(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        var auditorias = auditoriaService.listarAuditoriasPaginado(page, size);
-        model.addAttribute("auditorias", auditorias.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", auditorias.getTotalPages());
-        model.addAttribute("totalElements", auditorias.getTotalElements());
-        return "Admin/auditoria";
     }
 
     @GetMapping("/admin/documentos")
@@ -168,6 +225,10 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("estudios", estudios);
         model.addAttribute("normativas", normativas);
         model.addAttribute("totalDescargas", totalDescargas);
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
+        model.addAttribute("tiposNormativa", tiposNormativaService.listarTipos());
+        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstados());
         return "Admin/admin-docs";
     }
 
@@ -187,26 +248,38 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("kpiIngresos", (int) auditorias.getTotalElements());
         model.addAttribute("kpiDescargas", totalDescargas);
         model.addAttribute("kpiUsuariosActivos", usuarioService.listarUsuariosActivos().size());
-        model.addAttribute("kpiDocsVistos", totalDescargas);
+        int totalVisualizaciones = estudios.stream()
+                .mapToInt(e -> e.getVisualizacionesCount() != null ? e.getVisualizacionesCount() : 0).sum()
+                + normativas.stream()
+                .mapToInt(n -> n.getVisualizacionesCount() != null ? n.getVisualizacionesCount() : 0).sum();
+        model.addAttribute("kpiDocsVistos", totalVisualizaciones);
 
+        // Daily activity for the last 30 days using real auditoría data
+        Instant hace30d = Instant.now().minus(30, ChronoUnit.DAYS);
+        var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace30d, Instant.now());
         List<Integer> chartIngresosData = new ArrayList<>();
         List<String> chartIngresosLabels = new ArrayList<>();
-        int auditoriaCount = auditorias.getContent().size();
-        int baseValue = auditoriaCount > 0 ? auditoriaCount / 31 : 8;
-        for (int i = 1; i <= 31; i++) {
-            chartIngresosData.add((int) (baseValue + (Math.random() * baseValue * 0.5)));
-            chartIngresosLabels.add(String.valueOf(i));
+        Map<String, Long> actividadMap = new java.util.LinkedHashMap<>();
+        actividadDiaria.forEach(day -> actividadMap.put((String) day.get("fecha"), ((Number) day.get("count")).longValue()));
+        java.time.LocalDate diaInicio = java.time.LocalDate.now().minusDays(29);
+        for (int i = 0; i < 30; i++) {
+            java.time.LocalDate dia = diaInicio.plusDays(i);
+            String key = dia.toString();
+            chartIngresosLabels.add(String.valueOf(dia.getDayOfMonth()));
+            chartIngresosData.add(actividadMap.getOrDefault(key, 0L).intValue());
         }
         model.addAttribute("chartIngresosData", chartIngresosData);
         model.addAttribute("chartIngresosLabels", chartIngresosLabels);
+        model.addAttribute("actividadDiaria", actividadDiaria);
 
+        // Real counts by thematic category
+        Map<String, Long> byTematicaReportes = normativaService.contarPorTematica();
         List<Integer> chartTematicaData = new ArrayList<>();
         List<String> chartTematicaLabels = Arrays.asList("EC", "GR", "EE", "REP");
-        int descarPorCategoria = totalDescargas > 0 ? totalDescargas / 4 : 12;
-        chartTematicaData.add(descarPorCategoria + 15);
-        chartTematicaData.add(descarPorCategoria + 10);
-        chartTematicaData.add(descarPorCategoria + 5);
-        chartTematicaData.add(descarPorCategoria);
+        chartTematicaData.add(byTematicaReportes.getOrDefault("EC",  0L).intValue());
+        chartTematicaData.add(byTematicaReportes.getOrDefault("GR",  0L).intValue());
+        chartTematicaData.add(byTematicaReportes.getOrDefault("EE",  0L).intValue());
+        chartTematicaData.add(byTematicaReportes.getOrDefault("REP", 0L).intValue());
         model.addAttribute("chartTematicaData", chartTematicaData);
         model.addAttribute("chartTematicaLabels", chartTematicaLabels);
 
@@ -251,11 +324,13 @@ public class AdminController extends BaseReportesController {
             if (usuariosMap.containsKey(u.getId())) {
                 usuariosMap.get(u.getId()).put("nombre", u.getNombreCompleto());
                 usuariosMap.get(u.getId()).put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
+                usuariosMap.get(u.getId()).put("rolNombre", u.getRolNombre());
             } else {
                 Map<String, Object> usrData = new HashMap<>();
                 usrData.put("id", u.getId());
                 usrData.put("nombre", u.getNombreCompleto());
                 usrData.put("empresa", u.getEmpresaNombre() != null ? u.getEmpresaNombre() : "N/A");
+                usrData.put("rolNombre", u.getRolNombre());
                 usrData.put("interacciones", 0);
                 usuariosMap.put(u.getId(), usrData);
             }
@@ -264,23 +339,82 @@ public class AdminController extends BaseReportesController {
         topUsuarios.sort((a, b) -> ((Integer) b.get("interacciones")).compareTo((Integer) a.get("interacciones")));
         int maxInteracciones = topUsuarios.isEmpty() ? 1 : ((Integer) topUsuarios.get(0).get("interacciones")).intValue();
         List<Map<String, Object>> topUsuariosFinal = new ArrayList<>();
-        topUsuarios.stream().filter(usr -> usr.get("nombre") != null).limit(5).forEach(usr -> {
+        topUsuarios.stream().filter(usr -> usr.get("nombre") != null && !"SUPERADMIN".equalsIgnoreCase(String.valueOf(usr.get("rolNombre")))).limit(5).forEach(usr -> {
             usr.put("porcentaje", (int) (maxInteracciones > 0 ? ((Integer) usr.get("interacciones") * 100.0) / maxInteracciones : 0));
             topUsuariosFinal.add(usr);
         });
         model.addAttribute("topUsuarios", topUsuariosFinal);
 
+        // Colecciones y valores para JS inline y barras de progreso
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
+        var usuariosActivosList = usuarioService.listarUsuariosActivos();
+        model.addAttribute("usuariosActivos", usuariosActivosList);
+        model.addAttribute("maxEstudios", estudios.isEmpty() ? 1 : estudios.size());
+        model.addAttribute("maxNormativas", normativas.isEmpty() ? 1 : normativas.size());
+        var todosUsuariosR = usuarioService.listarUsuarios();
+        int pctUsuariosActivosBar = !todosUsuariosR.isEmpty()
+                ? (int)(usuariosActivosList.size() * 100.0 / todosUsuariosR.size()) : 0;
+        model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
+        model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
+
         return "Admin/reportes";
+    }
+
+    @GetMapping("/admin/auditoria/export.csv")
+    public void exportarAuditoriaCsv(HttpServletResponse response,
+                                      @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
+        var auditorias = auditoriaService.listarAuditoriasUltimas100();
+        var pw = response.getWriter();
+        pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
+        for (var a : auditorias) {
+            pw.printf("%s,%s,%s,%s,%s,\"%s\",%s,%s%n",
+                a.getId(),
+                a.getFechaAccion() != null ? a.getFechaAccion().toString().substring(0, 19).replace('T', ' ') : "",
+                a.getUsuarioNombre() != null ? a.getUsuarioNombre() : "",
+                a.getAccion() != null ? a.getAccion() : "",
+                a.getModulo() != null ? a.getModulo() : "",
+                a.getDescripcion() != null ? a.getDescripcion().replace("\"", "\"\"") : "",
+                a.getEstado() != null ? a.getEstado() : "",
+                a.getIpAddress() != null ? a.getIpAddress() : "");
+        }
     }
 
     @GetMapping("/admin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditorias = auditoriaService.listarAuditoriasPaginado(0, 50);
-        model.addAttribute("auditorias", auditorias.getContent());
-        model.addAttribute("currentPage", 0);
-        model.addAttribute("totalPages", auditorias.getTotalPages());
-        model.addAttribute("totalElements", auditorias.getTotalElements());
+        var adminOpt = usuarioService.findByCorreo(user.getUsername());
+        var auditoriasPage = adminOpt.map(u -> auditoriaService.listarAuditoriasPorUsuarioId(0, 100, u.getId()))
+                .orElse(null);
+        model.addAttribute("auditorias", auditoriasPage != null ? auditoriasPage.getContent() : java.util.Collections.emptyList());
+        model.addAttribute("totalElements", auditoriasPage != null ? auditoriasPage.getTotalElements() : 0);
+
+        if (auditoriasPage != null && !auditoriasPage.isEmpty()) {
+            var conteoPorModulo = auditoriasPage.getContent().stream()
+                    .filter(a -> a.getModulo() != null)
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            a -> a.getModulo(), java.util.stream.Collectors.counting()))
+                    .entrySet().stream()
+                    .map(e -> {
+                        var m = new java.util.HashMap<String, Object>();
+                        m.put("modulo", e.getKey());
+                        m.put("count", e.getValue());
+                        return m;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            model.addAttribute("conteoPorModulo", conteoPorModulo);
+        } else {
+            model.addAttribute("conteoPorModulo", java.util.Collections.emptyList());
+        }
+
+        // Actividad últimos 7 días
+        Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
+        var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace7d, Instant.now());
+        model.addAttribute("actividadDiaria", actividadDiaria != null ? actividadDiaria : java.util.Collections.emptyList());
+
         return "Admin/trazabilidad";
     }
 
@@ -289,16 +423,156 @@ public class AdminController extends BaseReportesController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
-        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         return "Admin/notificaciones";
+    }
+
+    @PostMapping("/admin/notificaciones/enviar")
+    public String enviarNotificacion(
+            @RequestParam String destinatario,
+            @RequestParam String titulo,
+            @RequestParam String mensaje,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if ("todos".equals(destinatario)) {
+            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
+            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
+        } else {
+            try {
+                Long id = Long.parseLong(destinatario);
+                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
+                ra.addFlashAttribute("enviado", "Notificación enviada.");
+            } catch (NumberFormatException e) {
+                ra.addFlashAttribute("error", "Destinatario inválido.");
+            }
+        }
+        return "redirect:/admin/notificaciones";
     }
 
     @GetMapping("/admin/perfil")
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("usuario", u);
+
+            String nombre = u.getNombreCompleto() != null ? u.getNombreCompleto().trim() : "";
+            String[] partes = nombre.split("\\s+");
+            String initiales = partes.length >= 2
+                    ? String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0))
+                    : (nombre.length() > 0 ? String.valueOf(nombre.charAt(0)) : "?");
+            model.addAttribute("initiales", initiales.toUpperCase());
+
+            if (u.getCreatedAt() != null) {
+                java.time.LocalDate ld = u.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", new java.util.Locale("es"));
+                model.addAttribute("createdAtMes", "Desde " + ld.format(fmt));
+                model.addAttribute("createdAtFormatted", ld.toString());
+            } else {
+                model.addAttribute("createdAtMes", "");
+                model.addAttribute("createdAtFormatted", "");
+            }
+
+            if (u.getUltimoLogin() != null) {
+                java.time.LocalDate ld = u.getUltimoLogin().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                model.addAttribute("ultimoAccesoFormatted", ld.toString());
+            } else {
+                model.addAttribute("ultimoAccesoFormatted", "No registrado");
+            }
+
+            var auditoriasUsuario = auditoriaService.listarAuditoriasPorUsuario(u.getId());
+
+            long descargasCount = auditoriasUsuario.stream()
+                    .filter(a -> "DESCARGAR_DOCUMENTO".equals(a.getAccion()))
+                    .count();
+            model.addAttribute("descargasCount", descargasCount);
+
+            long busquedasCount = auditoriasUsuario.stream()
+                    .filter(a -> a.getAccion() != null && (a.getAccion().contains("BUSQUEDA") || a.getAccion().contains("CONSULTA")))
+                    .count();
+            model.addAttribute("busquedasCount", busquedasCount);
+
+            long documentosVistos = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()) || "ESTUDIOS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("documentosVistos", documentosVistos);
+
+            long normativasConsultadas = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("normativasConsultadas", normativasConsultadas);
+
+            var auditoriasRecientes = auditoriaService.listarAuditoriasPorUsuarioPaginado(u.getId(), 0, 5);
+            model.addAttribute("actividadReciente", auditoriasRecientes.getContent());
+        });
         return "Admin/perfil";
+    }
+
+    @PostMapping("/admin/perfil/actualizar")
+    public String actualizarPerfil(
+            @RequestParam Long id,
+            @RequestParam String nombreCompleto,
+            @RequestParam String correoCorporativo,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra,
+            HttpSession session) {
+        if (nombreCompleto == null || nombreCompleto.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
+            return "redirect:/admin/perfil";
+        }
+        if (correoCorporativo == null || correoCorporativo.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El correo corporativo es obligatorio");
+            return "redirect:/admin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                if (!u.getId().equals(id)) {
+                    ra.addFlashAttribute("errorPerfil", "No tienes permiso para editar este usuario");
+                    return;
+                }
+                var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
+                dto.setNombreCompleto(nombreCompleto);
+                dto.setCorreoCorporativo(correoCorporativo);
+                var updated = usuarioService.actualizarUsuario(id, dto);
+                session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                        updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
+                        updated.getRolNombre(), null, null));
+                ra.addFlashAttribute("exitoPerfil", "Información personal actualizada correctamente");
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPerfil", "Error al actualizar: " + e.getMessage());
+        }
+        return "redirect:/admin/perfil";
+    }
+
+    @PostMapping("/admin/perfil/cambiar-password")
+    public String cambiarPassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if (!newPassword.equals(confirmPassword)) {
+            ra.addFlashAttribute("errorPassword", "Las contraseñas nuevas no coinciden");
+            return "redirect:/admin/perfil";
+        }
+        if (newPassword.length() < 8) {
+            ra.addFlashAttribute("errorPassword", "La contraseña debe tener al menos 8 caracteres");
+            return "redirect:/admin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                if (ok) {
+                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                } else {
+                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                }
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPassword", "Error al cambiar la contraseña: " + e.getMessage());
+        }
+        return "redirect:/admin/perfil";
     }
 
     @PostMapping("/admin/notificaciones/marcar/{id}")
@@ -386,40 +660,21 @@ public class AdminController extends BaseReportesController {
     }
 
     @GetMapping("/admin/estudios/editar/{id}")
-    public String estudiosEditar(@PathVariable Long id, Model model,
-                                  @AuthenticationPrincipal UserDetails user) {
+    public String editarEstudio(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("isEdit",     true);
-        model.addAttribute("estudio",    estudioService.obtenerEstudioPorId(id));
-        model.addAttribute("tematicas",  tematicaService.listarTematicas());
-        model.addAttribute("etiquetas",  etiquetaService.listarEtiquetas());
+        try {
+            model.addAttribute("estudio", estudioService.obtenerEstudioPorId(id));
+        } catch (Exception e) {
+            model.addAttribute("estudio", null);
+        }
+        model.addAttribute("etiquetas", etiquetaService.listarEtiquetas());
+        model.addAttribute("tematicas", tematicaService.listarTematicas());
         model.addAttribute("normativas", normativaService.listarNormativasParaSelector());
+        model.addAttribute("isEdit", true);
         return "Admin/estudios-form";
     }
 
-    @PostMapping("/admin/notificaciones/enviar")
-    public String enviarNotificacion(
-            @RequestParam String destinatario,
-            @RequestParam String titulo,
-            @RequestParam String mensaje,
-            @AuthenticationPrincipal UserDetails user,
-            RedirectAttributes ra) {
-        if ("todos".equals(destinatario)) {
-            int count = notificacionService.enviarNotificacionGlobal(titulo, mensaje, "MENSAJE_ADMIN");
-            ra.addFlashAttribute("enviado", "Notificación enviada a " + count + " usuarios.");
-        } else {
-            try {
-                Long id = Long.parseLong(destinatario);
-                notificacionService.crearNotificacion(id, titulo, mensaje, "MENSAJE_ADMIN");
-                ra.addFlashAttribute("enviado", "Notificación enviada.");
-            } catch (NumberFormatException e) {
-                ra.addFlashAttribute("error", "Destinatario inválido.");
-            }
-        }
-        return "redirect:/admin/notificaciones";
-    }
-
-    /* 
+    /*
                                                 w#dUCw*&r   vd#a*qdoMZ
                             IW#mzZ8%}          Z#{>><_<<~{oQ,&X+~~~-_?f%;
                           j&0i!l!!!lfbQ       |a\i}vCOZL\ivb8]+_?{t1}-_ha

@@ -2,25 +2,32 @@ package org.reciclame.demo.repository;
 
 import org.reciclame.demo.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    // Buscar por correo (para login y validar duplicados)
     Optional<Usuario> findByCorreoCorporativo(String correoCorporativo);
 
-    // Buscar por DNI (para validar duplicados al registrar)
     Optional<Usuario> findByDni(String dni);
 
-    // Verificar si ya existe un correo (en validaciones será útil)
     boolean existsByCorreoCorporativo(String correoCorporativo);
 
-    // Verificar si ya existe un DNI
     boolean existsByDni(String dni);
 
     List<Usuario> findTop100ByOrderByCreatedAtDesc();
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.estadoActivo = true")
+    long contarNuevosDesde(@Param("desde") Instant desde);
+
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.createdAt < :hasta AND u.estadoActivo = true")
+    long contarEntreFechas(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    List<Usuario> findByRolNombre(String nombre);
 }

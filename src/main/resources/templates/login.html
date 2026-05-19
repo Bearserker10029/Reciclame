@@ -226,6 +226,15 @@
       background: rgba(255, 255, 255, .13);
     }
 
+    .glass-input:-webkit-autofill,
+    .glass-input:-webkit-autofill:hover,
+    .glass-input:-webkit-autofill:focus,
+    .glass-input:-webkit-autofill:active {
+      -webkit-text-fill-color: #fff;
+      -webkit-box-shadow: 0 0 0 1000px rgba(255, 255, 255, .09) inset !important;
+      transition: background-color 5000s ease-in-out 0s;
+    }
+
     .eye-btn {
       position: absolute;
       right: 13px;

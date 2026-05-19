@@ -8,8 +8,12 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/socio/' + (map[p] || p); } }</script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -17,42 +21,1821 @@
     }
 
     body {
-      background: #F5F6FA;
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
-    .anim-1 { animation: fadeInUp .5s ease both; }
-    .anim-2 { animation: fadeInUp .5s .1s ease both; }
-    .anim-3 { animation: fadeInUp .5s .2s ease both; }
-    .anim-4 { animation: fadeInUp .5s .3s ease both; }
+
+    @keyframes rowSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .5);
+      }
+
+      60% {
+        box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes tabSlide {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes waterWave {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 80px;
+      transition: all .3s ease;
+      cursor: default;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .v {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .l {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    .norm-tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.28);
+
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 20px;
+      width: fit-content;
+      animation: fadeUp .45s ease both;
+    }
+
+    .norm-tab {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+
+    .norm-tab:hover {
+      background: #F3F4F6;
+      color: #1B3A5C;
+    }
+
+    .norm-tab.active {
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+    }
+
+    .norm-tab .count-badge {
+      background: rgba(255, 255, 255, .25);
+      color: inherit;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .norm-tab:not(.active) .count-badge {
+      background: rgba(27, 58, 92, .08);
+      color: #6B7280;
+    }
+
+    .filter-row {
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
+    }
+
+    .filter-row input,
+    .filter-row select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      color: #374151;
+      transition: all .2s;
+      background: #fff;
+    }
+
+    .filter-row input {
+      padding-left: 34px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .norm-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 20px;
+      align-items: start;
+      animation: fadeUp .5s .1s ease both;
+    }
+
+    #table-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .norm-table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
+      overflow: visible;
+    }
+
+    .norm-table-scroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .norm-table-card td:has(.drive-row-actions),
+    .norm-table-card .drive-dropdown,
+    .norm-table-card .drive-add-entry {
+      overflow: visible;
+    }
+
+    .norm-row.norm-row--menu-open {
+      position: relative;
+      z-index: 10060;
+    }
+
+    .norm-table-card thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .norm-table-card thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 12px 14px;
+      border: none;
+    }
+
+    .norm-row {
+      border-bottom: 1px solid #F3F4F6;
+      transition: background .2s, transform .15s;
+      animation: rowSlide .35s ease both;
+    }
+
+    .norm-row:hover {
+      background: #F0FFF6;
+      transform: translateX(2px);
+    }
+
+    .norm-row td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    .norm-row:last-child {
+      border-bottom: none;
+    }
+
+    .badge-vinc {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-novinc {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-vigente {
+      background: rgba(46, 204, 113, .1);
+      color: #27AE60;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-proyecto {
+      background: rgba(243, 156, 18, .1);
+      color: #C27C0E;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-derogada {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .tema-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      border-left: 3px solid;
+    }
+
+    .tema-ec {
+      background: rgba(46, 204, 113, .08);
+      color: #27AE60;
+      border-color: #2ECC71;
+    }
+
+    .tema-gr {
+      background: rgba(52, 152, 219, .08);
+      color: #2471A3;
+      border-color: #3498DB;
+    }
+
+    .tema-ee {
+      background: rgba(243, 156, 18, .08);
+      color: #D68910;
+      border-color: #F39C12;
+    }
+
+    .tema-rep {
+      background: rgba(231, 76, 60, .08);
+      color: #C0392B;
+      border-color: #E74C3C;
+    }
+
+    .tema-otro {
+      background: rgba(156, 163, 175, .1);
+      color: #6B7280;
+      border-color: #9CA3AF;
+    }
+
+    .btn-ver {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .btn-ver::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s;
+    }
+
+    .btn-ver:hover {
+      background: #2ECC71;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 16px rgba(46, 204, 113, .4);
+    }
+
+    .btn-ver:hover::after {
+      transform: translateX(100%);
+    }
+
+    .side-card {
+      background: rgba(255, 255, 255, 0.28);
+
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 16px;
+      transition: box-shadow .3s;
+    }
+
+    .side-card:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .11);
+    }
+
+    .side-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .kpi-topic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      background: #FAFBFC;
+      border: 1px solid #F0F4F8;
+      margin-bottom: 6px;
+      transition: all .2s;
+      cursor: default;
+      animation: fadeUp .4s ease both;
+    }
+
+    .kpi-topic:hover {
+      background: #F0FFF6;
+      border-color: rgba(46, 204, 113, .2);
+      transform: translateX(3px);
+    }
+
+    .kpi-topic:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    .empty-norm {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-norm i {
+      font-size: 44px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-norm p {
+      color: #9CA3AF;
+      font-size: 14px;
+    }
+
+    .vista-toggle-group {
+      display: inline-flex;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .vista-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn+.vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .grid-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      transition: all .2s ease;
+      animation: fadeUp .4s ease both;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .grid-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+      transform: translateY(-2px);
+    }
+
+    .grid-card-icon-area {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .grid-card-icon-area i {
+      font-size: 28px;
+    }
+
+    .grid-card-info {
+      padding: 14px;
+    }
+
+    .grid-card-info .card-title {
+      font-weight: 700;
+      color: #1B3A5C;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .grid-card-info .card-anio {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-bottom: 6px;
+    }
+
+    .grid-card-info .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #F3F4F6;
+      padding-top: 10px;
+    }
+
+    .grid-card-info .card-badges {
+      display: flex;
+      gap: 4px;
+    }
+
+    .grid-card-info .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .badge-vinc {
+      background: rgba(231, 76, 60, .12);
+      color: #C0392B;
+    }
+
+    .badge-novinc {
+      background: rgba(52, 152, 219, .12);
+      color: #2471A3;
+    }
+
+    .badge-vigente {
+      background: rgba(46, 204, 113, .12);
+      color: #27AE60;
+    }
+
+    .badge-proyecto {
+      background: rgba(243, 156, 18, .12);
+      color: #C27C0E;
+    }
+
+    .badge-derogada {
+      background: rgba(156, 163, 175, .14);
+      color: #6B7280;
+    }
+
+    .grid-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
+    }
+
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
+
+    .grid-card-actions button,
+    .grid-card-actions a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .grid-card-actions .btn-view {
+      color: #2ECC71;
+    }
+
+    .grid-card-actions button:hover,
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+    .btn-action-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(46, 204, 113, .3);
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .2s;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .btn-action-icon:hover {
+      background: #2ECC71;
+      color: #fff;
+      border-color: #2ECC71;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(46, 204, 113, .3);
+    }
+
+    .btn-action-icon i {
+      pointer-events: none;
+    }
+
+    .drive-row-actions {
+      position: relative;
+      display: inline-flex;
+      vertical-align: middle;
+      z-index: 50;
+    }
+
+    .drive-kebab {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #64748B;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .drive-kebab:hover {
+      background: rgba(0, 0, 0, .07);
+      color: #1B3A5C;
+    }
+
+    .drive-dropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 4px;
+      min-width: 228px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #E8ECF0;
+      z-index: 10050;
+      padding: 6px 0;
+      overflow: visible;
+    }
+
+    .drive-dropdown.is-open {
+      display: block !important;
+    }
+
+    .drive-dropdown.is-portaled {
+      position: fixed;
+      margin-top: 0;
+      z-index: 200000;
+    }
+
+    .drive-dropdown button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .drive-dropdown button:hover:not(:disabled) {
+      background: #F3F4F6;
+    }
+
+    .drive-dropdown button:disabled {
+      opacity: .48;
+      cursor: not-allowed;
+    }
+
+    .drive-add-entry {
+      position: relative;
+    }
+
+    .drive-add-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .drive-add-trigger:hover {
+      background: #F3F4F6;
+    }
+
+    .drive-add-submenu {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      margin-left: 4px;
+      min-width: 200px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+      border: 1px solid #E8ECF0;
+      z-index: 10051;
+      padding: 6px 0;
+    }
+
+    .drive-add-submenu.is-open {
+      display: block;
+    }
+
+    .drive-add-submenu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .drive-add-submenu button:hover {
+      background: #F3F4F6;
+    }
+
+    .modal-overlay-viz {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay-viz.show {
+      display: flex;
+    }
+
+    .modal-content-viz {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+      width: 90%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header-viz {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .modal-title-viz {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin: 0;
+    }
+
+    .modal-close-viz {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #F3F4F6;
+      color: #6B7280;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all .15s;
+      font-family: inherit;
+    }
+
+    .modal-close-viz:hover {
+      background: #E5E7EB;
+      color: #1B3A5C;
+    }
+
+    .modal-body-viz {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #F9FAFB;
+    }
+
+    .pdf-viewer-viz {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pdf-page-viz {
+      max-width: 100%;
+      max-height: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
+
+    .excel-table-viz {
+      width: 100%;
+      overflow: auto;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+    }
+
+    .excel-table-viz table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .excel-table-viz th {
+      background: #F8FAFB;
+      color: #6B7280;
+      font-weight: 700;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 2px solid #EEF0F3;
+      white-space: nowrap;
+    }
+
+    .excel-table-viz td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #F0F2F5;
+      color: #374151;
+    }
+
+    .excel-table-viz tbody tr:hover {
+      background: #F6FAF8;
+    }
   </style>
 </head>
 
 <body>
-  <div id="s-app" style="display:flex;flex-direction:column;min-height:100vh;">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
       <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
-      <main
+      <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
-        <div class="anim-1">
-          <th:block th:replace="~{Visualizador/normativo :: normativo-content}"></th:block>
+
+        <div class="estudios-hero">
+          <div
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-balance-scale" style="color:#2ECC71;font-size:17px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Repositorio Normativo</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Marco regulatorio de economía circular
+                    y gestión de residuos</p>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="v" id="hs-total">—</div>
+                <div class="l">Total</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="v" id="hs-nacional" style="color:#34D399;">—</div>
+                <div class="l">Nacional</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="v" id="hs-intl" style="color:#60A5FA;">—</div>
+                <div class="l">Internac.</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.4s">
+                <div class="v" id="hs-vigentes" style="color:#A78BFA;">—</div>
+                <div class="l">Vigentes</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="norm-tab-bar">
+          <button id="ntab-todos" class="norm-tab active" onclick="showNormativoTab('todos')">
+            <i class="fas fa-globe"></i> Todos
+            <span class="count-badge" id="badge-todos">—</span>
+          </button>
+          <button id="ntab-nacional" class="norm-tab" onclick="showNormativoTab('nacional')">
+            <i class="fas fa-flag"></i> Nacional
+            <span class="count-badge" id="badge-nacional">—</span>
+          </button>
+          <button id="ntab-internacional" class="norm-tab" onclick="showNormativoTab('internacional')">
+            <i class="fas fa-earth-americas"></i> Internacional
+            <span class="count-badge" id="badge-intl">—</span>
+          </button>
+        </div>
+
+        <div class="filter-row">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i class="fas fa-search"
+              style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
+            <input id="norm-search" placeholder="Buscar por título..." oninput="applyNormFilter()" />
+          </div>
+          <select id="norm-clasificacion" onchange="applyNormFilter()">
+            <option value="">Clasificación: Todas</option>
+            <option value="VINCULANTE">Vinculante</option>
+            <option value="NO_VINCULANTE">No vinculante</option>
+          </select>
+          <select id="norm-estado" onchange="applyNormFilter()">
+            <option value="">Estado: Todos</option>
+            <option value="Vigente">Vigente</option>
+            <option value="Proyecto publicado">Proyecto publicado</option>
+            <option value="Consulta pública">Consulta pública</option>
+            <option value="Derogada">Derogada</option>
+          </select>
+          <select id="norm-tema" onchange="applyNormFilter()">
+            <option value="">Temática: Todas</option>
+            <option value="EC">EC</option>
+            <option value="GR">GR</option>
+            <option value="EE">EE</option>
+            <option value="REP">REP</option>
+          </select>
+          <select id="norm-anio" onchange="applyNormFilter()">
+            <option value="">Todos los años</option>
+          </select>
+          <div class="vista-toggle-group">
+            <button class="vista-toggle-btn active" id="btn-vista-lista" onclick="setNormVista('lista')" title="Lista">
+              <i class="fas fa-list"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
+          <button onclick="clearNormFilters()"
+            style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
+            onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+            onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+        </div>
+
+        <div class="norm-layout">
+          <div id="table-col">
+            <div class="norm-table-card">
+              <div class="norm-table-scroll">
+                <table class="table mb-0" id="norm-table" style="min-width:820px;">
+                  <thead>
+                    <tr>
+                      <th style="width:32%;">Título</th>
+                      <th>Año</th>
+                      <th>Tipo</th>
+                      <th>Clasif.</th>
+                      <th>Estado</th>
+                      <th>Temática</th>
+                      <th class="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="norm-tbody">
+                    <tr th:each="n, iStat : ${normativas}" class="norm-row" th:data-id="${n.id}"
+                      th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}" th:data-anio="${n.anio}"
+                      th:data-clasificacion="${n.clasificacion}" th:data-estado="${n.estadoNormativaNombre}"
+                      th:data-tema="${n.tematicaCodigo}" th:data-url="${n.archivoUrl}"
+                      th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
+
+                      <td class="fw-bold"
+                        style="color:#1B3A5C;font-size:12px;max-width:220px;line-height:1.4;white-space:normal;"
+                        th:text="${n.titulo}">Título de la normativa</td>
+
+                      <td>
+                        <span
+                          style="font-weight:700;color:#1B3A5C;background:#EEF2FF;padding:2px 8px;border-radius:5px;"
+                          th:text="${n.anio}">—</span>
+                      </td>
+
+                      <td style="color:#6B7280;font-size:12px;" th:text="${n.tipoNormativaNombre}">—</td>
+
+                      <td>
+                        <span th:if="${n.clasificacion == 'VINCULANTE'}" class="badge-vinc">Vinculante</span>
+                        <span th:unless="${n.clasificacion == 'VINCULANTE'}" class="badge-novinc">No vinculante</span>
+                      </td>
+
+                      <td>
+                        <span th:if="${n.estadoNormativaNombre != null}" class="badge-vigente"
+                          th:text="${n.estadoNormativaNombre}">—</span>
+                        <span th:unless="${n.estadoNormativaNombre != null}" class="badge-derogada">—</span>
+                      </td>
+
+                      <td>
+                        <span th:switch="${n.tematicaCodigo}">
+                          <span th:case="'EC'" class="tema-badge tema-ec">EC</span>
+                          <span th:case="'GR'" class="tema-badge tema-gr">GR</span>
+                          <span th:case="'EE'" class="tema-badge tema-ee">EE</span>
+                          <span th:case="'REP'" class="tema-badge tema-rep">REP</span>
+                          <span th:case="*" class="tema-badge tema-otro" th:text="${n.tematicaCodigo}">—</span>
+                        </span>
+                      </td>
+
+                      <td class="text-center">
+                        <div style="display:inline-flex;align-items:center;gap:6px;">
+                          <a class="btn-action-icon" title="Ver" th:href="@{/socio/normativo/{id}/ver(id=${n.id})}">
+                            <i class="fas fa-eye"></i>
+                          </a>
+                          <button class="btn-action-icon" title="Compartir" th:attr="onclick=|shareNormRow([[${n.id}]])|">
+                            <i class="fas fa-share-alt"></i>
+                          </button>
+                          <button class="btn-action-icon" title="Añadir a carpeta" th:attr="onclick=|openModalCarpetaFromData('NORMATIVA', '${n.id}', &quot;${n.titulo}&quot;)|">
+                            <i class="fas fa-folder-plus"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr th:if="${#lists.isEmpty(normativas)}">
+                      <td colspan="7">
+                        <div class="empty-norm">
+                          <i class="fas fa-balance-scale"></i>
+                          <p>No hay normativas registradas aún.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div id="no-results-norm" style="display:none;text-align:center;padding:32px;">
+                <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
+                <p style="color:#9CA3AF;font-size:13px;">No se encontraron normativas con los filtros actuales.</p>
+              </div>
+
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+                <span id="conteo-normas" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+                <div id="paginacion-normas" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+              </div>
+            </div>
+
+            <div id="normativas-grid" class="grid-container" style="display:none;"></div>
+          </div>
+
+          <div>
+            <div class="side-card" style="animation:fadeUp .5s .2s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:12px;"></i> Distribución temática
+              </div>
+              <div style="position:relative;width:180px;height:100px;margin:0 auto 16px;">
+                <canvas id="donut-norm" width="180" height="100"></canvas>
+                <div style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);text-align:center;">
+                  <div id="donut-center-val" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
+                  <div
+                    style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
+                    Vigentes</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div class="kpi-topic" style="animation-delay:.1s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#22C55E;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Economía Circular</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EC</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ec" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.15s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#38BDF8;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Gestión de Residuos</div>
+                      <div style="font-size:10px;color:#9CA3AF;">GR</div>
+                    </div>
+                  </div>
+                  <span id="kpi-gr" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.2s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#F59E0B;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Envases y Embalajes</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EE</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ee" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.25s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#EF4444;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Resp. Extendida</div>
+                      <div style="font-size:10px;color:#9CA3AF;">REP</div>
+                    </div>
+                  </div>
+                  <span id="kpi-rep" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;">Total normativas</span>
+                <span id="sum-total" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-flag" style="font-size:10px;color:#2ECC71;"></i>Nacionales
+                </span>
+                <span id="sum-nac" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-globe" style="font-size:10px;color:#3498DB;"></i>Internacionales
+                </span>
+                <span id="sum-intl" style="font-size:14px;font-weight:800;color:#3498DB;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-check-circle" style="font-size:10px;color:#27AE60;"></i>Vigentes
+                </span>
+                <span id="sum-vig" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Consulta pública
+                </span>
+                <span id="sum-consulta" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="visor-modal-viz" class="modal-overlay-viz">
+          <div class="modal-content-viz">
+            <div class="modal-header-viz">
+              <h2 id="visor-title-viz" class="modal-title-viz">Visor de Documento</h2>
+              <button class="modal-close-viz" onclick="closeVisorViz()">×</button>
+            </div>
+            <div class="modal-body-viz">
+              <div id="visor-pdf-viz" class="pdf-viewer-viz" style="display:none;">
+                <canvas id="pdf-canvas-viz" class="pdf-page-viz"></canvas>
+                <div
+                  style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
+                  <span id="pdf-page-info-viz">Página 1</span>
+                </div>
+              </div>
+              <div id="visor-excel-viz" class="excel-table-viz" style="display:none;"></div>
+              <div id="visor-loading-viz" style="display:none;text-align:center;color:#6B7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+                <span>Cargando documento...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+          function restoreDriveDropdownDom(menu) {
+            if (!menu || !menu.__muHome) return;
+            menu.classList.remove('is-open', 'is-portaled');
+            menu.style.position = '';
+            menu.style.left = '';
+            menu.style.top = '';
+            menu.style.right = '';
+            menu.style.bottom = '';
+            menu.style.marginTop = '';
+            menu.style.zIndex = '';
+            menu.style.display = '';
+            if (menu.parentElement !== menu.__muHome.parent && menu.__muHome.parent) {
+              if (menu.__muHome.next) {
+                menu.__muHome.parent.insertBefore(menu, menu.__muHome.next);
+              } else {
+                menu.__muHome.parent.appendChild(menu);
+              }
+            }
+          }
+
+          function positionDriveDropdown(menu, kebabBtn) {
+            if (!menu || !kebabBtn) return;
+            if (!menu.__muHome) {
+              menu.__muHome = { parent: menu.parentElement, next: menu.nextSibling };
+            }
+            document.body.appendChild(menu);
+            menu.classList.add('is-open', 'is-portaled');
+            menu.style.display = 'block';
+            var r = kebabBtn.getBoundingClientRect();
+            var mw = 240;
+            var left = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
+            var top = r.bottom + 4;
+            if (top + 120 > window.innerHeight) {
+              top = Math.max(8, r.top - 4 - 120);
+            }
+            menu.style.position = 'fixed';
+            menu.style.left = Math.round(left) + 'px';
+            menu.style.top = Math.round(top) + 'px';
+            menu.style.right = 'auto';
+            menu.style.marginTop = '0';
+            menu.style.zIndex = '200000';
+          }
+
+          window.closeAllDriveDropdowns = function () {
+            document.querySelectorAll('.drive-dropdown.is-open').forEach(restoreDriveDropdownDom);
+            document.querySelectorAll('.norm-row--menu-open').forEach(function (row) {
+              row.classList.remove('norm-row--menu-open');
+            });
+          };
+
+          window.toggleDriveDropdown = function (ev, id) {
+            if (ev) {
+              ev.preventDefault();
+              ev.stopPropagation();
+            }
+            var menu = document.getElementById(id);
+            if (!menu) return;
+            var willOpen = !menu.classList.contains('is-open');
+            window.closeAllDriveDropdowns();
+            if (!willOpen) return;
+            var kebab = ev && ev.currentTarget ? ev.currentTarget : (menu.__muHome && menu.__muHome.parent
+              ? menu.__muHome.parent.querySelector('.drive-kebab')
+              : menu.parentElement.querySelector('.drive-kebab'));
+            var row = kebab ? kebab.closest('.norm-row') : null;
+            positionDriveDropdown(menu, kebab);
+            if (row) row.classList.add('norm-row--menu-open');
+          };
+
+          if (!window.__reciclameDriveOutsideClick) {
+            window.__reciclameDriveOutsideClick = true;
+            document.addEventListener('click', function (e) {
+              if (e.target.closest('.drive-kebab, .drive-dropdown, .drive-add-entry, .drive-add-submenu, .drive-add-cols-wrap, #muAddModal')) {
+                return;
+              }
+              window.closeAllDriveDropdowns();
+            });
+          }
+          if (!window.__reciclameDriveScrollCloseNorm) {
+            window.__reciclameDriveScrollCloseNorm = true;
+            window.addEventListener('scroll', function (e) {
+              if (e.target && e.target.closest && e.target.closest('.drive-dropdown')) return;
+              window.closeAllDriveDropdowns();
+            }, true);
+          }
+          window.addEventListener('resize', function () { window.closeAllDriveDropdowns(); });
+
+          function shareNormRow(id) {
+            var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+            if (!row) return;
+            var tit = row.dataset.titulo || '';
+            var text = window.location.origin + '/socio/normativo — ' + tit;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { alert('Copiado al portapapeles.'); }).catch(function () { window.prompt('Copia manualmente:', text); });
+            } else { window.prompt('Copia manualmente:', text); }
+          }
+
+          function openModalCarpetaFromData(tipo, id, titulo) {
+            var tmp = document.createElement('div');
+            tmp.className = 'drive-add-entry';
+            tmp.setAttribute('data-mu-tipo', tipo);
+            tmp.setAttribute('data-mu-id', id);
+            tmp.setAttribute('data-mu-titulo', titulo);
+            if (window.openMuAddModal) {
+              window.openMuAddModal(tmp);
+            }
+          }
+
+          function openNormVisorFromRow(btn) {
+            var row = btn.closest('tr');
+            if (!row) return;
+            var id = row.dataset.id;
+            if (id) window.location.href = '/socio/normativo/' + id + '/ver';
+          }
+
+          function closeVisorViz() {
+            var modal = document.getElementById('visor-modal-viz');
+            if (modal) modal.classList.remove('show');
+          }
+
+          document.addEventListener('click', function (e) {
+            var modal = document.getElementById('visor-modal-viz');
+            if (modal && e.target === modal) closeVisorViz();
+          });
+
+          (function initCounts() {
+            var rows = document.querySelectorAll('.norm-row');
+            var total = rows.length;
+            var nac = 0, intl = 0, vig = 0, consulta = 0;
+            var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
+
+            rows.forEach(function (r) {
+              var ambito = (r.dataset.ambito || '').toUpperCase();
+              var estado = (r.dataset.estado || '').toLowerCase();
+              var tema = (r.dataset.tema || '').toUpperCase();
+              if (ambito === 'NACIONAL') nac++;
+              if (ambito === 'INTERNACIONAL') intl++;
+              if (estado.includes('vigente')) vig++;
+              if (estado.includes('consulta')) consulta++;
+              if (tema === 'EC') cEC++;
+              if (tema === 'GR') cGR++;
+              if (tema === 'EE') cEE++;
+              if (tema === 'REP') cREP++;
+            });
+
+            setText('hs-total', total);
+            setText('hs-nacional', nac);
+            setText('hs-intl', intl);
+            setText('hs-vigentes', vig);
+            setText('badge-todos', total);
+            setText('badge-nacional', nac);
+            setText('badge-intl', intl);
+            setText('kpi-ec', cEC);
+            setText('kpi-gr', cGR);
+            setText('kpi-ee', cEE);
+            setText('kpi-rep', cREP);
+            setText('sum-total', total);
+            setText('sum-nac', nac);
+            setText('sum-intl', intl);
+            setText('sum-vig', vig);
+            setText('sum-consulta', consulta);
+            setText('donut-center-val', vig);
+
+            var ctx = document.getElementById('donut-norm');
+            if (ctx && window.Chart) {
+              new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                  labels: ['EC', 'GR', 'EE', 'REP'],
+                  datasets: [{
+                    data: [cEC, cGR, cEE, cREP],
+                    backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
+                    borderWidth: 0, hoverOffset: 4
+                  }]
+                },
+                options: {
+                  responsive: false, cutout: '76%',
+                  rotation: 270, circumference: 180,
+                  animation: { duration: 1400, easing: 'easeInOutQuart' },
+                  plugins: { legend: { display: false }, tooltip: { enabled: true } }
+                }
+              });
+            }
+
+            function setText(id, val) {
+              var el = document.getElementById(id);
+              if (el) el.textContent = val;
+            }
+          })();
+
+          (function populateAnios() {
+            var rows = document.querySelectorAll('.norm-row');
+            var years = new Set();
+            rows.forEach(function (r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            var sel = document.getElementById('norm-anio');
+            if (!sel) return;
+            var sorted = Array.from(years).sort(function (a, b) { return b - a; });
+            sorted.forEach(function (y) {
+              var opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            });
+          })();
+
+          function showNormativoTab(tab) {
+            ['todos', 'nacional', 'internacional'].forEach(function (t) {
+              document.getElementById('ntab-' + t).classList.remove('active');
+            });
+            document.getElementById('ntab-' + tab).classList.add('active');
+            window.__normativoTab = tab;
+            try { sessionStorage.setItem('reciclameNormativoTab', tab); } catch (e) { }
+            applyNormFilter();
+          }
+          window.showNormativoTab = showNormativoTab;
+
+          function applyNormFilter() {
+            var activeBtn = document.querySelector('.norm-tab.active');
+            var tab = activeBtn ? activeBtn.id.replace('ntab-', '') : 'todos';
+
+            var q = (document.getElementById('norm-search')?.value || '').toLowerCase().trim();
+            var clasif = (document.getElementById('norm-clasificacion')?.value || '');
+            var estado = (document.getElementById('norm-estado')?.value || '');
+            var tema = (document.getElementById('norm-tema')?.value || '');
+            var anio = (document.getElementById('norm-anio')?.value || '');
+
+            var visibles = 0;
+            document.querySelectorAll('.norm-row').forEach(function (row) {
+              var ambito = (row.dataset.ambito || '').toUpperCase();
+              var titulo = (row.dataset.titulo || '').toLowerCase();
+              var rClasif = (row.dataset.clasificacion || '');
+              var rEstado = (row.dataset.estado || '');
+              var rTema = (row.dataset.tema || '');
+
+              var matchTab = tab === 'todos'
+                || (tab === 'nacional' && ambito === 'NACIONAL')
+                || (tab === 'internacional' && ambito === 'INTERNACIONAL');
+              var matchQ = !q || titulo.includes(q);
+              var matchClasif = !clasif || rClasif === clasif;
+              var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
+              var matchTema = !tema || rTema === tema;
+              var rAnio = row.dataset.anio || '';
+              var matchAnio = !anio || rAnio === anio;
+
+              var match = matchTab && matchQ && matchClasif && matchEstado && matchTema && matchAnio;
+              row.dataset.filtrado = match ? '1' : '0';
+              if (match) visibles++;
+            });
+
+            var noRes = document.getElementById('no-results-norm');
+            if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
+
+            inicializarPaginacion();
+            mostrarPagina(1);
+            if (normVistaActual === 'grid') renderNormGrid();
+          }
+
+          function clearNormFilters() {
+            ['norm-search', 'norm-clasificacion', 'norm-estado', 'norm-tema', 'norm-anio'].forEach(function (id) {
+              var el = document.getElementById(id);
+              if (el) el.value = '';
+            });
+            applyNormFilter();
+          }
+
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.norm-row'))
+              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.max(Math.ceil(filasActivas.length / ITEMS_POR_PAGINA), 1);
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-normas');
+            if (conteoEl) conteoEl.textContent = filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-normas');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnt = document.createElement('button');
+            btnAnt.textContent = '← Ant';
+            btnAnt.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnt.onclick = function () { if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); } };
+            paginacionDiv.appendChild(btnAnt);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function (pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSig = document.createElement('button');
+            btnSig.textContent = 'Sig →';
+            btnSig.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSig.onclick = function () {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSig);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.norm-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+              }
+            }
+          }
+
+          var normVistaActual = 'lista';
+
+          function setNormVista(vista) {
+            var tableCard = document.querySelector('.norm-table-card');
+            var gridDiv = document.getElementById('normativas-grid');
+            var btnLista = document.getElementById('btn-vista-lista');
+            var btnGrid = document.getElementById('btn-vista-grid');
+
+            normVistaActual = vista;
+
+            if (vista === 'grid') {
+              tableCard.style.display = 'none';
+              gridDiv.style.display = '';
+              btnLista.classList.remove('active');
+              btnGrid.classList.add('active');
+              renderNormGrid();
+            } else {
+              tableCard.style.display = '';
+              gridDiv.style.display = 'none';
+              btnLista.classList.add('active');
+              btnGrid.classList.remove('active');
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
+          }
+
+          function renderNormGrid() {
+            var gridDiv = document.getElementById('normativas-grid');
+            var filas = Array.from(document.querySelectorAll('.norm-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+
+            if (filas.length === 0) {
+              gridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 24px;"><i class="fas fa-balance-scale" style="font-size:44px;color:#D1D5DB;display:block;margin-bottom:12px;"></i><p style="color:#9CA3AF;font-size:14px;">No se encontraron normativas con los filtros actuales.</p></div>';
+              return;
+            }
+
+            var ambitoIcon = {
+              'NACIONAL': { cls: 'fas fa-flag', color: '#2ECC71', bg: 'rgba(46,204,113,.08)' },
+              'INTERNACIONAL': { cls: 'fas fa-globe', color: '#3498DB', bg: 'rgba(52,152,219,.08)' }
+            };
+
+            var estadoBadge = {
+              'Vigente': '<span class="badge badge-vigente">Vigente</span>',
+              'Proyecto publicado': '<span class="badge badge-proyecto">Proyecto</span>',
+              'Consulta pública': '<span class="badge badge-proyecto">Consulta</span>',
+              'Derogada': '<span class="badge badge-derogada">Derogada</span>'
+            };
+
+            var temaClass = { 'EC': 'tema-ec', 'GR': 'tema-gr', 'EE': 'tema-ee', 'REP': 'tema-rep' };
+
+            gridDiv.innerHTML = filas.map(function (row, idx) {
+              var ambito = row.dataset.ambito || '';
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var estado = row.dataset.estado || '';
+              var tema = row.dataset.tema || '';
+              var id = row.dataset.id || '';
+
+              var ic = ambitoIcon[ambito.toUpperCase()] || { cls: 'fas fa-file', color: '#9CA3AF', bg: 'rgba(156,163,175,.1)' };
+              var estBadge = estadoBadge[estado] || '<span class="badge badge-derogada">' + estado + '</span>';
+              var temaCls = temaClass[tema.toUpperCase()] || 'tema-otro';
+
+              return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
+                '<div class="grid-card-actions">' +
+                '<button class="btn-view" onclick="event.stopPropagation();openNormVisorFromRow(document.querySelector(\'[data-id=' + id + '\]\'))" title="Ver"><i class="fas fa-eye"></i></button>' +
+                '<button onclick="event.stopPropagation();shareNormRow(\'' + id + '\')" title="Compartir"><i class="fas fa-share-alt" style="color:#3498DB;"></i></button>' +
+                '</div>' +
+                '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
+                '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
+                '</div>' +
+                '<div class="grid-card-info">' +
+                '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                '<div class="card-anio">' + anio + '</div>' +
+                '<div class="card-footer">' +
+                '<div class="card-badges">' + estBadge + '</div>' +
+                '<span class="tema-badge ' + temaCls + '">' + tema + '</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            }).join('');
+          }
+
+          function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+          }
+
+          window.addEventListener('load', function () {
+            document.querySelectorAll('.norm-row').forEach(function (tr) {
+              if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
+            });
+            var savedTab = window.__normativoTab;
+            if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
+              showNormativoTab(savedTab);
+            }
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
+        </script>
+
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
-  <script>
-    if (typeof navTo === 'undefined') {
-      function navTo(page) {
-        var map = { 'admin-docs': 'documentos' };
-        var target = map[page] || page;
-        window.location.href = '/' + (window.__baseRole || 'socio') + '/' + target;
-      }
-    }
-    window.__baseRole = 'socio';
-  </script>
+  <th:block th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
   <script>
     window.__muRegistrarAccesoNormativa = function (documentoId) {
       if (!documentoId) return;

@@ -16,6 +16,8 @@
     }
   </script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -24,7 +26,7 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
+      background: #F0F4F8;
     }
 
     @keyframes fadeUp {
@@ -58,6 +60,18 @@
 
       100% {
         transform: rotate(0) scale(1)
+      }
+    }
+
+    @keyframes rowSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
       }
     }
 
@@ -126,38 +140,6 @@
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
 
-    .hero-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      background: rgba(46, 204, 113, .2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: pulse 2s ease infinite;
-    }
-
-    .hero-icon i {
-      font-size: 22px;
-      color: #2ECC71;
-    }
-
-    .hero-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: #fff;
-      margin-bottom: 6px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-subtitle {
-      font-size: 13px;
-      color: rgba(255, 255, 255, .7);
-      position: relative;
-      z-index: 1;
-    }
-
     .stat-chip {
       background: rgba(255, 255, 255, .12);
       backdrop-filter: blur(8px);
@@ -165,7 +147,7 @@
       border-radius: 14px;
       padding: 14px 20px;
       text-align: center;
-      min-width: 80px;
+      cursor: default;
       transition: all .3s ease;
       animation: fadeUp .5s ease both;
     }
@@ -209,100 +191,163 @@
       font-weight: 700;
     }
 
-    .btn-nueva-empresa {
-      padding: 11px 22px;
-      border-radius: 11px;
-      border: none;
-      background: linear-gradient(135deg, #2ECC71, #27AE60);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all .25s;
-      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
-      font-family: inherit;
-      text-decoration: none;
-    }
-
-    .btn-nueva-empresa:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(46, 204, 113, .5);
-    }
-
-    .filter-bar {
+    .filter-row {
+      overflow: hidden;
       background: rgba(255, 255, 255, 0.28);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
     }
 
-    .filter-bar input {
-      flex: 1;
-      min-width: 200px;
+    .filter-row input,
+    .filter-row select {
       border: 1.5px solid #E5E7EB;
-      border-radius: 10px;
-      padding: 10px 14px 10px 38px;
-      font-size: 13px;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      color: #374151;
+      transition: all .2s;
+      background: #fff;
     }
 
-    .filter-bar input:focus {
+    .filter-row input {
+      padding-left: 34px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
       outline: none;
       border-color: #2ECC71;
-      box-shadow: 0 0 0 3px rgba(46, 204, 113, .12);
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
     }
 
     .badge-activo {
       background: rgba(46, 204, 113, .1);
       color: #27AE60;
-      padding: 4px 10px;
+      padding: 3px 10px;
       border-radius: 999px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
     }
 
     .badge-inactivo {
-      background: rgba(156, 163, 175, .12);
-      color: #6B7280;
-      padding: 4px 10px;
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 3px 10px;
       border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .norm-table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .norm-table-card thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .norm-table-card thead th {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 12px 14px;
+      border: none;
+    }
+
+    .norm-row {
+      border-bottom: 1px solid #F3F4F6;
+      transition: background .2s, transform .2s;
+      animation: rowSlide .35s ease both;
+    }
+
+    .norm-row:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .norm-row td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    .norm-row:last-child {
+      border-bottom: none;
+    }
+
+    .empty-norm {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-norm i {
+      font-size: 44px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-norm p {
+      color: #9CA3AF;
+      font-size: 14px;
     }
 
     .btn-editar {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #E5E7EB;
-      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 11px;
+      border-radius: 7px;
+      border: 1.5px solid #3498DB;
+      background: rgba(52,152,219,.07);
+      color: #2471A3;
+      font-size: 11px;
+      font-weight: 700;
       cursor: pointer;
-      font-size: 12px;
+      font-family: inherit;
+      transition: all .2s;
+      text-decoration: none;
     }
 
-    .btn-editar i {
-      color: #3498DB;
+    .btn-editar:hover {
+      background: #3498DB;
+      color: #fff;
     }
 
     .btn-eliminar {
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #E5E7EB;
-      background: #fff;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 11px;
+      border-radius: 7px;
+      border: 1.5px solid #E74C3C;
+      background: rgba(231,76,60,.07);
+      color: #C0392B;
+      font-size: 11px;
+      font-weight: 700;
       cursor: pointer;
-      font-size: 12px;
+      font-family: inherit;
+      transition: all .2s;
     }
 
-    .btn-eliminar i {
-      color: #E74C3C;
+    .btn-eliminar:hover {
+      background: #E74C3C;
+      color: #fff;
     }
   </style>
 </head>
@@ -346,15 +391,15 @@
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;">
               <div class="stat-chip" style="animation-delay:.1s">
-                <div class="val" id="stat-total">—</div>
+                <div class="val" id="stat-total">0</div>
                 <div class="lbl">Total</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" id="stat-activas" style="color:#34D399;">—</div>
+                <div class="val" id="stat-activas" style="color:#34D399;">0</div>
                 <div class="lbl">Activas</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
-                <div class="val" id="stat-inactivas" style="color:#F87171;">—</div>
+                <div class="val" id="stat-inactivas" style="color:#F87171;">0</div>
                 <div class="lbl">Inactivas</div>
               </div>
             </div>
@@ -373,90 +418,186 @@
           <span style="color:#E74C3C;font-size:13px;font-weight:600;" th:text="${error}"></span>
         </div>
 
-        <div class="filter-bar">
+        <div class="filter-row">
           <div style="position:relative;flex:1;min-width:200px;">
             <i class="fas fa-search"
-              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+              style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
             <input id="buscar-empresa" placeholder="Buscar por RUC o razón social..." onkeyup="filtrarEmpresas()" />
           </div>
         </div>
 
-        <div style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
-          <table class="table table-striped table-hover">
-            <thead>
-              <tr>
-                <th>RUC</th>
-                <th>Razón Social</th>
-                <th>Sector</th>
-                <th>Estado</th>
-                <th>Fecha Registro</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tbody-empresas">
-              <tr th:each="empresa : ${empresas}" th:data-ruc="${empresa.ruc}"
-                th:data-razon="${empresa.razonSocial?.toLowerCase()}">
-                <td style="font-weight:600;color:#1B3A5C;" th:text="${empresa.ruc}">—</td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div
-                      style="width:36px;height:36px;border-radius:8px;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;"
-                      th:text="${empresa.razonSocial != null ? #strings.toUpperCase(#strings.substring(empresa.razonSocial, 0, 2)) : '??'}">
-                      ??</div>
-                    <span th:text="${empresa.razonSocial}">—</span>
-                  </div>
-                </td>
-                <td style="color:#6B7280;font-size:13px;" th:text="${empresa.sector ?: '—'}">—</td>
-                <td>
-                  <span class="badge-activo" th:if="${empresa.estadoActivo}">Activa</span>
-                  <span class="badge-inactivo" th:unless="${empresa.estadoActivo}">Inactiva</span>
-                </td>
-                <td style="color:#9CA3AF;font-size:12px;"
-                  th:text="${empresa.createdAt != null ? #temporals.format(empresa.createdAt, 'dd/MM/yyyy') : '—'}">—
-                </td>
-                <td>
-                  <div style="display:flex;gap:6px;">
-                    <a th:href="@{/superadmin/empresas/editar/{id}(id=${empresa.id})}" class="btn-editar">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                    <form th:action="@{/superadmin/empresas/eliminar/{id}(id=${empresa.id})}" method="post"
-                      style="display:inline;" onsubmit="return confirm('¿Eliminar esta empresa?');">
-                      <button type="submit" class="btn-eliminar">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-              <tr th:if="${empresas == null or empresas.empty}">
-                <td colspan="6" style="text-align:center;padding:40px;color:#9CA3AF;">
-                  <i class="fas fa-building" style="font-size:32px;margin-bottom:10px;display:block;"></i>
-                  No hay empresas registradas
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="norm-table-card">
+          <div style="overflow-x:auto;">
+            <table class="table table-striped table-hover" id="tabla-empresas" style="margin-bottom:0;">
+              <thead>
+                <tr>
+                  <th>RUC</th>
+                  <th>Razón Social</th>
+                  <th>Sector</th>
+                  <th>Estado</th>
+                  <th>Registro</th>
+                  <th class="text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-empresas">
+                <tr th:each="empresa : ${empresas}" class="norm-row" th:data-id="${empresa.id}"
+                  th:data-ruc="${empresa.ruc}" th:data-razon="${empresa.razonSocial?.toLowerCase()}">
+                  <td class="fw-bold" style="color:#1B3A5C;font-size:12px;" th:text="${empresa.ruc}">—</td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div
+                        style="width:34px;height:34px;border-radius:8px;background:#1B3A5C;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;"
+                        th:text="${empresa.razonSocial != null ? #strings.toUpperCase(#strings.substring(empresa.razonSocial, 0, 2)) : '??'}">
+                        ??</div>
+                      <span style="font-weight:600;color:#1B3A5C;font-size:12px;" th:text="${empresa.razonSocial}">—</span>
+                    </div>
+                  </td>
+                  <td style="color:#6B7280;font-size:12px;" th:text="${empresa.sector ?: '—'}">—</td>
+                  <td>
+                    <span class="badge-activo" th:if="${empresa.estadoActivo}">Activa</span>
+                    <span class="badge-inactivo" th:unless="${empresa.estadoActivo}">Inactiva</span>
+                  </td>
+                  <td style="color:#9CA3AF;font-size:12px;"
+                    th:text="${empresa.createdAt != null ? #temporals.format(empresa.createdAt, 'dd/MM/yyyy') : '—'}">—
+                  </td>
+                  <td class="text-center">
+                    <div style="display:inline-flex;gap:6px;">
+                      <a th:href="@{/superadmin/empresas/editar/{id}(id=${empresa.id})}" class="btn-editar">
+                        <i class="fas fa-pen"></i> Editar
+                      </a>
+                      <form th:action="@{/superadmin/empresas/eliminar/{id}(id=${empresa.id})}" method="post"
+                        style="display:inline;" onsubmit="return confirm('¿Eliminar esta empresa?');">
+                        <button type="submit" class="btn-eliminar">
+                          <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <tr th:if="${empresas == null or empresas.empty}">
+                  <td colspan="6">
+                    <div class="empty-norm">
+                      <i class="fas fa-building"></i>
+                      <p>No hay empresas registradas.</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- Paginación -->
+          <div
+            style="padding:12px 20px;border-top:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:#9CA3AF;">
+            <span id="conteo-empresas" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+            <div style="display:flex;gap:4px;" id="paginacion-empresas"></div>
+          </div>
         </div>
 
         <script>
+          const EMPRESAS_POR_PAGINA = 5;
+          let paginaActualEmp = 1;
+
+          function inicializarPaginacionEmpresas() {
+            var filas = document.querySelectorAll('#tbody-empresas tr[data-ruc]');
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / EMPRESAS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            paginaActualEmp = 1;
+
+            var conteoEl = document.getElementById('conteo-empresas');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasVisibles + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-empresas');
+            if (!paginacionDiv) return;
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = 'Anterior';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnAnterior.onclick = function () { if (paginaActualEmp > 1) { paginaActualEmp--; mostrarPaginaEmpresas(paginaActualEmp); actualizarBotonesPaginacionEmpresas(); } };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btnPagina = document.createElement('button');
+              btnPagina.textContent = i;
+              btnPagina.id = 'btn-pagina-' + i;
+              var estaActiva = (i === paginaActualEmp);
+              btnPagina.style.cssText = estaActiva ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;' : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+              btnPagina.onclick = (function (pageNum) { return function () { paginaActualEmp = pageNum; mostrarPaginaEmpresas(pageNum); actualizarBotonesPaginacionEmpresas(); }; })(i);
+              paginacionDiv.appendChild(btnPagina);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Siguiente';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function () { if (paginaActualEmp < totalPaginas) { paginaActualEmp++; mostrarPaginaEmpresas(paginaActualEmp); actualizarBotonesPaginacionEmpresas(); } };
+            paginacionDiv.appendChild(btnSiguiente);
+          }
+
+          function mostrarPaginaEmpresas(numero) {
+            paginaActualEmp = numero;
+            var filas = document.querySelectorAll('#tbody-empresas tr[data-ruc]');
+            var inicio = (numero - 1) * EMPRESAS_POR_PAGINA;
+            var fin = inicio + EMPRESAS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacionEmpresas();
+          }
+
+          function actualizarBotonesPaginacionEmpresas() {
+            var filas = document.querySelectorAll('#tbody-empresas tr[data-ruc]');
+            var filasVisibles = Array.from(filas).filter(function (tr) { return tr.dataset.filtrado !== '0'; }).length;
+            var totalPaginas = Math.ceil(filasVisibles / EMPRESAS_POR_PAGINA);
+            if (totalPaginas < 1) totalPaginas = 1;
+            for (var i = 1; i <= totalPaginas; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                if (i === paginaActualEmp) { btn.style.background = '#2ECC71'; btn.style.borderColor = '#2ECC71'; btn.style.color = '#fff'; }
+                else { btn.style.background = '#fff'; btn.style.borderColor = '#E5E7EB'; btn.style.color = '#6B7280'; }
+              }
+            }
+          }
+
           function filtrarEmpresas() {
             var texto = document.getElementById('buscar-empresa').value.toLowerCase().trim();
+            var sinResultados = true;
             document.querySelectorAll('#tbody-empresas tr[data-ruc]').forEach(function (tr) {
               var ruc = (tr.dataset.ruc || '').toLowerCase();
               var razon = (tr.dataset.razon || '');
               if (!texto || ruc.includes(texto) || razon.includes(texto)) {
-                tr.style.display = '';
+                tr.dataset.filtrado = '1'; tr.style.display = ''; sinResultados = false;
               } else {
-                tr.style.display = 'none';
+                tr.dataset.filtrado = '0'; tr.style.display = 'none';
               }
             });
+            paginaActualEmp = 1;
+            inicializarPaginacionEmpresas();
+            mostrarPaginaEmpresas(1);
           }
+
+          window.addEventListener('load', function () {
+            document.querySelectorAll('#tbody-empresas tr[data-ruc]').forEach(function (tr) {
+              tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacionEmpresas();
+            mostrarPaginaEmpresas(1);
+          });
         </script>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
+
 </body>
 
 </html>
