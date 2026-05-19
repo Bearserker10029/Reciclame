@@ -54,8 +54,8 @@ public class KkfileviewViewerProxyController {
 
         HttpURLConnection conn = (HttpURLConnection) new URL(targetUrl).openConnection();
         conn.setInstanceFollowRedirects(true);
-        conn.setConnectTimeout(10_000);
-        conn.setReadTimeout(60_000);
+        conn.setConnectTimeout(30_000);
+        conn.setReadTimeout(300_000);
         conn.setRequestMethod("GET");
 
         // Tell kkfileview to generate slide image URLs using the browser's origin + proxy prefix,

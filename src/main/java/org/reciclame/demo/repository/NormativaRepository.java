@@ -11,6 +11,8 @@ public interface NormativaRepository extends JpaRepository<Normativa, Long> {
 
     List<Normativa> findByEstadoActivoTrue();
 
+    List<Normativa> findByEstadoActivoTrueAndEsPublicaTrue();
+
     List<Normativa> findByAmbito(String ambito);
 
     List<Normativa> findByClasificacion(String clasificacion);

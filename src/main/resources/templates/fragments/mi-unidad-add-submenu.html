@@ -3,15 +3,8 @@
 <body>
 <th:block th:fragment="miUnidadAddSubmenu">
   <style>
-    .drive-dropdown { overflow: visible !important; }
-    td:has(.drive-row-actions),
-    td:has(.drive-add-entry) {
-      overflow: visible !important;
-    }
-    .drive-add-entry {
-      position: relative;
-      width: 100%;
-    }
+    .drive-add-entry { width: 100%; }
+
     .drive-add-trigger {
       display: flex;
       align-items: center;
@@ -27,116 +20,8 @@
       font-family: inherit;
       text-align: left;
     }
+
     .drive-add-trigger:hover { background: #F3F4F6; }
-    .drive-add-trigger .fa-chevron-right { transform: rotate(180deg); }
-    /* Contenedor: [columnas nivel…] [submenú principal] — cada subnivel es una columna nueva a la izquierda. */
-    .drive-add-cols-wrap {
-      display: none;
-      position: absolute;
-      right: calc(100% - 4px);
-      left: auto;
-      top: -6px;
-      flex-direction: row;
-      align-items: flex-start;
-      z-index: 10060;
-    }
-    .drive-add-cols-wrap.drive-add-flyout--visible {
-      display: flex;
-    }
-    .drive-add-column-stack {
-      display: flex;
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 4px;
-      margin-right: 4px;
-    }
-    .drive-add-level-col {
-      min-width: 220px;
-      max-width: min(260px, 42vw);
-      background: #fff;
-      border-radius: 10px;
-      border: 1px solid #E8ECF0;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, .12);
-      padding: 6px 0;
-      max-height: min(360px, 72vh);
-      overflow-y: auto;
-      overflow-x: visible;
-    }
-    .drive-add-submenu {
-      position: relative;
-      right: auto;
-      top: auto;
-      min-width: 232px;
-      max-width: min(280px, 92vw);
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, .16);
-      border: 1px solid #E8ECF0;
-      padding: 6px 0;
-      overflow: visible;
-      flex-shrink: 0;
-    }
-    .drive-add-root {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      width: 100%;
-      padding: 10px 14px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 13px;
-      color: #1B3A5C;
-      font-family: inherit;
-      font-weight: 600;
-      text-align: left;
-    }
-    .drive-add-root:hover { background: #EEFDF4; }
-    .drive-add-tree-ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .drive-add-tree-li { margin: 0; padding: 0; }
-    .drive-add-row {
-      display: flex;
-      align-items: stretch;
-      width: 100%;
-      border-top: 1px solid #f1f3f4;
-    }
-    .drive-add-row.drive-add-row--hover-drill:hover { background: rgba(52, 152, 219, .06); }
-    .drive-add-here {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 9px 12px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 13px;
-      color: #374151;
-      font-family: inherit;
-      text-align: left;
-      min-width: 0;
-    }
-    .drive-add-here:hover { background: #F3F4F6; }
-    .drive-add-branch {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      flex-shrink: 0;
-      color: #9CA3AF;
-      user-select: none;
-      pointer-events: none;
-    }
-    .drive-add-branch .fa-chevron-right { transform: rotate(180deg); font-size: 11px; }
-    .drive-add-empty {
-      padding: 12px 14px;
-      font-size: 12px;
-      color: #9CA3AF;
-    }
 
     #mu-toast-host {
       position: fixed;
@@ -149,6 +34,7 @@
       gap: 8px;
       pointer-events: none;
     }
+
     .mu-add-toast {
       display: flex;
       align-items: flex-start;
@@ -169,26 +55,254 @@
       transform: translateX(120%);
       transition: opacity .25s ease, transform .32s cubic-bezier(0.22, 1, 0.36, 1);
     }
+
     .mu-add-toast i { flex-shrink: 0; margin-top: 2px; }
-    .mu-add-toast.mu-add-toast--in {
-      opacity: 1;
-      transform: translateX(0);
-    }
+    .mu-add-toast.mu-add-toast--in { opacity: 1; transform: translateX(0); }
     .mu-add-toast.mu-add-toast--out {
       opacity: 0;
       transform: translateX(120%);
       transition: opacity .2s ease, transform .25s ease;
     }
+
     .mu-add-toast.mu-add-toast--err {
       border-color: #fecaca;
       background: #fef2f2;
       color: #b91c1c;
     }
+
+    dialog.mu-add-modal {
+      border: none;
+      border-radius: 14px;
+      padding: 0;
+      max-width: 480px;
+      width: calc(100vw - 32px);
+      box-shadow: 0 24px 64px rgba(0, 0, 0, .22);
+    }
+
+    dialog.mu-add-modal:not([open]) { display: none !important; }
+
+    dialog.mu-add-modal[open] {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      margin: 0;
+      max-height: min(88vh, 640px);
+    }
+
+    .mu-add-modal::backdrop {
+      background: rgba(15, 23, 42, .5);
+    }
+
+    .mu-add-modal-panel {
+      display: flex;
+      flex-direction: column;
+      max-height: min(88vh, 640px);
+    }
+
+    .mu-add-modal-head {
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid #eef1f4;
+      position: relative;
+    }
+
+    .mu-add-modal-head h2 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #1B3A5C;
+      margin: 0 36px 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mu-add-modal-head h2 i { color: #2ECC71; }
+
+    .mu-add-modal-doc {
+      font-size: 12px;
+      color: #6B7280;
+      margin: 0;
+      line-height: 1.45;
+      padding-right: 28px;
+      word-break: break-word;
+    }
+
+    .mu-add-modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 8px;
+      background: #f3f4f6;
+      color: #6B7280;
+      font-size: 20px;
+      line-height: 1;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .mu-add-modal-close:hover { background: #e5e7eb; color: #1B3A5C; }
+
+    .mu-add-modal-body {
+      padding: 12px 14px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 120px;
+    }
+
+    .mu-add-modal-hint {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin: 0 8px 10px;
+    }
+
+    .mu-add-tree-ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mu-add-tree-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      color: #374151;
+      font-family: inherit;
+      text-align: left;
+      transition: background .15s;
+    }
+
+    .mu-add-tree-row:hover { background: #F3F4F6; }
+
+    .mu-add-tree-row.mu-add-tree-row--selected {
+      background: rgba(46, 204, 113, .12);
+      color: #1B3A5C;
+      font-weight: 600;
+      box-shadow: inset 0 0 0 1px rgba(46, 204, 113, .35);
+    }
+
+    .mu-add-tree-row .fa-folder { color: #F5A623; width: 18px; text-align: center; flex-shrink: 0; }
+    .mu-add-tree-row .fa-house { color: #2ECC71; width: 18px; text-align: center; flex-shrink: 0; }
+
+    .mu-add-tree-row span {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .mu-add-tree-toggle {
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mu-add-tree-toggle:hover { background: rgba(0, 0, 0, .06); color: #1B3A5C; }
+
+    .mu-add-tree-toggle.is-expanded i { transform: rotate(90deg); }
+
+    .mu-add-tree-children {
+      list-style: none;
+      margin: 0;
+      padding: 0 0 0 12px;
+    }
+
+    .mu-add-tree-children[hidden] { display: none; }
+
+    .mu-add-modal-empty {
+      padding: 24px 12px;
+      text-align: center;
+      color: #9CA3AF;
+      font-size: 13px;
+    }
+
+    .mu-add-modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 18px 18px;
+      border-top: 1px solid #eef1f4;
+    }
+
+    .mu-add-modal-foot button {
+      height: 40px;
+      padding: 0 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .mu-add-modal-cancel {
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      color: #374151;
+    }
+
+    .mu-add-modal-cancel:hover { background: #f9fafb; }
+
+    .mu-add-modal-submit {
+      border: 1px solid #2ECC71;
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .mu-add-modal-submit:hover { background: #27AE60; border-color: #27AE60; }
+
+    .mu-add-modal-submit:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
   </style>
+
+  <dialog id="muAddModal" class="mu-add-modal" aria-labelledby="muAddModalTitle">
+    <div class="mu-add-modal-panel">
+      <header class="mu-add-modal-head">
+        <h2 id="muAddModalTitle"><i class="fas fa-cloud"></i> Mi Unidad</h2>
+        <p id="muAddModalDoc" class="mu-add-modal-doc">Selecciona la carpeta destino.</p>
+        <button type="button" class="mu-add-modal-close" id="muAddModalClose" aria-label="Cerrar">&times;</button>
+      </header>
+      <div class="mu-add-modal-body">
+        <p class="mu-add-modal-hint">Elige dónde guardar este documento en tu espacio personal.</p>
+        <div id="muAddModalTree" class="mu-add-modal-tree" role="tree" aria-label="Carpetas de Mi Unidad"></div>
+      </div>
+      <footer class="mu-add-modal-foot">
+        <button type="button" class="mu-add-modal-cancel" id="muAddModalCancel">Cancelar</button>
+        <button type="button" class="mu-add-modal-submit" id="muAddModalSubmit">Añadir aquí</button>
+      </footer>
+    </div>
+  </dialog>
+
   <script>
     (function () {
       var ARBOL_URL = '/socio/mi-unidad/api/carpetas-arbol';
       var arbolPromise = null;
+      var modalState = {
+        docTipo: '',
+        docId: '',
+        docTitulo: '',
+        selectedCarpetaId: null
+      };
+
       window.__muInvalidateCarpetasArbol = function () {
         arbolPromise = null;
       };
@@ -212,15 +326,11 @@
         el.setAttribute('role', 'status');
         el.innerHTML = '<i class="fas ' + (isError ? 'fa-exclamation-circle' : 'fa-check-circle') + '"></i><span>' + escapeHtml(message) + '</span>';
         host.appendChild(el);
-        requestAnimationFrame(function () {
-          el.classList.add('mu-add-toast--in');
-        });
+        requestAnimationFrame(function () { el.classList.add('mu-add-toast--in'); });
         setTimeout(function () {
           el.classList.remove('mu-add-toast--in');
           el.classList.add('mu-add-toast--out');
-          setTimeout(function () {
-            el.remove();
-          }, 280);
+          setTimeout(function () { el.remove(); }, 280);
         }, 4200);
       };
 
@@ -234,7 +344,7 @@
         if (documentoTitulo != null && String(documentoTitulo).trim() !== '') {
           params.set('documentoTitulo', String(documentoTitulo).trim());
         }
-        fetch('/socio/mi-unidad/api/item/agregar', {
+        return fetch('/socio/mi-unidad/api/item/agregar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
           body: params.toString()
@@ -243,34 +353,26 @@
             return r.text().then(function (t) {
               var j = {};
               if (t) {
-                try {
-                  j = JSON.parse(t);
-                } catch (e) {
-                  j = { ok: false, message: 'Respuesta no válida.' };
-                }
+                try { j = JSON.parse(t); } catch (e) { j = { ok: false, message: 'Respuesta no válida.' }; }
               }
               return { httpOk: r.ok, j: j };
             });
           })
           .then(function (res) {
-            if (typeof window.closeAllDriveDropdowns === 'function') {
-              window.closeAllDriveDropdowns();
-            }
             if (res.httpOk && res.j && res.j.ok) {
               if (typeof window.__muInvalidateCarpetasArbol === 'function') {
                 window.__muInvalidateCarpetasArbol();
               }
               window.showMuAddToast(res.j.message || 'Se añadió correctamente.', false);
-            } else {
-              var msg = (res.j && res.j.message) ? res.j.message : 'No se pudo añadir.';
-              window.showMuAddToast(msg, true);
+              return true;
             }
+            var msg = (res.j && res.j.message) ? res.j.message : 'No se pudo añadir.';
+            window.showMuAddToast(msg, true);
+            return false;
           })
           .catch(function () {
-            if (typeof window.closeAllDriveDropdowns === 'function') {
-              window.closeAllDriveDropdowns();
-            }
             window.showMuAddToast('Error de red. Inténtalo de nuevo.', true);
+            return false;
           });
       };
 
@@ -287,246 +389,227 @@
         return arbolPromise;
       }
 
-      function ensureFlyout(entry) {
-        var submenu = entry.querySelector('.drive-add-submenu');
-        if (!submenu || (submenu.parentElement && submenu.parentElement.classList.contains('drive-add-cols-wrap'))) {
-          return;
-        }
-        var wrap = document.createElement('div');
-        wrap.className = 'drive-add-cols-wrap';
-        var stackEl = document.createElement('div');
-        stackEl.className = 'drive-add-column-stack';
-        submenu.parentNode.insertBefore(wrap, submenu);
-        wrap.appendChild(stackEl);
-        wrap.appendChild(submenu);
-      }
+      function getModal() { return document.getElementById('muAddModal'); }
 
-      function getStackEl(submenu) {
-        var w = submenu.closest('.drive-add-cols-wrap');
-        return w ? w.querySelector('.drive-add-column-stack') : null;
-      }
+      window.closeMuAddModal = function () {
+        var dlg = getModal();
+        if (dlg && typeof dlg.close === 'function') dlg.close();
+      };
 
-      function clearColumnsFromDepth(stackEl, minDepth) {
-        if (!stackEl) return;
-        stackEl.querySelectorAll('.drive-add-level-col').forEach(function (col) {
-          var d = parseInt(col.getAttribute('data-depth'), 10);
-          if (!isNaN(d) && d >= minDepth) {
-            col.remove();
-          }
+      function setSelectedRow(carpetaId) {
+        modalState.selectedCarpetaId = carpetaId;
+        var tree = document.getElementById('muAddModalTree');
+        if (!tree) return;
+        tree.querySelectorAll('.mu-add-tree-row').forEach(function (btn) {
+          var id = btn.getAttribute('data-carpeta-id');
+          var match = (id === '' && carpetaId == null) || (id !== '' && String(carpetaId) === id);
+          btn.classList.toggle('mu-add-tree-row--selected', match);
         });
       }
 
-      function clearAllColumns(stackEl) {
-        clearColumnsFromDepth(stackEl, 1);
+      function renderNode(node, ul) {
+        var hasCh = node.children && node.children.length > 0;
+        var li = document.createElement('li');
+        li.setAttribute('role', 'treeitem');
+
+        var rowWrap = document.createElement('div');
+        rowWrap.style.display = 'flex';
+        rowWrap.style.alignItems = 'center';
+        rowWrap.style.gap = '2px';
+
+        if (hasCh) {
+          var toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.className = 'mu-add-tree-toggle';
+          toggle.setAttribute('aria-label', 'Expandir');
+          toggle.innerHTML = '<i class="fas fa-chevron-right" style="font-size:10px;transition:transform .15s;"></i>';
+          var childUl = document.createElement('ul');
+          childUl.className = 'mu-add-tree-children';
+          childUl.hidden = true;
+          toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = childUl.hidden;
+            childUl.hidden = !open;
+            toggle.classList.toggle('is-expanded', open);
+          });
+          rowWrap.appendChild(toggle);
+          node.children.forEach(function (ch) { renderNode(ch, childUl); });
+          var pick = document.createElement('button');
+          pick.type = 'button';
+          pick.className = 'mu-add-tree-row';
+          pick.setAttribute('data-carpeta-id', String(node.id));
+          pick.style.flex = '1';
+          pick.innerHTML = '<i class="fas fa-folder"></i><span>' + escapeHtml(node.nombre) + '</span>';
+          pick.addEventListener('click', function () { setSelectedRow(node.id); });
+          pick.addEventListener('dblclick', function () {
+            setSelectedRow(node.id);
+            confirmMuAddModal();
+          });
+          rowWrap.appendChild(pick);
+          li.appendChild(rowWrap);
+          li.appendChild(childUl);
+        } else {
+          var pickLeaf = document.createElement('button');
+          pickLeaf.type = 'button';
+          pickLeaf.className = 'mu-add-tree-row';
+          pickLeaf.setAttribute('data-carpeta-id', String(node.id));
+          pickLeaf.style.width = '100%';
+          pickLeaf.style.paddingLeft = '38px';
+          pickLeaf.innerHTML = '<i class="fas fa-folder"></i><span>' + escapeHtml(node.nombre) + '</span>';
+          pickLeaf.addEventListener('click', function () { setSelectedRow(node.id); });
+          pickLeaf.addEventListener('dblclick', function () {
+            setSelectedRow(node.id);
+            confirmMuAddModal();
+          });
+          li.appendChild(pickLeaf);
+        }
+        ul.appendChild(li);
       }
 
-      function addLevelColumn(depth, parentNode, stackEl, docTipo, docId, docTitulo) {
-        if (!stackEl) return;
-        clearColumnsFromDepth(stackEl, depth);
-        var col = document.createElement('div');
-        col.className = 'drive-add-level-col';
-        col.setAttribute('data-depth', String(depth));
-        var ch = parentNode.children || [];
-        if (!ch.length) {
-          var empty = document.createElement('div');
-          empty.className = 'drive-add-empty';
-          empty.textContent = 'Carpeta vacía.';
-          col.appendChild(empty);
-          var addHere = document.createElement('button');
-          addHere.type = 'button';
-          addHere.className = 'drive-add-here';
-          addHere.style.width = '100%';
-          addHere.style.boxSizing = 'border-box';
-          addHere.innerHTML = '<i class="fas fa-folder-plus" style="color:#2ECC71;width:18px;"></i> Añadir aquí';
-          addHere.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
-            window.submitMuItemAgregar(docTipo, docId, docTitulo, parentNode.id);
-          });
-          col.appendChild(addHere);
-          stackEl.insertBefore(col, stackEl.firstChild);
+      function renderTree(tree) {
+        var container = document.getElementById('muAddModalTree');
+        if (!container) return;
+        container.innerHTML = '';
+        if (!tree) {
+          container.innerHTML = '<div class="mu-add-modal-empty">No se pudo cargar tus carpetas.</div>';
           return;
         }
         var ul = document.createElement('ul');
-        ul.className = 'drive-add-tree-ul';
-        ch.forEach(function (child) {
-          var hasCh = child.children && child.children.length > 0;
-          var li = document.createElement('li');
-          li.className = 'drive-add-tree-li';
-          var row = document.createElement('div');
-          row.className = 'drive-add-row' + (hasCh ? ' drive-add-row--hover-drill' : '');
-          var pick = document.createElement('button');
-          pick.type = 'button';
-          pick.className = 'drive-add-here';
-          pick.innerHTML = '<i class="fas fa-folder" style="color:#F5A623;width:18px;text-align:center;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(child.nombre) + '</span>';
-          pick.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
-            window.submitMuItemAgregar(docTipo, docId, docTitulo, child.id);
-          });
-          row.appendChild(pick);
-          if (hasCh) {
-            var branch = document.createElement('div');
-            branch.className = 'drive-add-branch';
-            branch.innerHTML = '<i class="fas fa-chevron-right"></i>';
-            row.appendChild(branch);
-            row.addEventListener('mouseenter', function () {
-              addLevelColumn(depth + 1, child, stackEl, docTipo, docId, docTitulo);
-            });
-          }
-          li.appendChild(row);
-          ul.appendChild(li);
+        ul.className = 'mu-add-tree-ul';
+        ul.setAttribute('role', 'group');
+
+        var rootLi = document.createElement('li');
+        rootLi.setAttribute('role', 'treeitem');
+        var rootBtn = document.createElement('button');
+        rootBtn.type = 'button';
+        rootBtn.className = 'mu-add-tree-row mu-add-tree-row--selected';
+        rootBtn.setAttribute('data-carpeta-id', '');
+        rootBtn.innerHTML = '<i class="fas fa-house"></i><span>Principal (raíz)</span>';
+        rootBtn.addEventListener('click', function () { setSelectedRow(null); });
+        rootBtn.addEventListener('dblclick', function () {
+          setSelectedRow(null);
+          confirmMuAddModal();
         });
-        col.appendChild(ul);
-        stackEl.insertBefore(col, stackEl.firstChild);
-      }
+        rootLi.appendChild(rootBtn);
+        ul.appendChild(rootLi);
 
-      function fillSubmenu(submenu, docTipo, docId, docTitulo, onDone) {
-        var entry = submenu.closest('.drive-add-entry');
-        if (entry) ensureFlyout(entry);
-        var stackEl = getStackEl(submenu);
-
-        function resetColumns() {
-          clearAllColumns(stackEl);
+        if (tree.children && tree.children.length) {
+          tree.children.forEach(function (n) { renderNode(n, ul); });
+        } else {
+          var empty = document.createElement('li');
+          empty.innerHTML = '<div class="mu-add-modal-empty" style="padding:12px;">No tienes subcarpetas. Se guardará en la raíz o crea carpetas en Mi Unidad.</div>';
+          ul.appendChild(empty);
         }
-        submenu._muResetDrill = resetColumns;
+        container.appendChild(ul);
+        setSelectedRow(null);
+      }
 
-        submenu.innerHTML = '';
-
-        loadArbol().then(function (tree) {
-          if (!tree) {
-            var err = document.createElement('div');
-            err.className = 'drive-add-empty';
-            err.textContent = 'No se pudo cargar Mi Unidad.';
-            submenu.appendChild(err);
-            if (onDone) onDone();
-            return;
-          }
-
-          var rootBtn = document.createElement('button');
-          rootBtn.type = 'button';
-          rootBtn.className = 'drive-add-root';
-          rootBtn.innerHTML = '<i class="fas fa-house" style="width:18px;text-align:center;color:#2ECC71;"></i> Mi Unidad <span style="font-weight:500;color:#6B7280;">(raíz)</span>';
-          rootBtn.addEventListener('click', function () {
-            if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
-            window.submitMuItemAgregar(docTipo, docId, docTitulo, null);
-          });
-          rootBtn.addEventListener('mouseenter', function () {
-            resetColumns();
-          });
-          submenu.appendChild(rootBtn);
-
-          if (!tree.children || !tree.children.length) {
-            var empty = document.createElement('div');
-            empty.className = 'drive-add-empty';
-            empty.textContent = 'No hay carpetas. Puedes crearlas en Mi Unidad.';
-            submenu.appendChild(empty);
-            if (onDone) onDone();
-            return;
-          }
-
-          var ul = document.createElement('ul');
-          ul.className = 'drive-add-tree-ul';
-          tree.children.forEach(function (n) {
-            var li = document.createElement('li');
-            li.className = 'drive-add-tree-li';
-            var hasCh = n.children && n.children.length > 0;
-            var row = document.createElement('div');
-            row.className = 'drive-add-row' + (hasCh ? ' drive-add-row--hover-drill' : '');
-            var pick = document.createElement('button');
-            pick.type = 'button';
-            pick.className = 'drive-add-here';
-            pick.innerHTML = '<i class="fas fa-folder" style="color:#F5A623;width:18px;text-align:center;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(n.nombre) + '</span>';
-            pick.addEventListener('click', function (e) {
-              e.stopPropagation();
-              if (typeof window.closeAllDriveDropdowns === 'function') window.closeAllDriveDropdowns();
-              window.submitMuItemAgregar(docTipo, docId, docTitulo, n.id);
-            });
-            row.appendChild(pick);
-            if (hasCh) {
-              var branch = document.createElement('div');
-              branch.className = 'drive-add-branch';
-              branch.innerHTML = '<i class="fas fa-chevron-right"></i>';
-              row.appendChild(branch);
-              row.addEventListener('mouseenter', function () {
-                resetColumns();
-                addLevelColumn(1, n, stackEl, docTipo, docId, docTitulo);
-              });
-            } else {
-              li.addEventListener('mouseenter', function () {
-                resetColumns();
-              });
+      function confirmMuAddModal() {
+        var submit = document.getElementById('muAddModalSubmit');
+        if (submit) submit.disabled = true;
+        window.submitMuItemAgregar(
+          modalState.docTipo,
+          modalState.docId,
+          modalState.docTitulo,
+          modalState.selectedCarpetaId
+        ).then(function (ok) {
+          if (submit) submit.disabled = false;
+          if (ok) {
+            if (typeof window.closeAllDriveDropdowns === 'function') {
+              window.closeAllDriveDropdowns();
             }
-            li.appendChild(row);
-            ul.appendChild(li);
-          });
-          submenu.appendChild(ul);
-          if (onDone) onDone();
+            window.closeMuAddModal();
+          }
         });
       }
+
+      window.muWireAddEntries = function (root) {
+        (root || document).querySelectorAll('.drive-add-entry').forEach(wireEntry);
+      };
+
+      window.openMuAddModal = function (entry) {
+        if (!entry) return;
+        modalState.docTipo = entry.getAttribute('data-mu-tipo') || '';
+        modalState.docId = entry.getAttribute('data-mu-id') || '';
+        modalState.docTitulo = entry.getAttribute('data-mu-titulo') || '';
+        modalState.selectedCarpetaId = null;
+
+        var docEl = document.getElementById('muAddModalDoc');
+        if (docEl) {
+          var tit = modalState.docTitulo.trim();
+          docEl.textContent = tit
+            ? 'Documento: «' + tit + '»'
+            : 'Selecciona la carpeta donde guardar este documento.';
+        }
+
+        var treeEl = document.getElementById('muAddModalTree');
+        if (treeEl) {
+          treeEl.innerHTML = '<div class="mu-add-modal-empty"><i class="fas fa-spinner fa-spin"></i> Cargando carpetas…</div>';
+        }
+
+        if (typeof window.closeAllDriveDropdowns === 'function') {
+          window.closeAllDriveDropdowns();
+        }
+
+        var dlg = getModal();
+        if (dlg && typeof dlg.showModal === 'function') {
+          dlg.showModal();
+        } else {
+          window.showMuAddToast('No se pudo abrir el selector de carpetas.', true);
+          return;
+        }
+
+        loadArbol().then(renderTree);
+      };
 
       function wireEntry(entry) {
-        ensureFlyout(entry);
         var trigger = entry.querySelector('.drive-add-trigger');
-        var submenu = entry.querySelector('.drive-add-submenu');
-        var fly = submenu ? submenu.closest('.drive-add-cols-wrap') : null;
-        if (!trigger || !submenu || !fly) return;
-        var docTipo = entry.getAttribute('data-mu-tipo') || '';
-        var docId = entry.getAttribute('data-mu-id') || '';
-        var docTitulo = entry.getAttribute('data-mu-titulo') || '';
-        var showTimer = null;
-        var hideTimer = null;
-        function show() {
-          if (hideTimer) { clearTimeout(hideTimer); hideTimer = null; }
-          if (showTimer) return;
-          showTimer = setTimeout(function () {
-            showTimer = null;
-            fly.classList.add('drive-add-flyout--visible');
-            if (submenu.dataset.ready === '1') return;
-            if (submenu.dataset.loading === '1') return;
-            submenu.dataset.loading = '1';
-            fillSubmenu(submenu, docTipo, docId, docTitulo, function () {
-              submenu.dataset.ready = '1';
-              submenu.dataset.loading = '0';
-            });
-          }, 120);
-        }
-        function hide() {
-          if (showTimer) { clearTimeout(showTimer); showTimer = null; }
-          hideTimer = setTimeout(function () {
-            hideTimer = null;
-            fly.classList.remove('drive-add-flyout--visible');
-            submenu.dataset.loading = '0';
-            if (typeof submenu._muResetDrill === 'function') submenu._muResetDrill();
-          }, 220);
-        }
-        entry.addEventListener('mouseenter', show);
-        entry.addEventListener('mouseleave', hide);
-        trigger.addEventListener('focus', show);
-        entry.addEventListener('keydown', function (e) {
-          if (e.key === 'Escape') hide();
+        if (!trigger || trigger.dataset.muModalWired === '1') return;
+        trigger.dataset.muModalWired = '1';
+        trigger.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.openMuAddModal(entry);
         });
       }
 
       function patchCloseAll() {
         var prev = window.closeAllDriveDropdowns;
         window.closeAllDriveDropdowns = function () {
-          document.querySelectorAll('.drive-add-cols-wrap').forEach(function (fly) {
-            fly.classList.remove('drive-add-flyout--visible');
-            var sub = fly.querySelector('.drive-add-submenu');
-            if (sub) {
-              sub.dataset.loading = '0';
-              if (typeof sub._muResetDrill === 'function') sub._muResetDrill();
-            }
-          });
           if (typeof prev === 'function') prev();
         };
       }
 
-      document.addEventListener('DOMContentLoaded', function () {
+      function initMuAddModalUi() {
+        var dlg = getModal();
+        if (!dlg || dlg.dataset.muInit === '1') return;
+        dlg.dataset.muInit = '1';
+        var closeBtn = document.getElementById('muAddModalClose');
+        var cancelBtn = document.getElementById('muAddModalCancel');
+        var submitBtn = document.getElementById('muAddModalSubmit');
+        if (closeBtn) closeBtn.addEventListener('click', window.closeMuAddModal);
+        if (cancelBtn) cancelBtn.addEventListener('click', window.closeMuAddModal);
+        if (submitBtn) submitBtn.addEventListener('click', confirmMuAddModal);
+        dlg.addEventListener('click', function (e) {
+          if (e.target === dlg) window.closeMuAddModal();
+        });
+        dlg.addEventListener('cancel', function (e) {
+          e.preventDefault();
+          window.closeMuAddModal();
+        });
+      }
+
+      function bootMuAdd() {
+        initMuAddModalUi();
         patchCloseAll();
-        document.querySelectorAll('.drive-add-entry').forEach(wireEntry);
-      });
+        window.muWireAddEntries(document);
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootMuAdd);
+      } else {
+        bootMuAdd();
+      }
     })();
   </script>
 </th:block>

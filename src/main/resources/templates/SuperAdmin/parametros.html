@@ -291,11 +291,11 @@
                 <div class="lbl">Total</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" id="stat-activos" style="color:#34D399;">—</div>
+                <div class="val" id="stat-activos" style="color:#34D399;">0</div>
                 <div class="lbl">Activos</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
-                <div class="val" id="stat-inactivos" style="color:#F87171;">—</div>
+                <div class="val" id="stat-inactivos" style="color:#F87171;">0</div>
                 <div class="lbl">Inactivos</div>
               </div>
             </div>
@@ -324,16 +324,16 @@
 
           <div style="overflow-x:auto;">
             <table id="tabla-parametros" class="table table-hover mb-0" style="font-size:13px;">
-              <thead style="background:#F9FAFB;">
-                <tr style="color:#6B7280;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;">
-                  <th style="padding:12px 20px;border:none;width:60px;">#</th>
-                  <th style="padding:12px 16px;border:none;">Clave</th>
-                  <th style="padding:12px 16px;border:none;">Valor</th>
-                  <th style="padding:12px 16px;border:none;">Descripción</th>
-                  <th style="padding:12px 16px;border:none;">Tipo</th>
-                  <th style="padding:12px 16px;border:none;">Estado</th>
-                  <th style="padding:12px 16px;border:none;">Última modificación</th>
-                  <th style="padding:12px 20px;border:none;text-align:center;">Acciones</th>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Clave</th>
+                  <th>Valor</th>
+                  <th>Descripción</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                  <th>Última modificación</th>
+                  <th class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -386,6 +386,7 @@
           </div>
         </div>
 
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
@@ -508,10 +509,11 @@
       });
       var statActivos = document.getElementById('stat-activos');
       var statInactivos = document.getElementById('stat-inactivos');
-      if (statActivos) statActivos.textContent = activos || '—';
-      if (statInactivos) statInactivos.textContent = inactivos || '—';
+      if (statActivos) statActivos.textContent = activos || '0';
+      if (statInactivos) statInactivos.textContent = inactivos || '0';
     });
   </script>
+
 </body>
 
 </html>

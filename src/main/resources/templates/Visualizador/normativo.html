@@ -3,1715 +3,1670 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Repositorio Normativo</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = {}; window.location.href = '/visualizador/' + (map[p] || p); } }</script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #F0F4F8;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes rowSlide {
+      from {
+        opacity: 0;
+        transform: translateX(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .5);
+      }
+
+      60% {
+        box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+      }
+    }
+
+    @keyframes tabSlide {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes waterWave {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Hero ── */
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      min-width: 80px;
+      transition: all .3s ease;
+      cursor: default;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .v {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .l {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
+    }
+
+    /* ── Tab bar ── */
+    .norm-tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.28);
+
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 14px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 20px;
+      width: fit-content;
+      animation: fadeUp .45s ease both;
+    }
+
+    .norm-tab {
+      padding: 9px 22px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all .25s ease;
+      white-space: nowrap;
+    }
+
+    .norm-tab:hover {
+      background: #F3F4F6;
+      color: #1B3A5C;
+    }
+
+    .norm-tab.active {
+      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+    }
+
+    .norm-tab .count-badge {
+      background: rgba(255, 255, 255, .25);
+      color: inherit;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .norm-tab:not(.active) .count-badge {
+      background: rgba(27, 58, 92, .08);
+      color: #6B7280;
+    }
+
+    /* ── Filters ── */
+    .filter-row {
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
+    }
+
+    .filter-row input,
+    .filter-row select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: inherit;
+      color: #374151;
+      transition: all .2s;
+      background: #fff;
+    }
+
+    .filter-row input {
+      padding-left: 34px;
+    }
+
+    .filter-row input:focus,
+    .filter-row select:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    /* ── Main layout ── */
+    .norm-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 20px;
+      align-items: start;
+      animation: fadeUp .5s .1s ease both;
+    }
+
+    #table-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Table card ── */
+    .norm-table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px rgba(0, 0, 0, .08);
+      overflow: hidden;
+    }
+
+    .norm-table-card thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .norm-table-card thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 12px 14px;
+      border: none;
+    }
+
+    .norm-row {
+      border-bottom: 1px solid #F3F4F6;
+      transition: background .2s, transform .15s;
+      animation: rowSlide .35s ease both;
+    }
+
+    .norm-row:hover {
+      background: #F0FFF6;
+      transform: translateX(2px);
+    }
+
+    .norm-row td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      font-size: 12px;
+    }
+
+    .norm-row:last-child {
+      border-bottom: none;
+    }
+
+    /* ── Badges ── */
+    .badge-vinc {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-novinc {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-vigente {
+      background: rgba(46, 204, 113, .1);
+      color: #27AE60;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-proyecto {
+      background: rgba(243, 156, 18, .1);
+      color: #C27C0E;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-derogada {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    /* ── Tema badge ── */
+    .tema-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      border-left: 3px solid;
+    }
+
+    .tema-ec {
+      background: rgba(46, 204, 113, .08);
+      color: #27AE60;
+      border-color: #2ECC71;
+    }
+
+    .tema-gr {
+      background: rgba(52, 152, 219, .08);
+      color: #2471A3;
+      border-color: #3498DB;
+    }
+
+    .tema-ee {
+      background: rgba(243, 156, 18, .08);
+      color: #D68910;
+      border-color: #F39C12;
+    }
+
+    .tema-rep {
+      background: rgba(231, 76, 60, .08);
+      color: #C0392B;
+      border-color: #E74C3C;
+    }
+
+    .tema-otro {
+      background: rgba(156, 163, 175, .1);
+      color: #6B7280;
+      border-color: #9CA3AF;
+    }
+
+    /* ── Ver button ── */
+    .btn-ver {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+    }
+
+    .btn-ver::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s;
+    }
+
+    .btn-ver:hover {
+      background: #2ECC71;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 16px rgba(46, 204, 113, .4);
+    }
+
+    .btn-ver:hover::after {
+      transform: translateX(100%);
+    }
+
+    /* ── Sidebar cards ── */
+    .side-card {
+      background: rgba(255, 255, 255, 0.28);
+
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 16px;
+      transition: box-shadow .3s;
+    }
+
+    .side-card:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .11);
+    }
+
+    .side-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .kpi-topic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      background: #FAFBFC;
+      border: 1px solid #F0F4F8;
+      margin-bottom: 6px;
+      transition: all .2s;
+      cursor: default;
+      animation: fadeUp .4s ease both;
+    }
+
+    .kpi-topic:hover {
+      background: #F0FFF6;
+      border-color: rgba(46, 204, 113, .2);
+      transform: translateX(3px);
+    }
+
+    .kpi-topic:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
+    }
+
+    /* ── Empty state ── */
+    .empty-norm {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-norm i {
+      font-size: 44px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .empty-norm p {
+      color: #9CA3AF;
+      font-size: 14px;
+    }
+
+    /* ── Toggle switch lista/grid ── */
+    .vista-toggle-group {
+      display: inline-flex;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .vista-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn+.vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
+    }
+
+    /* ── Grid container ── */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .grid-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      transition: all .2s ease;
+      animation: fadeUp .4s ease both;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .grid-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .12);
+      transform: translateY(-2px);
+    }
+
+    .grid-card-icon-area {
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .grid-card-icon-area i {
+      font-size: 28px;
+    }
+
+    .grid-card-info {
+      padding: 14px;
+    }
+
+    .grid-card-info .card-title {
+      font-weight: 700;
+      color: #1B3A5C;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+
+    .grid-card-info .card-anio {
+      font-size: 11px;
+      color: #9CA3AF;
+      margin-bottom: 6px;
+    }
+
+    .grid-card-info .card-desc {
+      font-size: 11px;
+      color: #6B7280;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .grid-card-info .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #F3F4F6;
+      padding-top: 10px;
+    }
+
+    .grid-card-info .card-badges {
+      display: flex;
+      gap: 4px;
+    }
+
+    .grid-card-info .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .badge-vinc {
+      background: rgba(231, 76, 60, .12);
+      color: #C0392B;
+    }
+
+    .badge-novinc {
+      background: rgba(52, 152, 219, .12);
+      color: #2471A3;
+    }
+
+    .badge-vigente {
+      background: rgba(46, 204, 113, .12);
+      color: #27AE60;
+    }
+
+    .badge-proyecto {
+      background: rgba(243, 156, 18, .12);
+      color: #C27C0E;
+    }
+
+    .badge-derogada {
+      background: rgba(156, 163, 175, .14);
+      color: #6B7280;
+    }
+
+    .grid-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
+    }
+
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
+
+    .grid-card-actions button,
+    .grid-card-actions a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .grid-card-actions .btn-view {
+      color: #2ECC71;
+    }
+
+    .grid-card-actions .btn-edit {
+      color: #F39C12;
+    }
+
+    .grid-card-actions .btn-delete {
+      color: #E74C3C;
+    }
+
+    .grid-card-actions button:hover,
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+
+
+    /* ── Modal visor ── */
+    .modal-overlay-viz {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, .6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(2px);
+    }
+
+    .modal-overlay-viz.show {
+      display: flex;
+    }
+
+    .modal-content-viz {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+      width: 90%;
+      max-width: 900px;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp .3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header-viz {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .modal-title-viz {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1B3A5C;
+      margin: 0;
+    }
+
+    .modal-close-viz {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: #F3F4F6;
+      color: #6B7280;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all .15s;
+      font-family: inherit;
+    }
+
+    .modal-close-viz:hover {
+      background: #E5E7EB;
+      color: #1B3A5C;
+    }
+
+    .modal-body-viz {
+      flex: 1;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: #F9FAFB;
+    }
+
+    .pdf-viewer-viz {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pdf-page-viz {
+      max-width: 100%;
+      max-height: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
+
+    .excel-table-viz {
+      width: 100%;
+      overflow: auto;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #E5E7EB;
+    }
+
+    .excel-table-viz table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    .excel-table-viz th {
+      background: #F8FAFB;
+      color: #6B7280;
+      font-weight: 700;
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 2px solid #EEF0F3;
+      white-space: nowrap;
+    }
+
+    .excel-table-viz td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #F0F2F5;
+      color: #374151;
+    }
+
+    .excel-table-viz tbody tr:hover {
+      background: #F6FAF8;
+    }
+  </style>
 </head>
 
 <body>
-  <th:block th:fragment="normativo-content">
+  <div style="display:flex;flex-direction:column;min-height:100vh;">
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+    <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main class="water-bg"
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-    <!-- ======== CSS DENTRO DEL FRAGMENT ======== -->
-    <style>
-      .ambito-tabs {
-        display: flex;
-        gap: 0;
-        border-bottom: 2px solid #E5E7EB;
-        margin-bottom: 16px;
-      }
-
-      .ambito-tab {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        padding: 9px 20px;
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        color: #6B7280;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -2px;
-        transition: all .18s;
-        font-family: inherit;
-      }
-
-      .ambito-tab:hover {
-        color: #1B3A5C;
-        background: rgba(27, 58, 92, .04);
-        border-radius: 6px 6px 0 0;
-      }
-
-      .ambito-tab.active {
-        color: #1B3A5C;
-        border-bottom-color: #2ECC71;
-      }
-
-      .tab-badge {
-        background: #E5E7EB;
-        color: #6B7280;
-        font-size: 10px;
-        font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 999px;
-        transition: all .18s;
-      }
-
-      .ambito-tab.active .tab-badge {
-        background: rgba(46, 204, 113, .15);
-        color: #27AE60;
-      }
-
-      .view-toggle {
-        display: flex;
-        background: #F3F4F6;
-        border-radius: 8px;
-        padding: 3px;
-        gap: 2px;
-      }
-
-      .view-btn {
-        padding: 6px 12px;
-        border-radius: 6px;
-        border: none;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        transition: all .18s;
-        background: transparent;
-        color: #6B7280;
-        font-family: inherit;
-      }
-
-      .view-btn.active {
-        background: #fff;
-        color: #1B3A5C;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, .1);
-      }
-
-      .f-input {
-        padding: 8px 14px 8px 34px;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 8px;
-        font-size: 13px;
-        font-family: inherit;
-        outline: none;
-        color: #111827;
-        transition: border-color .2s;
-        background: #fff;
-        width: 100%;
-      }
-
-      .f-input:focus {
-        border-color: #2ECC71;
-      }
-
-      .f-select {
-        padding: 8px 12px;
-        border: 1.5px solid #E5E7EB;
-        border-radius: 8px;
-        font-size: 13px;
-        font-family: inherit;
-        outline: none;
-        color: #374151;
-        background: #fff;
-        cursor: pointer;
-      }
-
-      .norm-tbl {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-size: 13px;
-      }
-
-      .norm-tbl th {
-        background: #F8FAFB;
-        color: #6B7280;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: .07em;
-        text-transform: uppercase;
-        padding: 10px 12px;
-        border-bottom: 2px solid #EEF0F3;
-        text-align: left;
-        white-space: nowrap;
-      }
-
-      .norm-tbl td {
-        padding: 12px 12px;
-        border-bottom: 1px solid #F0F2F5;
-        color: #374151;
-        vertical-align: middle;
-        background: #fff;
-        transition: background .12s;
-      }
-
-      .norm-tbl tbody tr:hover td {
-        background: #F6FAF8;
-      }
-
-      .norm-tbl tbody tr:last-child td {
-        border-bottom: none;
-      }
-
-      .norm-grid-wrap {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-        gap: 14px;
-      }
-
-      .norm-card {
-        background: #fff;
-        border-radius: 12px;
-        border: 1px solid #E8ECF0;
-        overflow: hidden;
-        cursor: pointer;
-        transition: box-shadow .2s, transform .2s;
-        position: relative;
-      }
-
-      .norm-card:hover {
-        box-shadow: 0 4px 20px rgba(0, 0, 0, .1);
-        transform: translateY(-2px);
-      }
-
-      .norm-card:hover .card-actions {
-        opacity: 1;
-      }
-
-      .card-thumb {
-        height: 80px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-        border-bottom: 1px solid #F0F2F5;
-        position: relative;
-      }
-
-      .card-body {
-        padding: 12px 14px;
-      }
-
-      .card-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: #1B3A5C;
-        margin-bottom: 3px;
-        line-height: 1.4;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-
-      .card-sub {
-        font-size: 11px;
-        color: #9CA3AF;
-        margin-bottom: 8px;
-      }
-
-      .card-footer2 {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .card-actions {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        opacity: 0;
-        transition: opacity .15s;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 3px;
-        padding: 3px 9px;
-        border-radius: 999px;
-        font-size: 10px;
-        font-weight: 700;
-      }
-
-      .tag {
-        padding: 2px 7px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 700;
-      }
-
-      .s-vigente {
-        background: rgba(39, 174, 96, .12);
-        color: #27AE60;
-      }
-
-      .s-proyecto {
-        background: rgba(243, 156, 18, .12);
-        color: #D68910;
-      }
-
-      .s-consulta {
-        background: rgba(52, 152, 219, .12);
-        color: #2471A3;
-      }
-
-      .s-derogada {
-        background: rgba(149, 165, 166, .12);
-        color: #717D7E;
-      }
-
-      .kpi-bar {
-        height: 6px;
-        background: #EEF0F3;
-        border-radius: 999px;
-        overflow: hidden;
-        margin-top: 5px;
-      }
-
-      .kpi-fill {
-        height: 100%;
-        border-radius: 999px;
-        transition: width .6s ease;
-      }
-
-      .dist-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 6px;
-        margin-bottom: 4px;
-      }
-
-      .dist-dot {
-        width: 9px;
-        height: 9px;
-        border-radius: 2px;
-        flex-shrink: 0;
-      }
-
-      .empty-msg {
-        display: none;
-        flex-direction: column;
-        align-items: center;
-        padding: 50px 20px;
-        color: #9CA3AF;
-        text-align: center;
-      }
-
-      .empty-msg.show {
-        display: flex;
-      }
-
-      .empty-msg i {
-        font-size: 40px;
-        margin-bottom: 12px;
-        opacity: .3;
-      }
-
-      .readonly-notice {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        background: rgba(52, 152, 219, .07);
-        border: 1px solid rgba(52, 152, 219, .2);
-        border-radius: 8px;
-        font-size: 11px;
-        color: #2471A3;
-        margin-bottom: 14px;
-      }
-
-      .norm-row.hidden-row {
-        display: none;
-      }
-
-      .norm-card.hidden-card {
-        display: none;
-      }
-
-      .drive-row-actions {
-        position: relative;
-        display: inline-flex;
-        vertical-align: middle;
-        z-index: 50;
-      }
-
-      .drive-kebab {
-        width: 32px;
-        height: 32px;
-        border: none;
-        border-radius: 8px;
-        background: transparent;
-        color: #64748B;
-        cursor: pointer;
-        font-size: 16px;
-        line-height: 1;
-        padding: 0;
-      }
-
-      .drive-kebab:hover {
-        background: rgba(0, 0, 0, .07);
-        color: #1B3A5C;
-      }
-
-      .drive-dropdown {
-        display: none;
-        position: absolute;
-        right: 0;
-        top: 100%;
-        margin-top: 4px;
-        min-width: 228px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
-        border: 1px solid #E8ECF0;
-        z-index: 10050;
-        padding: 6px 0;
-      }
-
-      .drive-dropdown.is-open {
-        display: block;
-      }
-
-      .drive-dropdown button {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
-        padding: 10px 14px;
-        border: none;
-        background: none;
-        cursor: pointer;
-        font-size: 13px;
-        color: #374151;
-        font-family: inherit;
-        text-align: left;
-      }
-
-      .drive-dropdown button:hover:not(:disabled) {
-        background: #F3F4F6;
-      }
-
-      .drive-dropdown button:disabled {
-        opacity: .48;
-        cursor: not-allowed;
-      }
-    </style>
-
-    <!-- Header -->
-    <div
-      style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
-      <div>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <!-- ══ HERO ══ -->
+        <div class="estudios-hero">
           <div
-            style="width:34px;height:34px;background:linear-gradient(135deg,#1B3A5C,#2C5F8A);border-radius:9px;display:flex;align-items:center;justify-content:center;">
-            <i class="fas fa-balance-scale" style="color:#fff;font-size:14px;"></i>
-          </div>
-          <h1 style="font-size:21px;font-weight:800;color:#1B3A5C;margin:0;">Repositorio Normativo</h1>
-        </div>
-        <p style="color:#6B7280;font-size:12px;margin-left:44px;">Base de datos de normativas sobre economía circular
-          <span style="color:#D1D5DB;margin:0 4px;">·</span><span style="color:#9CA3AF;">Actualización:
-            10/03/2026</span></p>
-      </div>
-    </div>
-
-    <!-- Read-only notice -->
-    <div style="display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:18px;align-items:start;">
-      <div>
-        <!-- Ultimos accesos -->
-        <div
-          style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:12px;">
-          <div style="display:flex;align-items:center;gap:8px;color:#1B3A5C;font-size:13px;font-weight:700;margin-bottom:10px;">
-            <i class="fas fa-history" style="color:#2ECC71;font-size:12px;"></i>
-            Ultimos accesos
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
-            <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <div
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-balance-scale" style="color:#2ECC71;font-size:17px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Repositorio Normativo</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Marco regulatorio de economía circular
+                    y gestión de residuos</p>
+                </div>
               </div>
-              <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Ley 30884 - Plastico de un solo uso</div>
-              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 20 min</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-                <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-                <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Ley 30884','Plástico de un solo uso','pdf')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Solo lectura</span>
+                </div>
               </div>
             </div>
-            <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(46,204,113,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-excel" style="font-size:23px;color:#27AE60;"></i>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="v" id="hs-total">—</div>
+                <div class="l">Total</div>
               </div>
-              <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">D.L. 1278 - Gestion de Residuos</div>
-              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 h</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-                <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-                <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.L. 1278','Ley de Gestión de Residuos','xlsx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="v" id="hs-nacional" style="color:#34D399;">—</div>
+                <div class="l">Nacional</div>
               </div>
-            </div>
-            <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-word" style="font-size:23px;color:#3498DB;"></i>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="v" id="hs-intl" style="color:#60A5FA;">—</div>
+                <div class="l">Internac.</div>
               </div>
-              <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Reglamento de Envases D.S. 014-2021</div>
-              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 1 dia</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-                <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-                <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.S. 014-2021','Reglamento de Envases','docx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
-              </div>
-            </div>
-            <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(243,156,18,.10);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-alt" style="font-size:23px;color:#F39C12;"></i>
-              </div>
-              <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">ISO 14001:2015 - Gestion Ambiental</div>
-              <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 dias</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-                <button type="button" th:if="${rol == 'VISUALIZADOR'}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-                <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('ISO 14001','Gestión Ambiental','pdf')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
+              <div class="stat-chip" style="animation-delay:.4s">
+                <div class="v" id="hs-vigentes" style="color:#A78BFA;">—</div>
+                <div class="l">Vigentes</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Tabla de Normativas -->
-        <div style="background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <div style="display:flex;align-items:center;gap:8px;color:#1B3A5C;font-size:13px;font-weight:700;margin-bottom:10px;">
-            <i class="fas fa-table" style="color:#2ECC71;font-size:12px;"></i>
-            Tabla de Normativas
-          </div>
-          <div
-            style="margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <div style="position:relative;flex:1;min-width:180px;">
-            <i class="fas fa-search"
-              style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
-            <input id="n-search" class="f-input" placeholder="Buscar nombre, código, organismo…"
-              oninput="applyFilters()" />
-          </div>
-          <select id="n-tipo" class="f-select" onchange="applyFilters()">
-            <option value="">Tipo: Todos</option>
-            <option value="ley">Ley</option>
-            <option value="decreto legislativo">Decreto Legislativo</option>
-            <option value="decreto supremo">Decreto Supremo</option>
-            <option value="reglamento">Reglamento</option>
-            <option value="norma técnica">NTP / Norma técnica</option>
-            <option value="directiva">Directiva</option>
-            <option value="hoja de ruta">Hoja de Ruta</option>
-            <option value="resolución">Resolución</option>
-          </select>
-          <select id="n-clasificacion" class="f-select" onchange="applyFilters()">
-            <option value="">Clasificación: Todas</option>
-            <option value="vinculante">Vinculante</option>
-            <option value="no vinculante">No vinculante</option>
-          </select>
-          <select id="n-tematica" class="f-select" onchange="applyFilters()">
-            <option value="">Temática: Todas</option>
-            <option value="ec">EC</option>
-            <option value="gr">GR</option>
-            <option value="ee">EE</option>
-            <option value="rep">REP</option>
-          </select>
-          <select id="n-estado" class="f-select" onchange="applyFilters()">
-            <option value="">Estado: Todos</option>
-            <option value="vigente">Vigente</option>
-            <option value="proyecto publicado">Proyecto publicado</option>
-            <option value="consulta pública">Consulta pública</option>
-            <option value="derogada">Derogada</option>
-          </select>
-          <button id="btn-limpiar" onclick="clearFilters()"
-            style="padding:8px 12px;border-radius:8px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;color:#9CA3AF;font-family:inherit;white-space:nowrap;"
-            onmouseover="this.style.borderColor='#9CA3AF'" onmouseout="this.style.borderColor='#E5E7EB'">
-            <i class="fas fa-times" style="margin-right:3px;"></i>Limpiar
+        <!-- ══ TABS ══ -->
+        <div class="norm-tab-bar">
+          <button id="ntab-todos" class="norm-tab active" onclick="showNormativoTab('todos')">
+            <i class="fas fa-globe"></i> Todos
+            <span class="count-badge" id="badge-todos">—</span>
           </button>
-          <div class="view-toggle">
-            <button id="btn-list" class="view-btn active" onclick="setView('list')"><i class="fas fa-list"></i></button>
-            <button id="btn-grid" class="view-btn" onclick="setView('grid')"><i class="fas fa-th-large"></i></button>
-          </div>
-          </div>
+          <button id="ntab-nacional" class="norm-tab" onclick="showNormativoTab('nacional')">
+            <i class="fas fa-flag"></i> Nacional
+            <span class="count-badge" id="badge-nacional">—</span>
+          </button>
+          <button id="ntab-internacional" class="norm-tab" onclick="showNormativoTab('internacional')">
+            <i class="fas fa-earth-americas"></i> Internacional
+            <span class="count-badge" id="badge-intl">—</span>
+          </button>
+        </div>
 
-          <!-- LIST VIEW -->
-          <div id="view-list">
-            <div style="border:1px solid #EEF1F4;border-radius:10px;overflow:visible;">
-              <!-- overflow visible: si es auto, los submenús "Añadir a" hacia la izquierda se recortan. -->
-              <div class="norm-list-table-scroll" style="overflow:visible;">
-                <table class="norm-tbl" style="min-width:820px;">
+        <!-- ══ FILTER ROW ══ -->
+        <div class="filter-row">
+          <div style="position:relative;flex:1;min-width:200px;">
+            <i class="fas fa-search"
+              style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
+            <input id="norm-search" placeholder="Buscar por título..." oninput="applyNormFilter()" />
+          </div>
+          <select id="norm-clasificacion" onchange="applyNormFilter()">
+            <option value="">Clasificación: Todas</option>
+            <option value="VINCULANTE">Vinculante</option>
+            <option value="NO_VINCULANTE">No vinculante</option>
+          </select>
+          <select id="norm-estado" onchange="applyNormFilter()">
+            <option value="">Estado: Todos</option>
+            <option value="Vigente">Vigente</option>
+            <option value="Proyecto publicado">Proyecto publicado</option>
+            <option value="Consulta pública">Consulta pública</option>
+            <option value="Derogada">Derogada</option>
+          </select>
+          <select id="norm-tema" onchange="applyNormFilter()">
+            <option value="">Temática: Todas</option>
+            <option value="EC">EC</option>
+            <option value="GR">GR</option>
+            <option value="EE">EE</option>
+            <option value="REP">REP</option>
+          </select>
+          <select id="norm-anio" onchange="applyNormFilter()">
+            <option value="">Todos los años</option>
+          </select>
+          <div class="vista-toggle-group">
+            <button class="vista-toggle-btn active" id="btn-vista-lista" onclick="setNormVista('lista')" title="Lista">
+              <i class="fas fa-list"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
+          <button onclick="clearNormFilters()"
+            style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
+            onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+            onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+        </div>
+
+        <!-- ══ MAIN LAYOUT ══ -->
+        <div class="norm-layout">
+          <div id="table-col">
+            <div class="norm-table-card">
+              <div style="overflow-x:auto;">
+                <table class="table mb-0" id="norm-table" style="min-width:820px;">
                   <thead>
                     <tr>
-                      <th data-col="nombre">Nombre</th>
-                      <th data-col="codigo">Código</th>
-                      <th data-col="organismo">Organismo</th>
-                      <th data-col="anio">Año</th>
-                      <th data-col="tipo">Tipo</th>
-                      <th data-col="clasif">Clasif.</th>
-                      <th data-col="estado">Estado</th>
-                      <th data-col="tematica">Temática</th>
-                      <th data-col="acciones" style="text-align:center;">Acciones</th>
+                      <th style="width:32%;">Título</th>
+                      <th>Año</th>
+                      <th>Tipo</th>
+                      <th>Clasif.</th>
+                      <th>Estado</th>
+                      <th>Temática</th>
+                      <th class="text-center">Ver</th>
                     </tr>
                   </thead>
-                  <tbody>
-                  <th:block th:if="${normativas != null and !normativas.isEmpty()}">
-                    <tr th:each="n : ${normativas}" class="norm-row"
-                        th:with="clasifFiltro=${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'no vinculante' : 'vinculante'}"
-                        th:attr="data-documento-id=${n.id},
-                          data-full-titulo=${n.titulo},
-                          data-anio=${n.anio},
-                          data-archivo-mime=${n.archivoTipoMime},
-                          data-titulo=${#strings.toLowerCase(n.titulo)},
-                          data-tipo=${#strings.toLowerCase(n.tipoNormativaNombre != null ? n.tipoNormativaNombre : '')},
-                          data-estado=${#strings.toLowerCase(n.estadoNormativaNombre != null ? n.estadoNormativaNombre : '')},
-                          data-ambito=${n.ambito},
-                          data-clasif=${clasifFiltro},
-                          data-tema=${#strings.toLowerCase(n.tematicaCodigo != null ? n.tematicaCodigo : '')}">
+                  <tbody id="norm-tbody">
+                    <tr th:each="n, iStat : ${normativas}" class="norm-row" th:data-id="${n.id}"
+                      th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}" th:data-anio="${n.anio}"
+                      th:data-clasificacion="${n.clasificacion}" th:data-estado="${n.estadoNormativaNombre}"
+                      th:data-tema="${n.tematicaCodigo}" th:data-url="${n.archivoUrl}"
+                      th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
+
+                      <td class="fw-bold" style="color:#1B3A5C;font-size:12px;max-width:220px;line-height:1.4;"
+                        th:text="${n.titulo}">Título de la normativa</td>
+
                       <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;" th:text="${n.titulo}">Título</div>
+                        <span
+                          style="font-weight:700;color:#1B3A5C;background:#EEF2FF;padding:2px 8px;border-radius:5px;"
+                          th:text="${n.anio}">—</span>
                       </td>
-                      <td style="color:#6B7280;font-size:11px;white-space:nowrap;" th:text="|ID ${n.id}|">ID</td>
-                      <td style="color:#6B7280;font-size:11px;" th:text="${n.ambito == 'NACIONAL' ? 'Nacional' : 'Internacional'}">Ámbito</td>
-                      <td style="font-weight:600;font-size:12px;" th:text="${n.anio != null ? n.anio : '—'}">2024</td>
-                      <td style="color:#6B7280;font-size:11px;" th:text="${n.tipoNormativaNombre}">Tipo</td>
+
+                      <td style="color:#6B7280;font-size:12px;" th:text="${n.tipoNormativaNombre}">—</td>
+
                       <td>
-                        <span class="pill" th:style="${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'background:rgba(52,152,219,.1);color:#2471A3;' : 'background:rgba(231,76,60,.1);color:#C0392B;'}"
-                              th:text="${(n.clasificacion != null and #strings.contains(#strings.toUpperCase(n.clasificacion), 'NO')) ? 'No vinculante' : 'Vinculante'}">Vinculante</span>
+                        <span th:if="${n.clasificacion == 'VINCULANTE'}" class="badge-vinc">Vinculante</span>
+                        <span th:unless="${n.clasificacion == 'VINCULANTE'}" class="badge-novinc">No vinculante</span>
                       </td>
+
                       <td>
-                        <span th:class="${'pill ' + (n.estadoNormativaNombre != null and #strings.contains(#strings.toLowerCase(n.estadoNormativaNombre), 'proyecto') ? 's-proyecto' : 's-vigente')}">
-                          <i class="fas fa-circle" style="font-size:5px;"></i>
-                          <span th:text="${n.estadoNormativaNombre != null ? n.estadoNormativaNombre : '—'}">Vigente</span>
+                        <span th:if="${n.estadoNormativaNombre != null}" class="badge-vigente"
+                          th:text="${n.estadoNormativaNombre}">—</span>
+                        <span th:unless="${n.estadoNormativaNombre != null}" class="badge-derogada">—</span>
+                      </td>
+
+                      <td>
+                        <span th:switch="${n.tematicaCodigo}">
+                          <span th:case="'EC'" class="tema-badge tema-ec">EC</span>
+                          <span th:case="'GR'" class="tema-badge tema-gr">GR</span>
+                          <span th:case="'EE'" class="tema-badge tema-ee">EE</span>
+                          <span th:case="'REP'" class="tema-badge tema-rep">REP</span>
+                          <span th:case="*" class="tema-badge tema-otro" th:text="${n.tematicaCodigo}">—</span>
                         </span>
                       </td>
-                      <td>
-                        <th:block th:switch="${n.tematicaCodigo}">
-                          <span th:case="'EC'" class="tag" style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
-                          <span th:case="'GR'" class="tag" style="background:rgba(52,152,219,.1);color:#2471A3;border-left:3px solid #3498DB;">GR</span>
-                          <span th:case="'EE'" class="tag" style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
-                          <span th:case="'REP'" class="tag" style="background:rgba(231,76,60,.1);color:#C0392B;border-left:3px solid #E74C3C;">REP</span>
-                          <span th:case="*" class="tag" style="background:rgba(107,114,128,.12);color:#4B5563;border-left:3px solid #9CA3AF;" th:text="${n.tematicaCodigo != null ? n.tematicaCodigo : '—'}">—</span>
-                        </th:block>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button" class="btn-ver-viz" th:onclick="|openVisorNormRow([[${n.id}]])|">
+
+                      <td class="text-center">
+                        <div style="display:inline-flex;align-items:center;gap:6px;">
+                          <button class="btn-ver" onclick="openNormVisorFromRow(this)">
                             <i class="fas fa-eye"></i> Ver
                           </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);" th:onclick="|downloadNormRow([[${n.id}]])|">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" th:onclick="|toggleDriveDropdown(event, 'drive-dd-n-${n.id}')|"><i class="fas fa-ellipsis-v"></i></button>
-                            <div class="drive-dropdown" onclick="event.stopPropagation();" th:id="|drive-dd-n-${n.id}|">
-                              <button type="button" th:onclick="|shareNormRow([[${n.id}]]); closeAllDriveDropdowns();|"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" th:attr="data-mu-id=${n.id},data-mu-titulo=${n.titulo}">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
+
                         </div>
                       </td>
                     </tr>
-                  </th:block>
-                  <th:block th:if="${normativas == null}">
-                    <tr class="norm-row" data-documento-id="1" data-titulo="decreto legislativo 1278 ley gestión residuos" data-tipo="ley"
-                      data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="gr">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Decreto
-                          Legislativo 1278 — Ley de Gestión de Residuos</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;white-space:nowrap;">D.L. 1278</td>
-                      <td style="color:#6B7280;font-size:11px;">MINAM</td>
-                      <td style="font-weight:600;font-size:12px;">2016</td>
-                      <td style="color:#6B7280;font-size:11px;">Ley</td>
-                      <td><span class="pill" style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
-                      <td><span class="pill s-vigente"><i class="fas fa-circle" style="font-size:5px;"></i> Vigente</span>
-                      </td>
-                      <td><span class="tag"
-                          style="background:rgba(52,152,219,.1);color:#2471A3;border-left:3px solid #3498DB;">GR</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button"
-                            onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)"
-                            class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.L. 1278','Ley de Gestión de Residuos','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-0')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-0" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('D.L. 1278','Ley de Gestión de Residuos'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="1" data-mu-titulo="Decreto Legislativo 1278 — Ley de Gestión de Residuos">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
+
+                    <tr th:if="${#lists.isEmpty(normativas)}">
+                      <td colspan="7">
+                        <div class="empty-norm">
+                          <i class="fas fa-balance-scale"></i>
+                          <p>No hay normativas registradas aún.</p>
                         </div>
                       </td>
                     </tr>
-                    <tr class="norm-row" data-documento-id="2" data-titulo="iso 14001 2015 sistemas gestión ambiental" data-tipo="norma técnica"
-                      data-estado="vigente" data-ambito="INTERNACIONAL" data-clasif="no vinculante" data-tema="ec">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">ISO
-                          14001:2015 — Sistemas de Gestión Ambiental</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;">ISO 14001</td>
-                      <td style="color:#6B7280;font-size:11px;">ISO</td>
-                      <td style="font-weight:600;font-size:12px;">2015</td>
-                      <td style="color:#6B7280;font-size:11px;">NTP / Norma técnica</td>
-                      <td><span class="pill" style="background:rgba(52,152,219,.1);color:#2471A3;">No vinculante</span>
-                      </td>
-                      <td><span class="pill s-vigente"><i class="fas fa-circle" style="font-size:5px;"></i> Vigente</span>
-                      </td>
-                      <td><span class="tag"
-                          style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button"
-                            onclick="openVisorViz('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental','2015','PDF',2)"
-                            class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-1')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-1" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('ISO 14001','ISO 14001:2015 — Sistemas de Gestión Ambiental'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="2" data-mu-titulo="ISO 14001:2015 — Sistemas de Gestión Ambiental">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="norm-row" data-documento-id="3" data-titulo="reglamento envases embalajes d.s. 014-2021" data-tipo="reglamento"
-                      data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="ee">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
-                          Reglamento de Envases y Embalajes — D.S. 014-2021</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;">D.S. 014-2021</td>
-                      <td style="color:#6B7280;font-size:11px;">PRODUCE</td>
-                      <td style="font-weight:600;font-size:12px;">2021</td>
-                      <td style="color:#6B7280;font-size:11px;">Reglamento</td>
-                      <td><span class="pill" style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
-                      <td><span class="pill s-vigente"><i class="fas fa-circle" style="font-size:5px;"></i> Vigente</span>
-                      </td>
-                      <td><span class="tag"
-                          style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button" onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)" class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('D.S. 014-2021','Envases y Embalajes','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-2')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-2" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('D.S. 014-2021','Reglamento de Envases y Embalajes'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="3" data-mu-titulo="Reglamento de Envases y Embalajes — D.S. 014-2021">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="norm-row" data-documento-id="4" data-titulo="ley 30884 plastico un solo uso congreso peru" data-tipo="ley"
-                      data-estado="vigente" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="rep">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Ley
-                          30884 — Ley que regula el plástico de un solo uso</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;">Ley 30884</td>
-                      <td style="color:#6B7280;font-size:11px;">Congreso Perú</td>
-                      <td style="font-weight:600;font-size:12px;">2018</td>
-                      <td style="color:#6B7280;font-size:11px;">Ley</td>
-                      <td><span class="pill" style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
-                      <td><span class="pill s-vigente"><i class="fas fa-circle" style="font-size:5px;"></i> Vigente</span>
-                      </td>
-                      <td><span class="tag"
-                          style="background:rgba(231,76,60,.1);color:#C0392B;border-left:3px solid #E74C3C;">REP</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button" onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)" class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Ley 30884','Plástico de un solo uso','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-3')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-3" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('Ley 30884','Ley 30884 — Plástico de un solo uso'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="4" data-mu-titulo="Ley 30884 — Ley que regula el plástico de un solo uso">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="norm-row" data-documento-id="5" data-titulo="hoja ruta economia circular peru hrec 2030 minam mef"
-                      data-tipo="hoja de ruta" data-estado="proyecto publicado" data-ambito="NACIONAL" data-clasif="vinculante" data-tema="ec">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">Hoja de
-                          Ruta de Economía Circular Perú 2030</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;">HREC 2030</td>
-                      <td style="color:#6B7280;font-size:11px;">MINAM / MEF</td>
-                      <td style="font-weight:600;font-size:12px;">2023</td>
-                      <td style="color:#6B7280;font-size:11px;">Hoja de Ruta</td>
-                      <td><span class="pill" style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
-                      <td><span class="pill s-proyecto"><i class="fas fa-circle" style="font-size:5px;"></i> Proyecto
-                          publicado</span></td>
-                      <td><span class="tag"
-                          style="background:rgba(39,174,96,.1);color:#27AE60;border-left:3px solid #2ECC71;">EC</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button" onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF',5)" class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('HREC 2030','Economía Circular Perú','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-4')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-4" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('HREC 2030','Hoja de Ruta EC Perú 2030'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="5" data-mu-titulo="Hoja de Ruta de Economía Circular Perú 2030">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="norm-row" data-documento-id="6" data-titulo="directiva 94/62/ec envases residuos parlamento europeo"
-                      data-tipo="directiva" data-estado="vigente" data-ambito="INTERNACIONAL" data-clasif="vinculante" data-tema="ee">
-                      <td>
-                        <div style="font-weight:700;color:#1B3A5C;max-width:200px;font-size:12px;line-height:1.4;">
-                          Directiva 94/62/EC — Envases y Residuos de Envases</div>
-                      </td>
-                      <td style="color:#6B7280;font-size:11px;">Dir. 94/62/EC</td>
-                      <td style="color:#6B7280;font-size:11px;">Parlamento Europeo</td>
-                      <td style="font-weight:600;font-size:12px;">1994</td>
-                      <td style="color:#6B7280;font-size:11px;">Directiva</td>
-                      <td><span class="pill" style="background:rgba(231,76,60,.1);color:#C0392B;">Vinculante</span></td>
-                      <td><span class="pill s-vigente"><i class="fas fa-circle" style="font-size:5px;"></i> Vigente</span>
-                      </td>
-                      <td><span class="tag"
-                          style="background:rgba(243,156,18,.1);color:#D68910;border-left:3px solid #F39C12;">EE</span>
-                      </td>
-                      <td style="text-align:center;">
-                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
-                          <button type="button"
-                            onclick="openVisorViz('Dir. 94/62/EC','Directiva 94/62/EC — Envases y Residuos de Envases','1994','PDF',6)"
-                            class="btn-ver-viz">
-                            <i class="fas fa-eye"></i> Ver
-                          </button>
-                          <button type="button" th:if="${rol == 'SOCIO'}" onclick="downloadDemoDoc('Dir. 94/62/EC','Directiva 94/62/EC — Envases y Residuos de Envases','pdf')" class="btn-ver-viz" style="border-color:#1B3A5C;color:#1B3A5C;background:rgba(27,58,92,.06);">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled class="btn-ver-viz" style="opacity:.55;cursor:not-allowed;border-color:#E5E7EB;color:#9CA3AF;background:#F9FAFB;">
-                            <i class="fas fa-download"></i> Desc.
-                          </button>
-                          <div class="drive-row-actions">
-                            <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-n-5')"><i class="fas fa-ellipsis-v"></i></button>
-                            <div id="drive-dd-n-5" class="drive-dropdown" onclick="event.stopPropagation();">
-                              <button type="button" onclick="driveShareNormativa('Dir. 94/62/EC','Directiva 94/62/EC — Envases'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                              <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="NORMATIVA" data-mu-id="6" data-mu-titulo="Directiva 94/62/EC — Envases y Residuos de Envases">
-                                <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                                  <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                                  <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                                </button>
-                                <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  </th:block>
-                  <tr th:if="${normativas != null and normativas.isEmpty()}">
-                    <td colspan="9" style="text-align:center;padding:32px;color:#9CA3AF;font-size:13px;">No hay normativas activas en el repositorio.</td>
-                  </tr>
                   </tbody>
                 </table>
               </div>
-              <div class="empty-msg" id="empty-list">
-                <i class="fas fa-balance-scale"></i>
-                <span>No se encontraron normativas con esos criterios.</span>
-              </div>
-            </div>
-        </div>
-        </div>
 
-        <!-- GRID VIEW -->
-        <div id="view-grid" style="display:none;">
-          <div class="norm-grid-wrap">
-            <div class="norm-card" data-titulo="decreto legislativo 1278 ley gestión residuos" data-tipo="ley"
-              data-estado="vigente" data-ambito="NACIONAL">
-              <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
-                <div class="card-actions"><button
-                    onclick="openVisorViz('D.L. 1278','Ley de Gestión de Residuos','2016','PDF',1)"
-                    style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
-                      class="fas fa-eye"></i></button></div>
-                <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
+              <div id="no-results-norm" style="display:none;text-align:center;padding:32px;">
+                <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
+                <p style="color:#9CA3AF;font-size:13px;">No se encontraron normativas con los filtros actuales.</p>
               </div>
-              <div class="card-body">
-                <div class="card-title">D.L. 1278 — Ley de Gestión de Residuos</div>
-                <div class="card-sub">2016 · Ley · Nacional</div>
-                <div class="card-footer2"><span class="pill s-vigente"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Vigente</span><span class="tag"
-                    style="background:rgba(52,152,219,.1);color:#2471A3;border-left:2px solid #3498DB;">GR</span></div>
-              </div>
-            </div>
-            <div class="norm-card" data-titulo="iso 14001 2015 sistemas gestión ambiental" data-tipo="norma técnica"
-              data-estado="vigente" data-ambito="INTERNACIONAL">
-              <div class="card-thumb"
-                style="background:linear-gradient(135deg,rgba(142,68,173,.06),rgba(142,68,173,.14));">
-                <i class="fas fa-globe" style="color:#8E44AD;opacity:.6;font-size:32px;"></i>
-              </div>
-              <div class="card-body">
-                <div class="card-title">ISO 14001:2015 — Sistemas de Gestión Ambiental</div>
-                <div class="card-sub">2015 · Norma técnica · Internacional</div>
-                <div class="card-footer2"><span class="pill s-vigente"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Vigente</span><span class="tag"
-                    style="background:rgba(39,174,96,.1);color:#27AE60;border-left:2px solid #2ECC71;">EC</span></div>
-              </div>
-            </div>
-            <div class="norm-card" data-titulo="reglamento envases embalajes d.s. 014-2021" data-tipo="reglamento"
-              data-estado="vigente" data-ambito="NACIONAL">
-              <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
-                <div class="card-actions"><button
-                    onclick="openVisorViz('D.S. 014-2021','Envases y Embalajes','2021','PDF',3)"
-                    style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
-                      class="fas fa-eye"></i></button></div>
-                <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
-              </div>
-              <div class="card-body">
-                <div class="card-title">D.S. 014-2021 — Envases y Embalajes</div>
-                <div class="card-sub">2021 · Reglamento · Nacional</div>
-                <div class="card-footer2"><span class="pill s-vigente"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Vigente</span><span class="tag"
-                    style="background:rgba(243,156,18,.1);color:#D68910;border-left:2px solid #F39C12;">EE</span></div>
-              </div>
-            </div>
-            <div class="norm-card" data-titulo="ley 30884 plastico un solo uso congreso peru" data-tipo="ley"
-              data-estado="vigente" data-ambito="NACIONAL">
-              <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
-                <div class="card-actions"><button
-                    onclick="openVisorViz('Ley 30884','Plástico de un solo uso','2018','PDF',4)"
-                    style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
-                      class="fas fa-eye"></i></button></div>
-                <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
-              </div>
-              <div class="card-body">
-                <div class="card-title">Ley 30884 — Plástico de un solo uso</div>
-                <div class="card-sub">2018 · Ley · Nacional</div>
-                <div class="card-footer2"><span class="pill s-vigente"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Vigente</span><span class="tag"
-                    style="background:rgba(231,76,60,.1);color:#C0392B;border-left:2px solid #E74C3C;">REP</span></div>
-              </div>
-            </div>
-            <div class="norm-card" data-titulo="hoja ruta economia circular peru hrec 2030 minam mef"
-              data-tipo="hoja de ruta" data-estado="proyecto publicado" data-ambito="NACIONAL">
-              <div class="card-thumb" style="background:linear-gradient(135deg,rgba(27,58,92,.06),rgba(27,58,92,.14));">
-                <div class="card-actions"><button
-                    onclick="openVisorViz('HREC 2030','Economía Circular Perú','2023','PDF',5)"
-                    style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.9);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"><i
-                      class="fas fa-eye"></i></button></div>
-                <i class="fas fa-flag" style="color:#1B3A5C;opacity:.6;font-size:32px;"></i>
-              </div>
-              <div class="card-body">
-                <div class="card-title">Hoja de Ruta Economía Circular Perú 2030</div>
-                <div class="card-sub">2023 · Hoja de Ruta · Nacional</div>
-                <div class="card-footer2"><span class="pill s-proyecto"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Proyecto</span><span class="tag"
-                    style="background:rgba(39,174,96,.1);color:#27AE60;border-left:2px solid #2ECC71;">EC</span></div>
-              </div>
-            </div>
-            <div class="norm-card" data-titulo="directiva 94/62/ec envases residuos parlamento europeo"
-              data-tipo="directiva" data-estado="vigente" data-ambito="INTERNACIONAL">
-              <div class="card-thumb"
-                style="background:linear-gradient(135deg,rgba(142,68,173,.06),rgba(142,68,173,.14));">
-                <i class="fas fa-globe" style="color:#8E44AD;opacity:.6;font-size:32px;"></i>
-              </div>
-              <div class="card-body">
-                <div class="card-title">Directiva 94/62/EC — Envases y Residuos</div>
-                <div class="card-sub">1994 · Directiva · Internacional</div>
-                <div class="card-footer2"><span class="pill s-vigente"><i class="fas fa-circle"
-                      style="font-size:5px;"></i> Vigente</span><span class="tag"
-                    style="background:rgba(243,156,18,.1);color:#D68910;border-left:2px solid #F39C12;">EE</span></div>
-              </div>
-            </div>
-          </div>
-          <div class="empty-msg" id="empty-grid">
-            <i class="fas fa-balance-scale"></i>
-            <span>No se encontraron normativas con esos criterios.</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Sidebar -->
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="background:#fff;border-radius:12px;padding:14px 14px 12px;box-shadow:0 2px 8px rgba(0,0,0,.08);">
-          <div
-            style="font-size:12px;font-weight:700;color:#1B3A5C;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-            <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:11px;"></i>Distribucion por tematica
-          </div>
-          <div style="position:relative;height:120px;">
-            <canvas id="donut-norm-viz" width="230" height="120"></canvas>
-            <div style="position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);text-align:center;">
-              <div id="norm-kpi-total" style="font-size:34px;font-weight:800;color:#1B3A5C;line-height:1;">138</div>
-              <div style="font-size:9px;color:#9CA3AF;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Normativas activas</div>
+              <div
+                style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+                <span id="conteo-normas" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+                <div id="paginacion-normas" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+              </div>
             </div>
+
+            <div id="normativas-grid" class="grid-container" style="display:none;"></div>
           </div>
-          <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;"><span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#27AE60;"></span>EC</span><span id="norm-kpi-ec" style="font-weight:700;color:#1B3A5C;">38%</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;"><span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#3498DB;"></span>GR</span><span id="norm-kpi-gr" style="font-weight:700;color:#1B3A5C;">25%</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;"><span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#F39C12;"></span>EE</span><span id="norm-kpi-ee" style="font-weight:700;color:#1B3A5C;">20%</span></div>
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;"><span style="display:flex;align-items:center;gap:6px;color:#6B7280;"><span style="width:8px;height:8px;border-radius:2px;background:#E74C3C;"></span>REP</span><span id="norm-kpi-rep" style="font-weight:700;color:#1B3A5C;">12%</span></div>
+
+          <!-- ── Sidebar ── -->
+          <div>
+            <div class="side-card" style="animation:fadeUp .5s .2s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:12px;"></i> Distribución temática
+              </div>
+              <div style="position:relative;width:180px;height:100px;margin:0 auto 16px;">
+                <canvas id="donut-norm" width="180" height="100"></canvas>
+                <div style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);text-align:center;">
+                  <div id="donut-center-val" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
+                  <div
+                    style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
+                    Vigentes</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div class="kpi-topic" style="animation-delay:.1s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#22C55E;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Economía Circular</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EC</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ec" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.15s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#38BDF8;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Gestión de Residuos</div>
+                      <div style="font-size:10px;color:#9CA3AF;">GR</div>
+                    </div>
+                  </div>
+                  <span id="kpi-gr" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.2s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#F59E0B;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Envases y Embalajes</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EE</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ee" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.25s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#EF4444;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Resp. Extendida</div>
+                      <div style="font-size:10px;color:#9CA3AF;">REP</div>
+                    </div>
+                  </div>
+                  <span id="kpi-rep" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;">Total normativas</span>
+                <span id="sum-total" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-flag" style="font-size:10px;color:#2ECC71;"></i>Nacionales
+                </span>
+                <span id="sum-nac" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-globe" style="font-size:10px;color:#3498DB;"></i>Internacionales
+                </span>
+                <span id="sum-intl" style="font-size:14px;font-weight:800;color:#3498DB;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-check-circle" style="font-size:10px;color:#27AE60;"></i>Vigentes
+                </span>
+                <span id="sum-vig" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Consulta pública
+                </span>
+                <span id="sum-consulta" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
+              </div>
+            </div>
           </div>
         </div>
-        <div style="background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-          <div
-            style="font-size:12px;font-weight:700;color:#1B3A5C;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-            <i class="fas fa-chart-bar" style="color:#2ECC71;font-size:11px;"></i>Resumen
-          </div>
-          <div style="display:flex;flex-direction:column;gap:0;">
-            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;"><span
-                style="font-size:11px;color:#6B7280;">Total normativas</span><span
-                id="sum-total-norm" style="font-size:13px;font-weight:700;color:#1B3A5C;">138</span></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;"><span
-                style="font-size:11px;color:#6B7280;">Nacionales</span><span
-                id="sum-nac-norm" style="font-size:13px;font-weight:700;color:#1B3A5C;">89</span></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;"><span
-                style="font-size:11px;color:#6B7280;">Internacionales</span><span
-                id="sum-int-norm" style="font-size:13px;font-weight:700;color:#1B3A5C;">49</span></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;"><span
-                style="font-size:11px;color:#6B7280;display:flex;align-items:center;gap:4px;"><i
-                  class="fas fa-check-circle" style="color:#27AE60;font-size:9px;"></i>Vigentes</span><span
-                id="sum-vig-norm" style="font-size:13px;font-weight:700;color:#27AE60;">112</span></div>
-            <div style="display:flex;justify-content:space-between;padding:7px 0;"><span
-                style="font-size:11px;color:#6B7280;display:flex;align-items:center;gap:4px;"><i class="fas fa-clock"
-                  style="color:#F39C12;font-size:9px;"></i>Consulta pública</span><span
-                id="sum-consulta-norm" style="font-size:13px;font-weight:700;color:#F39C12;">8</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- ======== ESTILOS EXTRA DEL BOTÓN VER ======== -->
-    <style>
-      .btn-ver-viz {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 10px;
-        border-radius: 6px;
-        border: 1.5px solid #2ECC71;
-        background: rgba(46, 204, 113, .07);
-        color: #27AE60;
-        font-size: 11px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        transition: all .15s;
-      }
-
-      .btn-ver-viz:hover {
-        background: #2ECC71;
-        color: #fff;
-      }
-
-      /* Modal Visor */
-      .modal-overlay-viz {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, .6);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        backdrop-filter: blur(2px);
-      }
-
-      .modal-overlay-viz.show {
-        display: flex;
-      }
-
-      .modal-content-viz {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
-        width: 90%;
-        max-width: 900px;
-        height: 85vh;
-        display: flex;
-        flex-direction: column;
-        animation: slideUp .3s ease-out;
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .modal-header-viz {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 18px 24px;
-        border-bottom: 1px solid #E5E7EB;
-      }
-
-      .modal-title-viz {
-        font-size: 16px;
-        font-weight: 700;
-        color: #1B3A5C;
-        margin: 0;
-      }
-
-      .modal-close-viz {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        border: none;
-        background: #F3F4F6;
-        color: #6B7280;
-        cursor: pointer;
-        font-size: 18px;
-        transition: all .15s;
-        font-family: inherit;
-      }
-
-      .modal-close-viz:hover {
-        background: #E5E7EB;
-        color: #1B3A5C;
-      }
-
-      .modal-body-viz {
-        flex: 1;
-        overflow: auto;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-        background: #F9FAFB;
-      }
-
-      .pdf-viewer-viz {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .pdf-page-viz {
-        max-width: 100%;
-        max-height: 100%;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
-      }
-
-      .excel-table-viz {
-        width: 100%;
-        overflow: auto;
-        background: #fff;
-        border-radius: 8px;
-        border: 1px solid #E5E7EB;
-      }
-
-      .excel-table-viz table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-      }
-
-      .excel-table-viz th {
-        background: #F8FAFB;
-        color: #6B7280;
-        font-weight: 700;
-        padding: 10px 12px;
-        text-align: left;
-        border-bottom: 2px solid #EEF0F3;
-        white-space: nowrap;
-      }
-
-      .excel-table-viz td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #F0F2F5;
-        color: #374151;
-      }
-
-      .excel-table-viz tbody tr:hover {
-        background: #F6FAF8;
-      }
-    </style>
-
-    <!-- Modal Visor PDF/Excel -->
-    <div id="visor-modal-viz" class="modal-overlay-viz">
-      <div class="modal-content-viz">
-        <div class="modal-header-viz">
-          <h2 id="visor-title-viz" class="modal-title-viz">Visor de Documento</h2>
-          <button class="modal-close-viz" onclick="closeVisorViz()">×</button>
-        </div>
-        <div class="modal-body-viz">
-          <div id="visor-pdf-viz" class="pdf-viewer-viz" style="display:none;">
-            <canvas id="pdf-canvas-viz" class="pdf-page-viz"></canvas>
-            <div
-              style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
-              <span id="pdf-page-info-viz">Página 1</span>
+        <!-- ══ VISOR MODAL ══ -->
+        <div id="visor-modal-viz" class="modal-overlay-viz">
+          <div class="modal-content-viz">
+            <div class="modal-header-viz">
+              <h2 id="visor-title-viz" class="modal-title-viz">Visor de Documento</h2>
+              <button class="modal-close-viz" onclick="closeVisorViz()">×</button>
+            </div>
+            <div class="modal-body-viz">
+              <div id="visor-pdf-viz" class="pdf-viewer-viz" style="display:none;">
+                <canvas id="pdf-canvas-viz" class="pdf-page-viz"></canvas>
+                <div
+                  style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
+                  <span id="pdf-page-info-viz">Página 1</span>
+                </div>
+              </div>
+              <div id="visor-excel-viz" class="excel-table-viz" style="display:none;"></div>
+              <div id="visor-loading-viz" style="display:none;text-align:center;color:#6B7280;">
+                <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
+                <span>Cargando documento...</span>
+              </div>
             </div>
           </div>
-          <div id="visor-excel-viz" class="excel-table-viz" style="display:none;"></div>
-          <div id="visor-loading-viz" style="display:none;text-align:center;color:#6B7280;">
-            <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
-            <span>Cargando documento...</span>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- ======== JAVASCRIPT DENTRO DEL FRAGMENT ======== -->
-    <script>
-      (function () {
-        // Estado del filtro
-        var currentAmbito = 'todos';
-
-        // ── Inicializar Chart.js ──
-        var donutChart = null;
-        var ctx = document.getElementById('donut-norm-viz');
-        if (ctx && window.Chart) {
-          donutChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-              labels: ['EC', 'GR', 'EE', 'REP', 'Otro'],
-              datasets: [{
-                data: [52, 34, 28, 16, 8],
-                backgroundColor: ['#27AE60', '#3498DB', '#F39C12', '#E74C3C', '#95A5A6'],
-                borderWidth: 0,
-                hoverOffset: 4
-              }]
-            },
-            options: {
-              responsive: false,
-              rotation: 270,
-              circumference: 180,
-              cutout: '72%',
-              plugins: { legend: { display: false } }
-            }
-          });
-        }
-
-        // ── Función principal de filtrado ──
-        function applyFiltersInternal() {
-          // Sincroniza filtro de ámbito con el sidebar (Nacional/Internacional)
-          if (window.__normativoTab) {
-            currentAmbito = String(window.__normativoTab).toLowerCase();
-          }
-          var search = (document.getElementById('n-search') ? document.getElementById('n-search').value : '').toLowerCase().trim();
-          var tipo = (document.getElementById('n-tipo') ? document.getElementById('n-tipo').value : '').toLowerCase().trim();
-          var clasificacion = (document.getElementById('n-clasificacion') ? document.getElementById('n-clasificacion').value : '').toLowerCase().trim();
-          var tematica = (document.getElementById('n-tematica') ? document.getElementById('n-tematica').value : '').toLowerCase().trim();
-          var estado = (document.getElementById('n-estado') ? document.getElementById('n-estado').value : '').toLowerCase().trim();
-
-          var rows = document.querySelectorAll('.norm-row');
-          var cards = document.querySelectorAll('.norm-card');
-          var visibleList = 0, visibleGrid = 0;
-
-          var kpiEc = 0, kpiGr = 0, kpiEe = 0, kpiRep = 0;
-          var sumNac = 0, sumInt = 0, sumVig = 0, sumConsulta = 0;
-          rows.forEach(function (row) {
-            var tituloData = (row.dataset.titulo || '').toLowerCase();
-            var tipoData = (row.dataset.tipo || '').toLowerCase();
-            var clasifData = (row.dataset.clasif || '').toLowerCase();
-            var temaData = (row.dataset.tema || '').toLowerCase();
-            var estadoData = (row.dataset.estado || '').toLowerCase();
-            var ambitoData = (row.dataset.ambito || '').toUpperCase();
-
-            var matchAmbito = currentAmbito === 'todos' ||
-              (currentAmbito === 'nacional' && ambitoData === 'NACIONAL') ||
-              (currentAmbito === 'internacional' && ambitoData === 'INTERNACIONAL');
-            var matchSearch = !search || tituloData.includes(search);
-            var matchTipo = !tipo || tipoData.includes(tipo);
-            var matchClasif = !clasificacion || clasifData === clasificacion;
-            var matchTematica = !tematica || temaData.includes(tematica);
-            var matchEstado = !estado || estadoData.includes(estado);
-
-            var show = matchAmbito && matchSearch && matchTipo && matchClasif && matchTematica && matchEstado;
-            row.classList.toggle('hidden-row', !show);
-            if (show) {
-              visibleList++;
-              var temaEl = row.querySelector('.tag');
-              var tema = temaEl ? (temaEl.textContent || '').trim().toUpperCase() : '';
-              if (tema === 'EC') kpiEc++;
-              else if (tema === 'GR') kpiGr++;
-              else if (tema === 'EE') kpiEe++;
-              else if (tema === 'REP') kpiRep++;
-              var amb = (row.dataset.ambito || '').toUpperCase();
-              var est = (row.dataset.estado || '').toLowerCase();
-              if (amb === 'NACIONAL') sumNac++;
-              if (amb === 'INTERNACIONAL') sumInt++;
-              if (est.includes('vigente')) sumVig++;
-              if (est.includes('consulta')) sumConsulta++;
-            }
-          });
-
-          cards.forEach(function (card) {
-            var tituloData = (card.dataset.titulo || '').toLowerCase();
-            var tipoData = (card.dataset.tipo || '').toLowerCase();
-            var estadoData = (card.dataset.estado || '').toLowerCase();
-            var ambitoData = (card.dataset.ambito || '').toUpperCase();
-
-            var matchAmbito = currentAmbito === 'todos' ||
-              (currentAmbito === 'nacional' && ambitoData === 'NACIONAL') ||
-              (currentAmbito === 'internacional' && ambitoData === 'INTERNACIONAL');
-            var matchSearch = !search || tituloData.includes(search);
-            var matchTipo = !tipo || tipoData.includes(tipo);
-            var matchClasif = true;
-            var matchTematica = true;
-            var matchEstado = !estado || estadoData.includes(estado);
-
-            var show = matchAmbito && matchSearch && matchTipo && matchClasif && matchTematica && matchEstado;
-            card.classList.toggle('hidden-card', !show);
-            if (show) visibleGrid++;
-          });
-
-          // Mostrar/ocultar mensajes de vacío
-          var emptyList = document.getElementById('empty-list');
-          var emptyGrid = document.getElementById('empty-grid');
-          if (emptyList) emptyList.classList.toggle('show', visibleList === 0);
-          if (emptyGrid) emptyGrid.classList.toggle('show', visibleGrid === 0);
-
-          var total = visibleList;
-          var base = Math.max(total, 1);
-          var ecPct = Math.round((kpiEc / base) * 100);
-          var grPct = Math.round((kpiGr / base) * 100);
-          var eePct = Math.round((kpiEe / base) * 100);
-          var repPct = Math.round((kpiRep / base) * 100);
-
-          var totalEl = document.getElementById('norm-kpi-total');
-          var ecEl = document.getElementById('norm-kpi-ec');
-          var grEl = document.getElementById('norm-kpi-gr');
-          var eeEl = document.getElementById('norm-kpi-ee');
-          var repEl = document.getElementById('norm-kpi-rep');
-          if (totalEl) totalEl.textContent = String(total);
-          if (ecEl) ecEl.textContent = (total ? ecPct : 0) + '%';
-          if (grEl) grEl.textContent = (total ? grPct : 0) + '%';
-          if (eeEl) eeEl.textContent = (total ? eePct : 0) + '%';
-          if (repEl) repEl.textContent = (total ? repPct : 0) + '%';
-          var sumTotalEl = document.getElementById('sum-total-norm');
-          var sumNacEl = document.getElementById('sum-nac-norm');
-          var sumIntEl = document.getElementById('sum-int-norm');
-          var sumVigEl = document.getElementById('sum-vig-norm');
-          var sumConsultaEl = document.getElementById('sum-consulta-norm');
-          if (sumTotalEl) sumTotalEl.textContent = String(total);
-          if (sumNacEl) sumNacEl.textContent = String(sumNac);
-          if (sumIntEl) sumIntEl.textContent = String(sumInt);
-          if (sumVigEl) sumVigEl.textContent = String(sumVig);
-          if (sumConsultaEl) sumConsultaEl.textContent = String(sumConsulta);
-
-          if (donutChart) {
-            donutChart.data.datasets[0].data = [kpiEc, kpiGr, kpiEe, kpiRep];
-            donutChart.update();
-          }
-        }
-
-        // ── Exponer funciones globalmente ──
-        window.setAmbito = function (ambito) {
-          currentAmbito = (ambito || 'todos').toLowerCase();
-
-          // Actualizar tabs activos
-          ['todos', 'nacional', 'internacional'].forEach(function (a) {
-            var btn = document.getElementById('tab-' + a);
-            if (btn) btn.classList.toggle('active', a === currentAmbito);
-          });
-
-          applyFiltersInternal();
-        };
-
-        // Compatibilidad con el sidebar compartido: llama showNormativoTab(...)
-        window.showNormativoTab = function (ambito) {
-          window.__normativoTab = (ambito || 'todos').toLowerCase();
-          currentAmbito = window.__normativoTab;
-          applyFiltersInternal();
-        };
-
-        window.applyFilters = function () {
-          applyFiltersInternal();
-        };
-
-        window.clearFilters = function () {
-          var search = document.getElementById('n-search');
-          var tipo = document.getElementById('n-tipo');
-          var clasificacion = document.getElementById('n-clasificacion');
-          var tematica = document.getElementById('n-tematica');
-          var estado = document.getElementById('n-estado');
-          if (search) search.value = '';
-          if (tipo) tipo.value = '';
-          if (clasificacion) clasificacion.value = '';
-          if (tematica) tematica.value = '';
-          if (estado) estado.value = '';
-          currentAmbito = 'todos';
-          ['todos', 'nacional', 'internacional'].forEach(function (a) {
-            var btn = document.getElementById('tab-' + a);
-            if (btn) btn.classList.toggle('active', a === 'todos');
-          });
-          applyFiltersInternal();
-        };
-
-        window.setView = function (v) {
-          var listEl = document.getElementById('view-list');
-          var gridEl = document.getElementById('view-grid');
-          var btnList = document.getElementById('btn-list');
-          var btnGrid = document.getElementById('btn-grid');
-          if (v === 'list') {
-            if (listEl) listEl.style.display = '';
-            if (gridEl) gridEl.style.display = 'none';
-            if (btnList) btnList.classList.add('active');
-            if (btnGrid) btnGrid.classList.remove('active');
-          } else {
-            if (listEl) listEl.style.display = 'none';
-            if (gridEl) gridEl.style.display = '';
-            if (btnList) btnList.classList.remove('active');
-            if (btnGrid) btnGrid.classList.add('active');
-          }
-        };
-
-        window.openVisorNormRow = function (id) {
-          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
-          if (!row) return;
-          var tit = row.getAttribute('data-full-titulo') || '';
-          var anio = row.getAttribute('data-anio') || '';
-          var mime = (row.getAttribute('data-archivo-mime') || '').toLowerCase();
-          var fmt = 'PDF';
-          if (mime.indexOf('spreadsheetml') >= 0 || mime.indexOf('excel') >= 0) fmt = 'XLS';
-          else if (mime.indexOf('presentation') >= 0 || mime.indexOf('powerpoint') >= 0) fmt = 'PPTX';
-          else if (mime.indexOf('pdf') < 0 && mime.length > 0) fmt = 'XLS';
-          window.openVisorViz('N-' + id, tit, anio, fmt, id);
-        };
-        window.downloadNormRow = function (id) {
-          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
-          if (!row) return;
-          var tit = row.getAttribute('data-full-titulo') || 'documento';
-          var mime = (row.getAttribute('data-archivo-mime') || '').toLowerCase();
-          var ext = 'pdf';
-          if (mime.indexOf('word') >= 0) ext = 'docx';
-          else if (mime.indexOf('spreadsheetml') >= 0 || mime.indexOf('excel') >= 0) ext = 'xlsx';
-          else if (mime.indexOf('presentation') >= 0) ext = 'pptx';
-          window.downloadDemoDoc('N-' + id, tit, ext);
-        };
-        window.shareNormRow = function (id) {
-          var row = document.querySelector('.norm-row[data-documento-id="' + id + '"]');
-          if (!row) return;
-          var tit = row.getAttribute('data-full-titulo') || '';
-          window.driveShareNormativa('N-' + id, tit);
-        };
-
-        window.openVisorViz = function (codigo, titulo, anio, formato, documentoId) {
-          if (documentoId != null && typeof window.__muRegistrarAccesoNormativa === 'function') {
-            window.__muRegistrarAccesoNormativa(documentoId);
-          }
-          var modal = document.getElementById('visor-modal-viz');
-          var titleEl = document.getElementById('visor-title-viz');
-          var pdfDiv = document.getElementById('visor-pdf-viz');
-          var excelDiv = document.getElementById('visor-excel-viz');
-          var loadingDiv = document.getElementById('visor-loading-viz');
-
-          if (!modal) return;
-
-          // Preparar modal
-          titleEl.textContent = codigo + ' — ' + titulo + ' (' + anio + ')';
-          pdfDiv.style.display = 'none';
-          excelDiv.style.display = 'none';
-          loadingDiv.style.display = 'none';
-          modal.classList.add('show');
-
-          // Simular carga según formato
-          setTimeout(function () {
-            if (formato.toUpperCase() === 'PDF') {
-              pdfDiv.style.display = 'flex';
-              renderPdfDemoViz(codigo);
-            } else if (formato.toUpperCase() === 'PPTX' || formato.toUpperCase() === 'XLS') {
-              excelDiv.style.display = 'block';
-              renderExcelDemoViz(codigo, titulo);
-            }
-          }, 300);
-        };
-
-        window.closeVisorViz = function () {
-          var modal = document.getElementById('visor-modal-viz');
-          if (modal) modal.classList.remove('show');
-        };
-
-        // Cerrar modal al hacer click fuera
-        document.addEventListener('click', function (e) {
-          var modal = document.getElementById('visor-modal-viz');
-          if (modal && e.target === modal) closeVisorViz();
-        });
-
-        // Render PDF demo (usando canvas simple)
-        function renderPdfDemoViz(codigo) {
-          var canvas = document.getElementById('pdf-canvas-viz');
-          if (!canvas) return;
-          var ctx = canvas.getContext('2d');
-          canvas.width = 600;
-          canvas.height = 800;
-
-          // Fondo blanco
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-          // Sombra de documento
-          ctx.shadowColor = 'rgba(0,0,0,.1)';
-          ctx.shadowBlur = 10;
-          ctx.shadowOffsetX = 2;
-          ctx.shadowOffsetY = 2;
-
-          // Borde
-          ctx.strokeStyle = '#ddd';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-          // Header
-          ctx.fillStyle = '#1B3A5C';
-          ctx.fillRect(20, 20, canvas.width - 40, 80);
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 18px Inter, sans-serif';
-          ctx.fillText('PDF: ' + codigo, 40, 65);
-
-          // Contenido demo
-          ctx.fillStyle = '#333';
-          ctx.font = '14px Inter, sans-serif';
-          var y = 130;
-          var lines = [
-            'DOCUMENTO CLASIFICADO',
-            'Tipo: Normativa Regulatoria',
-            'Estado: Vigente',
-            '',
-            'Este es un documento de demostración.',
-            'Para acceder a los documentos completos,',
-            'contacte al administrador de la plataforma.',
-            '',
-            'Solo visualización — sin descarga permitida.',
-            'Acceso restringido al rol Visualizador.'
-          ];
-          lines.forEach(function (line) {
-            ctx.fillText(line, 40, y);
-            y += 30;
-          });
-
-          // Footer
-          ctx.fillStyle = '#999';
-          ctx.font = '12px Inter, sans-serif';
-          ctx.fillText('Recíclame © 2026', 40, canvas.height - 40);
-        }
-
-        // Render Excel demo (tabla HTML)
-        function renderExcelDemoViz(codigo, titulo) {
-          var excelDiv = document.getElementById('visor-excel-viz');
-          if (!excelDiv) return;
-
-          var html = '<table><thead><tr><th>Documento</th><th>Tipo</th><th>Fecha</th><th>Descripción</th><th>Estado</th></tr></thead><tbody>';
-          html += '<tr><td><strong>' + codigo + '</strong></td><td>Regulatorio</td><td>2026-04-23</td><td>' + titulo + '</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
-          html += '<tr><td>Documento 1</td><td>Anexo</td><td>2026-04-22</td><td>Información complementaria</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
-          html += '<tr><td>Documento 2</td><td>Referencia</td><td>2026-04-21</td><td>Normativa relacionada</td><td><span style="background:#FFF9C4;color:#F57F17;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Revisión</span></td></tr>';
-          html += '<tr><td>Documento 3</td><td>Histórico</td><td>2026-03-15</td><td>Versión anterior derogada</td><td><span style="background:#FFCDD2;color:#C62828;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Archivado</span></td></tr>';
-          html += '</tbody></table>';
-
-          excelDiv.innerHTML = html;
-        };
-
-        window.downloadDemoDoc = function (codigo, titulo, ext) {
-          var safeTitle = (titulo || 'documento').replace(/[^a-zA-Z0-9_-]/g, '_');
-          var extension = (ext || 'txt').toLowerCase();
-          var contenido = 'Documento: ' + codigo + ' - ' + titulo + '\nRol: SOCIO\nFecha: ' + new Date().toISOString() + '\n';
-          var blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
-          var url = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = safeTitle + '.' + extension;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          URL.revokeObjectURL(url);
-        };
-
-        window.closeAllDriveDropdowns = function () {
-          document.querySelectorAll('.drive-dropdown.is-open').forEach(function (el) {
-            el.classList.remove('is-open');
-            el.style.position = '';
-            el.style.left = '';
-            el.style.top = '';
-            el.style.right = '';
-            el.style.marginTop = '';
-            el.style.zIndex = '';
-          });
-        };
-
-        window.toggleDriveDropdown = function (ev, id) {
-          if (ev) {
-            ev.preventDefault();
-            ev.stopPropagation();
-          }
-          var menu = document.getElementById(id);
-          if (!menu) return;
-          var willOpen = !menu.classList.contains('is-open');
-          window.closeAllDriveDropdowns();
-          if (!willOpen) return;
-          menu.classList.add('is-open');
-          var btn = ev && ev.currentTarget;
-          if (btn && btn.getBoundingClientRect) {
-            var r = btn.getBoundingClientRect();
-            var mw = 228;
-            var left = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
-            menu.style.position = 'fixed';
-            menu.style.left = left + 'px';
-            menu.style.top = (r.bottom + 4) + 'px';
-            menu.style.right = 'auto';
-            menu.style.marginTop = '0';
-            menu.style.zIndex = '10050';
-          }
-        };
-
-        if (!window.__reciclameDriveScrollCloseNorm) {
-          window.__reciclameDriveScrollCloseNorm = true;
-          window.addEventListener('scroll', function () {
-            window.closeAllDriveDropdowns();
-          }, true);
-        }
-
-        if (!window.__reciclameDriveOutsideClickNorm) {
-          window.__reciclameDriveOutsideClickNorm = true;
-          document.addEventListener('click', function (e) {
-            if (e.target && e.target.closest && e.target.closest('.drive-row-actions')) {
-              return;
-            }
-            window.closeAllDriveDropdowns();
-          });
-        }
-
-        window.driveShareNormativa = function (codigo, titulo) {
-          var text = window.location.origin + '/socio/normativo — ' + codigo + ': ' + titulo;
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function () {
-              alert('Copiado al portapapeles. Puedes pegarlo donde quieras compartir.');
-            }).catch(function () {
-              window.prompt('Copia manualmente:', text);
+        <script>
+          // ════════════════════════════════════════════════════════
+          //  Drive-style dropdown helpers
+          // ════════════════════════════════════════════════════════
+          window.closeAllDriveDropdowns = function () {
+            document.querySelectorAll('.drive-dropdown.is-open').forEach(function (el) {
+              el.classList.remove('is-open');
+              el.style.position = '';
+              el.style.left = '';
+              el.style.top = '';
+              el.style.right = '';
+              el.style.marginTop = '';
+              el.style.zIndex = '';
             });
-          } else {
-            window.prompt('Copia manualmente:', text);
+          };
+          window.toggleDriveDropdown = function (ev, id) {
+            if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+            var menu = document.getElementById(id);
+            if (!menu) return;
+            var willOpen = !menu.classList.contains('is-open');
+            window.closeAllDriveDropdowns();
+            if (!willOpen) return;
+            menu.classList.add('is-open');
+            var btn = ev && ev.currentTarget;
+            if (btn && btn.getBoundingClientRect) {
+              var r = btn.getBoundingClientRect();
+              var mw = 228;
+              var left = Math.min(window.innerWidth - mw - 8, Math.max(8, r.right - mw));
+              menu.style.position = 'fixed';
+              menu.style.left = left + 'px';
+              menu.style.top = (r.bottom + 4) + 'px';
+              menu.style.right = 'auto';
+              menu.style.marginTop = '0';
+              menu.style.zIndex = '10050';
+            }
+          };
+          if (!window.__reciclameDriveOutsideClick) {
+            window.__reciclameDriveOutsideClick = true;
+            document.addEventListener('click', function () { window.closeAllDriveDropdowns(); });
           }
-        };
 
-        document.addEventListener('DOMContentLoaded', function () {
-          try {
-            var t = sessionStorage.getItem('reciclameNormativoTab');
-            if (t === 'todos' || t === 'nacional' || t === 'internacional') {
-              window.__normativoTab = t;
-              if (window.showNormativoTab) {
-                window.showNormativoTab(t);
+          // ════════════════════════════════════════════════════════
+          //  INICIALIZACIÓN: computa contadores desde las filas DOM
+          // ════════════════════════════════════════════════════════
+          (function initCounts() {
+            var rows = document.querySelectorAll('.norm-row');
+            var total = rows.length;
+            var nac = 0, intl = 0, vig = 0, consulta = 0;
+            var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
+
+            rows.forEach(function (r) {
+              var ambito = (r.dataset.ambito || '').toUpperCase();
+              var estado = (r.dataset.estado || '').toLowerCase();
+              var tema = (r.dataset.tema || '').toUpperCase();
+              if (ambito === 'NACIONAL') nac++;
+              if (ambito === 'INTERNACIONAL') intl++;
+              if (estado.includes('vigente')) vig++;
+              if (estado.includes('consulta')) consulta++;
+              if (tema === 'EC') cEC++;
+              if (tema === 'GR') cGR++;
+              if (tema === 'EE') cEE++;
+              if (tema === 'REP') cREP++;
+            });
+
+            setText('hs-total', total);
+            setText('hs-nacional', nac);
+            setText('hs-intl', intl);
+            setText('hs-vigentes', vig);
+            setText('badge-todos', total);
+            setText('badge-nacional', nac);
+            setText('badge-intl', intl);
+            setText('kpi-ec', cEC);
+            setText('kpi-gr', cGR);
+            setText('kpi-ee', cEE);
+            setText('kpi-rep', cREP);
+            setText('sum-total', total);
+            setText('sum-nac', nac);
+            setText('sum-intl', intl);
+            setText('sum-vig', vig);
+            setText('sum-consulta', consulta);
+            setText('donut-center-val', vig);
+
+            var ctx = document.getElementById('donut-norm');
+            if (ctx && window.Chart) {
+              new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                  labels: ['EC', 'GR', 'EE', 'REP'],
+                  datasets: [{
+                    data: [cEC, cGR, cEE, cREP],
+                    backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
+                    borderWidth: 0, hoverOffset: 4
+                  }]
+                },
+                options: {
+                  responsive: false, cutout: '76%',
+                  rotation: 270, circumference: 180,
+                  animation: { duration: 1400, easing: 'easeInOutQuart' },
+                  plugins: { legend: { display: false }, tooltip: { enabled: true } }
+                }
+              });
+            }
+
+            function setText(id, val) {
+              var el = document.getElementById(id);
+              if (el) el.textContent = val;
+            }
+          })();
+
+          // ── Populate year filter ──
+          (function populateAnios() {
+            var rows = document.querySelectorAll('.norm-row');
+            var years = new Set();
+            rows.forEach(function (r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            var sel = document.getElementById('norm-anio');
+            if (!sel) return;
+            var sorted = Array.from(years).sort(function (a, b) { return b - a; });
+            sorted.forEach(function (y) {
+              var opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            });
+          })();
+
+          // ════════════════════════════════════════════════════════
+          //  TAB SWITCHING
+          // ════════════════════════════════════════════════════════
+          function showNormativoTab(tab) {
+            ['todos', 'nacional', 'internacional'].forEach(function (t) {
+              document.getElementById('ntab-' + t).classList.remove('active');
+            });
+            document.getElementById('ntab-' + tab).classList.add('active');
+            window.__normativoTab = tab;
+            try { sessionStorage.setItem('reciclameNormativoTab', tab); } catch (e) { }
+            applyNormFilter();
+          }
+          window.showNormativoTab = showNormativoTab;
+
+          // ════════════════════════════════════════════════════════
+          //  FILTRO COMBINADO
+          // ════════════════════════════════════════════════════════
+          function applyNormFilter() {
+            var activeBtn = document.querySelector('.norm-tab.active');
+            var tab = activeBtn ? activeBtn.id.replace('ntab-', '') : 'todos';
+
+            var q = (document.getElementById('norm-search')?.value || '').toLowerCase().trim();
+            var clasif = (document.getElementById('norm-clasificacion')?.value || '');
+            var estado = (document.getElementById('norm-estado')?.value || '');
+            var tema = (document.getElementById('norm-tema')?.value || '');
+            var anio = (document.getElementById('norm-anio')?.value || '');
+
+            var visibles = 0;
+            document.querySelectorAll('.norm-row').forEach(function (row) {
+              var ambito = (row.dataset.ambito || '').toUpperCase();
+              var titulo = (row.dataset.titulo || '').toLowerCase();
+              var rClasif = (row.dataset.clasificacion || '');
+              var rEstado = (row.dataset.estado || '');
+              var rTema = (row.dataset.tema || '');
+
+              var matchTab = tab === 'todos'
+                || (tab === 'nacional' && ambito === 'NACIONAL')
+                || (tab === 'internacional' && ambito === 'INTERNACIONAL');
+              var matchQ = !q || titulo.includes(q);
+              var matchClasif = !clasif || rClasif === clasif;
+              var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
+              var matchTema = !tema || rTema === tema;
+              var rAnio = row.dataset.anio || '';
+              var matchAnio = !anio || rAnio === anio;
+
+              var match = matchTab && matchQ && matchClasif && matchEstado && matchTema && matchAnio;
+              row.dataset.filtrado = match ? '1' : '0';
+              if (match) visibles++;
+            });
+
+            var noRes = document.getElementById('no-results-norm');
+            if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
+
+            inicializarPaginacion();
+            mostrarPagina(1);
+            if (normVistaActual === 'grid') renderNormGrid();
+          }
+
+          function clearNormFilters() {
+            ['norm-search', 'norm-clasificacion', 'norm-estado', 'norm-tema', 'norm-anio'].forEach(function (id) {
+              var el = document.getElementById(id);
+              if (el) el.value = '';
+            });
+            applyNormFilter();
+          }
+
+          // ════════════════════════════════════════════════════════
+          //  PAGINACIÓN
+          // ════════════════════════════════════════════════════════
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.norm-row'))
+              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.max(Math.ceil(filasActivas.length / ITEMS_POR_PAGINA), 1);
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-normas');
+            if (conteoEl) conteoEl.textContent = filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-normas');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnterior = document.createElement('button');
+            btnAnterior.textContent = '← Ant';
+            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.onclick = function () {
+              if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnAnterior);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function (pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSiguiente = document.createElement('button');
+            btnSiguiente.textContent = 'Sig →';
+            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.onclick = function () {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSiguiente);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.norm-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
               }
             }
-          } catch (e) { /* ignore */ }
-        });
-
-      })();
-
-      // ── Ocultar columnas según config del admin — CSS injection (cubre filas dinámicas) ──
-      (function() {
-        var colsVis = /*[[${uiColsNormativas}]]*/ null;
-        if (!colsVis || !Array.isArray(colsVis)) return;
-        var ref = document.querySelector('.norm-tbl thead');
-        if (!ref) return;
-        var headers = ref.querySelectorAll('th[data-col]');
-        var css = '';
-        headers.forEach(function(th, idx) {
-          if (colsVis.indexOf(th.getAttribute('data-col')) === -1) {
-            var n = idx + 1;
-            css += '.norm-tbl th:nth-child(' + n + '),.norm-tbl td:nth-child(' + n + '){display:none!important}';
           }
-        });
-        if (css) {
-          var s = document.createElement('style');
-          s.textContent = css;
-          document.head.appendChild(s);
-        }
-      })();
-    </script>
 
-    <th:block th:if="${rol == 'SOCIO'}" th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
+          // ════════════════════════════════════════════════════════
+          //  VISTA LISTA / GRID
+          // ════════════════════════════════════════════════════════
+          var normVistaActual = 'lista';
 
-  </th:block>
+          function setNormVista(vista) {
+            var tableCard = document.querySelector('.norm-table-card');
+            var gridDiv = document.getElementById('normativas-grid');
+            var btnLista = document.getElementById('btn-vista-lista');
+            var btnGrid = document.getElementById('btn-vista-grid');
+
+            normVistaActual = vista;
+
+            if (vista === 'grid') {
+              tableCard.style.display = 'none';
+              gridDiv.style.display = '';
+              btnLista.classList.remove('active');
+              btnGrid.classList.add('active');
+              renderNormGrid();
+            } else {
+              tableCard.style.display = '';
+              gridDiv.style.display = 'none';
+              btnLista.classList.add('active');
+              btnGrid.classList.remove('active');
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
+          }
+
+          function renderNormGrid() {
+            var gridDiv = document.getElementById('normativas-grid');
+            var filas = Array.from(document.querySelectorAll('.norm-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+
+            if (filas.length === 0) {
+              gridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 24px;"><i class="fas fa-balance-scale" style="font-size:44px;color:#D1D5DB;display:block;margin-bottom:12px;"></i><p style="color:#9CA3AF;font-size:14px;">No se encontraron normativas con los filtros actuales.</p></div>';
+              return;
+            }
+
+            var ambitoIcon = {
+              'NACIONAL': { cls: 'fas fa-flag', color: '#2ECC71', bg: 'rgba(46,204,113,.08)' },
+              'INTERNACIONAL': { cls: 'fas fa-globe', color: '#3498DB', bg: 'rgba(52,152,219,.08)' }
+            };
+
+            var estadoBadge = {
+              'Vigente': '<span class="badge badge-vigente">Vigente</span>',
+              'Proyecto publicado': '<span class="badge badge-proyecto">Proyecto</span>',
+              'Consulta pública': '<span class="badge badge-proyecto">Consulta</span>',
+              'Derogada': '<span class="badge badge-derogada">Derogada</span>'
+            };
+
+            var temaClass = { 'EC': 'tema-ec', 'GR': 'tema-gr', 'EE': 'tema-ee', 'REP': 'tema-rep' };
+
+            gridDiv.innerHTML = filas.map(function (row, idx) {
+              var ambito = row.dataset.ambito || '';
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var estado = row.dataset.estado || '';
+              var tema = row.dataset.tema || '';
+              var id = row.dataset.id || '';
+              var url = row.dataset.url || '#';
+
+              var ic = ambitoIcon[ambito.toUpperCase()] || { cls: 'fas fa-file', color: '#9CA3AF', bg: 'rgba(156,163,175,.1)' };
+              var estBadge = estadoBadge[estado] || '<span class="badge badge-derogada">' + estado + '</span>';
+              var temaCls = temaClass[tema.toUpperCase()] || 'tema-otro';
+
+              return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
+                '<div class="grid-card-actions">' +
+                '<button class="btn-view" onclick="event.stopPropagation();openNormVisorFromRow(document.querySelector(\'[data-id=' + id + '\]\'))" title="Ver"><i class="fas fa-eye"></i></button>' +
+                '<button onclick="event.stopPropagation();shareNormRow(\'' + id + '\')" title="Compartir"><i class="fas fa-share-alt" style="color:#3498DB;"></i></button>' +
+                '</div>' +
+                '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
+                '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
+                '</div>' +
+                '<div class="grid-card-info">' +
+                '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                '<div class="card-anio">' + anio + '</div>' +
+                '<div class="card-desc">' + estBadge + ' <span class="tema-badge ' + temaCls + '">' + tema + '</span></div>' +
+                '<div class="card-footer">' +
+                '<div class="card-badges">' + estBadge + '</div>' +
+                '<span class="tema-badge ' + temaCls + '">' + tema + '</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            }).join('');
+          }
+
+          function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+          }
+
+          // ════════════════════════════════════════════════════════
+          //  VISOR MODAL
+          // ════════════════════════════════════════════════════════
+          var _normVisorModal = null;
+
+          function openNormVisorFromRow(btn) {
+            try {
+              var row = btn.closest('tr');
+              if (!row) return;
+              var id = row.dataset.id;
+              if (id) window.location.href = '/visualizador/normativo/' + id + '/ver';
+            } catch (e) {
+              console.error('openNormVisorFromRow error:', e);
+            }
+          }
+
+          function openNormVisor(id, titulo, anio, url) {
+            if (id && id !== '—') {
+              window.location.href = '/visualizador/normativo/' + id + '/ver';
+            }
+          }
+
+          function closeVisorViz() {
+            var modal = document.getElementById('visor-modal-viz');
+            if (modal) modal.classList.remove('show');
+          }
+
+          document.addEventListener('click', function (e) {
+            var modal = document.getElementById('visor-modal-viz');
+            if (modal && e.target === modal) closeVisorViz();
+          });
+
+          // ════════════════════════════════════════════════════════
+          //  SHARE
+          // ════════════════════════════════════════════════════════
+          function shareNormRow(id) {
+            var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+            if (!row) return;
+            var tit = row.dataset.titulo || '';
+            var text = window.location.origin + '/visualizador/normativo — ' + tit;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function () { alert('Copiado al portapapeles.'); }).catch(function () { window.prompt('Copia manualmente:', text); });
+            } else {
+              window.prompt('Copia manualmente:', text);
+            }
+          }
+
+          // ── Init pagination on load ──
+          window.addEventListener('load', function () {
+            document.querySelectorAll('.norm-row').forEach(function (tr) {
+              if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
+            });
+            var savedTab = window.__normativoTab;
+            if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
+              showNormativoTab(savedTab);
+            }
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
+        </script>
+
+        <th:block th:replace="~{navbar/footer :: footer}"></th:block>
+      </main>
+    </div>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </body>
 
 </html>

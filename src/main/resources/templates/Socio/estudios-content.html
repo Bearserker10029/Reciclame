@@ -24,6 +24,8 @@
     .estudio-card-footer2{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
     .estudio-card .card-actions{position:absolute;top:8px;right:8px;opacity:0;transition:opacity .15s;}
     .estudio-card:hover .card-actions{opacity:1;}
+    .file-icon{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;}
   </style>
   <div style="margin-bottom:18px;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
@@ -46,53 +48,28 @@
           <i class="fas fa-history" style="color:#2ECC71;font-size:12px;"></i>
           Ultimos accesos
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
-          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Análisis de Flujo de Materiales</div>
-            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 18 min</div>
+        <div th:if="${#lists.isEmpty(ultimosAccesos)}" style="font-size:13px;color:#9CA3AF;padding:4px 0 8px;">
+          Cuando abras un documento en Normativo, Estudios o Mi Unidad, aparecerá aquí.
+        </div>
+        <div th:if="${!#lists.isEmpty(ultimosAccesos)}" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;">
+          <div th:each="acc : ${ultimosAccesos}" style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
+            <th:block th:switch="${acc.iconVariant}">
+              <div th:case="'pdf'" style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i></div>
+              <div th:case="'doc'" style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-word" style="font-size:23px;color:#3498DB;"></i></div>
+              <div th:case="'sheet'" style="width:54px;height:54px;border-radius:14px;background:rgba(46,204,113,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-excel" style="font-size:23px;color:#27AE60;"></i></div>
+              <div th:case="'slide'" style="width:54px;height:54px;border-radius:14px;background:rgba(243,156,18,.10);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-powerpoint" style="font-size:23px;color:#F39C12;"></i></div>
+              <div th:case="*" style="width:54px;height:54px;border-radius:14px;background:rgba(107,114,128,.1);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+                <i class="fas fa-file-alt" style="font-size:23px;color:#6B7280;"></i></div>
+            </th:block>
+            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;" th:text="${acc.titulo}">—</div>
+            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · <span th:text="${acc.tiempoRelativo}">—</span></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <button onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-              <button th:if="${rol == 'SOCIO'}" type="button" onclick="descargarDocumento('Análisis de Flujo de Materiales','pdf')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
-              <button th:if="${rol == 'VISUALIZADOR'}" type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-            </div>
-          </div>
-          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(46,204,113,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-powerpoint" style="font-size:23px;color:#27AE60;"></i>
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Informe REP Envases 2024</div>
-            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 h</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <button onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-              <button th:if="${rol == 'SOCIO'}" type="button" onclick="descargarDocumento('Informe REP Envases 2024','pptx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
-              <button th:if="${rol == 'VISUALIZADOR'}" type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-            </div>
-          </div>
-          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(231,76,60,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-pdf" style="font-size:23px;color:#E74C3C;"></i>
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Hoja de Ruta EC Perú 2030</div>
-            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 1 día</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <button onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-              <button th:if="${rol == 'SOCIO'}" type="button" onclick="descargarDocumento('Hoja de Ruta EC Perú 2030','pdf')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
-              <button th:if="${rol == 'VISUALIZADOR'}" type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
-            </div>
-          </div>
-          <div style="border:1px solid #E9EDF3;border-radius:14px;padding:12px;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.04);">
-            <div style="width:54px;height:54px;border-radius:14px;background:rgba(52,152,219,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-              <i class="fas fa-file-alt" style="font-size:23px;color:#3498DB;"></i>
-            </div>
-            <div style="font-size:12px;font-weight:700;color:#1B3A5C;line-height:1.35;min-height:34px;">Gestión de residuos industriales 2025</div>
-            <div style="font-size:11px;color:#9CA3AF;margin-top:8px;margin-bottom:10px;">Visualizado · hace 2 días</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-              <button type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Ver</button>
-              <button th:if="${rol == 'SOCIO'}" type="button" onclick="descargarDocumento('Gestión de residuos industriales 2025','docx')" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;">Desc.</button>
-              <button th:if="${rol == 'VISUALIZADOR'}" type="button" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#F9FAFB;font-size:12px;color:#9CA3AF;cursor:not-allowed;font-family:inherit;font-weight:600;">Desc.</button>
+              <a class="mu-rec-btn-link" th:href="${acc.urlVer}" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">Ver</a>
+              <a class="mu-rec-btn-link" th:href="${acc.urlDescarga}" target="_blank" rel="noopener noreferrer" style="height:34px;border-radius:10px;border:1px solid #E5E7EB;background:#fff;font-size:12px;color:#4B5563;cursor:pointer;font-family:inherit;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box;">Desc.</a>
             </div>
           </div>
         </div>
@@ -111,10 +88,9 @@
           </div>
           <select id="estudios-tematica" class="form-control" style="width:auto;min-width:145px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
             <option value="all">Todas las tematicas</option>
-            <option value="ec">EC</option>
-            <option value="gr">GR</option>
-            <option value="ee">EE</option>
-            <option value="rep">REP</option>
+            <th:block th:each="t : ${tematicas}">
+              <option th:value="${t.codigo}" th:text="${t.nombre}"></option>
+            </th:block>
           </select>
           <select id="estudios-year-mode" class="form-control" style="width:auto;min-width:118px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="toggleYearMode();applyEstudiosFilters()">
             <option value="exact">Año Exacto</option>
@@ -123,29 +99,22 @@
           <div id="year-exact-wrap">
             <select id="estudios-year" class="form-control" style="width:auto;min-width:100px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
               <option value="all">Todos</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
             </select>
           </div>
           <div id="year-range-wrap" style="display:none;align-items:center;gap:8px;">
             <select id="estudios-year-from" class="form-control" style="width:auto;min-width:92px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
               <option value="">Inicio</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
             </select>
             <select id="estudios-year-to" class="form-control" style="width:auto;min-width:84px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
               <option value="">Fin</option>
-              <option value="2024">2024</option>
-              <option value="2025">2025</option>
-              <option value="2026">2026</option>
             </select>
           </div>
           <select id="estudios-format" class="form-control" style="width:auto;min-width:120px;height:34px;padding:6px 28px 6px 10px;font-size:12px;" onchange="applyEstudiosFilters()">
             <option value="all">Todos los formatos</option>
             <option value="pdf">PDF</option>
             <option value="pptx">PPTX</option>
+            <option value="xlsx">XLSX</option>
+            <option value="docx">DOCX</option>
           </select>
           <div style="display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;flex-wrap:wrap;">
             <button type="button" id="estudios-btn-limpiar" onclick="clearEstudiosFilters()"
@@ -174,96 +143,65 @@
                 </tr>
               </thead>
               <tbody id="estudios-table-body">
-                <tr class="estudio-row" data-documento-id="1" data-title="Análisis de Flujo de Materiales" data-tematica="EC Economía Circular" data-objetivo="Evaluar el ciclo de vida de envases plásticos en Perú" data-year="2025" data-format="pdf">
-                  <td>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:12px;"></i></div>
-                      <span style="font-weight:600;color:#1B3A5C;">Análisis de Flujo de Materiales</span>
-                    </div>
-                  </td>
-                  <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economia Circular</span></td>
-                  <td style="color:#6B7280;max-width:200px;">Evaluar el ciclo de vida de envases plásticos en Perú</td>
-                  <td>2025</td>
-                  <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
-                  <td style="text-align:center;">
-                    <div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
-                      <button type="button" onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button>
-                      <button type="button" th:if="${rol == 'SOCIO'}" onclick="descargarDocumento('Análisis de Flujo de Materiales','pdf')" style="padding:6px 12px;border-radius:6px;border:1px solid rgba(27,58,92,.35);background:rgba(27,58,92,.06);cursor:pointer;font-size:12px;color:#1B3A5C;font-family:inherit;font-weight:600;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
-                      <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#F9FAFB;cursor:not-allowed;font-size:12px;color:#9CA3AF;font-family:inherit;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
-                      <div class="drive-row-actions">
-                        <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-e-0')"><i class="fas fa-ellipsis-v"></i></button>
-                        <div id="drive-dd-e-0" class="drive-dropdown" onclick="event.stopPropagation();">
-                          <button type="button" onclick="driveShareEstudio('Análisis de Flujo de Materiales'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                          <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="1" data-mu-titulo="Análisis de Flujo de Materiales">
-                            <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                              <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                              <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                            </button>
-                            <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <tr th:if="${#lists.isEmpty(estudios)}">
+                  <td colspan="6" style="text-align:center;padding:40px;color:#9CA3AF;">
+                    <i class="fas fa-folder-open" style="font-size:32px;display:block;margin-bottom:10px;opacity:.5;"></i>
+                    No hay estudios registrados aún.
                   </td>
                 </tr>
-                <tr class="estudio-row" data-documento-id="2" data-title="Informe REP Envases 2024" data-tematica="REP Responsabilidad Extendida del Productor" data-objetivo="Monitorear el impacto del programa REP en envases" data-year="2024" data-format="pptx">
+                <tr th:each="e, iStat : ${estudios}"
+                  class="estudio-row"
+                  th:with="tipo=${#strings.contains(e.archivoTipoMime,'pdf') ? 'pdf' :
+                                (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel')) ? 'xlsx' :
+                                (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'docx' :
+                                (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'pptx' : 'otro'}"
+                  th:data-id="${e.id}"
+                  th:data-title="${e.titulo}"
+                  th:data-tematica="${e.tematicaNombre}"
+                  th:data-objetivo="${e.descripcionBreve}"
+                  th:data-year="${e.anio}"
+                  th:data-format="${tipo}">
                   <td>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-powerpoint" style="color:#27AE60;font-size:12px;"></i></div>
-                      <span style="font-weight:600;color:#1B3A5C;">Informe REP Envases 2024</span>
+                      <th:block th:switch="${tipo}">
+                        <div th:case="'pdf'" class="file-icon" style="background:rgba(231,76,60,.1);"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:12px;"></i></div>
+                        <div th:case="'xlsx'" class="file-icon" style="background:rgba(46,204,113,.1);"><i class="fas fa-file-excel" style="color:#27AE60;font-size:12px;"></i></div>
+                        <div th:case="'docx'" class="file-icon" style="background:rgba(52,152,219,.1);"><i class="fas fa-file-word" style="color:#3498DB;font-size:12px;"></i></div>
+                        <div th:case="'pptx'" class="file-icon" style="background:rgba(243,156,18,.1);"><i class="fas fa-file-powerpoint" style="color:#F39C12;font-size:12px;"></i></div>
+                        <div th:case="*" class="file-icon" style="background:rgba(107,114,128,.1);"><i class="fas fa-file-alt" style="color:#6B7280;font-size:12px;"></i></div>
+                      </th:block>
+                      <span style="font-weight:600;color:#1B3A5C;" th:text="${e.titulo}">Título</span>
                     </div>
                   </td>
-                  <td><span class="pill" style="background:rgba(231,76,60,.14);color:#C0392B;">REP · Resp. Ext. Productor</span></td>
-                  <td style="color:#6B7280;max-width:200px;">Monitorear el impacto del programa REP en envases</td>
-                  <td>2024</td>
-                  <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">PPTX</span></td>
-                  <td style="text-align:center;">
-                    <div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
-                      <button type="button" onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button>
-                      <button type="button" th:if="${rol == 'SOCIO'}" onclick="descargarDocumento('Informe REP Envases 2024','pptx')" style="padding:6px 12px;border-radius:6px;border:1px solid rgba(27,58,92,.35);background:rgba(27,58,92,.06);cursor:pointer;font-size:12px;color:#1B3A5C;font-family:inherit;font-weight:600;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
-                      <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#F9FAFB;cursor:not-allowed;font-size:12px;color:#9CA3AF;font-family:inherit;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
-                      <div class="drive-row-actions">
-                        <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-e-1')"><i class="fas fa-ellipsis-v"></i></button>
-                        <div id="drive-dd-e-1" class="drive-dropdown" onclick="event.stopPropagation();">
-                          <button type="button" onclick="driveShareEstudio('Informe REP Envases 2024'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                          <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="2" data-mu-titulo="Informe REP Envases 2024">
-                            <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                              <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                              <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                            </button>
-                            <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                <tr class="estudio-row" data-documento-id="3" data-title="Hoja de Ruta EC Perú 2030" data-tematica="EC Economía Circular" data-objetivo="Guía estratégica hacia la economía circular nacional" data-year="2025" data-format="pdf">
                   <td>
-                    <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="width:30px;height:30px;border-radius:6px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="color:#E74C3C;font-size:12px;"></i></div>
-                      <span style="font-weight:600;color:#1B3A5C;">Hoja de Ruta EC Perú 2030</span>
-                    </div>
+                    <th:block th:if="${e.tematicaNombre}">
+                      <span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;" th:text="${e.tematicaNombre}">Tematica</span>
+                    </th:block>
                   </td>
-                  <td><span class="pill" style="background:rgba(39,174,96,.14);color:#27AE60;">EC · Economia Circular</span></td>
-                  <td style="color:#6B7280;max-width:200px;">Guía estratégica hacia la economía circular nacional</td>
-                  <td>2025</td>
-                  <td><span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span></td>
+                  <td style="color:#6B7280;max-width:200px;" th:text="${e.descripcionBreve}">—</td>
+                  <td th:text="${e.anio}">—</td>
+                  <td>
+                    <th:block th:switch="${tipo}">
+                      <span th:case="'pdf'" class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;">PDF</span>
+                      <span th:case="'xlsx'" class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;">XLSX</span>
+                      <span th:case="'docx'" class="pill" style="background:rgba(52,152,219,.12);color:#3498DB;">DOCX</span>
+                      <span th:case="'pptx'" class="pill" style="background:rgba(243,156,18,.12);color:#F39C12;">PPTX</span>
+                      <span th:case="*" class="pill" style="background:rgba(107,114,128,.12);color:#6B7280;">Otro</span>
+                    </th:block>
+                  </td>
                   <td style="text-align:center;">
                     <div style="display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;">
-                      <button type="button" onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button>
-                      <button type="button" th:if="${rol == 'SOCIO'}" onclick="descargarDocumento('Hoja de Ruta EC Perú 2030','pdf')" style="padding:6px 12px;border-radius:6px;border:1px solid rgba(27,58,92,.35);background:rgba(27,58,92,.06);cursor:pointer;font-size:12px;color:#1B3A5C;font-family:inherit;font-weight:600;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
+                      <button type="button" th:attr="onclick=|openVisor('estudio','${e.titulo}','${tipo.toUpperCase()}',false)|" style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#27AE60;font-family:inherit;"><i class="fas fa-eye" style="margin-right:4px;"></i>Ver</button>
+                      <button type="button" th:if="${rol == 'SOCIO'}" th:attr="onclick=|descargarDocumento('${e.titulo}','${tipo}')|" style="padding:6px 12px;border-radius:6px;border:1px solid rgba(27,58,92,.35);background:rgba(27,58,92,.06);cursor:pointer;font-size:12px;color:#1B3A5C;font-family:inherit;font-weight:600;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
                       <button type="button" th:if="${rol == 'VISUALIZADOR'}" disabled style="padding:6px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#F9FAFB;cursor:not-allowed;font-size:12px;color:#9CA3AF;font-family:inherit;"><i class="fas fa-download" style="margin-right:4px;"></i>Descargar</button>
                       <div class="drive-row-actions">
-                        <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-e-2')"><i class="fas fa-ellipsis-v"></i></button>
-                        <div id="drive-dd-e-2" class="drive-dropdown" onclick="event.stopPropagation();">
-                          <button type="button" onclick="driveShareEstudio('Hoja de Ruta EC Perú 2030'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                          <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="3" data-mu-titulo="Hoja de Ruta EC Perú 2030">
+                        <button type="button" class="drive-kebab" aria-label="Más acciones" th:attr="onclick=|toggleDriveDropdown(event, 'drive-dd-e-' + ${iStat.index})|"><i class="fas fa-ellipsis-v"></i></button>
+                        <div th:id="'drive-dd-e-' + ${iStat.index}" class="drive-dropdown" onclick="event.stopPropagation();">
+                          <button type="button" th:attr="onclick=|driveShareEstudio('${e.titulo}'); closeAllDriveDropdowns();|"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                          <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" th:data-mu-tipo="ESTUDIO" th:data-mu-id="${e.id}" th:data-mu-titulo="${e.titulo}">
                             <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
                               <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                              <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
                             </button>
-                            <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
                           </div>
                         </div>
                       </div>
@@ -277,88 +215,48 @@
 
         <div id="estudios-view-grid" style="display:none;">
           <div class="estudios-grid-wrap">
-            <div class="estudio-card estudio-row" data-documento-id="1" data-title="Análisis de Flujo de Materiales" data-tematica="EC Economía Circular" data-objetivo="Evaluar el ciclo de vida de envases plásticos en Perú" data-year="2025" data-format="pdf"
-              onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
-              <div class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(231,76,60,.08),rgba(231,76,60,.16));">
-                <div class="card-actions" onclick="event.stopPropagation();">
-                  <button type="button" style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.95);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"
-                    onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)"><i class="fas fa-eye"></i></button>
-                </div>
-                <i class="fas fa-file-pdf" style="color:#E74C3C;opacity:.85;"></i>
-              </div>
-              <div class="estudio-card-body">
-                <div class="estudio-card-title">Análisis de Flujo de Materiales</div>
-                <div class="estudio-card-sub">2025 · PDF · EC</div>
-                <div class="estudio-card-footer2">
-                  <span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span>
-                  <div class="drive-row-actions" onclick="event.stopPropagation();">
-                    <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-eg-0')"><i class="fas fa-ellipsis-v"></i></button>
-                    <div id="drive-dd-eg-0" class="drive-dropdown" onclick="event.stopPropagation();">
-                      <button type="button" onclick="driveShareEstudio('Análisis de Flujo de Materiales'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                      <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="1" data-mu-titulo="Análisis de Flujo de Materiales">
-                        <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                          <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                          <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                        </button>
-                        <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div th:if="${#lists.isEmpty(estudios)}" style="grid-column:1/-1;text-align:center;padding:40px;color:#9CA3AF;">
+              <i class="fas fa-folder-open" style="font-size:32px;display:block;margin-bottom:10px;opacity:.5;"></i>
+              No hay estudios registrados aún.
             </div>
-            <div class="estudio-card estudio-row" data-documento-id="2" data-title="Informe REP Envases 2024" data-tematica="REP Responsabilidad Extendida del Productor" data-objetivo="Monitorear el impacto del programa REP en envases" data-year="2024" data-format="pptx"
-              onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
-              <div class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(46,204,113,.1),rgba(46,204,113,.2));">
-                <div class="card-actions" onclick="event.stopPropagation();">
-                  <button type="button" style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.95);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"
-                    onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)"><i class="fas fa-eye"></i></button>
-                </div>
-                <i class="fas fa-file-powerpoint" style="color:#27AE60;opacity:.85;"></i>
-              </div>
+            <div th:each="e, iStat : ${estudios}"
+              class="estudio-card estudio-row"
+              th:with="tipo=${#strings.contains(e.archivoTipoMime,'pdf') ? 'pdf' :
+                            (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel')) ? 'xlsx' :
+                            (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'docx' :
+                            (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'pptx' : 'otro'}"
+              th:attr="data-id=${e.id},data-title=${e.titulo},data-tematica=${e.tematicaNombre},data-objetivo=${e.descripcionBreve},data-year=${e.anio},data-format=${tipo}"
+              th:attr2="onclick=|openVisor('estudio','${e.titulo}','${tipo.toUpperCase()}',false)|">
+              <th:block th:switch="${tipo}">
+                <div th:case="'pdf'" class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(231,76,60,.08),rgba(231,76,60,.16));">
+                  <i class="fas fa-file-pdf" style="color:#E74C3C;opacity:.85;"></i></div>
+                <div th:case="'xlsx'" class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(46,204,113,.1),rgba(46,204,113,.2));">
+                  <i class="fas fa-file-excel" style="color:#27AE60;opacity:.85;"></i></div>
+                <div th:case="'docx'" class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(52,152,219,.08),rgba(52,152,219,.16));">
+                  <i class="fas fa-file-word" style="color:#3498DB;opacity:.85;"></i></div>
+                <div th:case="'pptx'" class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(243,156,18,.1),rgba(243,156,18,.2));">
+                  <i class="fas fa-file-powerpoint" style="color:#F39C12;opacity:.85;"></i></div>
+                <div th:case="*" class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(107,114,128,.08),rgba(107,114,128,.16));">
+                  <i class="fas fa-file-alt" style="color:#6B7280;opacity:.85;"></i></div>
+              </th:block>
               <div class="estudio-card-body">
-                <div class="estudio-card-title">Informe REP Envases 2024</div>
-                <div class="estudio-card-sub">2024 · PPTX · REP</div>
+                <div class="estudio-card-title" th:text="${e.titulo}">Título</div>
+                <div class="estudio-card-sub" th:text="|${e.anio} · ${tipo.toUpperCase()} · ${e.tematicaNombre}|">2025 · PDF · EC</div>
                 <div class="estudio-card-footer2">
-                  <span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span>
+                  <th:block th:switch="${tipo}">
+                    <span th:case="'pdf'" class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span>
+                    <span th:case="'xlsx'" class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">XLSX</span>
+                    <span th:case="'docx'" class="pill" style="background:rgba(52,152,219,.12);color:#3498DB;font-size:10px;">DOCX</span>
+                    <span th:case="'pptx'" class="pill" style="background:rgba(243,156,18,.12);color:#F39C12;font-size:10px;">PPTX</span>
+                    <span th:case="*" class="pill" style="background:rgba(107,114,128,.12);color:#6B7280;font-size:10px;">Otro</span>
+                  </th:block>
                   <div class="drive-row-actions" onclick="event.stopPropagation();">
-                    <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-eg-1')"><i class="fas fa-ellipsis-v"></i></button>
-                    <div id="drive-dd-eg-1" class="drive-dropdown" onclick="event.stopPropagation();">
-                      <button type="button" onclick="driveShareEstudio('Informe REP Envases 2024'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                      <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="2" data-mu-titulo="Informe REP Envases 2024">
+                    <button type="button" class="drive-kebab" aria-label="Más acciones" th:attr="onclick=|toggleDriveDropdown(event, 'drive-dd-eg-' + ${iStat.index})|"><i class="fas fa-ellipsis-v"></i></button>
+                    <div th:id="'drive-dd-eg-' + ${iStat.index}" class="drive-dropdown" onclick="event.stopPropagation();">
+                      <button type="button" th:attr="onclick=|driveShareEstudio('${e.titulo}'); closeAllDriveDropdowns();|"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
+                      <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" th:attr="data-mu-tipo="'ESTUDIO', data-mu-id=${e.id}, data-mu-titulo=${e.titulo}">
                         <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
                           <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                          <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
-                        </button>
-                        <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="estudio-card estudio-row" data-documento-id="3" data-title="Hoja de Ruta EC Perú 2030" data-tematica="EC Economía Circular" data-objetivo="Guía estratégica hacia la economía circular nacional" data-year="2025" data-format="pdf"
-              onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
-              <div class="estudio-card-thumb" style="background:linear-gradient(135deg,rgba(39,174,96,.1),rgba(39,174,96,.2));">
-                <div class="card-actions" onclick="event.stopPropagation();">
-                  <button type="button" style="width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.95);border:none;display:flex;align-items:center;justify-content:center;color:#27AE60;font-size:11px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.12);"
-                    onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)"><i class="fas fa-eye"></i></button>
-                </div>
-                <i class="fas fa-file-pdf" style="color:#E74C3C;opacity:.85;"></i>
-              </div>
-              <div class="estudio-card-body">
-                <div class="estudio-card-title">Hoja de Ruta EC Perú 2030</div>
-                <div class="estudio-card-sub">2025 · PDF · EC</div>
-                <div class="estudio-card-footer2">
-                  <span class="pill" style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span>
-                  <div class="drive-row-actions" onclick="event.stopPropagation();">
-                    <button type="button" class="drive-kebab" aria-label="Más acciones" onclick="toggleDriveDropdown(event, 'drive-dd-eg-2')"><i class="fas fa-ellipsis-v"></i></button>
-                    <div id="drive-dd-eg-2" class="drive-dropdown" onclick="event.stopPropagation();">
-                      <button type="button" onclick="driveShareEstudio('Hoja de Ruta EC Perú 2030'); closeAllDriveDropdowns();"><i class="fas fa-share-alt" style="color:#3498DB;width:18px;text-align:center;"></i> Compartir</button>
-                      <div th:if="${rol == 'SOCIO'}" class="drive-add-entry" data-mu-tipo="ESTUDIO" data-mu-id="3" data-mu-titulo="Hoja de Ruta EC Perú 2030">
-                        <button type="button" class="drive-add-trigger" onclick="event.stopPropagation();">
-                          <span style="display:flex;align-items:center;gap:10px;"><i class="fas fa-folder-plus" style="color:#1B3A5C;width:18px;text-align:center;"></i> Añadir a</span>
-                          <i class="fas fa-chevron-right" style="font-size:11px;color:#9CA3AF;"></i>
                         </button>
                         <div class="drive-add-submenu" onclick="event.stopPropagation();"></div>
                       </div>
@@ -381,7 +279,7 @@
         <div style="position:relative;height:120px;">
           <canvas id="estudios-kpi-chart" width="230" height="120"></canvas>
           <div style="position:absolute;left:50%;top:72%;transform:translate(-50%,-50%);text-align:center;">
-            <div id="kpi-total-estudios" style="font-size:34px;font-weight:800;color:#1B3A5C;line-height:1;">24</div>
+            <div id="kpi-total-estudios" style="font-size:34px;font-weight:800;color:#1B3A5C;line-height:1;">0</div>
             <div style="font-size:9px;color:#9CA3AF;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">Documentos activos</div>
           </div>
         </div>
@@ -413,19 +311,19 @@
         <div style="display:flex;flex-direction:column;gap:0;">
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
             <span style="font-size:11px;color:#6B7280;">Total estudios</span>
-            <span id="sum-total-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">24</span>
+            <span id="sum-total-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">0</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
             <span style="font-size:11px;color:#6B7280;">Economia Circular</span>
-            <span id="sum-ec-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">11</span>
+            <span id="sum-ec-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">0</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F3F4F6;">
             <span style="font-size:11px;color:#6B7280;">Gestion de Residuos</span>
-            <span id="sum-gr-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">7</span>
+            <span id="sum-gr-estudios" style="font-size:13px;font-weight:700;color:#1B3A5C;">0</span>
           </div>
           <div style="display:flex;justify-content:space-between;padding:7px 0;">
             <span style="font-size:11px;color:#6B7280;">Actualizados 30 dias</span>
-            <span style="font-size:13px;font-weight:700;color:#F39C12;">5</span>
+            <span style="font-size:13px;font-weight:700;color:#F39C12;">0</span>
           </div>
         </div>
       </div>
@@ -690,30 +588,25 @@ function descargarDocumento(nombre, extension) {
   URL.revokeObjectURL(url);
 }
 
+function populateYearFilters() {
+  const rows = document.querySelectorAll('.estudio-row');
+  var years = new Set();
+  rows.forEach(function(r) { if (r.dataset.year) years.add(r.dataset.year); });
+  var sel = document.getElementById('estudios-year');
+  var selFrom = document.getElementById('estudios-year-from');
+  var selTo = document.getElementById('estudios-year-to');
+  var sorted = Array.from(years).sort(function(a,b){ return b - a; });
+  sorted.forEach(function(y) {
+    var opt1 = document.createElement('option'); opt1.value = y; opt1.textContent = y; if (sel) sel.appendChild(opt1);
+    var opt2 = document.createElement('option'); opt2.value = y; opt2.textContent = y; if (selFrom) selFrom.appendChild(opt2);
+    var opt3 = document.createElement('option'); opt3.value = y; opt3.textContent = y; if (selTo) selTo.appendChild(opt3);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   toggleYearMode();
+  populateYearFilters();
   applyEstudiosFilters();
-
-  // ── Ocultar columnas según config del admin — CSS injection (cubre filas dinámicas) ──
-  (function() {
-    var colsVis = /*[[${uiColsEstudios}]]*/ null;
-    if (!colsVis || !Array.isArray(colsVis)) return;
-    var ref = document.querySelector('#estudios-view-list table thead');
-    if (!ref) return;
-    var headers = ref.querySelectorAll('th[data-col]');
-    var css = '';
-    headers.forEach(function(th, idx) {
-      if (colsVis.indexOf(th.getAttribute('data-col')) === -1) {
-        var n = idx + 1;
-        css += '#estudios-view-list table th:nth-child(' + n + '),#estudios-view-list table td:nth-child(' + n + '){display:none!important}';
-      }
-    });
-    if (css) {
-      var s = document.createElement('style');
-      s.textContent = css;
-      document.head.appendChild(s);
-    }
-  })();
 });
 </script>
 <th:block th:if="${rol == 'SOCIO'}" th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>

@@ -8,8 +8,11 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = {}; window.location.href = '/visualizador/' + (map[p] || p); } }</script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -18,129 +21,13 @@
 
     body {
       font-family: 'Inter', sans-serif;
-      background: #F5F6FA;
+      background: #F0F4F8;
     }
 
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: rgba(255, 255, 255, .65);
-      font-size: 14px;
-      font-weight: 500;
-      transition: background .18s;
-      border-left: 3px solid transparent;
-      user-select: none;
-    }
-
-    .nav-item:hover {
-      background: rgba(255, 255, 255, .07);
-      color: #fff;
-    }
-
-    .nav-item.active {
-      background: rgba(46, 204, 113, .18);
-      color: #fff;
-      border-left-color: #2ECC71;
-    }
-
-    .nav-sublist {
-      margin: 4px 0 6px 34px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .nav-subitem {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      color: rgba(255, 255, 255, .65);
-      font-size: 13px;
-      font-weight: 500;
-      transition: background .15s, color .15s;
-    }
-
-    .nav-subitem:hover {
-      background: rgba(255, 255, 255, .07);
-      color: #fff;
-    }
-
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-    }
-
-    .tag {
-      padding: 3px 9px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .anim-1 { animation: fadeInUp .5s ease both; }
-    .anim-2 { animation: fadeInUp .5s .1s ease both; }
-    .anim-3 { animation: fadeInUp .5s .2s ease both; }
-    .anim-4 { animation: fadeInUp .5s .3s ease both; }
-
-    /* Modal Visor */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, .6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(2px);
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    .modal-content {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
-      width: 90%;
-      max-width: 900px;
-      height: 85vh;
-      display: flex;
-      flex-direction: column;
-      animation: slideUp .3s ease-out;
-    }
-
-    @keyframes slideUp {
+    @keyframes fadeUp {
       from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(24px);
       }
 
       to {
@@ -149,507 +36,1232 @@
       }
     }
 
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 24px;
-      border-bottom: 1px solid #E5E7EB;
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(.8);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
-    .modal-title {
-      font-size: 16px;
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, .4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
+      }
+    }
+
+    @keyframes waterWave {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    @keyframes rotateBadge {
+      0% {
+        transform: rotate(-3deg) scale(.95);
+      }
+
+      100% {
+        transform: rotate(0) scale(1);
+      }
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes glowGreen {
+
+      0%,
+      100% {
+        box-shadow: 0 4px 20px rgba(46, 204, 113, .15);
+      }
+
+      50% {
+        box-shadow: 0 4px 32px rgba(46, 204, 113, .4);
+      }
+    }
+
+    .water-bg {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .water-bg::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, transparent 50%),
+        linear-gradient(225deg, rgba(52, 152, 219, 0.12) 0%, transparent 50%),
+        linear-gradient(315deg, rgba(41, 128, 185, 0.1) 0%, transparent 50%),
+        linear-gradient(45deg, rgba(27, 58, 92, 0.08) 0%, transparent 50%);
+      background-size: 400% 400%;
+      animation: waterWave 12s ease infinite;
+      pointer-events: none;
+      z-index: 0;
+      border-radius: inherit;
+    }
+
+    .water-bg>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Hero ── */
+    .estudios-hero {
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 60%, #1a5c3a 100%);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(27, 58, 92, .35);
+      animation: fadeUp .4s ease both;
+    }
+
+    .estudios-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .25) 0%, transparent 70%);
+    }
+
+    .estudios-hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px;
+      left: 20%;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
+    }
+
+    .stat-chip {
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, .2);
+      border-radius: 14px;
+      padding: 14px 20px;
+      text-align: center;
+      cursor: default;
+      transition: all .3s ease;
+      animation: fadeUp .5s ease both;
+    }
+
+    .stat-chip:hover {
+      background: rgba(255, 255, 255, .22);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+
+    .stat-chip .val {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 10px;
       font-weight: 700;
-      color: #1B3A5C;
-      margin: 0;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, .65);
+      margin-top: 4px;
     }
 
-    .modal-close {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: none;
-      background: #F3F4F6;
-      color: #6B7280;
-      cursor: pointer;
-      font-size: 18px;
-      transition: all .15s;
+    /* ── Filter row ── */
+    .filter-row {
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.28);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: fadeUp .5s .05s ease both;
+    }
+
+    .filter-row input,
+    .filter-row select {
+      border: 1.5px solid #E5E7EB;
+      border-radius: 9px;
+      padding: 8px 12px;
+      font-size: 12px;
       font-family: inherit;
+      color: #374151;
+      transition: all .2s;
+      background: #fff;
     }
 
-    .modal-close:hover {
-      background: #E5E7EB;
-      color: #1B3A5C;
+    .filter-row input {
+      padding-left: 34px;
     }
 
-    .modal-body {
-      flex: 1;
-      overflow: auto;
+    .filter-row input:focus,
+    .filter-row select:focus {
+      outline: none;
+      border-color: #2ECC71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    /* ── Table card ── */
+    .table-card {
+      background: #F0FAF4;
+      border-radius: 16px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, .08);
+      overflow: hidden;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .table-card table thead {
+      background: linear-gradient(90deg, #F8FAFC, #F0F4F8);
+    }
+
+    .table-card table thead th {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #6B7280;
+      padding: 14px 16px;
+      border: none;
+    }
+
+    .table-card table tbody tr {
+      transition: background .2s, transform .2s;
+      border-bottom: 1px solid #F3F4F6;
+      animation: slideDown .35s ease both;
+    }
+
+    .table-card table tbody tr:hover {
+      background: #F0FFF6;
+      transform: scale(1.002);
+    }
+
+    .table-card table tbody td {
+      padding: 13px 16px;
+      vertical-align: middle;
+    }
+
+    /* ── File icon ── */
+    .file-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
-      background: #F9FAFB;
+      flex-shrink: 0;
+      transition: transform .25s ease;
     }
 
-    .pdf-viewer {
-      width: 100%;
-      height: 100%;
-      display: flex;
+    .table-card table tbody tr:hover .file-icon {
+      transform: rotate(-5deg) scale(1.1);
+    }
+
+    /* ── Badges ── */
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #C0392B;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #2471A3;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-excel {
+      background: rgba(39, 174, 96, .1);
+      color: #1E8449;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-word {
+      background: rgba(41, 128, 185, .1);
+      color: #1A5276;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-otro {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .badge-solo {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* ── Ver button ── */
+    .btn-ver {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1.5px solid #2ECC71;
+      background: rgba(46, 204, 113, .07);
+      color: #27AE60;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .25s ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
     }
 
-    .pdf-page {
-      max-width: 100%;
-      max-height: 100%;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    .btn-ver::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .4), transparent);
+      transform: translateX(-100%);
+      transition: transform .4s ease;
     }
 
-    .excel-table {
-      width: 100%;
-      overflow: auto;
+    .btn-ver:hover {
+      background: #2ECC71;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(46, 204, 113, .4);
+      animation: glowGreen 1.5s ease infinite;
+    }
+
+    .btn-ver:hover::after {
+      transform: translateX(100%);
+    }
+
+    .btn-ver:active {
+      transform: translateY(0);
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 32px;
+    }
+
+    .empty-state i {
+      font-size: 52px;
+      color: #D1D5DB;
+      display: block;
+      margin-bottom: 16px;
+      animation: pulse 2s ease infinite;
+    }
+
+    .empty-state p {
+      color: #9CA3AF;
+      font-size: 14px;
+    }
+
+    /* ── Grid ── */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      animation: fadeUp .5s .15s ease both;
+    }
+
+    .grid-card {
       background: #fff;
       border-radius: 8px;
       border: 1px solid #E5E7EB;
+      overflow: hidden;
+      transition: all .2s ease;
+      animation: fadeUp .4s ease both;
+      cursor: pointer;
+      position: relative;
     }
 
-    .excel-table table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
+    .grid-card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+      border-color: #D1D5DB;
     }
 
-    .excel-table th {
-      background: #F8FAFB;
-      color: #6B7280;
-      font-weight: 700;
+    .grid-card-icon-area {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .grid-card-icon-area i {
+      font-size: 48px;
+    }
+
+    .grid-card-info {
       padding: 10px 12px;
-      text-align: left;
-      border-bottom: 2px solid #EEF0F3;
+      border-top: 1px solid #F3F4F6;
+    }
+
+    .grid-card-info .card-title {
+      font-weight: 500;
+      color: #1F2937;
+      font-size: 13px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
     }
 
-    .excel-table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid #F0F2F5;
-      color: #374151;
+    .grid-card-info .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6B7280;
     }
 
-    .excel-table tbody tr:hover {
-      background: #F6FAF8;
+    .grid-card-info .card-meta .badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 10px;
+    }
+
+    .badge-pdf {
+      background: rgba(231, 76, 60, .1);
+      color: #E74C3C;
+    }
+
+    .badge-excel {
+      background: rgba(39, 174, 96, .1);
+      color: #27AE60;
+    }
+
+    .badge-word {
+      background: rgba(41, 128, 185, .1);
+      color: #2980B9;
+    }
+
+    .badge-pptx {
+      background: rgba(52, 152, 219, .1);
+      color: #3498DB;
+    }
+
+    .badge-otro {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+    }
+
+    .grid-card-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 10;
+    }
+
+    .grid-card:hover .grid-card-actions {
+      opacity: 1;
+    }
+
+    .grid-card-actions button,
+    .grid-card-actions a {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, .95);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .grid-card-actions .btn-view {
+      color: #3498DB;
+    }
+
+    .grid-card-actions .btn-edit {
+      color: #F39C12;
+    }
+
+    .grid-card-actions .btn-delete {
+      color: #E74C3C;
+    }
+
+    .grid-card-actions button:hover,
+    .grid-card-actions a:hover {
+      background: #fff;
+      transform: scale(1.1);
+    }
+
+    .readonly-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(231, 76, 60, .07);
+      border: 1px solid rgba(231, 76, 60, .2);
+      animation: rotateBadge .4s ease both;
+    }
+
+    .readonly-badge span {
+      font-size: 11px;
+      color: #C0392B;
+      font-weight: 700;
+    }
+
+    /* ── Toggle lista/grid ── */
+    .vista-toggle-group {
+      display: inline-flex;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .vista-toggle-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 34px;
+      border: none;
+      background: transparent;
+      color: #9CA3AF;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all .15s;
+    }
+
+    .vista-toggle-btn:hover {
+      background: #F3F4F6;
+      color: #6B7280;
+    }
+
+    .vista-toggle-btn.active {
+      background: #2ECC71;
+      color: #fff;
+    }
+
+    .vista-toggle-btn+.vista-toggle-btn {
+      border-left: 1px solid #E5E7EB;
+    }
+
+    /* ── Sidebar cards ── */
+    .side-card {
+      background: rgba(255, 255, 255, 0.28);
+
+
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, .08);
+      margin-bottom: 16px;
+      transition: box-shadow .3s;
+    }
+
+    .side-card:hover {
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .11);
+    }
+
+    .side-card:last-child {
+      margin-bottom: 0;
+    }
+
+    .kpi-topic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      background: #FAFBFC;
+      border: 1px solid #F0F4F8;
+      margin-bottom: 6px;
+      transition: all .2s;
+      cursor: default;
+      animation: fadeUp .4s ease both;
+    }
+
+    .kpi-topic:hover {
+      background: #F0FFF6;
+      border-color: rgba(46, 204, 113, .2);
+      transform: translateX(3px);
+    }
+
+    .kpi-topic:last-child {
+      margin-bottom: 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+
+    .summary-row:last-child {
+      border-bottom: none;
     }
   </style>
 </head>
 
 <body>
-
   <div style="display:flex;flex-direction:column;min-height:100vh;">
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
     <div style="display:flex;flex:1;min-height:calc(100vh - 64px);">
+      <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      <main class="water-bg"
+        style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-      <!-- SIDEBAR: Solo items base (sin Admin) -->
-      <aside
-        style="width:240px;background:#1B3A5C;display:flex;flex-direction:column;padding:16px 12px;flex-shrink:0;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;">
-        <div style="flex:1;display:flex;flex-direction:column;gap:2px;">
-          <div class="nav-item" id="nav-estudios" onclick="navTo('estudios')">
-            <i class="fas fa-file-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Estudios</span>
-          </div>
-          <div class="nav-item" id="nav-normativo" onclick="navTo('normativo')">
-            <i class="fas fa-balance-scale" style="width:18px;text-align:center;font-size:15px;"></i><span>Repositorio
-              Normativo</span>
-          </div>
-          <div class="nav-sublist" aria-label="Submódulos de Repositorio Normativo">
-            <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('nacional')">
-              <i class="fas fa-flag" style="width:16px;text-align:center;font-size:13px;"></i><span>Nacional</span>
-            </div>
-            <div class="nav-subitem" onclick="navTo('normativo'); setAmbitoNormativo('internacional')">
-              <i class="fas fa-globe"
-                style="width:16px;text-align:center;font-size:13px;"></i><span>Internacional</span>
-            </div>
-          </div>
-        </div>
-        <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:4px;">
-          <div class="nav-item" style="color:rgba(255,255,255,.4);" onclick="goLogin()">
-            <i class="fas fa-sign-out-alt" style="width:18px;text-align:center;font-size:15px;"></i><span>Cerrar
-              sesión</span>
-          </div>
-        </div>
-      </aside>
-
-      <main style="flex:1;background:#F5F6FA;overflow-y:auto;">
-
-        <div th:if="${session.ORIGINAL_USER != null}"
-          style="background:linear-gradient(135deg,#FEF3C7 0%,#FDE68A 100%);border:1px solid #F59E0B;border-radius:12px;padding:16px 20px;margin:32px 32px 0 32px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(245,158,11,.2);">
-          <div style="display:flex;align-items:center;gap:14px;">
-            <div
-              style="width:40px;height:40px;background:#F59E0B;border-radius:10px;display:flex;align-items:center;justify-content:center;">
-              <i class="fas fa-user-shield" style="color:#fff;font-size:18px;"></i>
-            </div>
-            <div>
-              <div style="font-weight:700;color:#92400E;font-size:14px;">Modo Soporte - Sesión Impersonada</div>
-              <div style="font-size:12px;color:#B45309;">Estás siendo operado por el SuperAdmin: <span
-                  th:text="${session.ORIGINAL_USER}">SuperAdmin</span></div>
-            </div>
-          </div>
-          <form th:action="@{/superadmin/impersonar/salir}" method="post">
-            <button type="submit"
-              style="background:#F59E0B;border:none;padding:10px 18px;border-radius:8px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;">
-              <i class="fas fa-sign-out-alt"></i> SuperAdmin vuelve
-            </button>
-          </form>
-        </div>
-
-        <!-- PAGE: ESTUDIOS -->
-        <div id="page-estudios" class="page active" style="padding:32px;">
-          <div class="anim-1" style="margin-bottom:20px;">
-            <h1 style="font-size:22px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Estudios Recíclame</h1>
-            <p style="color:#6B7280;font-size:13px;">Reportes y ayudas memoria del equipo técnico</p>
-            <div
-              style="display:inline-flex;align-items:center;gap:6px;background:rgba(149,165,166,.1);border:1px solid rgba(149,165,166,.25);border-radius:6px;padding:5px 12px;margin-top:8px;">
-              <i class="fas fa-lock" style="color:#717D7E;font-size:11px;"></i>
-              <span style="font-size:11px;color:#717D7E;font-weight:600;">Todos los estudios Recíclame son de solo
-                lectura — no descargables.</span>
-            </div>
-          </div>
-
-          <!-- Filters -->
+        <!-- ══ HERO ══ -->
+        <div class="estudios-hero">
           <div
-            style="background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div style="position:relative;flex:1;min-width:220px;">
-              <i class="fas fa-search"
-                style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
-              <input placeholder="Buscar estudios..."
-                style="width:100%;padding:10px 14px 10px 36px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;" />
-            </div>
-            <select
-              style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
-              <option>Año: 2025–2026</option>
-              <option>Año: 2024–2025</option>
-            </select>
-            <select
-              style="width:auto;padding:10px 14px;border:1px solid #E5E7EB;border-radius:8px;font-size:14px;font-family:inherit;outline:none;color:#111827;">
-              <option>Todos los formatos</option>
-              <option>PDF</option>
-              <option>PPTX</option>
-            </select>
-          </div>
-
-          <!-- Grid -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
-            <div
-              style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;"
-              onclick="openVisor('estudio','Análisis de Flujo de Materiales','PDF',false)">
-              <div
-                style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-              <div style="padding:14px;">
-                <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Análisis de Flujo de
-                  Materiales</p>
-                <p style="font-size:11px;color:#9CA3AF;margin-bottom:6px;">2025</p>
-                <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Evaluar el ciclo de vida de
-                  envases plásticos en el Perú.</p>
+            style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
                 <div
-                  style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-                  <div style="display:flex;gap:4px;"><span class="pill"
-                      style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill"
-                      style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye"
-                        style="font-size:8px;"></i> Solo lectura</span></div>
-                  <button
-                    style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i
-                      class="fas fa-eye"></i> Ver</button>
+                  style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;animation:pulse 2s ease infinite;">
+                  <i class="fas fa-folder-open" style="color:#2ECC71;font-size:18px;"></i>
+                </div>
+                <div>
+                  <h1 style="font-size:22px;font-weight:800;color:#fff;margin:0;">Estudios Recíclame</h1>
+                  <p style="font-size:12px;color:rgba(255,255,255,.65);margin:0;">Reportes, infografías y ayudas memoria
+                    del equipo técnico</p>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap;">
+                <div class="readonly-badge">
+                  <i class="fas fa-lock" style="color:#C0392B;font-size:10px;"></i>
+                  <span>Solo lectura</span>
                 </div>
               </div>
             </div>
-            <div
-              style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;"
-              onclick="openVisor('estudio','Informe REP Envases 2024','PPTX',false)">
-              <div
-                style="background:rgba(46,204,113,.08);height:64px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-file-powerpoint" style="font-size:30px;color:#27AE60;"></i></div>
-              <div style="padding:14px;">
-                <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Informe REP Envases 2024</p>
-                <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2024</p>
-                <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Monitorear el impacto del
-                  programa REP en la gestión de envases.</p>
-                <div
-                  style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-                  <div style="display:flex;gap:4px;"><span class="pill"
-                      style="background:rgba(46,204,113,.12);color:#27AE60;font-size:10px;">PPTX</span><span
-                      class="pill" style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i
-                        class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></div>
-                  <button
-                    style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i
-                      class="fas fa-eye"></i> Ver</button>
-                </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div class="stat-chip" style="animation-delay:.1s">
+                <div class="val" id="stats-total">0</div>
+                <div class="lbl">Total</div>
               </div>
-            </div>
-            <div
-              style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;cursor:pointer;"
-              onclick="openVisor('estudio','Hoja de Ruta EC Perú 2030','PDF',false)">
-              <div
-                style="background:rgba(231,76,60,.08);height:64px;display:flex;align-items:center;justify-content:center;">
-                <i class="fas fa-file-pdf" style="font-size:30px;color:#E74C3C;"></i></div>
-              <div style="padding:14px;">
-                <p style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:4px;">Hoja de Ruta EC Perú 2030</p>
-                <p style="font-size:11px;color:#9CA3Af;margin-bottom:6px;">2025</p>
-                <p style="font-size:11px;color:#6B7280;line-height:1.5;margin-bottom:10px;">Guía estratégica nacional
-                  hacia la economía circular.</p>
-                <div
-                  style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #F3F4F6;padding-top:10px;">
-                  <div style="display:flex;gap:4px;"><span class="pill"
-                      style="background:rgba(231,76,60,.12);color:#C0392B;font-size:10px;">PDF</span><span class="pill"
-                      style="background:rgba(149,165,166,.14);color:#717D7E;font-size:10px;"><i class="fas fa-eye"
-                        style="font-size:8px;"></i> Solo lectura</span></div>
-                  <button
-                    style="border:none;background:none;cursor:pointer;color:#2ECC71;font-size:12px;font-family:inherit;"><i
-                      class="fas fa-eye"></i> Ver</button>
-                </div>
+              <div class="stat-chip" style="animation-delay:.2s">
+                <div class="val" id="stats-pdf" style="color:#F87171;">0</div>
+                <div class="lbl">PDF</div>
+              </div>
+              <div class="stat-chip" style="animation-delay:.3s">
+                <div class="val" id="stats-otros" style="color:#34D399;">0</div>
+                <div class="lbl">Otros</div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- PAGE: NORMATIVO -->
-        <div id="page-normativo" class="page" style="padding:32px;">
-          <div class="anim-1">
-            <th:block th:replace="Visualizador/normativo :: normativo-content"></th:block>
+        <!-- ══ FILTER ROW ══ -->
+        <div class="filter-row">
+          <div style="position:relative;flex:1;min-width:220px;">
+            <i class="fas fa-search"
+              style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
+            <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
+          </div>
+          <select id="filter-formato" onchange="filtrarEstudios()">
+            <option value="">Todos los formatos</option>
+            <option value="pdf">PDF</option>
+            <option value="ppt">PPT / PowerPoint</option>
+            <option value="excel">Excel</option>
+            <option value="word">Word</option>
+            <option value="otro">Otros</option>
+          </select>
+          <select id="filter-anio" onchange="filtrarEstudios()">
+            <option value="">Todos los años</option>
+          </select>
+          <div class="vista-toggle-group">
+            <button class="vista-toggle-btn active" id="btn-vista-lista" onclick="setVista('lista')" title="Lista">
+              <i class="fas fa-list"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setVista('grid')" title="Cuadrícula">
+              <i class="fas fa-th"></i>
+            </button>
+          </div>
+          <button
+            onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';document.getElementById('filter-anio').value='';filtrarEstudios();"
+            style="padding:9px 16px;border-radius:10px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
+            onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+            onmouseout="this.style.borderColor='#E5E7EB';this.style.color='#6B7280'">
+            <i class="fas fa-times"></i> Limpiar
+          </button>
+        </div>
+
+        <!-- ══ MAIN LAYOUT: tabla + sidebar ══ -->
+        <div
+          style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start;animation:fadeUp .5s .1s ease both;">
+
+          <!-- ── Tabla ── -->
+          <div id="estudios-lista" class="table-card">
+            <div style="overflow-x:auto;">
+              <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
+                <thead>
+                  <tr>
+                    <th style="width:34%;">Documento</th>
+                    <th>Objetivo</th>
+                    <th>Año</th>
+                    <th>Formato</th>
+                    <th>Acceso</th>
+                    <th class="text-center">Ver</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body">
+                  <tr th:each="e, iStat : ${estudios}" class="estudio-row"
+                    th:with="tipo=${#strings.contains(e.archivoTipoMime,'pdf') ? 'pdf' :
+                                  (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel')) ? 'excel' :
+                                  (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
+                                  (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
+                    th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                    th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
+                    th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                    <td>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <th:block th:switch="${tipo}">
+                          <div th:case="'pdf'" class="file-icon" style="background:rgba(231,76,60,.1);"><i
+                              class="fas fa-file-pdf" style="color:#E74C3C;font-size:16px;"></i></div>
+                          <div th:case="'excel'" class="file-icon" style="background:rgba(39,174,96,.1);"><i
+                              class="fas fa-file-excel" style="color:#27AE60;font-size:16px;"></i></div>
+                          <div th:case="'word'" class="file-icon" style="background:rgba(41,128,185,.1);"><i
+                              class="fas fa-file-word" style="color:#2980B9;font-size:16px;"></i></div>
+                          <div th:case="'ppt'" class="file-icon" style="background:rgba(52,152,219,.1);"><i
+                              class="fas fa-file-powerpoint" style="color:#3498DB;font-size:16px;"></i></div>
+                          <div th:case="*" class="file-icon" style="background:rgba(156,163,175,.12);"><i
+                              class="fas fa-file" style="color:#6B7280;font-size:16px;"></i></div>
+                        </th:block>
+                        <span style="font-weight:700;color:#1B3A5C;font-size:13px;" th:text="${e.titulo}">Título</span>
+                      </div>
+                    </td>
+                    <td
+                      style="color:#6B7280;font-size:12px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                      th:text="${e.descripcionBreve}">—</td>
+                    <td>
+                      <span
+                        style="font-weight:700;color:#1B3A5C;font-size:13px;background:#EEF2FF;padding:3px 10px;border-radius:6px;"
+                        th:text="${e.anio}">—</span>
+                    </td>
+                    <td>
+                      <th:block th:switch="${tipo}">
+                        <span th:case="'pdf'" class="badge-pdf"><i class="fas fa-file-pdf"
+                            style="font-size:9px;margin-right:3px;"></i>PDF</span>
+                        <span th:case="'excel'" class="badge-excel"><i class="fas fa-file-excel"
+                            style="font-size:9px;margin-right:3px;"></i>Excel</span>
+                        <span th:case="'word'" class="badge-word"><i class="fas fa-file-word"
+                            style="font-size:9px;margin-right:3px;"></i>Word</span>
+                        <span th:case="'ppt'" class="badge-pptx"><i class="fas fa-file-powerpoint"
+                            style="font-size:9px;margin-right:3px;"></i>PPT</span>
+                        <span th:case="*" class="badge-otro"><i class="fas fa-file"
+                            style="font-size:9px;margin-right:3px;"></i>Otro</span>
+                      </th:block>
+                    </td>
+                    <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
+                        lectura</span></td>
+                    <td class="text-center">
+                      <a class="btn-ver" th:href="@{/visualizador/estudios/{id}/ver(id=${e.id})}"
+                        style="text-decoration:none;">
+                        <i class="fas fa-eye"></i> Ver
+                      </a>
+                    </td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(estudios)}">
+                    <td colspan="6">
+                      <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No hay estudios registrados aún.</p>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+              <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+              <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+            </div>
+          </div>
+
+          <!-- ── Grid view (hidden by default) ── -->
+          <div id="estudios-grid" class="grid-container" style="display:none;"></div>
+
+          <!-- ── Sidebar ── -->
+          <div>
+            <div class="side-card" style="animation:fadeUp .5s .2s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:16px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-chart-pie" style="color:#2ECC71;font-size:12px;"></i> Distribución por temática
+              </div>
+              <div style="position:relative;width:180px;height:100px;margin:0 auto 16px;">
+                <canvas id="donut-est" width="180" height="100"></canvas>
+                <div style="position:absolute;left:50%;top:62%;transform:translate(-50%,-50%);text-align:center;">
+                  <div id="donut-center-est" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
+                  <div
+                    style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
+                    Estudios</div>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div class="kpi-topic" style="animation-delay:.1s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#22C55E;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Economía Circular</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EC</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ec-est" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.15s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#38BDF8;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Gestión de Residuos</div>
+                      <div style="font-size:10px;color:#9CA3AF;">GR</div>
+                    </div>
+                  </div>
+                  <span id="kpi-gr-est" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.2s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#F59E0B;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Envases y Embalajes</div>
+                      <div style="font-size:10px;color:#9CA3AF;">EE</div>
+                    </div>
+                  </div>
+                  <span id="kpi-ee-est" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+                <div class="kpi-topic" style="animation-delay:.25s">
+                  <div style="display:flex;align-items:center;gap:7px;">
+                    <div style="width:9px;height:9px;border-radius:3px;background:#EF4444;flex-shrink:0;"></div>
+                    <div>
+                      <div style="font-size:11px;font-weight:600;color:#374151;">Resp. Extendida</div>
+                      <div style="font-size:10px;color:#9CA3AF;">REP</div>
+                    </div>
+                  </div>
+                  <span id="kpi-rep-est" style="font-size:12px;font-weight:800;color:#1B3A5C;">—</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
+              <div
+                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;">Total estudios</span>
+                <span id="sum-total-est" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-file-pdf" style="font-size:10px;color:#E74C3C;"></i>PDF
+                </span>
+                <span id="sum-pdf-est" style="font-size:14px;font-weight:800;color:#E74C3C;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-chart-bar" style="font-size:10px;color:#27AE60;"></i>Otros formatos
+                </span>
+                <span id="sum-otros-est" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
+              </div>
+              <div class="summary-row">
+                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
+                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Actualizados 30 días
+                </span>
+                <span id="sum-recientes-est" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
+              </div>
+            </div>
           </div>
         </div>
 
+        <script>
+          // ════════════════════════════════════════════════════════
+          //  INIT COUNTS (hero stats)
+          // ════════════════════════════════════════════════════════
+          (function () {
+            var rows = document.querySelectorAll('.estudio-row');
+            var total = rows.length, pdf = 0, otros = 0;
+            rows.forEach(function (r) {
+              if ((r.dataset.tipo || '') === 'pdf') pdf++; else otros++;
+            });
+
+            function animateCount(id, target) {
+              var el = document.getElementById(id);
+              if (!el) return;
+              var start = 0, dur = 800, step = 16;
+              var timer = setInterval(function () {
+                start += Math.ceil(target / (dur / step));
+                if (start >= target) { start = target; clearInterval(timer); }
+                el.textContent = start;
+              }, step);
+            }
+
+            animateCount('stats-total', total);
+            animateCount('stats-pdf', pdf);
+            animateCount('stats-otros', otros);
+          })();
+
+          // ════════════════════════════════════════════════════════
+          //  PAGINACIÓN
+          // ════════════════════════════════════════════════════════
+          var ITEMS_POR_PAGINA = 5;
+          var paginaActual = 1;
+
+          function getFilasActivas() {
+            return Array.from(document.querySelectorAll('.estudio-row'))
+              .filter(function (tr) { return tr.dataset.filtrado !== '0'; });
+          }
+
+          function inicializarPaginacion() {
+            var filasActivas = getFilasActivas();
+            var totalPaginas = Math.max(Math.ceil(filasActivas.length / ITEMS_POR_PAGINA), 1);
+            paginaActual = 1;
+
+            var conteoEl = document.getElementById('conteo-estudios');
+            if (conteoEl) conteoEl.textContent = 'Mostrando ' + filasActivas.length + ' registros';
+
+            var paginacionDiv = document.getElementById('paginacion-estudios');
+            paginacionDiv.innerHTML = '';
+            if (totalPaginas <= 1) return;
+
+            var btnAnt = document.createElement('button');
+            btnAnt.textContent = '← Ant';
+            btnAnt.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnt.onclick = function () { if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); } };
+            paginacionDiv.appendChild(btnAnt);
+
+            for (var i = 1; i <= totalPaginas; i++) {
+              (function (pageNum) {
+                var btn = document.createElement('button');
+                btn.textContent = pageNum;
+                btn.id = 'btn-pagina-' + pageNum;
+                btn.style.cssText = (pageNum === 1)
+                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
+                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
+                paginacionDiv.appendChild(btn);
+              })(i);
+            }
+
+            var btnSig = document.createElement('button');
+            btnSig.textContent = 'Sig →';
+            btnSig.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSig.onclick = function () {
+              var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+              if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
+            };
+            paginacionDiv.appendChild(btnSig);
+          }
+
+          function mostrarPagina(numero) {
+            paginaActual = numero;
+            var filas = document.querySelectorAll('.estudio-row');
+            var inicio = (numero - 1) * ITEMS_POR_PAGINA;
+            var fin = inicio + ITEMS_POR_PAGINA;
+            var conteo = 0;
+            filas.forEach(function (tr) {
+              if (tr.dataset.filtrado === '0') {
+                tr.style.display = 'none';
+              } else {
+                tr.style.display = (conteo >= inicio && conteo < fin) ? '' : 'none';
+                conteo++;
+              }
+            });
+            actualizarBotonesPaginacion();
+          }
+
+          function actualizarBotonesPaginacion() {
+            var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            for (var i = 1; i <= total; i++) {
+              var btn = document.getElementById('btn-pagina-' + i);
+              if (btn) {
+                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
+                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
+                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
+              }
+            }
+          }
+
+          // ════════════════════════════════════════════════════════
+          //  FILTRO
+          // ════════════════════════════════════════════════════════
+          function filtrarEstudios() {
+            var q = (document.getElementById('search-estudios').value || '').toLowerCase();
+            var fmt = (document.getElementById('filter-formato').value || '').toLowerCase();
+            var anio = (document.getElementById('filter-anio').value || '');
+
+            var visibles = 0;
+            document.querySelectorAll('.estudio-row').forEach(function (row) {
+              var titulo = (row.dataset.titulo || '').toLowerCase();
+              var desc = (row.dataset.descripcion || '').toLowerCase();
+              var tipo = row.dataset.tipo || '';
+              var rAnio = row.dataset.anio || '';
+              var matchQ = !q || titulo.includes(q) || desc.includes(q);
+              var matchF = !fmt || tipo === fmt;
+              var matchAnio = !anio || rAnio === anio;
+              var show = matchQ && matchF && matchAnio;
+              row.dataset.filtrado = show ? '1' : '0';
+              if (show) visibles++;
+            });
+            inicializarPaginacion();
+            mostrarPagina(1);
+            if (vistaActual === 'grid') renderGrid();
+          }
+
+          document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
+
+          // ════════════════════════════════════════════════════════
+          //  VISTA LISTA / GRID
+          // ════════════════════════════════════════════════════════
+          var vistaActual = 'lista';
+
+          function setVista(vista) {
+            var listaDiv = document.getElementById('estudios-lista');
+            var gridDiv = document.getElementById('estudios-grid');
+            var btnLista = document.getElementById('btn-vista-lista');
+            var btnGrid = document.getElementById('btn-vista-grid');
+            var paginacion = document.getElementById('paginacion-estudios');
+            var conteo = document.getElementById('conteo-estudios');
+
+            vistaActual = vista;
+
+            if (vista === 'grid') {
+              listaDiv.style.display = 'none';
+              gridDiv.style.display = 'grid';
+              if (paginacion) paginacion.style.display = 'none';
+              if (conteo) conteo.style.display = 'none';
+              btnLista.classList.remove('active');
+              btnGrid.classList.add('active');
+              renderGrid();
+            } else {
+              listaDiv.style.display = '';
+              gridDiv.style.display = 'none';
+              if (paginacion) paginacion.style.display = '';
+              if (conteo) conteo.style.display = '';
+              btnLista.classList.add('active');
+              btnGrid.classList.remove('active');
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
+          }
+
+          function renderGrid() {
+            var gridDiv = document.getElementById('estudios-grid');
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+
+            if (filas.length === 0) {
+              gridDiv.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:48px 24px;"><i class="fas fa-folder-open" style="font-size:44px;color:#D1D5DB;display:block;margin-bottom:12px;"></i><p style="color:#9CA3AF;font-size:14px;">No se encontraron estudios con los filtros actuales.</p></div>';
+              return;
+            }
+
+            var iconMap = {
+              pdf: { bg: 'rgba(231,76,60,.08)', cls: 'fas fa-file-pdf', color: '#E74C3C' },
+              excel: { bg: 'rgba(39,174,96,.08)', cls: 'fas fa-file-excel', color: '#27AE60' },
+              word: { bg: 'rgba(41,128,185,.08)', cls: 'fas fa-file-word', color: '#2980B9' },
+              ppt: { bg: 'rgba(52,152,219,.08)', cls: 'fas fa-file-powerpoint', color: '#3498DB' },
+              otro: { bg: 'rgba(156,163,175,.08)', cls: 'fas fa-file', color: '#6B7280' }
+            };
+
+            var badgeMap = {
+              pdf: '<span class="badge badge-pdf">PDF</span>',
+              excel: '<span class="badge badge-excel">Excel</span>',
+              word: '<span class="badge badge-word">Word</span>',
+              ppt: '<span class="badge badge-pptx">PPT</span>',
+              otro: '<span class="badge badge-otro">Otro</span>'
+            };
+
+            gridDiv.innerHTML = filas.map(function (row, idx) {
+              var tipo = row.dataset.tipo || 'otro';
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var id = row.dataset.id || '';
+              var ic = iconMap[tipo] || iconMap.otro;
+              var badge = badgeMap[tipo] || badgeMap.otro;
+
+              return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
+                '<div class="grid-card-actions">' +
+                '<a href="/visualizador/estudios/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-eye"></i></a>' +
+                '</div>' +
+                '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
+                '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +
+                '</div>' +
+                '<div class="grid-card-info">' +
+                '<div class="card-title" title="' + escapeHtml(titulo) + '">' + escapeHtml(titulo) + '</div>' +
+                '<div class="card-meta">' +
+                '<span>' + escapeHtml(anio) + '</span>' +
+                '<span>·</span>' +
+                badge +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            }).join('');
+          }
+
+          function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode(str));
+            return div.innerHTML;
+          }
+
+          // ════════════════════════════════════════════════════════
+          //  SIDEBAR KPIs
+          // ════════════════════════════════════════════════════════
+          (function initSidebarKpis() {
+            var rows = document.querySelectorAll('.estudio-row');
+            var total = rows.length;
+            var pdf = 0, otros = 0;
+            var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
+
+            rows.forEach(function (r) {
+              var tipo = r.dataset.tipo || '';
+              if (tipo === 'pdf') pdf++; else otros++;
+              var titulo = (r.dataset.titulo || '').toLowerCase();
+              var desc = (r.dataset.descripcion || '').toLowerCase();
+              var combined = titulo + ' ' + desc;
+              if (combined.includes('econom') || combined.includes('circular') || combined.includes('ec')) cEC++;
+              else if (combined.includes('residuos') || combined.includes('gestión') || combined.includes('gr')) cGR++;
+              else if (combined.includes('envase') || combined.includes('embalaje') || combined.includes('ee')) cEE++;
+              else if (combined.includes('extendida') || combined.includes('rep')) cREP++;
+            });
+
+            setText('sum-total-est', total);
+            setText('sum-pdf-est', pdf);
+            setText('sum-otros-est', otros);
+            setText('sum-recientes-est', '0');
+            setText('kpi-ec-est', cEC);
+            setText('kpi-gr-est', cGR);
+            setText('kpi-ee-est', cEE);
+            setText('kpi-rep-est', cREP);
+            setText('donut-center-est', total);
+
+            var ctx = document.getElementById('donut-est');
+            if (ctx && window.Chart) {
+              new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                  labels: ['EC', 'GR', 'EE', 'REP'],
+                  datasets: [{
+                    data: [cEC, cGR, cEE, cREP],
+                    backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
+                    borderWidth: 0, hoverOffset: 4
+                  }]
+                },
+                options: {
+                  responsive: false, cutout: '76%',
+                  rotation: 270, circumference: 180,
+                  animation: { duration: 1400, easing: 'easeInOutQuart' },
+                  plugins: { legend: { display: false }, tooltip: { enabled: true } }
+                }
+              });
+            }
+
+            function setText(id, val) {
+              var el = document.getElementById(id);
+              if (el) el.textContent = val;
+            }
+          })();
+
+          // ── Populate year filter ──
+          (function populateAnios() {
+            var rows = document.querySelectorAll('.estudio-row');
+            var years = new Set();
+            rows.forEach(function (r) { if (r.dataset.anio) years.add(r.dataset.anio); });
+            var sel = document.getElementById('filter-anio');
+            if (!sel) return;
+            var sorted = Array.from(years).sort(function (a, b) { return b - a; });
+            sorted.forEach(function (y) {
+              var opt = document.createElement('option');
+              opt.value = y; opt.textContent = y;
+              sel.appendChild(opt);
+            });
+          })();
+
+          // ── Init on load ──
+          window.addEventListener('load', function () {
+            document.querySelectorAll('.estudio-row').forEach(function (tr) {
+              if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
+            });
+            inicializarPaginacion();
+            mostrarPagina(1);
+          });
+        </script>
+
+      <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
-
-    <!-- Modal Visor PDF/Excel -->
-    <div id="visor-modal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 id="visor-title" class="modal-title">Visor de Documento</h2>
-          <button class="modal-close" onclick="closeVisor()">×</button>
-        </div>
-        <div class="modal-body">
-          <div id="visor-pdf" class="pdf-viewer" style="display:none;">
-            <canvas id="pdf-canvas" class="pdf-page"></canvas>
-            <div
-              style="position:absolute;bottom:20px;background:rgba(0,0,0,.8);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;">
-              <span id="pdf-page-info">Página 1</span>
-            </div>
-          </div>
-          <div id="visor-excel" class="excel-table" style="display:none;"></div>
-          <div id="visor-loading" style="display:none;text-align:center;color:#6B7280;">
-            <i class="fas fa-spinner fa-spin" style="font-size:32px;margin-bottom:12px;display:block;"></i>
-            <span>Cargando documento...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Chatbot Mascota -->
-    <button id="chatbot-bubble" onclick="toggleChatbot()">
-      <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
-    </button>
-
-    <div id="chatbot-panel">
-      <div class="chat-header">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <img th:src="@{/assets/images/mascota.png}" src="/assets/images/mascota.png" alt="La Buena Cajita" />
-          <div>
-            <div class="chat-title">La Buena Cajita</div>
-            <div class="chat-status"><span
-                style="display:inline-block;width:6px;height:6px;background:#2ECC71;border-radius:50%;margin-right:4px;"></span>En
-              línea</div>
-          </div>
-        </div>
-        <button class="chat-close-btn" onclick="toggleChatbot()"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="chat-messages" id="chat-messages">
-        <div class="chat-msg bot">
-          <div class="bubble">¡Hola! Soy La Buena Cajita, tu asistente de Recíclame. ¿En qué puedo ayudarte hoy?</div>
-        </div>
-      </div>
-      <div class="chat-input-area">
-        <input type="text" class="chat-input" id="chat-input"
-          placeholder="Pregúntame sobre normativas o economía circular..."
-          onkeypress="if(event.key==='Enter')sendChatMessage()" />
-        <button class="chat-send-btn" onclick="sendChatMessage()"><i class="fas fa-paper-plane"></i></button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    function navTo(page) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      var el = document.getElementById('page-' + page);
-      el.classList.add('active');
-      // Re-disparar animaciones en la página recién mostrada
-      el.querySelectorAll('.anim-1,.anim-2,.anim-3,.anim-4').forEach(function(a) {
-        a.style.animation = 'none';
-        void a.offsetWidth;
-        a.style.animation = '';
-      });
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      var nav = document.getElementById('nav-' + page);
-      if (nav) nav.classList.add('active');
-      window.scrollTo(0, 0);
-    }
-    function goLogin() { window.location.href = '/login'; }
-
-    // Abrir visor de PDF/Excel en modal
-    function openVisor(tipo, nombre, formato, descargable) {
-      var modal = document.getElementById('visor-modal');
-      var titleEl = document.getElementById('visor-title');
-      var pdfDiv = document.getElementById('visor-pdf');
-      var excelDiv = document.getElementById('visor-excel');
-      var loadingDiv = document.getElementById('visor-loading');
-
-      if (!modal) return;
-
-      // Preparar modal
-      titleEl.textContent = nombre + ' (' + formato + ')';
-      pdfDiv.style.display = 'none';
-      excelDiv.style.display = 'none';
-      loadingDiv.style.display = 'flex';
-      modal.classList.add('show');
-
-      // Simular carga según formato
-      setTimeout(function () {
-        loadingDiv.style.display = 'none';
-        if (formato.toUpperCase() === 'PDF') {
-          pdfDiv.style.display = 'flex';
-          renderPdfDemo(nombre);
-        } else if (formato.toUpperCase() === 'PPTX' || formato.toUpperCase() === 'XLS') {
-          excelDiv.style.display = 'block';
-          renderExcelDemo(nombre);
-        }
-      }, 300);
-    }
-
-    function closeVisor() {
-      var modal = document.getElementById('visor-modal');
-      if (modal) modal.classList.remove('show');
-    }
-
-    // Cerrar modal al hacer click fuera
-    document.addEventListener('click', function (e) {
-      var modal = document.getElementById('visor-modal');
-      if (modal && e.target === modal) closeVisor();
-    });
-
-    // Render PDF demo (usando canvas simple)
-    function renderPdfDemo(nombre) {
-      var canvas = document.getElementById('pdf-canvas');
-      if (!canvas) return;
-      var ctx = canvas.getContext('2d');
-      canvas.width = 600;
-      canvas.height = 800;
-
-      // Fondo blanco
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Sombra
-      ctx.shadowColor = 'rgba(0,0,0,.1)';
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-
-      // Borde
-      ctx.strokeStyle = '#ddd';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
-
-      // Header
-      ctx.fillStyle = '#1B3A5C';
-      ctx.fillRect(20, 20, canvas.width - 40, 80);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 18px Inter, sans-serif';
-      ctx.fillText(nombre, 40, 65);
-
-      // Contenido
-      ctx.fillStyle = '#333';
-      ctx.font = '14px Inter, sans-serif';
-      var y = 130;
-      var lines = [
-        'DOCUMENTO CLASIFICADO',
-        'Tipo: Estudio Técnico',
-        'Estado: Solo Lectura',
-        '',
-        'Este es un documento de demostración.',
-        'Contenido del análisis técnico.',
-        '',
-        'Acceso restringido al rol Visualizador.',
-        'Sin permisos de descarga.'
-      ];
-      lines.forEach(function (line) {
-        ctx.fillText(line, 40, y);
-        y += 30;
-      });
-
-      // Footer
-      ctx.fillStyle = '#999';
-      ctx.font = '12px Inter, sans-serif';
-      ctx.fillText('Recíclame © 2026', 40, canvas.height - 40);
-    }
-
-    // Render Excel demo
-    function renderExcelDemo(nombre) {
-      var excelDiv = document.getElementById('visor-excel');
-      if (!excelDiv) return;
-
-      var html = '<table><thead><tr><th>Métrica</th><th>Valor</th><th>Unidad</th><th>Año</th><th>Estado</th></tr></thead><tbody>';
-      html += '<tr><td><strong>' + nombre + '</strong></td><td>100.5</td><td>Toneladas</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
-      html += '<tr><td>Análisis de Flujo</td><td>45.2</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
-      html += '<tr><td>Eficiencia</td><td>78.9</td><td>%</td><td>2026</td><td><span style="background:#C8E6C9;color:#2E7D32;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Activo</span></td></tr>';
-      html += '<tr><td>Proyección</td><td>120.0</td><td>Toneladas</td><td>2027</td><td><span style="background:#FFF9C4;color:#F57F17;padding:4px 8px;border-radius:4px;font-size:11px;font-weight:600;">Estimado</span></td></tr>';
-      html += '</tbody></table>';
-
-      excelDiv.innerHTML = html;
-    }
-
-    // Navegar a normativo y aplicar filtro de ámbito
-    function setAmbitoNormativo(ambito) {
-      navTo('normativo');
-      // Esperar a que la page sea visible antes de filtrar
-      setTimeout(function () {
-        if (typeof setAmbito === 'function') setAmbito(ambito);
-      }, 50);
-    }
-
-    function toggleChatbot() {
-      var panel = document.getElementById('chatbot-panel');
-      var bubble = document.getElementById('chatbot-bubble');
-      if (panel.style.display === 'flex') {
-        panel.style.display = 'none';
-        bubble.style.display = 'flex';
-      } else {
-        panel.style.display = 'flex';
-        bubble.style.display = 'none';
-      }
-    }
-
-    function sendChatMessage() {
-      var input = document.getElementById('chat-input');
-      var message = input.value.trim();
-      if (!message) return;
-      var messagesDiv = document.getElementById('chat-messages');
-      var userMsg = document.createElement('div');
-      userMsg.className = 'chat-msg user';
-      userMsg.innerHTML = '<div class="bubble">' + message + '</div>';
-      messagesDiv.appendChild(userMsg);
-      input.value = '';
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      setTimeout(function () {
-        var botMsg = document.createElement('div');
-        botMsg.className = 'chat-msg bot';
-        botMsg.innerHTML = '<div class="bubble">Gracias por tu mensaje. Estoy en modo demo, pero en producción me conectaré a un sistema RAG con IA para responder tus preguntas sobre normativas y economía circular.</div>';
-        messagesDiv.appendChild(botMsg);
-        messagesDiv.scrollTop = messagesDiv.scrollHeight;
-      }, 800);
-    }
-
-    document.getElementById('chatbot-bubble').style.display = 'flex';
-  </script>
+    <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 </body>
 
 </html>

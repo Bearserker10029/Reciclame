@@ -46,6 +46,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.LinkedHashMap;
+import java.time.Instant;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 @Controller
 public class SuperAdminController extends AdminController {
@@ -121,25 +124,32 @@ public class SuperAdminController extends AdminController {
         }
     }
 
-    @Override
+
     @GetMapping("/superadmin")
-    public String inicio(Model model) {
-        model.addAttribute("rol", "SUPERADMIN");
-        model.addAttribute("rolNombre", "SuperAdmin");
-        model.addAttribute("usuarioNombre", "Super Admin");
-        return "SuperAdmin/inicio";
+    public String inicio(Model model, @AuthenticationPrincipal UserDetails user) {
+        return adminInicio(model, user);
     }
 
-    @Override
+
     @GetMapping({ "/superadmin/inicio", "/superadmin/" })
     public String adminInicio(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("normativas", normativaService.listarNormativas());
-        model.addAttribute("tematicas", tematicaService.listarTematicasTodas());
+        var tematicas = tematicaService.listarTematicasTodas();
+        model.addAttribute("tematicas", tematicas);
         var conteoPorTematica = normativaService.contarPorTematica();
         model.addAttribute("conteoPorTematica", conteoPorTematica);
+        List<Map<String, Object>> donutData = tematicas.stream().map(t -> {
+            Map<String, Object> item = new HashMap<>();
+            item.put("codigo", t.getCodigo());
+            item.put("nombre", t.getNombre());
+            item.put("colorHex", t.getColorHex());
+            item.put("count", conteoPorTematica.getOrDefault(t.getCodigo(), 0L));
+            return item;
+        }).collect(java.util.stream.Collectors.toList());
+        model.addAttribute("donutData", donutData);
         model.addAttribute("estudios", estudioService.listarEstudios());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
@@ -162,7 +172,7 @@ public class SuperAdminController extends AdminController {
     /*  ⠀⠀        MEGA KIRBY                  */    @GetMapping("/superadmin/usuarios")
     /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠶⠦⡄⠀⠀⠀⠀⠀⠀⡴⠀⠀⠀     */    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
     /*⠀⢀⣀⠀⠀⠀⣀⠤⠖⠒⠋⡉⠙⢲⣺⢅⡀⠀⠹⡀⠀⠀⠀⢀⡜⠁⠀     */        setupCommonAttributes(model, user.getUsername());
-    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
     /*⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⡀⠄⠠⢀⠈⢣⡀⠀⠁⠀⢀⡤⠊⠀⠀  */          model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
     /*⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⠎⠀⠀⠀⠘⡇⠀⢧⠀⠐⠊⠁⠀⠀⠀⠀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
     /*⠀⢸⠳⣄⠀⠀⠀⠀⠀⠀⠀⠈⢺⠀⠀⠀⠀⠀⡇⠀⢸⠀⠀⠀⠀⢀⣀⣀⡀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
@@ -199,17 +209,68 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         var estudios = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
-        model.addAttribute("estudios", estudios);
-        model.addAttribute("normativas", normativas);
-        model.addAttribute("tematicas", tematicaService.listarTematicas());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        var tematicas = tematicaService.listarTematicas();
+        var usuariosActivos = usuarioService.listarUsuariosActivos();
+
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
                 + normativas.stream()
                         .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
+
+        List<Map<String, Object>> topDocumentos = new ArrayList<>();
+        List<Map<String, Object>> allDocs = new ArrayList<>();
+        for (var e : estudios) {
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("nombre", e.getTitulo());
+            doc.put("descargas", e.getDescargasCount() != null ? e.getDescargasCount() : 0);
+            doc.put("tipo", "Estudio");
+            allDocs.add(doc);
+        }
+        for (var n : normativas) {
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("nombre", n.getTitulo());
+            doc.put("descargas", n.getDescargasCount() != null ? n.getDescargasCount() : 0);
+            doc.put("tipo", "Normativa");
+            allDocs.add(doc);
+        }
+        allDocs.sort((a, b) -> Integer.compare((int) b.get("descargas"), (int) a.get("descargas")));
+        int topLimit = Math.min(5, allDocs.size());
+        topDocumentos = new ArrayList<>(allDocs.subList(0, topLimit));
+
+        Instant hace30Dias = Instant.now().minus(Duration.ofDays(30));
+        List<Map<String, Object>> actividadDiaria = auditoriaService.obtenerActividadDiaria(hace30Dias, Instant.now());
+
+        List<Map<String, Object>> topUsuarios = auditoriaService.obtenerTopUsuariosActivos(5);
+        for (Map<String, Object> u : topUsuarios) {
+            Long uId = (Long) u.get("usuarioId");
+            try {
+                var uDto = usuarioService.obtenerUsuarioPorId(uId);
+                u.put("empresaNombre", uDto.getEmpresaNombre() != null ? uDto.getEmpresaNombre() : "Sin empresa");
+            } catch (Exception ex) {
+                u.put("empresaNombre", "Sin empresa");
+            }
+        }
+
+        model.addAttribute("estudios", estudios);
+        model.addAttribute("normativas", normativas);
+        model.addAttribute("tematicas", tematicas);
+        model.addAttribute("usuariosActivos", usuariosActivos);
         model.addAttribute("totalDescargas", totalDescargas);
-        model.addAttribute("estudiosCount", estudios.size());
-        model.addAttribute("normativasCount", normativas.size());
+        model.addAttribute("topDocumentos", topDocumentos);
+        model.addAttribute("actividadDiaria", actividadDiaria);
+        model.addAttribute("topUsuarios", topUsuarios);
+
+        int maxEstudios = estudios.isEmpty() ? 1 : estudios.size();
+        int maxNormativas = normativas.isEmpty() ? 1 : normativas.size();
+        model.addAttribute("maxEstudios", maxEstudios);
+        model.addAttribute("maxNormativas", maxNormativas);
+
+        var todosUsuariosR = usuarioService.listarUsuarios();
+        int pctUsuariosActivosBar = !todosUsuariosR.isEmpty()
+                ? (int)(usuariosActivos.size() * 100.0 / todosUsuariosR.size()) : 0;
+        model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
+        model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
+
         return "SuperAdmin/reportes";
     }
 
@@ -217,9 +278,30 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditoriasPage = auditoriaService.listarAuditoriasPaginado(0, 50);
+        var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 100);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+
+        // Chips por módulo
+        var conteoPorModulo = auditoriasPage.getContent().stream()
+                .filter(a -> a.getModulo() != null)
+                .collect(java.util.stream.Collectors.groupingBy(
+                        a -> a.getModulo(), java.util.stream.Collectors.counting()))
+                .entrySet().stream()
+                .map(e -> {
+                    var m = new java.util.HashMap<String, Object>();
+                    m.put("modulo", e.getKey());
+                    m.put("count", e.getValue());
+                    return m;
+                })
+                .collect(java.util.stream.Collectors.toList());
+        model.addAttribute("conteoPorModulo", conteoPorModulo);
+
+        // Actividad últimos 7 días
+        Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
+        var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace7d, Instant.now());
+        model.addAttribute("actividadDiaria", actividadDiaria != null ? actividadDiaria : java.util.Collections.emptyList());
+
         return "SuperAdmin/trazabilidad";
     }
 
@@ -229,13 +311,11 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("notificaciones", notificacionService.listarPorUsuario(u.getId()));
-            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
         });
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         return "SuperAdmin/notificaciones";
     }
 
-    @Override
     @PostMapping("/superadmin/notificaciones/enviar")
     public String enviarNotificacion(
             @RequestParam String destinatario,
@@ -271,7 +351,127 @@ return "redirect:/superadmin/notificaciones";
     @GetMapping("/superadmin/perfil")
     public String perfil(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+            model.addAttribute("usuario", u);
+
+            String nombre = u.getNombreCompleto() != null ? u.getNombreCompleto().trim() : "";
+            String[] partes = nombre.split("\\s+");
+            String initiales = partes.length >= 2
+                    ? String.valueOf(partes[0].charAt(0)) + String.valueOf(partes[1].charAt(0))
+                    : (nombre.length() > 0 ? String.valueOf(nombre.charAt(0)) : "?");
+            model.addAttribute("initiales", initiales.toUpperCase());
+
+            if (u.getCreatedAt() != null) {
+                java.time.LocalDate ld = u.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", new java.util.Locale("es"));
+                model.addAttribute("createdAtMes", "Desde " + ld.format(fmt));
+                model.addAttribute("createdAtFormatted", ld.toString());
+            } else {
+                model.addAttribute("createdAtMes", "");
+                model.addAttribute("createdAtFormatted", "");
+            }
+
+            if (u.getUltimoLogin() != null) {
+                java.time.LocalDate ld = u.getUltimoLogin().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+                model.addAttribute("ultimoAccesoFormatted", ld.toString());
+            } else {
+                model.addAttribute("ultimoAccesoFormatted", "No registrado");
+            }
+
+            List<Auditoria> auditoriasUsuario = auditoriaService.listarAuditoriasPorUsuario(u.getId());
+
+            long descargasCount = auditoriasUsuario.stream()
+                    .filter(a -> "DESCARGAR_DOCUMENTO".equals(a.getAccion()))
+                    .count();
+            model.addAttribute("descargasCount", descargasCount);
+
+            long busquedasCount = auditoriasUsuario.stream()
+                    .filter(a -> a.getAccion() != null && (a.getAccion().contains("BUSQUEDA") || a.getAccion().contains("CONSULTA")))
+                    .count();
+            model.addAttribute("busquedasCount", busquedasCount);
+
+            long documentosVistos = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()) || "ESTUDIOS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("documentosVistos", documentosVistos);
+
+            long normativasConsultadas = auditoriasUsuario.stream()
+                    .filter(a -> "NORMATIVAS".equals(a.getModulo()))
+                    .count();
+            model.addAttribute("normativasConsultadas", normativasConsultadas);
+
+            var auditoriasRecientes = auditoriaService.listarAuditoriasPorUsuarioPaginado(u.getId(), 0, 5);
+            model.addAttribute("actividadReciente", auditoriasRecientes.getContent());
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
         return "SuperAdmin/perfil";
+    }
+
+    @PostMapping("/superadmin/perfil/actualizar")
+    public String actualizarPerfil(
+            @RequestParam Long id,
+            @RequestParam String nombreCompleto,
+            @RequestParam String correoCorporativo,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra,
+            HttpSession session) {
+        if (nombreCompleto == null || nombreCompleto.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
+            return "redirect:/superadmin/perfil";
+        }
+        if (correoCorporativo == null || correoCorporativo.isBlank()) {
+            ra.addFlashAttribute("errorPerfil", "El correo corporativo es obligatorio");
+            return "redirect:/superadmin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                if (!u.getId().equals(id)) {
+                    ra.addFlashAttribute("errorPerfil", "No tienes permiso para editar este usuario");
+                    return;
+                }
+                var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
+                dto.setNombreCompleto(nombreCompleto);
+                dto.setCorreoCorporativo(correoCorporativo);
+                var updated = usuarioService.actualizarUsuario(id, dto);
+                session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                        updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
+                        updated.getRolNombre(), null, null));
+                ra.addFlashAttribute("exitoPerfil", "Información personal actualizada correctamente");
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPerfil", "Error al actualizar: " + e.getMessage());
+        }
+        return "redirect:/superadmin/perfil";
+    }
+
+    @PostMapping("/superadmin/perfil/cambiar-password")
+    public String cambiarPassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            @AuthenticationPrincipal UserDetails user,
+            RedirectAttributes ra) {
+        if (!newPassword.equals(confirmPassword)) {
+            ra.addFlashAttribute("errorPassword", "Las contraseñas nuevas no coinciden");
+            return "redirect:/superadmin/perfil";
+        }
+        if (newPassword.length() < 8) {
+            ra.addFlashAttribute("errorPassword", "La contraseña debe tener al menos 8 caracteres");
+            return "redirect:/superadmin/perfil";
+        }
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                if (ok) {
+                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                } else {
+                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                }
+            });
+        } catch (Exception e) {
+            ra.addFlashAttribute("errorPassword", "Error al cambiar la contraseña: " + e.getMessage());
+        }
+        return "redirect:/superadmin/perfil";
     }
 
     @Override
@@ -331,7 +531,7 @@ return "redirect:/superadmin/notificaciones";
 
     @Override
     @GetMapping("/superadmin/estudios/editar/{id}")
-    public String estudiosEditar(@PathVariable Long id, Model model,
+    public String editarEstudio(@PathVariable Long id, Model model,
             @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("isEdit", true);
@@ -342,24 +542,56 @@ return "redirect:/superadmin/notificaciones";
         return "SuperAdmin/estudios-form";
     }
 
-    @Override
     @GetMapping("/superadmin/auditoria")
     public String auditoria(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var auditoriasPage = auditoriaService.listarAuditoriasPaginado(page, size);
+        var auditoriasPage = auditoriaService.listarEventosSeguridad(page, size);
         model.addAttribute("auditorias", auditoriasPage.getContent());
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+
+        model.addAttribute("fallidosHoy", auditoriaService.contarIntentosFallidosHoy());
+        model.addAttribute("impersonaciones", auditoriaService.contarImpersonaciones());
+        model.addAttribute("tasaExito", auditoriaService.obtenerTasaExito24h());
+        var alertas = auditoriaService.generarAlertasSeguridad();
+        model.addAttribute("alertas", alertas != null ? alertas : java.util.Collections.emptyList());
+        var topIPs = auditoriaService.obtenerTopIPsFallidas(5);
+        model.addAttribute("topIPsFallidas", topIPs != null ? topIPs : java.util.Collections.emptyList());
+        var topUsuariosF = auditoriaService.obtenerTopUsuariosFallidos(5);
+        model.addAttribute("topUsuariosFallidos", topUsuariosF != null ? topUsuariosF : java.util.Collections.emptyList());
+
         return "SuperAdmin/auditoria";
+    }
+
+    @Override
+    @GetMapping("/superadmin/auditoria/export.csv")
+    public void exportarAuditoriaCsv(HttpServletResponse response,
+                                      @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
+        var auditorias = auditoriaService.listarAuditoriasUltimas100();
+        var pw = response.getWriter();
+        pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
+        for (var a : auditorias) {
+            pw.printf("%s,%s,%s,%s,%s,\"%s\",%s,%s%n",
+                a.getId(),
+                a.getFechaAccion() != null ? a.getFechaAccion().toString().substring(0, 19).replace('T', ' ') : "",
+                a.getUsuarioNombre() != null ? a.getUsuarioNombre() : "",
+                a.getAccion() != null ? a.getAccion() : "",
+                a.getModulo() != null ? a.getModulo() : "",
+                a.getDescripcion() != null ? a.getDescripcion().replace("\"", "\"\"") : "",
+                a.getEstado() != null ? a.getEstado() : "",
+                a.getIpAddress() != null ? a.getIpAddress() : "");
+        }
     }
 
     @GetMapping("/superadmin/impersonar")
     public String impersonar(Model model, @AuthenticationPrincipal UserDetails user,
             HttpSession session) {
         setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("estaImpersonando", session.getAttribute("ORIGINAL_USER") != null);
         if (session.getAttribute("IMPERSONATED_USER") != null) {
             model.addAttribute("usuarioImpersonado", session.getAttribute("IMPERSONATED_USER"));
@@ -628,14 +860,5 @@ return "redirect:/superadmin/notificaciones";
         super.exportarNormativasXLSX(response, user);
     }
 
-    @GetMapping("/superadmin/diccionarios")
-    public String diccionarios(Model model, @AuthenticationPrincipal UserDetails user) {
-        setupCommonAttributes(model, user.getUsername());
-        model.addAttribute("tematicas", tematicaService.listarTematicasTodas());
-        model.addAttribute("etiquetas", etiquetaService.listarEtiquetasTodas());
-        model.addAttribute("tiposNormativa", tiposNormativaService.listarTiposTodos());
-        model.addAttribute("estadosNormativa", estadosNormativaService.listarEstadosTodos());
-        return "SuperAdmin/diccionarios";
-    }
 
 }

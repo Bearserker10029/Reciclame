@@ -8,12 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
-import java.util.List;
-
 /**
- * Inyecta la configuración de UI (columnas visibles, módulos del sidebar)
- * en el modelo de cada request de socio/visualizador.
- * Para admin/superadmin los atributos quedan null → se muestran todos los elementos.
+ * Inyecta la configuración de módulos del sidebar por rol en el modelo.
  */
 @ControllerAdvice
 public class UiConfigModelAdvice {
@@ -31,15 +27,10 @@ public class UiConfigModelAdvice {
 
         String rol = resolveRol(auth);
         if (rol == null) {
-            // Admin/SuperAdmin: no restricciones, atributos en null
-            model.addAttribute("uiColsNormativas", (Object) null);
-            model.addAttribute("uiColsEstudios",   (Object) null);
             model.addAttribute("uiModulosSidebar", (Object) null);
             return;
         }
 
-        model.addAttribute("uiColsNormativas", service.getColumnasNormativas(rol));
-        model.addAttribute("uiColsEstudios",   service.getColumnasEstudios(rol));
         model.addAttribute("uiModulosSidebar", service.getModulosSidebar(rol));
     }
 
@@ -48,6 +39,7 @@ public class UiConfigModelAdvice {
             switch (ga.getAuthority()) {
                 case "ROLE_SOCIO":        return "SOCIO";
                 case "ROLE_VISUALIZADOR": return "VISUALIZADOR";
+                case "ROLE_ADMINISTRADOR":return "ADMINISTRADOR";
                 case "ROLE_IMPERSONATOR": return "SOCIO";
             }
         }
