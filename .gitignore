@@ -51,6 +51,3 @@ skills-lock.json
 
 # Jira
 Jira.csv
-
-# Environment variables (contiene credenciales)
-.env
