@@ -1,0 +1,124 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: reciclame-mysql-local
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: reciclame_db
+      TZ: America/Lima
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/reciclame_db.sql:/docker-entrypoint-initdb.d/01-reciclame_db.sql:ro
+    healthcheck:
+      test: [ "CMD", "healthcheck.sh", "--connect", "--innodb_initialized" ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 60s
+    networks:
+      - reciclame-local
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: reciclame-app:local
+    container_name: reciclame-app
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      MINIO_URL: http://localhost:9000
+      MINIO_INTERNAL_URL: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: reciclame-docs
+      KKFILEVIEW_URL: http://kkfileview:8012
+      N8N_WEBHOOK_URL: http://n8n:5678/webhook/send-email
+      N8N_CHATBOT_WEBHOOK_URL: /webhook/chatbot-reciclame
+      APP_BASE_URL: http://localhost:8080
+      APP_KK_ACCESSIBLE_URL: http://reciclame-app:8080
+    networks:
+      - reciclame-local
+
+  minio:
+    image: minio/minio:latest
+    container_name: reciclame-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - reciclame-local
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: reciclame-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - reciclame-local
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && echo 'Bucket reciclame-docs listo.' && exit 0"
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: reciclame-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      GENERIC_TIMEZONE: America/Lima
+    volumes:
+      - n8n_data:/home/node/.n8n
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - reciclame-local
+
+  kkfileview:
+    image: keking/kkfileview:latest
+    container_name: reciclame-kkfileview
+    ports:
+      - "8012:8012"
+    depends_on:
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      KK_HTTP_PREVIEW: "true"
+      SPRING_FREEMARKER_TEMPLATE_LOADER_PATH: file:/opt/kkFileView/templates/web/,classpath:/web/
+    volumes:
+      - ./kkfileview-templates/web:/opt/kkFileView/templates/web
+    networks:
+      - reciclame-local
+
+networks:
+  reciclame-local:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  minio_data:
+  n8n_data:

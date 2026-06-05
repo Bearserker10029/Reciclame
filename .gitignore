@@ -1,5 +1,3 @@
-*.md
-*.pdf
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -43,7 +41,7 @@ guia-comandos-ec2.md
 Thumbs.db
 
 # Skills y locks
-.agents/skills/frontend-design/LICENSE.txt
+.agents/
 skills-lock.json
 
 # Claude Code (worktrees y archivos internos)
