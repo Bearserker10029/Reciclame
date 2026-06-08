@@ -39,6 +39,14 @@ public class NormativaVisorController {
         this.notificacionService = notificacionService;
     }
 
+    // ── Admin ─────────────────────────────────────────────────
+    @GetMapping("/admin/normativo/{id}/ver")
+    public String verNormativaAdmin(@PathVariable Long id, Model model,
+                                    @AuthenticationPrincipal UserDetails user) {
+        setupAdmin(model, user.getUsername());
+        return cargarVisor(id, model, "Admin/normativo-visor", "/admin/normativo");
+    }
+
     // ── Socio ─────────────────────────────────────────────────
     @GetMapping("/socio/normativo/{id}/ver")
     public String verNormativaSocio(@PathVariable Long id, Model model,
@@ -85,6 +93,16 @@ public class NormativaVisorController {
         model.addAttribute("archivoDisponible", minioStorageService.existeArchivo(normativa.getArchivoUrl()));
         model.addAttribute("urlRetorno", urlRetorno);
         return template;
+    }
+
+    private void setupAdmin(Model model, String correo) {
+        model.addAttribute("rol", "ADMIN");
+        model.addAttribute("rolNombre", "Administrador");
+        model.addAttribute("notifUrl", "/admin/notificaciones");
+        usuarioService.findByCorreo(correo).ifPresent(u -> {
+            model.addAttribute("usuarioNombre", u.getNombreCompleto());
+            model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+        });
     }
 
     private void setupSocio(Model model, String correo) {

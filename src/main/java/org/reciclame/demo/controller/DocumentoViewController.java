@@ -53,10 +53,7 @@ public class DocumentoViewController {
     @GetMapping("/ver")
     public ResponseEntity<?> verDocumento(@RequestParam("url") String url) {
         try {
-            String firmadaInterna = minioStorageService.generarUrlFirmadaInterna(url, EXPIRY_MINUTOS);
-            String firmada = firmadaInterna.replace(
-                    minioStorageService.getMinioInternalUrl(),
-                    minioStorageService.getMinioUrl());
+            String firmada = minioStorageService.generarUrlFirmadaPublica(url, EXPIRY_MINUTOS);
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, firmada)
                     .build();
