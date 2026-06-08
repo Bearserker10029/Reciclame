@@ -1218,6 +1218,17 @@
             document.addEventListener('click', function () { window.closeAllDriveDropdowns(); });
           }
 
+          function openModalCarpetaFromData(tipo, id, titulo) {
+            var tmp = document.createElement('div');
+            tmp.className = 'drive-add-entry';
+            tmp.setAttribute('data-mu-tipo', tipo);
+            tmp.setAttribute('data-mu-id', id);
+            tmp.setAttribute('data-mu-titulo', titulo);
+            if (window.openMuAddModal) {
+              window.openMuAddModal(tmp);
+            }
+          }
+
           window.driveShareEstudio = function (titulo) {
             var text = window.location.origin + '/socio/estudios — ' + titulo;
             if (navigator.clipboard && navigator.clipboard.writeText) {
