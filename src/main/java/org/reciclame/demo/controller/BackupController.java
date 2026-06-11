@@ -66,8 +66,10 @@ public class BackupController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> crearBackup(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(required = false, defaultValue = "COMPLETO") String tipo,
-            @RequestParam(required = false) String notas) {
+            @RequestBody(required = false) Map<String, Object> body) {
+
+        String tipo = body != null && body.get("tipo") != null ? (String) body.get("tipo") : "COMPLETO";
+        String notas = body != null && body.get("notas") != null ? (String) body.get("notas") : null;
 
         Usuario solicitante = usuarioRepository.findByCorreoCorporativo(userDetails.getUsername()).orElse(null);
         if (solicitante == null) {

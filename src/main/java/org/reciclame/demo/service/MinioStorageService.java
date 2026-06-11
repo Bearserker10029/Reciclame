@@ -121,6 +121,31 @@ public class MinioStorageService {
         return generarPresigned(minioInternalUrl, archivoUrl, minutosExpiry);
     }
 
+    /**
+     * Genera una URL presignada con host público (para el navegador),
+     * conectándose a MinIO vía URL interna (para funcionar dentro de Docker).
+     */
+    public String generarUrlFirmadaPublica(String archivoUrl, int minutosExpiry) {
+        String objectName = extractObjectName(archivoUrl);
+        try {
+            MinioClient client = MinioClient.builder()
+                    .endpoint(minioInternalUrl)
+                    .credentials(accessKey, secretKey)
+                    .build();
+            String urlInterna = client.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .method(Method.GET)
+                            .bucket(bucket)
+                            .object(objectName)
+                            .expiry(minutosExpiry, TimeUnit.MINUTES)
+                            .build()
+            );
+            return urlInterna.replace(minioInternalUrl, minioUrl);
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo generar URL firmada pública para: " + objectName, e);
+        }
+    }
+
     private String generarPresigned(String endpoint, String archivoUrl, int minutosExpiry) {
         String objectName = extractObjectName(archivoUrl);
         try {

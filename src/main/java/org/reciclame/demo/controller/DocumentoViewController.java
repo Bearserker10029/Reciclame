@@ -53,7 +53,7 @@ public class DocumentoViewController {
     @GetMapping("/ver")
     public ResponseEntity<?> verDocumento(@RequestParam("url") String url) {
         try {
-            String firmada = minioStorageService.generarUrlFirmada(url, EXPIRY_MINUTOS);
+            String firmada = minioStorageService.generarUrlFirmadaPublica(url, EXPIRY_MINUTOS);
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, firmada)
                     .build();
@@ -90,7 +90,7 @@ public class DocumentoViewController {
         }
 
         HttpURLConnection conn = (HttpURLConnection) new URL(firmadaInterna).openConnection();
-conn.setInstanceFollowRedirects(true);
+        conn.setInstanceFollowRedirects(true);
         conn.setConnectTimeout(30_000);
         conn.setReadTimeout(300_000);
         conn.setRequestMethod("GET");
@@ -103,7 +103,7 @@ conn.setInstanceFollowRedirects(true);
         }
 
         String contentType = conn.getContentType();
-        response.setStatus(HttpStatus.OK);
+        response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline");
         if (contentType != null && !contentType.isBlank()) {
             response.setContentType(contentType);
