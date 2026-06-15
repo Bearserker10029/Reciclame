@@ -9,6 +9,7 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/socio/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -1030,6 +1031,7 @@
                                     (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
                                     (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                       th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                      th:data-tematica="${e.tematicaCodigo}"
                       th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
                       th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                       <td>
@@ -1258,13 +1260,11 @@
 
             var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
             rows.forEach(function (r) {
-              var titulo = (r.dataset.titulo || '').toLowerCase();
-              var desc = (r.dataset.descripcion || '').toLowerCase();
-              var combined = titulo + ' ' + desc;
-              if (combined.includes('econom') || combined.includes('circular')) cEC++;
-              else if (combined.includes('residuos') || combined.includes('gestión')) cGR++;
-              else if (combined.includes('envase') || combined.includes('embalaje')) cEE++;
-              else if (combined.includes('extendida') || combined.includes('rep')) cREP++;
+              var tema = (r.dataset.tematica || '').toUpperCase();
+              if (tema === 'EC') cEC++;
+              else if (tema === 'GR') cGR++;
+              else if (tema === 'EE') cEE++;
+              else if (tema === 'REP') cREP++;
             });
 
             setText('sum-total-est', total);
