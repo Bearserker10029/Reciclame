@@ -1511,16 +1511,28 @@
             if (modal && e.target === modal) closeVisorViz();
           });
 
-          (function initCounts() {
+          var donutNormChart = null;
+
+          function setText(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val;
+          }
+
+          function updateTematicaPanel(tab) {
             var rows = document.querySelectorAll('.norm-row');
-            var total = rows.length;
-            var nac = 0, intl = 0, vig = 0, consulta = 0;
+            var total = 0, nac = 0, intl = 0, vig = 0, consulta = 0;
             var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
 
             rows.forEach(function (r) {
               var ambito = (r.dataset.ambito || '').toUpperCase();
+              var matchTab = tab === 'todos'
+                || (tab === 'nacional' && ambito === 'NACIONAL')
+                || (tab === 'internacional' && ambito === 'INTERNACIONAL');
+              if (!matchTab) return;
+
               var estado = (r.dataset.estado || '').toLowerCase();
               var tema = (r.dataset.tema || '').toUpperCase();
+              total++;
               if (ambito === 'NACIONAL') nac++;
               if (ambito === 'INTERNACIONAL') intl++;
               if (estado.includes('vigente')) vig++;
@@ -1531,13 +1543,6 @@
               if (tema === 'REP') cREP++;
             });
 
-            setText('hs-total', total);
-            setText('hs-nacional', nac);
-            setText('hs-intl', intl);
-            setText('hs-vigentes', vig);
-            setText('badge-todos', total);
-            setText('badge-nacional', nac);
-            setText('badge-intl', intl);
             setText('kpi-ec', cEC);
             setText('kpi-gr', cGR);
             setText('kpi-ee', cEE);
@@ -1549,14 +1554,38 @@
             setText('sum-consulta', consulta);
             setText('donut-center-val', vig);
 
+            if (donutNormChart) {
+              donutNormChart.data.datasets[0].data = [cEC, cGR, cEE, cREP];
+              donutNormChart.update();
+            }
+          }
+
+          (function initCounts() {
+            var rows = document.querySelectorAll('.norm-row');
+            var total = rows.length;
+            var nac = 0, intl = 0;
+
+            rows.forEach(function (r) {
+              var ambito = (r.dataset.ambito || '').toUpperCase();
+              if (ambito === 'NACIONAL') nac++;
+              if (ambito === 'INTERNACIONAL') intl++;
+            });
+
+            setText('hs-total', total);
+            setText('hs-nacional', nac);
+            setText('hs-intl', intl);
+            setText('badge-todos', total);
+            setText('badge-nacional', nac);
+            setText('badge-intl', intl);
+
             var ctx = document.getElementById('donut-norm');
             if (ctx && window.Chart) {
-              new Chart(ctx, {
+              donutNormChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                   labels: ['EC', 'GR', 'EE', 'REP'],
                   datasets: [{
-                    data: [cEC, cGR, cEE, cREP],
+                    data: [0, 0, 0, 0],
                     backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
                     borderWidth: 0, hoverOffset: 4
                   }]
@@ -1570,10 +1599,7 @@
               });
             }
 
-            function setText(id, val) {
-              var el = document.getElementById(id);
-              if (el) el.textContent = val;
-            }
+            updateTematicaPanel('todos');
           })();
 
           (function populateAnios() {
@@ -1636,6 +1662,8 @@
 
             var noRes = document.getElementById('no-results-norm');
             if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
+
+            updateTematicaPanel(tab);
 
             inicializarPaginacion();
             mostrarPagina(1);
