@@ -111,8 +111,8 @@ public class SocioController {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(userId);
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(Collectors.toList()));
             
-            long descargasCount = notifs.stream()
-                    .filter(n -> n.getTipo() != null && n.getTipo().contains("DESCARGA"))
+            long descargasCount = auditoriaService.listarAuditoriasPorUsuario(userId).stream()
+                    .filter(a -> AuditoriaService.ACCION_DESCARGAR_DOCUMENTO.equals(a.getAccion()))
                     .count();
             model.addAttribute("descargasCount", descargasCount);
             
@@ -140,6 +140,8 @@ public class SocioController {
         setupCommonAttributes(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             model.addAttribute("usuario", u);
+            model.addAttribute("totalDocumentos", miUnidadService.contarItemsUsuario(u.getId()));
+            model.addAttribute("totalCarpetas", miUnidadService.carpetasConRuta(u.getId()).size());
 
             if (u.getCreatedAt() != null) {
                 java.time.LocalDate ld = u.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate();
