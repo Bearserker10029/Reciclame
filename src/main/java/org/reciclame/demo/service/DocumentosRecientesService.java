@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -99,8 +101,8 @@ public class DocumentosRecientesService {
                     docId,
                     miUnidadService.tituloParaTarjetaAccesoReciente(usuarioId, tipo, docId, n.getTitulo()),
                     tiempoRelativo(dr.getUltimaVista(), ahora),
-                    "/socio/normativo",
-                    n.getArchivoUrl() != null ? n.getArchivoUrl() : "#",
+                    "/socio/normativo/" + docId + "/ver?from=mi-unidad",
+                    urlDescarga(n.getArchivoUrl(), n.getTitulo()),
                     iconVariantDesdeUrl(n.getArchivoUrl())
             ));
         }
@@ -110,12 +112,20 @@ public class DocumentosRecientesService {
                     docId,
                     miUnidadService.tituloParaTarjetaAccesoReciente(usuarioId, tipo, docId, e.getTitulo()),
                     tiempoRelativo(dr.getUltimaVista(), ahora),
-                    "/socio/estudios/" + docId + "/ver",
-                    e.getArchivoUrl() != null ? e.getArchivoUrl() : "#",
+                    "/socio/estudios/" + docId + "/ver?from=mi-unidad",
+                    urlDescarga(e.getArchivoUrl(), e.getTitulo()),
                     iconVariantDesdeUrl(e.getArchivoUrl())
             ));
         }
         return Optional.empty();
+    }
+
+    private String urlDescarga(String archivoUrl, String titulo) {
+        if (archivoUrl == null || archivoUrl.isBlank()) {
+            return "#";
+        }
+        return "/api/documentos/descargar?url=" + URLEncoder.encode(archivoUrl, StandardCharsets.UTF_8)
+                + "&titulo=" + URLEncoder.encode(titulo != null ? titulo : "", StandardCharsets.UTF_8);
     }
 
     private static String normalizarTipo(String raw) {

@@ -420,7 +420,7 @@
                       Accion</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody-actividad">
                   <tr th:if="${reporte.actividad == null or reporte.actividad.isEmpty()}">
                     <td colspan="4" style="text-align:center;color:#9CA3AF;padding:24px;">Sin registros de ultima vista.
                       Abre documentos en Normativo o Estudios.</td>
@@ -437,6 +437,10 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+              <span id="rep-pag-info-actividad" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+              <div id="rep-pag-actividad" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
             </div>
           </div>
 
@@ -459,7 +463,7 @@
                       Anadido</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody-miunidad">
                   <tr th:if="${reporte.miUnidad == null or reporte.miUnidad.isEmpty()}">
                     <td colspan="4" style="text-align:center;color:#9CA3AF;padding:24px;">No hay elementos en Mi Unidad.
                     </td>
@@ -476,6 +480,10 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+              <span id="rep-pag-info-miunidad" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+              <div id="rep-pag-miunidad" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
             </div>
           </div>
 
@@ -495,7 +503,7 @@
                       Estado</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="tbody-notif">
                   <tr th:if="${reporte.notificaciones == null or reporte.notificaciones.isEmpty()}">
                     <td colspan="3" style="text-align:center;color:#9CA3AF;padding:24px;">No hay notificaciones activas.
                     </td>
@@ -511,8 +519,73 @@
                 </tbody>
               </table>
             </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
+              <span id="rep-pag-info-notif" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
+              <div id="rep-pag-notif" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+            </div>
           </div>
         </div>
+
+        <script>
+          (function () {
+            var PER_PAGE = 7;
+            var btnStyle = 'border:1px solid #E5E7EB;background:#fff;color:#374151;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;';
+            var btnActiveStyle = 'border:1px solid #1B3A5C;background:#1B3A5C;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;';
+
+            function initPag(tbodyId, pagId, infoId) {
+              var tbody = document.getElementById(tbodyId);
+              var pagDiv = document.getElementById(pagId);
+              var infoSpan = document.getElementById(infoId);
+              if (!tbody || !pagDiv) return;
+              var rows = Array.from(tbody.querySelectorAll('tr[style]'));
+              if (rows.length <= PER_PAGE) {
+                if (infoSpan) infoSpan.textContent = rows.length + ' registro' + (rows.length !== 1 ? 's' : '');
+                return;
+              }
+              var totalPages = Math.ceil(rows.length / PER_PAGE);
+              var currentPage = 1;
+
+              function render(page) {
+                currentPage = page;
+                rows.forEach(function (r, i) {
+                  r.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+                });
+                var from = (page - 1) * PER_PAGE + 1;
+                var to = Math.min(page * PER_PAGE, rows.length);
+                if (infoSpan) infoSpan.textContent = from + '–' + to + ' de ' + rows.length;
+                pagDiv.innerHTML = '';
+                var btnPrev = document.createElement('button');
+                btnPrev.textContent = '‹';
+                btnPrev.style.cssText = btnStyle;
+                btnPrev.disabled = page === 1;
+                if (page === 1) btnPrev.style.opacity = '0.4';
+                btnPrev.onclick = function () { render(page - 1); };
+                pagDiv.appendChild(btnPrev);
+                for (var p = 1; p <= totalPages; p++) {
+                  (function (pp) {
+                    var b = document.createElement('button');
+                    b.textContent = pp;
+                    b.style.cssText = pp === page ? btnActiveStyle : btnStyle;
+                    b.onclick = function () { render(pp); };
+                    pagDiv.appendChild(b);
+                  })(p);
+                }
+                var btnNext = document.createElement('button');
+                btnNext.textContent = '›';
+                btnNext.style.cssText = btnStyle;
+                btnNext.disabled = page === totalPages;
+                if (page === totalPages) btnNext.style.opacity = '0.4';
+                btnNext.onclick = function () { render(page + 1); };
+                pagDiv.appendChild(btnNext);
+              }
+              render(1);
+            }
+
+            initPag('tbody-actividad', 'rep-pag-actividad', 'rep-pag-info-actividad');
+            initPag('tbody-miunidad', 'rep-pag-miunidad', 'rep-pag-info-miunidad');
+            initPag('tbody-notif', 'rep-pag-notif', 'rep-pag-info-notif');
+          })();
+        </script>
 
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,11 +60,13 @@ public class EstudioVisorController {
     // ── Socio (solo estudios públicos) ────────────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
+                                   @RequestParam(value = "from", required = false) String from,
                                    @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
-        return cargarVisorPublico(id, model, "Socio/estudios-visor", "/socio/estudios");
+        String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/estudios";
+        return cargarVisorPublico(id, model, "Socio/estudios-visor", urlRetorno);
     }
 
     // ── Visualizador (solo documentos públicos) ───────────────
