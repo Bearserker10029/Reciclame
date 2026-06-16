@@ -71,9 +71,17 @@ public class EstudioVisorController {
 
     // ── Visualizador (solo documentos públicos) ───────────────
     @GetMapping("/visualizador/estudios/{id}/ver")
-    public String verEstudioVisualizador(@PathVariable Long id, Model model) {
+    public String verEstudioVisualizador(@PathVariable Long id, Model model,
+                                         @AuthenticationPrincipal UserDetails user) {
         model.addAttribute("rol", "VISUALIZADOR");
         model.addAttribute("rolNombre", "Visualizador");
+        model.addAttribute("notifUrl", "/visualizador/notificaciones");
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId())));
+        } catch (Exception e) {
+            model.addAttribute("noLeidasCount", 0);
+        }
         return cargarVisorPublico(id, model, "Visualizador/estudios-visor", "/visualizador/estudios");
     }
 

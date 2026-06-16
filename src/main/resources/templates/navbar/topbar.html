@@ -80,7 +80,7 @@
       </div>
       <div style="flex:1"></div>
       <div style="display:flex;align-items:center;gap:20px;">
-        <th:block sec:authorize="!hasRole('VISUALIZADOR')">
+        <th:block sec:authorize="isAuthenticated()">
           <div id="notif-btn" style="position:relative;cursor:pointer;display:flex;align-items:center;">
             <i id="bell-icon" class="fas fa-bell" style="color:rgba(255,255,255,.75);font-size:17px;"
                th:classappend="${noLeidasCount != null and noLeidasCount > 0} ? ' bell-anim' : ''"></i>
@@ -92,14 +92,14 @@
                 <span class="notif-drop-title">Notificaciones</span>
                 <div style="display:flex;align-items:center;gap:10px;">
                   <span class="notif-drop-ver-todo" onclick="marcarTodasLeidas()">Marcar todo como leído</span>
-                  <a th:href="@{${notifUrl}}" style="color:#9CA3AF;font-size:13px;line-height:1;" title="Ver todas"><i class="fas fa-cog"></i></a>
+                  <a th:href="${notifUrl != null ? notifUrl : '#'}" style="color:#9CA3AF;font-size:13px;line-height:1;" title="Ver todas"><i class="fas fa-cog"></i></a>
                 </div>
               </div>
               <div class="notif-drop-list" id="notif-drop-list">
                 <div class="notif-drop-empty">Cargando...</div>
               </div>
               <div class="notif-drop-footer">
-                <a th:href="@{${notifUrl}}">Ver todas las notificaciones</a>
+                <a th:href="${notifUrl != null ? notifUrl : '#'}">Ver todas las notificaciones</a>
               </div>
             </div>
           </div>
