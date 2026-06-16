@@ -9,6 +9,7 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = {}; window.location.href = '/visualizador/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -782,7 +783,8 @@
                                   (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                     th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
                     th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
-                    th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                    th:data-url="${e.archivoUrl}" th:data-tematica="${e.tematicaCodigo}"
+                    th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                     <td>
                       <div style="display:flex;align-items:center;gap:10px;">
                         <th:block th:switch="${tipo}">
@@ -913,34 +915,6 @@
               </div>
             </div>
 
-            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
-              <div
-                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
-                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;">Total estudios</span>
-                <span id="sum-total-est" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-file-pdf" style="font-size:10px;color:#E74C3C;"></i>PDF
-                </span>
-                <span id="sum-pdf-est" style="font-size:14px;font-weight:800;color:#E74C3C;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-chart-bar" style="font-size:10px;color:#27AE60;"></i>Otros formatos
-                </span>
-                <span id="sum-otros-est" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Actualizados 30 días
-                </span>
-                <span id="sum-recientes-est" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1187,13 +1161,11 @@
             rows.forEach(function (r) {
               var tipo = r.dataset.tipo || '';
               if (tipo === 'pdf') pdf++; else otros++;
-              var titulo = (r.dataset.titulo || '').toLowerCase();
-              var desc = (r.dataset.descripcion || '').toLowerCase();
-              var combined = titulo + ' ' + desc;
-              if (combined.includes('econom') || combined.includes('circular') || combined.includes('ec')) cEC++;
-              else if (combined.includes('residuos') || combined.includes('gestión') || combined.includes('gr')) cGR++;
-              else if (combined.includes('envase') || combined.includes('embalaje') || combined.includes('ee')) cEE++;
-              else if (combined.includes('extendida') || combined.includes('rep')) cREP++;
+              var tem = (r.dataset.tematica || '').toUpperCase();
+              if (tem === 'EC') cEC++;
+              else if (tem === 'GR') cGR++;
+              else if (tem === 'EE') cEE++;
+              else if (tem === 'REP') cREP++;
             });
 
             setText('sum-total-est', total);

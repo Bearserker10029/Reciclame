@@ -75,6 +75,11 @@ public class DocumentosRecientesService {
         recienteRepository.save(n);
     }
 
+    public long contarDocumentosVistos(Long usuarioId) {
+        if (usuarioId == null) return 0L;
+        return recienteRepository.countByUsuario_Id(usuarioId);
+    }
+
     public List<MiUnidadUltimoAcceso> listarUltimos(Long usuarioId, int max) {
         if (usuarioId == null || max <= 0) {
             return List.of();

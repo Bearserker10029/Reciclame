@@ -233,9 +233,9 @@
     }
 
     .norm-tab.active {
-      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      background: linear-gradient(135deg, #1B3A5C, #2c5282);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+      box-shadow: 0 3px 12px rgba(27, 58, 92, .28);
     }
 
     .norm-tab .count-badge {
@@ -1127,7 +1127,7 @@
                   <div id="donut-center-val" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
                   <div
                     style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
-                    Vigentes</div>
+                    Normativas</div>
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1174,40 +1174,6 @@
               </div>
             </div>
 
-            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
-              <div
-                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
-                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;">Total normativas</span>
-                <span id="sum-total" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-flag" style="font-size:10px;color:#2ECC71;"></i>Nacionales
-                </span>
-                <span id="sum-nac" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-globe" style="font-size:10px;color:#3498DB;"></i>Internacionales
-                </span>
-                <span id="sum-intl" style="font-size:14px;font-weight:800;color:#3498DB;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-check-circle" style="font-size:10px;color:#27AE60;"></i>Vigentes
-                </span>
-                <span id="sum-vig" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Consulta pública
-                </span>
-                <span id="sum-consulta" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1279,26 +1245,49 @@
           // ════════════════════════════════════════════════════════
           //  INICIALIZACIÓN: computa contadores desde las filas DOM
           // ════════════════════════════════════════════════════════
+          function setText(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val;
+          }
+
+          var donutNormChart = null;
+
+          function updateTematicaPanel(tab) {
+            var rows = document.querySelectorAll('.norm-row');
+            var cEC = 0, cGR = 0, cEE = 0, cREP = 0, total = 0;
+            rows.forEach(function (r) {
+              var ambito = (r.dataset.ambito || '').toUpperCase();
+              var matchTab = (tab === 'todos') || (tab === 'nacional' && ambito === 'NACIONAL') || (tab === 'internacional' && ambito === 'INTERNACIONAL');
+              if (!matchTab) return;
+              total++;
+              var tema = (r.dataset.tema || '').toUpperCase();
+              if (tema === 'EC') cEC++;
+              else if (tema === 'GR') cGR++;
+              else if (tema === 'EE') cEE++;
+              else if (tema === 'REP') cREP++;
+            });
+            setText('kpi-ec', cEC);
+            setText('kpi-gr', cGR);
+            setText('kpi-ee', cEE);
+            setText('kpi-rep', cREP);
+            setText('donut-center-val', total);
+            if (donutNormChart) {
+              donutNormChart.data.datasets[0].data = [cEC, cGR, cEE, cREP];
+              donutNormChart.update();
+            }
+          }
+
           (function initCounts() {
             var rows = document.querySelectorAll('.norm-row');
             var total = rows.length;
-            var nac = 0, intl = 0, vig = 0, consulta = 0;
-            var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
-
+            var nac = 0, intl = 0, vig = 0;
             rows.forEach(function (r) {
               var ambito = (r.dataset.ambito || '').toUpperCase();
               var estado = (r.dataset.estado || '').toLowerCase();
-              var tema = (r.dataset.tema || '').toUpperCase();
               if (ambito === 'NACIONAL') nac++;
               if (ambito === 'INTERNACIONAL') intl++;
               if (estado.includes('vigente')) vig++;
-              if (estado.includes('consulta')) consulta++;
-              if (tema === 'EC') cEC++;
-              if (tema === 'GR') cGR++;
-              if (tema === 'EE') cEE++;
-              if (tema === 'REP') cREP++;
             });
-
             setText('hs-total', total);
             setText('hs-nacional', nac);
             setText('hs-intl', intl);
@@ -1306,25 +1295,15 @@
             setText('badge-todos', total);
             setText('badge-nacional', nac);
             setText('badge-intl', intl);
-            setText('kpi-ec', cEC);
-            setText('kpi-gr', cGR);
-            setText('kpi-ee', cEE);
-            setText('kpi-rep', cREP);
-            setText('sum-total', total);
-            setText('sum-nac', nac);
-            setText('sum-intl', intl);
-            setText('sum-vig', vig);
-            setText('sum-consulta', consulta);
-            setText('donut-center-val', vig);
 
             var ctx = document.getElementById('donut-norm');
             if (ctx && window.Chart) {
-              new Chart(ctx, {
+              donutNormChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                   labels: ['EC', 'GR', 'EE', 'REP'],
                   datasets: [{
-                    data: [cEC, cGR, cEE, cREP],
+                    data: [0, 0, 0, 0],
                     backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
                     borderWidth: 0, hoverOffset: 4
                   }]
@@ -1337,11 +1316,7 @@
                 }
               });
             }
-
-            function setText(id, val) {
-              var el = document.getElementById(id);
-              if (el) el.textContent = val;
-            }
+            updateTematicaPanel('todos');
           })();
 
           // ── Populate year filter ──
@@ -1412,6 +1387,7 @@
             var noRes = document.getElementById('no-results-norm');
             if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
 
+            updateTematicaPanel(tab);
             inicializarPaginacion();
             mostrarPagina(1);
             if (normVistaActual === 'grid') renderNormGrid();
@@ -1448,9 +1424,12 @@
             paginacionDiv.innerHTML = '';
             if (totalPaginas <= 1) return;
 
+            var _pBtnBase = 'border:1px solid #E5E7EB;background:#fff;color:#374151;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+            var _pBtnActive = 'border:1px solid #1B3A5C;background:#1B3A5C;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+
             var btnAnterior = document.createElement('button');
-            btnAnterior.textContent = '← Ant';
-            btnAnterior.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnterior.textContent = '‹';
+            btnAnterior.style.cssText = _pBtnBase + (paginaActual === 1 ? 'opacity:.4;' : '');
             btnAnterior.onclick = function () {
               if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); }
             };
@@ -1461,17 +1440,16 @@
                 var btn = document.createElement('button');
                 btn.textContent = pageNum;
                 btn.id = 'btn-pagina-' + pageNum;
-                btn.style.cssText = (pageNum === 1)
-                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.style.cssText = (pageNum === paginaActual) ? _pBtnActive : _pBtnBase;
                 btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
                 paginacionDiv.appendChild(btn);
               })(i);
             }
 
             var btnSiguiente = document.createElement('button');
-            btnSiguiente.textContent = 'Sig →';
-            btnSiguiente.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSiguiente.textContent = '›';
+            var _total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            btnSiguiente.style.cssText = _pBtnBase + (paginaActual === _total ? 'opacity:.4;' : '');
             btnSiguiente.onclick = function () {
               var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
               if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
@@ -1498,13 +1476,11 @@
 
           function actualizarBotonesPaginacion() {
             var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            var _pBtnBase = 'border:1px solid #E5E7EB;background:#fff;color:#374151;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+            var _pBtnActive = 'border:1px solid #1B3A5C;background:#1B3A5C;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
             for (var i = 1; i <= total; i++) {
               var btn = document.getElementById('btn-pagina-' + i);
-              if (btn) {
-                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
-                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
-                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
-              }
+              if (btn) btn.style.cssText = (i === paginaActual) ? _pBtnActive : _pBtnBase;
             }
           }
 
@@ -1577,7 +1553,7 @@
 
               return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
                 '<div class="grid-card-actions">' +
-                '<button class="btn-view" onclick="event.stopPropagation();openNormVisorFromRow(document.querySelector(\'[data-id=' + id + '\]\'))" title="Ver"><i class="fas fa-eye"></i></button>' +
+                '<button class="btn-view" onclick="event.stopPropagation();openNormVisorFromRow(document.querySelector(\'[data-id=&quot;' + id + '&quot;]\'))" title="Ver"><i class="fas fa-eye"></i></button>' +
                 '<button onclick="event.stopPropagation();shareNormRow(\'' + id + '\')" title="Compartir"><i class="fas fa-share-alt" style="color:#3498DB;"></i></button>' +
                 '</div>' +
                 '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
