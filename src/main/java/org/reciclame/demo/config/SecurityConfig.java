@@ -51,6 +51,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/documentos/ver").authenticated()
                         // Proxy interno para kkfileview (sin sesión, objectName no adivinable)
                         .requestMatchers("/api/documentos/kk-proxy", "/api/documentos/kk-proxy/**").permitAll()
+                        // Consulta DNI RENIEC (verifica.id): solo Admin y SuperAdmin
+                        .requestMatchers("/api/consulta-dni/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
+                        // Consulta RUC SUNAT (atenea): solo SuperAdmin
+                        .requestMatchers("/api/consulta-ruc/**").hasRole("SUPERADMIN")
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         // Impersonación: solo SUPERADMIN o IMPERSONATOR

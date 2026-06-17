@@ -1101,11 +1101,19 @@
                   </div>
                   <div class="field-wrap">
                     <label>DNI <span class="req">*</span></label>
-                    <div class="input-icon-wrap">
-                      <i class="fas fa-id-badge inp-icon"></i>
-                      <input id="crear-dni" type="text" class="form-control" placeholder="12345678" maxlength="8"
-                        required />
+                    <div style="display:flex;gap:8px;align-items:center;">
+                      <div class="input-icon-wrap" style="flex:1">
+                        <i class="fas fa-id-badge inp-icon"></i>
+                        <input id="crear-dni" type="text" class="form-control" placeholder="12345678" maxlength="8"
+                          required oninput="this.value=this.value.replace(/\D/g,'')" />
+                      </div>
+                      <button type="button" id="btn-verificar-dni"
+                        onclick="verificarDni()"
+                        style="padding:8px 14px;background:#1B3A5C;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+                        <i class="fas fa-search"></i> Verificar
+                      </button>
                     </div>
+                    <div id="dni-feedback" style="font-size:11px;margin-top:4px;display:none;"></div>
                   </div>
                   <div class="field-wrap">
                     <label>Cargo</label>
@@ -1393,7 +1401,39 @@
 
           function toggleCheckAll(master) { document.querySelectorAll('.row-check').forEach(function (cb) { cb.checked = master.checked; }); }
           function exportarCsv() { window.location.href = '/api/usuarios/export.csv'; }
-          function abrirModalCrear() { document.getElementById('crear-nombre').value = ''; document.getElementById('crear-dni').value = ''; document.getElementById('crear-cargo').value = ''; document.getElementById('crear-correo').value = ''; document.getElementById('crear-password').value = ''; document.getElementById('crear-rol').value = ''; document.getElementById('crear-empresa').value = ''; document.getElementById('crear-error').style.display = 'none'; document.getElementById('modal-crear').style.display = 'flex'; }
+          function verificarDni() {
+            var dni = document.getElementById('crear-dni').value.trim();
+            var fb = document.getElementById('dni-feedback');
+            var btn = document.getElementById('btn-verificar-dni');
+            if (dni.length !== 8) {
+              fb.style.display = 'block'; fb.style.color = '#EF4444';
+              fb.textContent = 'Ingresa los 8 dígitos del DNI primero.'; return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
+            fb.style.display = 'none';
+            fetch('/api/consulta-dni/' + dni, { credentials: 'same-origin' })
+              .then(function(r) {
+                if (r.status === 404) throw new Error('no_encontrado');
+                if (!r.ok) throw new Error('error');
+                return r.json();
+              })
+              .then(function(data) {
+                document.getElementById('crear-nombre').value = data.nombreCompleto || '';
+                fb.style.display = 'block'; fb.style.color = '#16A34A';
+                fb.textContent = '✓ Nombre completado desde RENIEC.';
+              })
+              .catch(function(e) {
+                fb.style.display = 'block'; fb.style.color = '#EF4444';
+                fb.textContent = e.message === 'no_encontrado'
+                  ? 'DNI no encontrado en RENIEC.' : 'Error al consultar. Intenta nuevamente.';
+              })
+              .finally(function() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-search"></i> Verificar';
+              });
+          }
+          function abrirModalCrear() { document.getElementById('crear-nombre').value = ''; document.getElementById('crear-dni').value = ''; var fb = document.getElementById('dni-feedback'); if (fb) { fb.style.display = 'none'; fb.textContent = ''; } document.getElementById('crear-cargo').value = ''; document.getElementById('crear-correo').value = ''; document.getElementById('crear-password').value = ''; document.getElementById('crear-rol').value = ''; document.getElementById('crear-empresa').value = ''; document.getElementById('crear-error').style.display = 'none'; document.getElementById('modal-crear').style.display = 'flex'; }
           function cerrarModalCrear() { document.getElementById('modal-crear').style.display = 'none'; }
           function togglePw(inputId, btn) { var input = document.getElementById(inputId); var icon = btn.querySelector('i'); if (input.type === 'password') { input.type = 'text'; icon.className = 'fas fa-eye-slash'; } else { input.type = 'password'; icon.className = 'fas fa-eye'; } }
           function guardarNuevoUsuario() { var nombre = document.getElementById('crear-nombre').value.trim(); var dni = document.getElementById('crear-dni').value.trim(); var correo = document.getElementById('crear-correo').value.trim(); var password = document.getElementById('crear-password').value; var rolId = document.getElementById('crear-rol').value; var empresaId = document.getElementById('crear-empresa').value; var cargo = document.getElementById('crear-cargo').value.trim(); var errorEl = document.getElementById('crear-error'); if (!nombre || !dni || !correo || !password || !rolId) { errorEl.textContent = 'Completa los campos obligatorios (*)'; errorEl.style.display = 'block'; return; } if (dni.length !== 8 || !/^\d+$/.test(dni)) { errorEl.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, dni: dni, correoCorporativo: correo, password: password, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { r.json().then(function (data) { cerrarModalCrear(); location.href = getBaseUrl() + '/usuarios?nuevo=' + (data.id || ''); }); } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al crear el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
