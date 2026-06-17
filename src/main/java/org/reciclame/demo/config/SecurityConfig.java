@@ -49,6 +49,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/documentos/visor").authenticated()
                         // Proxy seguro de documentos MinIO: cualquier usuario autenticado
                         .requestMatchers("/api/documentos/ver").authenticated()
+                        // Búsqueda global del topbar: cualquier usuario autenticado
+                        // (el filtrado por tipo se hace por rol dentro del controller)
+                        .requestMatchers("/api/search/**").authenticated()
                         // Proxy interno para kkfileview (sin sesión, objectName no adivinable)
                         .requestMatchers("/api/documentos/kk-proxy", "/api/documentos/kk-proxy/**").permitAll()
                         // Consulta DNI RENIEC (verifica.id): solo Admin y SuperAdmin
@@ -60,6 +63,7 @@ public class SecurityConfig {
                         // Impersonación: solo SUPERADMIN o IMPERSONATOR
                         .requestMatchers("/superadmin/impersonar/**").hasAnyRole("SUPERADMIN", "IMPERSONATOR")
                         // Rutas de vistas por rol
+                        .requestMatchers("/buscar", "/buscar/**").authenticated()
                         .requestMatchers("/admin/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
                         .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/socio/**").hasAnyRole("SOCIO", "IMPERSONATOR")

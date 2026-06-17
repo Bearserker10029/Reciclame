@@ -216,6 +216,21 @@ public class EstudioService {
         return nuevo;
     }
 
+    // ── DESCARGAS ─────────────────────────────────────────────
+    /**
+     * Incrementa el contador de descargas del estudio en +1.
+     * Si el estudio no existe, la operación se ignora silenciosamente
+     * (la descarga se completó correctamente; el contador es secundario).
+     */
+    @Transactional
+    public void incrementarDescargas(Long id) {
+        estudioRepository.findById(id).ifPresent(e -> {
+            int nuevo = (e.getDescargasCount() != null ? e.getDescargasCount() : 0) + 1;
+            e.setDescargasCount(nuevo);
+            estudioRepository.save(e);
+        });
+    }
+
     public EstudioResponseDTO obtenerEstudioPublicoPorId(Long id) {
         EstudioResponseDTO dto = obtenerEstudioPorId(id);
         if (!Boolean.TRUE.equals(dto.getEsPublico())) {

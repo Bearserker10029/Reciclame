@@ -179,6 +179,8 @@ public class SocioController {
     @GetMapping("/socio/normativo")
     public String normativo(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        // El socio ve TODAS las normativas activas en la tabla.
+        // La restricción de visibilidad aplica al abrir el detalle (visor).
         model.addAttribute("normativas", normativaService.listarNormativas());
         return "Socio/normativo";
     }
@@ -186,6 +188,8 @@ public class SocioController {
     @GetMapping("/socio/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        // El socio ve TODOS los estudios activos en la tabla.
+        // La restricción de visibilidad aplica al abrir el detalle (visor).
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         return "Socio/estudios";

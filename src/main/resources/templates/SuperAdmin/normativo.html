@@ -1498,26 +1498,46 @@
           // ════════════════════════════════════════════════════════
           //  ELIMINAR normativa (borrado lógico)
           // ════════════════════════════════════════════════════════
-          async function eliminarNormativa(id) {
-            if (!confirm('¿Eliminar esta normativa? La acción es reversible desde la base de datos.')) return;
-            try {
-              var res = await fetch('/api/normativas/' + id, { method: 'DELETE' });
-              if (!res.ok) {
-                var data = await res.json();
-                alert('Error: ' + (data.error || 'No se pudo eliminar'));
-                return;
-              }
-              var row = document.querySelector('.norm-row[data-id="' + id + '"]');
-              if (row) {
-                row.style.transition = 'opacity .4s,transform .4s';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                setTimeout(function () { row.remove(); applyNormFilter(); }, 420);
-              }
-            } catch (e) {
-              alert('Error de red: ' + e.message);
-            }
+          var _idEliminarNormativa = null;
+          function abrirModalEliminarNormativa(id) {
+            _idEliminarNormativa = id;
+            var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+            var nombre = row ? row.dataset.titulo : id;
+            document.getElementById('modal-eliminar-nombre').textContent = nombre;
+            document.getElementById('modal-eliminar').style.display = 'flex';
           }
+          function cerrarModalEliminar() {
+            document.getElementById('modal-eliminar').style.display = 'none';
+            _idEliminarNormativa = null;
+          }
+          document.addEventListener('click', function (e) {
+            if (e.target.id === 'modal-eliminar') cerrarModalEliminar();
+          });
+          async function eliminarNormativa(id) {
+            abrirModalEliminarNormativa(id);
+          }
+          document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('btn-confirmar-eliminar').addEventListener('click', function () {
+              var id = _idEliminarNormativa;
+              if (!id) return;
+              cerrarModalEliminar();
+              fetch('/api/normativas/' + id, { method: 'DELETE' })
+                .then(function (res) {
+                  if (!res.ok) {
+                    res.json().then(function (d) { alert('Error: ' + (d.error || 'No se pudo eliminar')); });
+                    return;
+                  }
+                  var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+                  if (row) {
+                    row.style.transition = 'opacity .4s,transform .4s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(function () { row.remove(); applyNormFilter(); }, 420);
+                  }
+                })
+                .catch(function (e) { alert('Error de red: ' + e.message); });
+            });
+          });
 
           // ════════════════════════════════════════════════════════
           //  PAGINACIÓN (5 por página) — patrón idéntico al Admin
@@ -1695,6 +1715,23 @@
 
     <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+  </div>
+
+  <!-- ── Modal eliminar normativa ── -->
+  <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:28px;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Normativa</h3>
+      <p style="margin:0 0 6px;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar esta normativa?</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#1B3A5C;font-weight:600;" id="modal-eliminar-nombre"></p>
+      <p style="margin:0 0 20px;font-size:12px;color:#E74C3C;">Esta acción es reversible.</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalEliminar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-eliminar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
+      </div>
+    </div>
   </div>
 
 </body>
