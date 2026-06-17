@@ -65,7 +65,8 @@ public class NormativaVisorController {
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id));
         String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/normativo";
-        return cargarVisorPublico(id, model, "Socio/normativo-visor", urlRetorno);
+        // El socio puede ver TODAS las normativas (públicas y no-públicas).
+        return cargarVisor(id, model, "Socio/normativo-visor", urlRetorno);
     }
 
     // ── Visualizador (solo normativas públicas) ───────────────

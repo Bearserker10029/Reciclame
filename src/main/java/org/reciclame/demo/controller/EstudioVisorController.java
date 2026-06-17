@@ -57,7 +57,7 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "SuperAdmin/estudios-visor", "/superadmin/estudios");
     }
 
-    // ── Socio (solo estudios públicos) ────────────────────────
+    // ── Socio (puede ver todos los estudios) ─────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
                                    @RequestParam(value = "from", required = false) String from,
@@ -66,7 +66,8 @@ public class EstudioVisorController {
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
         String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/estudios";
-        return cargarVisorPublico(id, model, "Socio/estudios-visor", urlRetorno);
+        // El socio puede ver TODOS los estudios (públicos y no-públicos).
+        return cargarVisor(id, model, "Socio/estudios-visor", urlRetorno);
     }
 
     // ── Visualizador (solo documentos públicos) ───────────────

@@ -133,7 +133,7 @@
           </div>
           <div class="visor-topbar-right">
             <a th:if="${archivoDisponible}"
-               th:href="@{/api/documentos/descargar(url=${normativa.archivoUrl},titulo=${normativa.titulo})}" target="_blank" class="btn-download">
+               th:href="@{/api/documentos/descargar(url=${normativa.archivoUrl},titulo=${normativa.titulo},tipo='NORMATIVA',docId=${normativa.id})}" target="_blank" class="btn-download">
               <i class="fas fa-download"></i> Descargar
             </a>
             <span th:unless="${archivoDisponible}"

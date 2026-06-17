@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Resultados de búsqueda</title>
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F0F4F8; color: #1F2937; }
+
+    .layout { display: flex; min-height: 100vh; flex-direction: column; }
+    .layout-main {
+      display: flex; flex: 1; min-height: 0;
+    }
+
+    .wrap {
+      flex: 1; padding: 28px; max-width: 1100px; margin: 0 auto; width: 100%;
+    }
+
+    .search-hero {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.06);
+      margin-bottom: 24px;
+    }
+    .search-hero h1 { font-size: 22px; font-weight: 700; color: #1B3A5C; margin-bottom: 8px; }
+    .search-hero .meta { color: #6B7280; font-size: 13px; }
+    .search-hero form { display: flex; gap: 8px; margin-top: 16px; }
+    .search-hero input[type=text] {
+      flex: 1; padding: 12px 16px; border: 2px solid #E5E7EB; border-radius: 10px;
+      font-size: 14px; outline: none; transition: border-color .15s;
+    }
+    .search-hero input[type=text]:focus { border-color: #1B3A5C; }
+    .search-hero button {
+      padding: 12px 22px; background: #1B3A5C; color: #fff;
+      border: none; border-radius: 10px; font-weight: 600; font-size: 14px;
+      cursor: pointer; transition: background .15s;
+    }
+    .search-hero button:hover { background: #15314d; }
+
+    .results-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+
+    .section-title {
+      display: flex; align-items: center; gap: 10px;
+      margin: 24px 0 12px 0; color: #1B3A5C; font-weight: 700; font-size: 16px;
+    }
+    .section-title .badge-count {
+      background: rgba(27,58,92,.1); color: #1B3A5C;
+      padding: 2px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+    }
+
+    .result-card {
+      background: #fff; border-radius: 12px; padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.05);
+      transition: transform .12s, box-shadow .12s;
+      cursor: pointer; text-decoration: none; color: inherit;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .result-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+
+    .result-icon {
+      flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px;
+    }
+    .icon-normativa { background: #1B3A5C; }
+    .icon-estudio   { background: #2ECC71; }
+    .icon-usuario   { background: #F39C12; }
+
+    .result-body { flex: 1; min-width: 0; }
+    .result-titulo { font-weight: 700; font-size: 14px; color: #1F2937; margin-bottom: 4px; }
+    .result-subtitulo { font-size: 12px; color: #6B7280; margin-bottom: 4px; }
+    .result-snippet { font-size: 12px; color: #4B5563; line-height: 1.5; }
+    .result-snippet mark { background: #FFF3A8; padding: 0 2px; border-radius: 2px; }
+
+    .result-tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .tag-publico    { background: rgba(46,204,113,.15); color: #15803D; }
+    .tag-privado    { background: rgba(239,68,68,.15);  color: #B91C1C; }
+    .tag-rol        { background: rgba(243,156,18,.15); color: #92400E; }
+    .tag-anio       { background: rgba(27,58,92,.10);   color: #1B3A5C; }
+
+    .empty {
+      text-align: center; padding: 64px 16px; color: #9CA3AF;
+    }
+    .empty i { font-size: 42px; margin-bottom: 12px; display: block; color: #D1D5DB; }
+
+    .hint {
+      font-size: 12px; color: #6B7280; padding: 10px 14px;
+      background: #FEF3C7; border-radius: 8px; margin-bottom: 12px;
+      border-left: 3px solid #F59E0B;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <!-- Topbar estándar de la app (incluye search box global) -->
+    <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
+
+    <div class="layout-main">
+      <!-- Sidebar único que se adapta al rol vía variable model 'rol' -->
+      <th:block th:if="${session.usuarioSesion != null and rolEfectivo != null}">
+        <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
+      </th:block>
+
+      <div class="wrap">
+        <div class="search-hero">
+          <h1><i class="fas fa-search" style="margin-right:8px;color:#2ECC71;"></i>Resultados de búsqueda</h1>
+          <div class="meta">
+            Rol: <strong th:text="${session.usuarioSesion?.rolNombre ?: 'Invitado'}">USUARIO</strong>
+            · Tipos permitidos:
+            <th:block th:each="t,iter : ${tiposPermitidos}">
+              <span th:text="${t}">NORMATIVA</span><th:block th:if="${!iter.last}">, </th:block>
+            </th:block>
+          </div>
+          <form method="get" action="/buscar">
+            <input type="text" name="q" th:value="${query}" placeholder="Buscar…" autofocus />
+            <button type="submit"><i class="fas fa-search"></i> Buscar</button>
+          </form>
+        </div>
+
+        <div th:if="${query == null or query.isBlank()}" class="empty">
+          <i class="fas fa-keyboard"></i>
+          Escribe al menos 2 caracteres para iniciar la búsqueda.
+        </div>
+
+        <div th:if="${query != null and query.length() < 2}" class="hint">
+          <i class="fas fa-info-circle"></i> El query debe tener al menos 2 caracteres.
+        </div>
+
+        <div th:if="${query != null and query.length() >= 2}" th:utext="${resultsHtml}">results</div>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    /* Marca el término buscado dentro de los snippets con <mark>. */
+    (function () {
+      var query = /*[[${query}]]*/ '';
+      if (!query) return;
+      var marks = document.querySelectorAll('.result-snippet');
+      marks.forEach(function (el) {
+        var safe = query.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        if (!safe) return;
+        var re = new RegExp('(' + safe + ')', 'gi');
+        el.innerHTML = el.innerHTML.replace(re, '<mark>$1</mark>');
+      });
+    })();
+  </script>
+</body>
+
+</html>

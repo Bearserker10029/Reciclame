@@ -706,14 +706,13 @@
                 <input type="checkbox" id="f-publico" th:checked="${isEdit ? estudio.esPublico : false}" />
                 <label for="f-publico" class="toggle-label">
                   <span id="publico-label"
-                    th:text="${isEdit and estudio.esPublico} ? 'Visible para socios' : 'Borrador (no visible)'">
+                    th:text="${isEdit and estudio.esPublico} ? 'Estudio público' : 'Borrador (no visible)'">
                     Borrador (no visible)
                   </span>
                 </label>
               </div>
               <p style="font-size:11px;color:#9CA3AF;margin-top:8px;">
-                Los documentos en borrador solo son visibles para administradores.
-                Actívalo cuando esté listo para publicar.
+                Visible para todos los usuarios registrados. Desactívalo para mantener el estudio como borrador y restringir su visibilidad a administradores.
               </p>
             </div>
 
@@ -780,7 +779,7 @@
     // ─── Toggle label ─────────────────────────────────────────────
     document.getElementById('f-publico').addEventListener('change', function () {
       document.getElementById('publico-label').textContent =
-        this.checked ? 'Visible para socios' : 'Borrador (no visible)';
+        this.checked ? 'Estudio público' : 'Borrador (no visible)';
     });
 
     // ─── File handlers ────────────────────────────────────────────

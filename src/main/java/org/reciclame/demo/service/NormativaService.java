@@ -137,6 +137,20 @@ public class NormativaService {
         return toResponseDTO(n);
     }
 
+    // ── DESCARGAS ─────────────────────────────────────────────
+    /**
+     * Incrementa el contador de descargas de la normativa en +1.
+     * Si la normativa no existe, la operación se ignora silenciosamente.
+     */
+    @Transactional
+    public void incrementarDescargas(Long id) {
+        normativaRepository.findById(id).ifPresent(n -> {
+            int nuevo = (n.getDescargasCount() != null ? n.getDescargasCount() : 0) + 1;
+            n.setDescargasCount(nuevo);
+            normativaRepository.save(n);
+        });
+    }
+
     // ── CREATE ────────────────────────────────────────────────
     @Transactional
     public NormativaResponseDTO crearNormativa(NormativaRequestDTO dto,
