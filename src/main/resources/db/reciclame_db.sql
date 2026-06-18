@@ -1829,3 +1829,72 @@ CREATE TABLE IF NOT EXISTS `reciclame_db`.`configuracion_ui_rol` (
   COMMENT='Configuración de columnas y módulos visibles por rol de usuario';
 
 SET SQL_SAFE_UPDATES = 1;
+
+-- ============================================================
+-- CHATBOT ANALYTICS — Reciclame
+-- Fecha: 2026-06-18
+-- Persistencia y métricas del chatbot n8n "La Buena Cajita"
+-- ============================================================
+
+-- 1) Extender conversaciones_chatbot con métricas agregadas
+ALTER TABLE `conversaciones_chatbot`
+    ADD COLUMN `titulo`              VARCHAR(200)  NULL          COMMENT 'Titulo corto generado para la conversacion',
+    ADD COLUMN `total_mensajes`      INT           NOT NULL DEFAULT 0 COMMENT 'Cache de total de mensajes para listados rapidos',
+    ADD COLUMN `duracion_total_ms`   BIGINT        NOT NULL DEFAULT 0 COMMENT 'Suma de latencias USER->BOT de la conversacion',
+    ADD COLUMN `ultimo_mensaje_at`   TIMESTAMP     NULL          COMMENT 'Fecha del ultimo mensaje',
+    ADD COLUMN `ip_address`          VARCHAR(45)   NULL          COMMENT 'IP del usuario al iniciar la conversacion',
+    ADD COLUMN `user_agent`          VARCHAR(500)  NULL          COMMENT 'User-Agent del navegador',
+    ADD COLUMN `cerrada_por_usuario` TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '1 = el usuario cerro la conversacion manualmente',
+    ADD INDEX `idx_conversaciones_ultimo` (`ultimo_mensaje_at`);
+
+-- 2) Extender mensajes_chatbot con métricas y trazabilidad
+ALTER TABLE `mensajes_chatbot`
+    ADD COLUMN `duracion_ms`           BIGINT        NULL          COMMENT 'Latencia entre pregunta del usuario y respuesta del bot (ms)',
+    ADD COLUMN `tokens_estimados`      INT           NULL          COMMENT 'Tokens aprox. consumidos (entrada+salida)',
+    ADD COLUMN `modelo`                VARCHAR(60)   NULL          COMMENT 'Modelo LLM usado (ej: minimax, gpt-4o-mini)',
+    ADD COLUMN `es_error`              TINYINT(1)    NOT NULL DEFAULT 0 COMMENT '1 = hubo error al generar la respuesta',
+    ADD COLUMN `mensaje_error`         VARCHAR(500)  NULL,
+    ADD COLUMN `sql_ejecutado`         TEXT          NULL          COMMENT 'SQL ejecutado por el agente (truncado a 4000 chars)',
+    ADD COLUMN `filas_devueltas`       INT           NULL          COMMENT 'Cantidad de filas devueltas por la tool SQL',
+    ADD COLUMN `metadata`              JSON          NULL          COMMENT 'Datos extra del callback (intents, scores, etc.)',
+    ADD COLUMN `ip_address`            VARCHAR(45)   NULL,
+    ADD INDEX `idx_mensajes_rol_fecha` (`rol`, `created_at`),
+    ADD INDEX `idx_mensajes_error`     (`es_error`, `created_at`);
+
+-- 3) Parametros de sistema nuevos para el chatbot
+INSERT IGNORE INTO `parametros_sistema`
+    (`clave`, `valor`, `descripcion`, `tipo_dato`, `estado_activo`)
+VALUES
+    ('chatbot_callback_enabled', 'true',
+     'Habilita el endpoint de callback para registrar conversaciones', 'BOOLEAN', 1),
+    ('chatbot_max_mensajes_por_sesion', '100',
+     'Limite de mensajes por conversacion antes de forzar cierre', 'INTEGER', 1),
+    ('chatbot_retencion_dias', '365',
+     'Dias de retencion del historial de conversaciones', 'INTEGER', 1),
+    ('chatbot_tiempo_promedio_objetivo_ms', '8000',
+     'SLA objetivo de latencia del bot (ms)', 'INTEGER', 1);
+
+-- 4) Feedback opcional del usuario (calificacion de la respuesta)
+CREATE TABLE IF NOT EXISTS `chatbot_feedback` (
+    `id`              BIGINT        NOT NULL AUTO_INCREMENT,
+    `mensaje_id`      BIGINT        NOT NULL,
+    `usuario_id`      BIGINT        NOT NULL,
+    `calificacion`    TINYINT       NOT NULL             COMMENT '1=util, -1=no util',
+    `comentario`      VARCHAR(500)  NULL,
+    `created_at`      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_feedback_mensaje_usuario` (`mensaje_id`, `usuario_id`),
+    KEY `idx_feedback_usuario` (`usuario_id`),
+    KEY `idx_feedback_calificacion` (`calificacion`),
+    CONSTRAINT `fk_feedback_mensaje` FOREIGN KEY (`mensaje_id`)
+        REFERENCES `mensajes_chatbot` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_feedback_usuario` FOREIGN KEY (`usuario_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'Feedback (👍 / 👎) sobre respuestas del chatbot';
+
+-- Migración: ampliar archivo_tipo_mime en normativas de varchar(50) a varchar(255)
+-- Necesario para soportar tipos MIME de archivos Word (.docx)
+ALTER TABLE normativas
+    MODIFY COLUMN archivo_tipo_mime VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL;

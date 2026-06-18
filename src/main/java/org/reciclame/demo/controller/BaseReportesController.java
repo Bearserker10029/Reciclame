@@ -2,21 +2,29 @@ package org.reciclame.demo.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.data.JRMapCollectionDataSource;
+import org.reciclame.demo.dto.ChatbotConsultaFilaDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
 import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.service.AuditoriaService;
+import org.reciclame.demo.service.ChatbotService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.ReporteService;
 import org.reciclame.demo.service.UsuarioService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.io.IOException;
-import java.time.format.DateTimeFormatter;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public abstract class BaseReportesController {
@@ -26,6 +34,7 @@ public abstract class BaseReportesController {
     protected abstract EstudioService estudioService();
     protected abstract ReporteService reporteService();
     protected abstract AuditoriaService auditoriaService();
+    protected abstract ChatbotService chatbotService();
 
     @GetMapping("/admin/reportes/export/auditoria.pdf")
     protected void exportarAuditoriaPDF(HttpServletResponse response,
@@ -425,5 +434,120 @@ public abstract class BaseReportesController {
     protected String esc(String s) {
         if (s == null) return "";
         return s.replace("\"", "\"\"");
+    }
+
+    // ====================================================================
+    //  CHATBOT ANALYTICS — exportes PDF / XLSX / CSV
+    // ====================================================================
+
+    protected Instant[] parseRango(LocalDate desde, LocalDate hasta) {
+        ZoneId tz = ZoneId.of("America/Lima");
+        Instant desdeI = desde != null ? desde.atStartOfDay(tz).toInstant() : null;
+        Instant hastaI = hasta != null ? hasta.plusDays(1).atStartOfDay(tz).toInstant().minusMillis(1) : null;
+        return new Instant[] { desdeI, hastaI };
+    }
+
+    @GetMapping("/admin/reportes/export/chatbot.pdf")
+    protected void exportarChatbotPDF(HttpServletResponse response,
+            @RequestParam(value = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta)
+            throws IOException {
+        Instant[] rango = parseRango(desde, hasta);
+        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1]);
+        Page<ChatbotConsultaFilaDTO> page = chatbotService().listarConversacionesFiltrado(
+                null, null, rango[0], rango[1], PageRequest.of(0, 500));
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
+        List<Map<String, Object>> datos = new ArrayList<>();
+        for (ChatbotConsultaFilaDTO f : page.getContent()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("fecha", f.getFechaInicio() != null ? fmt.format(f.getFechaInicio()) : "");
+            row.put("usuario", f.getUsuarioNombre());
+            row.put("rol", f.getUsuarioRol());
+            row.put("empresa", f.getUsuarioEmpresa() != null ? f.getUsuarioEmpresa() : "N/A");
+            row.put("pregunta", f.getPrimeraPregunta());
+            row.put("respuesta", f.getUltimaRespuesta());
+            row.put("mensajes", f.getTotalMensajes());
+            row.put("errores", f.getErrores());
+            row.put("duracion", f.getDuracionTotalMs());
+            row.put("idioma", f.getIdioma());
+            datos.add(row);
+        }
+
+        List<Map<String, ?>> rolData = new ArrayList<>();
+        for (Map<String, Object> r : stats.getConversacionesPorRol()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", r.get("rol"));
+            row.put("value", r.get("total"));
+            rolData.add(row);
+        }
+        List<Map<String, ?>> mensajesData = new ArrayList<>();
+        for (Map<String, Object> r : stats.getMensajesPorDia()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("category", r.get("fecha"));
+            row.put("value", ((Number) r.get("user")).longValue() + ((Number) r.get("bot")).longValue());
+            mensajesData.add(row);
+        }
+
+        JRMapCollectionDataSource chart1 = new JRMapCollectionDataSource(rolData);
+        JRMapCollectionDataSource chart2 = new JRMapCollectionDataSource(mensajesData);
+
+        byte[] pdf = reporteService().generarReportePDF("chatbot_report", datos, null, chart1, chart2);
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"chatbot_report.pdf\"");
+        response.getOutputStream().write(pdf);
+    }
+
+    @GetMapping("/admin/reportes/export/chatbot.xlsx")
+    protected void exportarChatbotXLSX(HttpServletResponse response,
+            @RequestParam(value = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta)
+            throws IOException {
+        Instant[] rango = parseRango(desde, hasta);
+        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1]);
+        Page<ChatbotConsultaFilaDTO> page = chatbotService().listarConversacionesFiltrado(
+                null, null, rango[0], rango[1], PageRequest.of(0, 1000));
+
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
+        List<Map<String, Object>> datos = new ArrayList<>();
+        for (ChatbotConsultaFilaDTO f : page.getContent()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("fecha", f.getFechaInicio() != null ? fmt.format(f.getFechaInicio()) : "");
+            row.put("usuario", f.getUsuarioNombre());
+            row.put("rol", f.getUsuarioRol());
+            row.put("empresa", f.getUsuarioEmpresa() != null ? f.getUsuarioEmpresa() : "N/A");
+            row.put("pregunta", f.getPrimeraPregunta());
+            row.put("respuesta", f.getUltimaRespuesta());
+            row.put("mensajes", f.getTotalMensajes());
+            row.put("errores", f.getErrores());
+            row.put("duracion", f.getDuracionTotalMs());
+            row.put("idioma", f.getIdioma());
+            datos.add(row);
+        }
+
+        List<Map<String, ?>> rolData = new ArrayList<>();
+        for (Map<String, Object> r : stats.getConversacionesPorRol()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("label", r.get("rol"));
+            row.put("value", r.get("total"));
+            rolData.add(row);
+        }
+        List<Map<String, ?>> mensajesData = new ArrayList<>();
+        for (Map<String, Object> r : stats.getMensajesPorDia()) {
+            Map<String, Object> row = new HashMap<>();
+            row.put("category", r.get("fecha"));
+            row.put("value", ((Number) r.get("user")).longValue() + ((Number) r.get("bot")).longValue());
+            mensajesData.add(row);
+        }
+
+        byte[] xlsx = reporteService().generarReporteExcelConGraficos(
+                "Reporte de Chatbot Analytics",
+                "Conversaciones registradas en el rango seleccionado",
+                new String[] { "Fecha", "Usuario", "Rol", "Empresa", "Pregunta", "Respuesta",
+                        "Mensajes", "Errores", "Duracion Ms", "Idioma" },
+                datos, rolData, mensajesData);
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"chatbot_report.xlsx\"");
+        response.getOutputStream().write(xlsx);
     }
 }

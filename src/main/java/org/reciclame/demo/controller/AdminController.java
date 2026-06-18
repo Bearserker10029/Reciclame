@@ -32,6 +32,7 @@ public class AdminController extends BaseReportesController {
     private final NotificacionService notificacionService;
     private final AuditoriaService auditoriaService;
     private final ReporteService reporteService;
+    private final ChatbotService chatbotService;
 
     public AdminController(UsuarioService usuarioService, NormativaService normativaService,
                            EstudioService estudioService, EmpresaService empresaService,
@@ -40,7 +41,7 @@ public class AdminController extends BaseReportesController {
                            TiposNormativaService tiposNormativaService,
                            EstadosNormativaService estadosNormativaService,
                            NotificacionService notificacionService, AuditoriaService auditoriaService,
-                           ReporteService reporteService) {
+                           ReporteService reporteService, ChatbotService chatbotService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -53,6 +54,7 @@ public class AdminController extends BaseReportesController {
         this.notificacionService = notificacionService;
         this.auditoriaService = auditoriaService;
         this.reporteService = reporteService;
+        this.chatbotService = chatbotService;
     }
 
     @Override
@@ -69,6 +71,9 @@ public class AdminController extends BaseReportesController {
 
     @Override
     protected AuditoriaService auditoriaService() { return auditoriaService; }
+
+    @Override
+    protected ChatbotService chatbotService() { return chatbotService; }
 
     private void setupCommonAttributes(Model model, String correo) {
         model.addAttribute("rol", "ADMIN");
@@ -358,6 +363,26 @@ public class AdminController extends BaseReportesController {
                 ? (int)(usuariosActivosList.size() * 100.0 / todosUsuariosR.size()) : 0;
         model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
         model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
+
+        // Chatbot Analytics — KPIs por defecto (ultimos 30 dias, sin filtros)
+        // Envuelto en try/catch para que un fallo en el modulo del chatbot NO tumbe la pagina de reportes.
+        try {
+            Instant hace30dChat = Instant.now().minus(30, ChronoUnit.DAYS);
+            var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now());
+            model.addAttribute("chatStats", chatStats);
+        } catch (Exception ex) {
+            System.err.println("[reportes] Error cargando chatStats (chatbot): " + ex.getMessage());
+            // KPI vacio para que la UI no se rompa si la BD aun no tiene las tablas/columnas
+            model.addAttribute("chatStats", new org.reciclame.demo.dto.ChatbotEstadisticasDTO());
+        }
+        try {
+            model.addAttribute("chatRolList", rolService.listarRoles());
+            model.addAttribute("chatUsuariosList", usuarioService.listarUsuarios());
+        } catch (Exception ex) {
+            System.err.println("[reportes] Error cargando listas de roles/usuarios para filtro chatbot: " + ex.getMessage());
+            model.addAttribute("chatRolList", java.util.Collections.emptyList());
+            model.addAttribute("chatUsuariosList", java.util.Collections.emptyList());
+        }
 
         return "Admin/reportes";
     }

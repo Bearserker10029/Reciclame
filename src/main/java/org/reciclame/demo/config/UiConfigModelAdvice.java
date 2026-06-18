@@ -8,8 +8,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+import java.util.Collections;
+
 /**
  * Inyecta la configuración de módulos del sidebar por rol en el modelo.
+ * Blindado: cualquier excepcion del service no debe tumbar todas las vistas.
  */
 @ControllerAdvice
 public class UiConfigModelAdvice {
@@ -22,27 +25,38 @@ public class UiConfigModelAdvice {
 
     @ModelAttribute
     public void addUiConfig(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) return;
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || !auth.isAuthenticated()) return;
 
-        String rol = resolveRol(auth);
-        if (rol == null) {
-            model.addAttribute("uiModulosSidebar", (Object) null);
-            return;
+            String rol = resolveRol(auth);
+            if (rol == null) {
+                model.addAttribute("uiModulosSidebar", (Object) null);
+                return;
+            }
+
+            Object modulos = service.getModulosSidebar(rol);
+            // El template hace <th:block th:if="${uiModulosSidebar != null and ...}">,
+            // asi que Collections.emptyList() es seguro -> la vista no renderiza el bloque.
+            model.addAttribute("uiModulosSidebar", modulos != null ? modulos : Collections.emptyList());
+        } catch (Exception ex) {
+            System.err.println("[UiConfigModelAdvice] No se pudo cargar uiModulosSidebar: " + ex.getMessage());
+            model.addAttribute("uiModulosSidebar", Collections.emptyList());
         }
-
-        model.addAttribute("uiModulosSidebar", service.getModulosSidebar(rol));
     }
 
     private String resolveRol(Authentication auth) {
-        for (GrantedAuthority ga : auth.getAuthorities()) {
-            switch (ga.getAuthority()) {
-                case "ROLE_SOCIO":        return "SOCIO";
-                case "ROLE_VISUALIZADOR": return "VISUALIZADOR";
-                case "ROLE_ADMINISTRADOR":return "ADMINISTRADOR";
-                case "ROLE_IMPERSONATOR": return "SOCIO";
+        try {
+            for (GrantedAuthority ga : auth.getAuthorities()) {
+                if (ga == null || ga.getAuthority() == null) continue;
+                switch (ga.getAuthority()) {
+                    case "ROLE_SOCIO":        return "SOCIO";
+                    case "ROLE_VISUALIZADOR": return "VISUALIZADOR";
+                    case "ROLE_ADMINISTRADOR":return "ADMINISTRADOR";
+                    case "ROLE_IMPERSONATOR": return "SOCIO";
+                }
             }
-        }
+        } catch (Exception ignored) { }
         return null;
     }
 }
