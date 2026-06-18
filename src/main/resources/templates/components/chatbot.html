@@ -67,8 +67,10 @@
   <script th:inline="javascript">
     /* <![CDATA[ */
     window.CHATBOT_WEBHOOK_URL = /*[[${@environment.getProperty('n8n.chatbot.webhook.url', 'http://localhost:5678/webhook/chatbot-reciclame')}]]*/ 'http://localhost:5678/webhook/chatbot-reciclame';
+    window.CHATBOT_CALLBACK_URL = /*[[${@environment.getProperty('app.base-url', 'http://localhost:8080') + '/api/chatbot/registrar'}]]*/ '/api/chatbot/registrar';
     window.USUARIO_ROL = /*[[${session.usuarioSesion?.rolNombre ?: 'ANONYMOUS'}]]*/ 'ANONYMOUS';
     window.USUARIO_ID = /*[[${session.usuarioSesion?.id ?: 0}]]*/ 0;
+    window.USUARIO_NOMBRE = /*[[${session.usuarioSesion?.nombreCompleto ?: 'Anonimo'}]]*/ 'Anonimo';
     /* ]]> */
   </script>
 
@@ -76,6 +78,27 @@
   <script>
   (function () {
     'use strict';
+
+    // Callback al backend para registrar la conversacion (fire-and-forget).
+    // Se ejecuta despues de cada respuesta del bot. Si falla, no rompe el chat.
+    function enviarCallbackRegistro(datos) {
+      try {
+        if (!datos || !window.CHATBOT_CALLBACK_URL) return;
+        // No bloqueamos la UI: usamos sendBeacon cuando sea posible.
+        var payload = JSON.stringify(datos);
+        if (navigator.sendBeacon) {
+          var blob = new Blob([payload], { type: 'application/json' });
+          if (navigator.sendBeacon(window.CHATBOT_CALLBACK_URL, blob)) return;
+        }
+        fetch(window.CHATBOT_CALLBACK_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          credentials: 'same-origin',
+          keepalive: true
+        }).catch(function () { /* silencioso */ });
+      } catch (e) { /* silencioso */ }
+    }
 
     // Mostrar el bubble al cargar
     function initChatbot() {
@@ -115,10 +138,14 @@
         input.value = '';
         msgs.scrollTop = msgs.scrollHeight;
 
+        var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+        var errorFlag = false;
+        var errorMsg = null;
+
         fetch(window.CHATBOT_WEBHOOK_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             message: msg,
             userRole: window.USUARIO_ROL,
             userId: window.USUARIO_ID
@@ -136,12 +163,46 @@
           var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' + content + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
+
+          var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
+          var duracionMs = Math.max(0, Math.round(t1 - t0));
+          enviarCallbackRegistro({
+            usuarioId: parseInt(window.USUARIO_ID, 10) || 0,
+            usuarioRol: window.USUARIO_ROL,
+            usuarioNombre: window.USUARIO_NOMBRE,
+            idioma: 'es',
+            pregunta: msg,
+            respuesta: content,
+            duracionMs: duracionMs,
+            modelo: 'minimax',
+            derivadoSoporte: false,
+            esError: false,
+            userAgent: navigator.userAgent || ''
+          });
         })
-        .catch(function() {
+        .catch(function(err) {
+          errorFlag = true;
+          errorMsg = (err && err.message) ? err.message : 'Error desconocido';
           var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' +
                            'Lo siento, el asistente no está disponible.' + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
+          var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
+          var duracionMs = Math.max(0, Math.round(t1 - t0));
+          enviarCallbackRegistro({
+            usuarioId: parseInt(window.USUARIO_ID, 10) || 0,
+            usuarioRol: window.USUARIO_ROL,
+            usuarioNombre: window.USUARIO_NOMBRE,
+            idioma: 'es',
+            pregunta: msg,
+            respuesta: 'Lo siento, el asistente no está disponible.',
+            duracionMs: duracionMs,
+            modelo: 'minimax',
+            derivadoSoporte: false,
+            esError: errorFlag,
+            mensajeError: errorMsg,
+            userAgent: navigator.userAgent || ''
+          });
         });
       };
     }

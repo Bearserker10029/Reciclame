@@ -26,8 +26,10 @@ import java.util.Locale;
  *
  * <h3>Reglas de visibilidad por rol (origen del usuario en sesión):</h3>
  * <ul>
- *   <li>{@code SOCIO} y {@code VISUALIZADOR} → ven SOLO
- *       normativas con {@code es_publica = true} y estudios con {@code es_publico = true}.</li>
+ *   <li>{@code SOCIO} → ve TODAS las normativas y estudios (públicas y privadas).
+ *       NO busca usuarios (no gestiona usuarios).</li>
+ *   <li>{@code VISUALIZADOR} → ve SOLO normativas con {@code es_publica = true}
+ *       y estudios con {@code es_publico = true}. Sin usuarios.</li>
  *   <li>{@code ADMINISTRADOR} → ve TODAS las normativas y estudios (públicas y privadas),
  *       y usuarios con rol SOCIO, VISUALIZADOR o ADMINISTRADOR.</li>
  *   <li>{@code SUPERADMIN} → ve TODO sin filtro, incluyendo usuarios SUPERADMIN.</li>
@@ -42,7 +44,9 @@ public class SearchService {
     private static final int MAX_POR_TIPO = 10;
     private static final int QUERY_MIN_LENGTH = 2;
 
-    private static final List<String> SOCIO_VIZ   = Collections.unmodifiableList(
+    private static final List<String> SOCIO_TIPOS = Collections.unmodifiableList(
+            Arrays.asList("NORMATIVA", "ESTUDIO"));
+    private static final List<String> VIZ_TIPOS   = Collections.unmodifiableList(
             Arrays.asList("NORMATIVA", "ESTUDIO"));
     private static final List<String> ADMIN_TIPOS = Collections.unmodifiableList(
             Arrays.asList("NORMATIVA", "ESTUDIO", "USUARIO"));
@@ -93,8 +97,11 @@ public class SearchService {
     // ─── Reglas de visibilidad ───────────────────────────────────
 
     private List<String> tiposPermitidosParaRol(String rol) {
-        if ("SOCIO".equals(rol) || "VISUALIZADOR".equals(rol)) {
-            return SOCIO_VIZ;
+        if ("SOCIO".equals(rol)) {
+            return SOCIO_TIPOS;            // NORMATIVA + ESTUDIO (públicos y privados)
+        }
+        if ("VISUALIZADOR".equals(rol)) {
+            return VIZ_TIPOS;              // NORMATIVA + ESTUDIO (solo públicos)
         }
         if ("ADMINISTRADOR".equals(rol) || "SUPERADMIN".equals(rol)) {
             return ADMIN_TIPOS;
@@ -102,8 +109,12 @@ public class SearchService {
         return Collections.emptyList(); // rol desconocido → sin resultados
     }
 
+    /**
+     * SOCIO ve todo (público y privado). VISUALIZADOR solo público.
+     * ADMINISTRADOR y SUPERADMIN también ven todo (lo manejan los repos con buscarTodos).
+     */
     private boolean esSoloPublico(String rol) {
-        return "SOCIO".equals(rol) || "VISUALIZADOR".equals(rol);
+        return "VISUALIZADOR".equals(rol);
     }
 
     // ─── Búsquedas por entidad ────────────────────────────────────

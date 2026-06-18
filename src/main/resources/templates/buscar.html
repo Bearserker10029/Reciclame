@@ -103,6 +103,34 @@
 </head>
 
 <body>
+  <script>
+    // Polyfill de navTo: el topbar y el sidebar usan onclick="navTo('xxx')".
+    // Determina la base según el rol del usuario en sesión.
+    // Se inyecta antes del topbar para que esté disponible en el primer click.
+    (function () {
+      if (typeof navTo !== 'undefined') return;
+      window.navTo = function (p) {
+        var map = { 'admin-docs': 'documentos' };
+        var path = window.location.pathname;
+        var base;
+        if (path.startsWith('/superadmin'))   base = '/superadmin';
+        else if (path.startsWith('/admin'))   base = '/admin';
+        else if (path.startsWith('/socio'))   base = '/socio';
+        else if (path.startsWith('/visualizador')) base = '/visualizador';
+        else {
+          // fallback: inferir desde el body data-rol
+          var rol = (document.body.getAttribute('data-rol') || '').toUpperCase();
+          if (rol.indexOf('SUPERADMIN') !== -1)      base = '/superadmin';
+          else if (rol.indexOf('ADMIN') !== -1)      base = '/admin';
+          else if (rol.indexOf('SOCIO') !== -1)      base = '/socio';
+          else if (rol.indexOf('VISUALIZADOR') !== -1) base = '/visualizador';
+          else base = '/socio';
+        }
+        window.location.href = base + '/' + (map[p] || p);
+      };
+    })();
+  </script>
+
   <div class="layout">
     <!-- Topbar estándar de la app (incluye search box global) -->
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
@@ -117,7 +145,7 @@
         <div class="search-hero">
           <h1><i class="fas fa-search" style="margin-right:8px;color:#2ECC71;"></i>Resultados de búsqueda</h1>
           <div class="meta">
-            Rol: <strong th:text="${session.usuarioSesion?.rolNombre ?: 'Invitado'}">USUARIO</strong>
+            Rol: <strong th:text="${session.usuarioSesion != null ? session.usuarioSesion.rolNombre : 'Invitado'}">USUARIO</strong>
             · Tipos permitidos:
             <th:block th:each="t,iter : ${tiposPermitidos}">
               <span th:text="${t}">NORMATIVA</span><th:block th:if="${!iter.last}">, </th:block>

@@ -13,23 +13,25 @@ services:
       retries: 5
       start_period: 30s
     environment:
-      - SPRING_PROFILES_ACTIVE=aws
-      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://reciclame-minio.duckdns.org
-      - MINIO_INTERNAL_URL=http://minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_BUCKET=reciclame-docs
-      - KKFILEVIEW_URL=http://kkfileview:8012
-      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
-      - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
-      - APP_BACKUP_PATH=/backups
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_INTERNAL_URL=${MINIO_INTERNAL_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - KKFILEVIEW_URL=${KKFILEVIEW_URL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_CHATBOT_WEBHOOK_URL=${N8N_CHATBOT_WEBHOOK_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
+      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - APP_BACKUP_PATH=${APP_BACKUP_PATH}
+      - VERIFICA_API_KEY=${VERIFICA_API_KEY}
+      - ATENEA_API_KEY=${ATENEA_API_KEY}
     volumes:
       - backup_data:/backups
     networks:
@@ -49,23 +51,25 @@ services:
       retries: 5
       start_period: 30s
     environment:
-      - SPRING_PROFILES_ACTIVE=aws
-      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://reciclame-minio.duckdns.org
-      - MINIO_INTERNAL_URL=http://minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_BUCKET=reciclame-docs
-      - KKFILEVIEW_URL=http://kkfileview:8012
-      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
-      - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
-      - APP_BACKUP_PATH=/backups
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_INTERNAL_URL=${MINIO_INTERNAL_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - KKFILEVIEW_URL=${KKFILEVIEW_URL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_CHATBOT_WEBHOOK_URL=${N8N_CHATBOT_WEBHOOK_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
+      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - APP_BACKUP_PATH=${APP_BACKUP_PATH}
+      - VERIFICA_API_KEY=${VERIFICA_API_KEY}
+      - ATENEA_API_KEY=${ATENEA_API_KEY}
     volumes:
       - backup_data:/backups
     networks:
@@ -85,23 +89,25 @@ services:
       retries: 5
       start_period: 30s
     environment:
-      - SPRING_PROFILES_ACTIVE=aws
-      - SPRING_DATASOURCE_URL=jdbc:mysql://reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
-      - SPRING_DATASOURCE_USERNAME=admin
-      - SPRING_DATASOURCE_PASSWORD=Reciclame123
-      - MINIO_URL=http://reciclame-minio.duckdns.org
-      - MINIO_INTERNAL_URL=http://minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_BUCKET=reciclame-docs
-      - KKFILEVIEW_URL=http://kkfileview:8012
-      - N8N_WEBHOOK_URL=http://n8n:5678/webhook/send-email
-      - N8N_CHATBOT_WEBHOOK_URL=/webhook/chatbot-reciclame
-      - APP_BASE_URL=https://reciclame.duckdns.org
-      - APP_KK_ACCESSIBLE_URL=http://reciclame-app1:8080
-      - SPRING_REDIS_HOST=redis
-      - SPRING_REDIS_PORT=6379
-      - APP_BACKUP_PATH=/backups
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_INTERNAL_URL=${MINIO_INTERNAL_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - KKFILEVIEW_URL=${KKFILEVIEW_URL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_CHATBOT_WEBHOOK_URL=${N8N_CHATBOT_WEBHOOK_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
+      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - APP_BACKUP_PATH=${APP_BACKUP_PATH}
+      - VERIFICA_API_KEY=${VERIFICA_API_KEY}
+      - ATENEA_API_KEY=${ATENEA_API_KEY}
     volumes:
       - backup_data:/backups
     networks:
@@ -146,7 +152,7 @@ services:
       - "443:443"
       - "81:81"
     environment:
-      DB_SQLITE_FILE: /data/database.sqlite
+      DB_SQLITE_FILE: ${DB_SQLITE_FILE}
     volumes:
       - npm_data:/data
       - npm_letsencrypt:/etc/letsencrypt
@@ -160,8 +166,8 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - N8N_SECURE_COOKIE=false
-      - GENERIC_TIMEZONE=America/Lima
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
     volumes:
       - n8n_data:/home/node/.n8n
     extra_hosts:
@@ -176,8 +182,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
@@ -199,7 +205,7 @@ services:
     networks:
       - reciclame-net
     entrypoint: >
-      /bin/sh -c " mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && echo 'Bucket reciclame-docs listo (acceso privado, URLs firmadas via Spring).' && exit 0 "
+      /bin/sh -c " mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && mc mb --ignore-existing local/${MINIO_BUCKET} && mc anonymous set none local/${MINIO_BUCKET} && echo 'Bucket ${MINIO_BUCKET} listo (acceso privado, URLs firmadas via Spring).' && exit 0 "
 
   kkfileview:
     image: keking/kkfileview:latest
@@ -209,8 +215,8 @@ services:
     depends_on:
       - minio-init
     environment:
-      - KK_HTTP_PREVIEW=true
-      - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=file:/opt/kkFileView/templates/web/,classpath:/web/
+      - KK_HTTP_PREVIEW=${KK_HTTP_PREVIEW}
+      - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${SPRING_FREEMARKER_TEMPLATE_LOADER_PATH}
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
     extra_hosts:
