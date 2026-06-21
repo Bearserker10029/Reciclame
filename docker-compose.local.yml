@@ -105,6 +105,27 @@ services:
     networks:
       - reciclame-local
 
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: reciclame-centrifugo
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      CENTRIFUGO_SECRET: "reciclame-jwt-secret-local-2026-needs-at-least-32-bytes-long-ok"
+      CENTRIFUGO_API_KEY: "reciclame-api-key-local-2026"
+      CENTRIFUGO_ADMIN: "true"
+      CENTRIFUGO_ADMIN_PASSWORD: "admin"
+      CENTRIFUGO_ADMIN_SECRET: "admin-secret"
+      CENTRIFUGO_ALLOWED_ORIGINS: "*"
+      CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: "reciclame-jwt-secret-local-2026-needs-at-least-32-bytes-long-ok"
+      CENTRIFUGO_CLIENT_ALLOWED_ORIGINS: "*"
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_CLIENT: "true"
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_ANONYMOUS: "false"
+    command: centrifugo --health --log_level=info
+    networks:
+      - reciclame-local
+
   kkfileview:
     image: keking/kkfileview:latest
     container_name: reciclame-kkfileview
