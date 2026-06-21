@@ -679,7 +679,7 @@
     }
 
     .vista-toggle-btn.active {
-      background: #2ECC71;
+      background: #2c5282;
       color: #fff;
     }
 
@@ -1310,24 +1310,45 @@
           }
 
           async function eliminarEstudio(id) {
-            if (!confirm('¿Desactivar este estudio? Dejará de ser visible para los socios.')) return;
-            try {
-              var res = await fetch('/api/estudios/' + id, { method: 'DELETE' });
-              if (!res.ok) {
-                var data = await res.json();
-                throw new Error(data.error || 'Error al eliminar');
-              }
-              var fila = document.querySelector('.estudio-row[data-id="' + id + '"]');
-              if (fila) {
-                fila.style.transition = 'opacity .4s, transform .4s';
-                fila.style.opacity = '0';
-                fila.style.transform = 'translateX(20px)';
-                setTimeout(function () { fila.remove(); }, 420);
-              }
-            } catch (e) {
-              alert('Error: ' + e.message);
-            }
+            abrirModalEliminarEstudio(id);
           }
+          var _idEliminarEstudio = null;
+          function abrirModalEliminarEstudio(id) {
+            _idEliminarEstudio = id;
+            var fila = document.querySelector('.estudio-row[data-id="' + id + '"]');
+            var nombre = fila && fila.dataset.titulo ? fila.dataset.titulo : '';
+            document.getElementById('modal-eliminar-nombre').textContent = nombre;
+            document.getElementById('modal-eliminar').style.display = 'flex';
+          }
+          function cerrarModalEliminar() {
+            document.getElementById('modal-eliminar').style.display = 'none';
+            _idEliminarEstudio = null;
+          }
+          document.addEventListener('click', function (e) {
+            if (e.target.id === 'modal-eliminar') cerrarModalEliminar();
+          });
+          document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('btn-confirmar-eliminar').addEventListener('click', function () {
+              var id = _idEliminarEstudio;
+              if (!id) return;
+              cerrarModalEliminar();
+              fetch('/api/estudios/' + id, { method: 'DELETE' })
+                .then(function (res) {
+                  if (!res.ok) {
+                    res.json().then(function (d) { alert('Error: ' + (d.error || 'Error al eliminar')); });
+                    return;
+                  }
+                  var fila = document.querySelector('.estudio-row[data-id="' + id + '"]');
+                  if (fila) {
+                    fila.style.transition = 'opacity .4s, transform .4s';
+                    fila.style.opacity = '0';
+                    fila.style.transform = 'translateX(20px)';
+                    setTimeout(function () { fila.remove(); }, 420);
+                  }
+                })
+                .catch(function (e) { alert('Error: ' + e.message); });
+            });
+          });
 
           // ── Populate year filter ──
           (function populateAnios() {
@@ -1353,6 +1374,23 @@
 
   <script th:inline="javascript">
   </script>
+
+  <!-- ── Modal eliminar estudio ── -->
+  <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:28px;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Estudio</h3>
+      <p style="margin:0 0 6px;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar este estudio?</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#1B3A5C;font-weight:600;" id="modal-eliminar-nombre"></p>
+      <p style="margin:0 0 20px;font-size:12px;color:#E74C3C;">Esta acción es reversible.</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalEliminar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-eliminar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
+      </div>
+    </div>
+  </div>
 
 </body>
 

@@ -81,7 +81,7 @@ public class SocioReportesService {
         long leidas = notifs.stream().filter(n -> Boolean.TRUE.equals(n.getLeida())).count();
 
         List<DocumentosReciente> recientesPagina = recienteRepository
-                .findByUsuario_IdOrderByUltimaVistaDesc(usuarioId, PageRequest.of(0, 25));
+                .findByUsuario_IdOrderByUltimaVistaDesc(usuarioId, PageRequest.of(0, 50));
         List<DocumentosReciente> recientesChart = recienteRepository
                 .findByUsuario_IdOrderByUltimaVistaDesc(usuarioId, PageRequest.of(0, 2000));
 
@@ -139,7 +139,7 @@ public class SocioReportesService {
         }
 
         List<SocioReporteNotifFila> filasNotif = new ArrayList<>();
-        for (NotificacionResponseDTO n : notifs.stream().limit(20).toList()) {
+        for (NotificacionResponseDTO n : notifs.stream().limit(50).toList()) {
             String fecha = n.getCreatedAt() != null ? FMT_SOLO_FECHA.format(n.getCreatedAt()) : "—";
             String est = Boolean.TRUE.equals(n.getLeida()) ? "Leída" : "Sin leer";
             filasNotif.add(new SocioReporteNotifFila(fecha, n.getTitulo() != null ? n.getTitulo() : "(Sin título)", est));

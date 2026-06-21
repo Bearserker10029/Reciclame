@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class NormativaVisorController {
@@ -58,18 +59,29 @@ public class NormativaVisorController {
     // ── Socio ─────────────────────────────────────────────────
     @GetMapping("/socio/normativo/{id}/ver")
     public String verNormativaSocio(@PathVariable Long id, Model model,
+                                    @RequestParam(value = "from", required = false) String from,
                                     @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id));
-        return cargarVisorPublico(id, model, "Socio/normativo-visor", "/socio/normativo");
+        String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/normativo";
+        // El socio puede ver TODAS las normativas (públicas y no-públicas).
+        return cargarVisor(id, model, "Socio/normativo-visor", urlRetorno);
     }
 
     // ── Visualizador (solo normativas públicas) ───────────────
     @GetMapping("/visualizador/normativo/{id}/ver")
-    public String verNormativaVisualizador(@PathVariable Long id, Model model) {
+    public String verNormativaVisualizador(@PathVariable Long id, Model model,
+                                           @AuthenticationPrincipal UserDetails user) {
         model.addAttribute("rol", "VISUALIZADOR");
         model.addAttribute("rolNombre", "Visualizador");
+        model.addAttribute("notifUrl", "/visualizador/notificaciones");
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId())));
+        } catch (Exception e) {
+            model.addAttribute("noLeidasCount", 0);
+        }
         return cargarVisorPublico(id, model, "Visualizador/normativo-visor", "/visualizador/normativo");
     }
 

@@ -95,11 +95,7 @@ public class VisualizadorController {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(u.getId());
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(java.util.stream.Collectors.toList()));
 
-            var auditoriasPage = auditoriaService.listarAuditoriasPorUsuarioPaginado(u.getId(), 0, 100);
-            long documentosVistos = auditoriasPage.getContent().stream()
-                    .filter(a -> "NORMATIVAS".equals(a.getModulo()) || "ESTUDIOS".equals(a.getModulo()))
-                    .count();
-            model.addAttribute("documentosVistos", documentosVistos);
+            model.addAttribute("documentosVistos", documentosRecientesService.contarDocumentosVistos(u.getId()));
         });
 
         return "Visualizador/inicio";
