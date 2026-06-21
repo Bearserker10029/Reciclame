@@ -20,6 +20,9 @@ public class EmailNotificationService {
     @Value("${n8n.webhook.url}")
     private String webhookUrl;
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     public EmailNotificationService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -72,7 +75,7 @@ public class EmailNotificationService {
                 <strong style="color:#2ECC71">aprobada</strong>. Ya puedes acceder con tus credenciales.</p>
                 """,
                 "Iniciar sesión",
-                "http://localhost:8080/login"
+                baseUrl + "/login"
         ));
     }
 
@@ -116,7 +119,7 @@ public class EmailNotificationService {
                 <strong style="color:#2ECC71">reactivada</strong>. Ya puedes ingresar normalmente.</p>
                 """,
                 "Iniciar sesión",
-                "http://localhost:8080/login"
+                baseUrl + "/login"
         ));
     }
 
@@ -160,7 +163,7 @@ public class EmailNotificationService {
                 <p style="margin:0 0 20px">Accede a la plataforma para revisar el documento completo.</p>
                 """,
                 "Ver normativa",
-                "http://localhost:8080/login"
+                baseUrl + "/login"
         ));
     }
 

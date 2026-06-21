@@ -60,6 +60,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/consulta-ruc/**").hasRole("SUPERADMIN")
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
+                        // Chat interno entre usuarios (Centrifugo)
+                        .requestMatchers("/api/chat/**").authenticated()
+                        .requestMatchers("/chat", "/chat/**").authenticated()
                         // Chatbot: cualquier usuario autenticado puede registrar su propia conversacion
                         .requestMatchers("/api/chatbot/registrar").authenticated()
                         // Chatbot analytics (KPIs, listados, detalle): solo Admin y SuperAdmin

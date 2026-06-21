@@ -120,6 +120,97 @@
         #topbar-search { width: 200px; }
         #search-dropdown { width: 90vw; }
       }
+
+      /* ── Chat lateral (panel deslizante) ─────────────── */
+      #chat-side-panel {
+        position: fixed; top: 0; right: 0; height: 100vh; width: 420px; max-width: 100vw;
+        background: #fff; box-shadow: -4px 0 24px rgba(0,0,0,.18);
+        z-index: 9998; display: flex; flex-direction: column; overflow: hidden;
+        transform: translateX(100%); transition: transform .25s ease;
+      }
+      #chat-side-panel .csp-head { flex-shrink: 0; }
+      #chat-side-panel.open { transform: translateX(0); }
+      #chat-side-backdrop {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,.32); z-index: 9997; display: none;
+      }
+      #chat-side-backdrop.open { display: block; }
+      .csp-head {
+        height: 56px; background: linear-gradient(135deg,#1B3A5C,#2E5A88);
+        color: #fff; padding: 0 16px; display: flex; align-items: center; gap: 10px;
+      }
+      .csp-head .csp-title { font-size: 14px; font-weight: 700; flex: 1; }
+      .csp-head .csp-close { background: transparent; border: none; color: #fff; cursor: pointer; font-size: 16px; }
+      .csp-status { font-size: 10px; padding: 3px 8px; border-radius: 8px; font-weight: 600; }
+      .csp-status.online  { background: rgba(46,204,113,.25); color: #2ECC71; }
+      .csp-status.offline { background: rgba(231,76,60,.25); color: #E74C3C; }
+      .csp-tabs { display: flex; border-bottom: 1px solid #E5E7EB; background: #fff; }
+      .csp-tabs button {
+        flex: 1; padding: 10px; background: #fff; border: none;
+        font-family: inherit; font-size: 12.5px; font-weight: 600; color: #6B7280;
+        cursor: pointer; border-bottom: 2px solid transparent;
+      }
+      .csp-tabs button.active { color: #1B3A5C; border-bottom-color: #1B3A5C; }
+      .csp-search { padding: 10px 12px; border-bottom: 1px solid #E5E7EB; background: #F9FAFB; }
+      .csp-search input {
+        width: 100%; padding: 7px 10px; border: 1px solid #E5E7EB; border-radius: 8px;
+        font-family: inherit; font-size: 12.5px; outline: none;
+      }
+      .csp-tabs, .csp-search { flex-shrink: 0; }
+      .csp-list { flex: 1 1 0; min-height: 0; overflow-y: auto; background: #fff; }
+      .csp-list-empty { padding: 24px; text-align: center; color: #9CA3AF; font-size: 12px; }
+      .csp-item {
+        display: flex; align-items: center; padding: 11px 14px; cursor: pointer;
+        border-bottom: 1px solid #F3F4F6; gap: 10px;
+      }
+      .csp-item:hover { background: #F9FAFB; }
+      .csp-item.active { background: #EBF5FB; }
+      .csp-avatar {
+        width: 36px; height: 36px; border-radius: 50%; background: #1B3A5C;
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 12.5px; flex-shrink: 0; overflow: hidden;
+        background-size: cover; background-position: center;
+      }
+      .csp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .csp-item-body { flex: 1; min-width: 0; }
+      .csp-item-name { font-size: 12.5px; font-weight: 600; color: #1F2937;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .csp-item-meta { font-size: 11px; color: #6B7280; margin-top: 2px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .csp-unread {
+        background: #E74C3C; color: #fff; font-size: 10px; font-weight: 700;
+        padding: 2px 7px; border-radius: 10px; min-width: 18px; text-align: center;
+      }
+
+      /* Vista activa de la conversación */
+      .csp-conv { display: none; flex: 1 1 0; min-height: 0; flex-direction: column; background: #F0F4F8; }
+      .csp-conv.open { display: flex; }
+      .csp-conv-head {
+        padding: 10px 14px; background: #fff; border-bottom: 1px solid #E5E7EB;
+        display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+      }
+      .csp-back { background: transparent; border: none; cursor: pointer; color: #1B3A5C; font-size: 14px; }
+      .csp-conv-head .name { font-size: 13.5px; font-weight: 700; }
+      .csp-conv-head .sub  { font-size: 11px; color: #6B7280; }
+      .csp-messages { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+      .csp-msg { max-width: 75%; padding: 8px 12px; border-radius: 14px; font-size: 12.5px; line-height: 1.45; word-wrap: break-word; }
+      .csp-msg.mine   { align-self: flex-end; background: #1B3A5C; color: #fff; border-bottom-right-radius: 4px; }
+      .csp-msg.theirs { align-self: flex-start; background: #fff; color: #1F2937; border-bottom-left-radius: 4px; border: 1px solid #E5E7EB; }
+      .csp-msg-time { font-size: 9.5px; opacity: .65; margin-top: 3px; display: flex; align-items: center; gap: 4px; justify-content: flex-end; }
+      .csp-check { font-size: 10px; opacity: .8; }
+      .csp-check.read { color: #4FC3F7; opacity: 1; }
+      .csp-input {
+        padding: 10px 12px; background: #fff; border-top: 1px solid #E5E7EB;
+        display: flex; gap: 8px; flex-shrink: 0;
+      }
+      .csp-input textarea {
+        flex: 1; resize: none; border: 1px solid #E5E7EB; border-radius: 10px;
+        padding: 8px 12px; font-family: inherit; font-size: 12.5px; max-height: 80px;
+      }
+      .csp-input button {
+        background: #1B3A5C; color: #fff; border: none; padding: 0 14px;
+        border-radius: 10px; font-family: inherit; font-weight: 700; cursor: pointer;
+      }
     </style>
 
     <nav id="navbar"
@@ -156,6 +247,21 @@
 
       <div style="flex:1"></div>
       <div style="display:flex;align-items:center;gap:20px;">
+        <!-- Ícono de chat interno (oculto para SUPERADMIN) -->
+        <th:block sec:authorize="isAuthenticated()"
+                  th:if="${session.usuarioSesion?.rolNombre != null
+                          and session.usuarioSesion.rolNombre != 'SUPERADMIN'
+                          and session.usuarioSesion.rolNombre != 'VISUALIZADOR'}">
+          <div id="chat-side-btn" style="position:relative;cursor:pointer;display:flex;align-items:center;"
+               title="Chat interno">
+            <i class="far fa-comment-dots" style="color:rgba(255,255,255,.75);font-size:18px;"></i>
+            <span id="chat-side-badge"
+                  style="display:none;position:absolute;top:-6px;right:-7px;background:#E74C3C;color:#fff;
+                         font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;
+                         align-items:center;justify-content:center;">0</span>
+          </div>
+        </th:block>
+
         <th:block sec:authorize="isAuthenticated()">
           <div id="notif-btn" style="position:relative;cursor:pointer;display:flex;align-items:center;">
             <i id="bell-icon" class="fas fa-bell" style="color:rgba(255,255,255,.75);font-size:17px;"
@@ -196,6 +302,356 @@
         </div>
       </div>
     </nav>
+
+    <!-- ── Panel lateral de chat ─────────────────────────────── -->
+    <th:block sec:authorize="isAuthenticated()"
+              th:if="${session.usuarioSesion?.rolNombre != null
+                      and session.usuarioSesion.rolNombre != 'SUPERADMIN'
+                      and session.usuarioSesion.rolNombre != 'VISUALIZADOR'}">
+      <div id="chat-side-backdrop" onclick="window.cerrarChatSide && cerrarChatSide()"></div>
+      <aside id="chat-side-panel" role="dialog" aria-label="Chat interno">
+        <div class="csp-head">
+          <i class="far fa-comment-dots"></i>
+          <span class="csp-title">Chat interno</span>
+          <span id="csp-status" class="csp-status offline">Desconectado</span>
+          <button class="csp-close" onclick="cerrarChatSide()" aria-label="Cerrar">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Vista 1: lista de conversaciones/contactos -->
+        <div id="csp-listview" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+          <div class="csp-tabs">
+            <button id="csp-tab-convs" class="active" onclick="cspCambiarTab('convs')">Conversaciones</button>
+            <button id="csp-tab-contactos" onclick="cspCambiarTab('contactos')">Contactos</button>
+          </div>
+          <div class="csp-search">
+            <input id="csp-search-input" type="text" placeholder="Buscar..." oninput="cspRenderLista()" />
+          </div>
+          <div id="csp-list" class="csp-list"></div>
+        </div>
+
+        <!-- Vista 2: conversación activa -->
+        <div id="csp-conv" class="csp-conv">
+          <div class="csp-conv-head">
+            <button class="csp-back" onclick="cspVolverLista()" title="Volver">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="csp-avatar" id="csp-conv-avatar">?</div>
+            <div style="flex:1;min-width:0;">
+              <div class="name" id="csp-conv-name">—</div>
+              <div class="sub"  id="csp-conv-sub">—</div>
+            </div>
+          </div>
+          <div id="csp-messages" class="csp-messages"></div>
+          <div class="csp-input">
+            <textarea id="csp-input" rows="1" placeholder="Escribe un mensaje..."
+                      onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();cspEnviar();}"></textarea>
+            <button onclick="cspEnviar()">Enviar</button>
+          </div>
+        </div>
+      </aside>
+
+      <script src="https://unpkg.com/centrifuge@5.3.5/dist/centrifuge.js"></script>
+      <script th:inline="javascript">
+        (function () {
+          const WS_URL = /*[[${@environment.getProperty('centrifugo.ws.url', 'ws://localhost:8001/connection/websocket')}]]*/ 'ws://localhost:8001/connection/websocket';
+
+          let centrifuge = null, suscripcion = null;
+          let miId = null;
+          let tabActual = 'convs';
+          let listaActual = [];
+          let convActiva = null;
+          let inicializado = false;
+
+          const $ = (id) => document.getElementById(id);
+
+          // ── Notificación sonora + del navegador ──────────────
+          let audioCtx = null;
+          function reproducirDing() {
+            try {
+              if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+              const osc = audioCtx.createOscillator();
+              const gain = audioCtx.createGain();
+              osc.connect(gain); gain.connect(audioCtx.destination);
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+              osc.frequency.exponentialRampToValueAtTime(660, audioCtx.currentTime + 0.15);
+              gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+              osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+            } catch (e) { /* silencioso */ }
+          }
+          function pedirPermisoNotif() {
+            if (!('Notification' in window)) return;
+            if (Notification.permission === 'default') {
+              Notification.requestPermission();
+            }
+          }
+          function mostrarNotifNavegador(data) {
+            try {
+              if (!('Notification' in window)) return;
+              if (Notification.permission !== 'granted') return;
+              if (document.visibilityState === 'visible'
+                  && $('chat-side-panel').classList.contains('open')) return;
+              const n = new Notification('💬 ' + (data.remitenteNombre || 'Nuevo mensaje'), {
+                body: data.contenido,
+                icon: '/assets/images/mascota.png',
+                tag: 'chat-' + data.conversacionId,
+                renotify: true
+              });
+              n.onclick = () => { window.focus(); abrirChatSide(); n.close(); };
+              setTimeout(() => n.close(), 6000);
+            } catch (e) { /* silencioso */ }
+          }
+
+          function setEstado(online) {
+            const el = $('csp-status');
+            if (!el) return;
+            el.className = 'csp-status ' + (online ? 'online' : 'offline');
+            el.textContent = online ? 'En línea' : 'Desconectado';
+          }
+
+          async function inicializar() {
+            if (inicializado) return;
+            inicializado = true;
+            try {
+              const r = await fetch('/api/chat/token', { credentials: 'same-origin' });
+              if (!r.ok) { console.warn('[chat-side] token http', r.status); return; }
+              const { token, canal, usuarioId } = await r.json();
+              miId = parseInt(usuarioId, 10);
+
+              centrifuge = new Centrifuge(WS_URL, { token });
+              centrifuge.on('connected',    () => setEstado(true));
+              centrifuge.on('disconnected', () => setEstado(false));
+
+              suscripcion = centrifuge.newSubscription(canal);
+              suscripcion.on('publication', (ctx) => {
+                const data = ctx.data;
+                if (data.tipo === 'mensaje') {
+                  const esPropio = data.remitenteId === miId;
+                  if (convActiva && convActiva.id === data.conversacionId) {
+                    cspAgregarMensaje(data);
+                    fetch('/api/chat/' + data.conversacionId + '/leer',
+                          { method: 'POST', credentials: 'same-origin' });
+                  } else if (!esPropio) {
+                    actualizarBadgeGlobal(+1);
+                    reproducirDing();
+                    mostrarNotifNavegador(data);
+                  }
+                  if (tabActual === 'convs' && $('chat-side-panel').classList.contains('open'))
+                    cargarConversaciones();
+                } else if (data.tipo === 'leido') {
+                  // El otro participante leyó mis mensajes → pintar checks azules
+                  cspMarcarMisChecksComoLeidos(data.conversacionId);
+                }
+              });
+              suscripcion.subscribe();
+              centrifuge.connect();
+
+              refrescarBadgeGlobal();
+              setInterval(refrescarBadgeGlobal, 60000);
+              pedirPermisoNotif();
+            } catch (e) { console.warn('[chat-side] init error', e); }
+          }
+
+          async function refrescarBadgeGlobal() {
+            try {
+              const r = await fetch('/api/chat/conversaciones', { credentials: 'same-origin' });
+              if (!r.ok) return;
+              const convs = await r.json();
+              const total = convs.reduce((acc, c) => acc + (c.noLeidos || 0), 0);
+              pintarBadge(total);
+            } catch (e) { /* silencioso */ }
+          }
+          function actualizarBadgeGlobal(delta) {
+            const el = $('chat-side-badge');
+            if (!el) return;
+            const actual = parseInt(el.textContent || '0', 10) || 0;
+            pintarBadge(Math.max(0, actual + delta));
+          }
+          function pintarBadge(n) {
+            const el = $('chat-side-badge');
+            if (!el) return;
+            if (n > 0) { el.textContent = n; el.style.display = 'flex'; }
+            else el.style.display = 'none';
+          }
+
+          window.abrirChatSide = function () {
+            inicializar();
+            $('chat-side-panel').classList.add('open');
+            $('chat-side-backdrop').classList.add('open');
+            cspVolverLista();
+            cargarConversaciones();
+          };
+          window.cerrarChatSide = function () {
+            $('chat-side-panel').classList.remove('open');
+            $('chat-side-backdrop').classList.remove('open');
+          };
+
+          window.cspCambiarTab = function (tab) {
+            tabActual = tab;
+            $('csp-tab-convs').classList.toggle('active', tab === 'convs');
+            $('csp-tab-contactos').classList.toggle('active', tab === 'contactos');
+            $('csp-search-input').value = '';
+            tab === 'convs' ? cargarConversaciones() : cargarContactos();
+          };
+
+          async function cargarConversaciones() {
+            const r = await fetch('/api/chat/conversaciones', { credentials: 'same-origin' });
+            const list = await r.json();
+            listaActual = list.map(c => ({
+              id: c.id, otro: c.otro, noLeidos: c.noLeidos,
+              ultimoMensaje: c.ultimoMensaje, tipo: 'conv'
+            }));
+            cspRenderLista();
+            const total = list.reduce((acc, c) => acc + (c.noLeidos || 0), 0);
+            pintarBadge(total);
+          }
+          async function cargarContactos() {
+            const r = await fetch('/api/chat/contactos', { credentials: 'same-origin' });
+            const list = await r.json();
+            listaActual = list.map(u => ({ otro: u, tipo: 'contacto' }));
+            cspRenderLista();
+          }
+
+          window.cspRenderLista = function () {
+            const cont = $('csp-list');
+            const q = ($('csp-search-input').value || '').toLowerCase().trim();
+            const items = listaActual.filter(it =>
+              !q || (it.otro.nombreCompleto || '').toLowerCase().includes(q)
+                 || (it.otro.correo || '').toLowerCase().includes(q));
+            if (items.length === 0) {
+              cont.innerHTML = '<div class="csp-list-empty">Sin resultados</div>';
+              return;
+            }
+            cont.innerHTML = items.map(it => {
+              const sub = it.tipo === 'conv'
+                ? (it.ultimoMensaje || it.otro.empresa || it.otro.rol || '')
+                : (it.otro.empresa || it.otro.rol || '');
+              const badge = it.tipo === 'conv' && it.noLeidos > 0
+                ? `<span class="csp-unread">${it.noLeidos}</span>` : '';
+              const onclick = it.tipo === 'conv'
+                ? `cspAbrirConv(${it.id}, ${JSON.stringify(it.otro).replace(/"/g,'&quot;')})`
+                : `cspIniciarConv(${it.otro.id})`;
+              return `<div class="csp-item" onclick='${onclick}'>
+                ${cspAvatarHtml(it.otro)}
+                <div class="csp-item-body">
+                  <div class="csp-item-name">${cspEsc(it.otro.nombreCompleto)}</div>
+                  <div class="csp-item-meta">${cspEsc(sub)}</div>
+                </div>${badge}</div>`;
+            }).join('');
+          };
+
+          window.cspIniciarConv = async function (otroId) {
+            const r = await fetch('/api/chat/iniciar?otroId=' + otroId,
+                                  { method: 'POST', credentials: 'same-origin' });
+            const c = await r.json();
+            cspAbrirConv(c.id, c.otro);
+          };
+          window.cspAbrirConv = async function (id, otro) {
+            convActiva = { id, otro };
+            $('csp-listview').style.display = 'none';
+            $('csp-conv').classList.add('open');
+            const avatarEl = $('csp-conv-avatar');
+            const ini = cspIniciales(otro.nombreCompleto);
+            if (otro.fotoUrl) {
+              avatarEl.innerHTML = `<img src="${cspEsc(otro.fotoUrl)}" alt="" onerror="this.parentElement.textContent='${ini}'">`;
+            } else {
+              avatarEl.textContent = ini;
+            }
+            $('csp-conv-name').textContent = otro.nombreCompleto;
+            $('csp-conv-sub').textContent = (otro.empresa || otro.rol || '');
+            const r = await fetch('/api/chat/' + id + '/mensajes', { credentials: 'same-origin' });
+            const msgs = await r.json();
+            const cont = $('csp-messages');
+            cont.innerHTML = msgs.map(cspRenderMsg).join('');
+            cont.scrollTop = cont.scrollHeight;
+            refrescarBadgeGlobal();
+          };
+          window.cspVolverLista = function () {
+            convActiva = null;
+            $('csp-conv').classList.remove('open');
+            $('csp-listview').style.display = 'flex';
+          };
+
+          function cspRenderMsg(m) {
+            const mio = m.remitenteId === miId;
+            const hora = m.createdAt ? new Date(m.createdAt).toLocaleTimeString('es-PE',
+                                       { hour: '2-digit', minute: '2-digit' }) : '';
+            let checks = '';
+            if (mio) {
+              const leido = !!m.leido;
+              checks = `<span class="csp-check ${leido ? 'read' : ''}" data-msg-id="${m.id || ''}">${leido ? '✓✓' : '✓'}</span>`;
+            }
+            return `<div class="csp-msg ${mio ? 'mine' : 'theirs'}">${cspEsc(m.contenido)}<div class="csp-msg-time">${hora}${checks}</div></div>`;
+          }
+          function cspAgregarMensaje(data) {
+            const cont = $('csp-messages');
+            cont.insertAdjacentHTML('beforeend', cspRenderMsg({
+              id: data.mensajeId,
+              remitenteId: data.remitenteId,
+              contenido: data.contenido,
+              createdAt: data.createdAt,
+              leido: false
+            }));
+            cont.scrollTop = cont.scrollHeight;
+          }
+          function cspMarcarMisChecksComoLeidos(convId) {
+            if (!convActiva || convActiva.id !== convId) return;
+            const checks = $('csp-messages').querySelectorAll('.csp-check');
+            checks.forEach(c => { c.classList.add('read'); c.textContent = '✓✓'; });
+          }
+          window.cspEnviar = async function () {
+            const input = $('csp-input');
+            const texto = input.value.trim();
+            if (!texto || !convActiva) return;
+            input.value = '';
+            try {
+              const r = await fetch('/api/chat/' + convActiva.id + '/mensajes', {
+                method: 'POST', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contenido: texto })
+              });
+              if (!r.ok) {
+                const err = await r.json().catch(() => ({}));
+                alert('Error: ' + (err.error || 'no se pudo enviar'));
+              }
+            } catch (e) { alert('Error de red: ' + e.message); }
+          };
+          function cspEsc(s) {
+            if (s == null) return '';
+            return String(s).replace(/[&<>"']/g, c =>
+              ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+          }
+          function cspIniciales(nombre) {
+            return (nombre || '?').split(' ').map(s => s[0]).slice(0,2).join('').toUpperCase();
+          }
+          function cspAvatarHtml(u) {
+            const ini = cspIniciales(u.nombreCompleto);
+            if (u.fotoUrl) {
+              return `<div class="csp-avatar"><img src="${cspEsc(u.fotoUrl)}" alt="" onerror="this.parentElement.textContent='${ini}'"></div>`;
+            }
+            return `<div class="csp-avatar">${ini}</div>`;
+          }
+
+          // Conectar el botón del topbar
+          const btn = $('chat-side-btn');
+          if (btn) btn.addEventListener('click', () => abrirChatSide());
+          // Inicializar conexión al cargar la página (para recibir badge en vivo)
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inicializar);
+          } else {
+            inicializar();
+          }
+          // Cerrar con Escape
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && $('chat-side-panel').classList.contains('open'))
+              cerrarChatSide();
+          });
+        })();
+      </script>
+    </th:block>
 
     <script>
       // Helper global compartido por ambos IIFE (notif + search)

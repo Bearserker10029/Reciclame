@@ -52,3 +52,10 @@ Jira.csv
 
 # Variables de entorno (credenciales, API keys, URLs sensibles)
 .env
+
+# Generadores locales de screenshots para PPT (no van al repo)
+screenshots_ppt/
+
+# Archivos locales del entregable (no se suben al repo)
+Reciclame_SuperAdmin_PPT.pptx
+profile-README.md

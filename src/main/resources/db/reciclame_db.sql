@@ -1898,3 +1898,51 @@ CREATE TABLE IF NOT EXISTS `chatbot_feedback` (
 -- Necesario para soportar tipos MIME de archivos Word (.docx)
 ALTER TABLE normativas
     MODIFY COLUMN archivo_tipo_mime VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+
+-- ============================================================
+-- CHAT INTERNO EN TIEMPO REAL (Centrifugo)
+-- Fecha: 2026-06-20
+-- Chat 1:1 entre Socios y Administradores. SUPERADMIN no participa.
+-- ============================================================
+
+DROP TABLE IF EXISTS `chat_mensajes`;
+DROP TABLE IF EXISTS `chat_conversaciones`;
+
+CREATE TABLE `chat_conversaciones` (
+    `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+    `usuario_a_id`      BIGINT       NOT NULL,
+    `usuario_b_id`      BIGINT       NOT NULL,
+    `ultimo_mensaje`    TEXT         NULL,
+    `ultimo_mensaje_at` TIMESTAMP    NULL,
+    `created_at`        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_chat_par` (`usuario_a_id`, `usuario_b_id`),
+    KEY `idx_chat_a` (`usuario_a_id`),
+    KEY `idx_chat_b` (`usuario_b_id`),
+    CONSTRAINT `fk_chat_usra` FOREIGN KEY (`usuario_a_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_chat_usrb` FOREIGN KEY (`usuario_b_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'Conversaciones 1:1 del chat interno (Centrifugo)';
+
+CREATE TABLE `chat_mensajes` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `conversacion_id` BIGINT       NOT NULL,
+    `remitente_id`    BIGINT       NOT NULL,
+    `contenido`       TEXT         NOT NULL,
+    `leido`           TINYINT(1)   NOT NULL DEFAULT 0,
+    `leido_at`        TIMESTAMP    NULL,
+    `created_at`      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_msg_conv` (`conversacion_id`, `created_at`),
+    KEY `idx_msg_remitente` (`remitente_id`),
+    CONSTRAINT `fk_msg_conv` FOREIGN KEY (`conversacion_id`)
+        REFERENCES `chat_conversaciones` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_msg_remitente` FOREIGN KEY (`remitente_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'Mensajes del chat interno';

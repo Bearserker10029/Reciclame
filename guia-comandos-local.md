@@ -6,7 +6,7 @@ Entorno de desarrollo local con MySQL, MinIO, n8n, kkfileview y la app Spring Bo
 
 ## Información del Entorno
 
-- **Stack**: Docker Compose (servicios `mysql`, `app`, `minio`, `minio-init`, `n8n`, `kkfileview`)
+- **Stack**: Docker Compose (servicios `mysql`, `app`, `minio`, `minio-init`, `n8n`, `kkfileview`, `centrifugo`)
 - **App**: 1 sola instancia (no hay balanceo, no hay `nginx_lb`)
 - **Sesiones**: JDBC en MySQL (no se usa Redis en local)
 - **Imagen de la app**: `reciclame-app:local` — se construye con tu `Dockerfile`
@@ -26,17 +26,17 @@ Entorno de desarrollo local con MySQL, MinIO, n8n, kkfileview y la app Spring Bo
        +--------------------------+--------------------------+
        |              |           |           |              |
        v              v           v           v              v
-  +---------+   +-----------+  +-------+  +-------+  +----------------+
-  |  mysql  |   |   minio   |  |  n8n  |  | kkfv  |  | minio-init     |
-  |  :3306  |   | :9000/01  |  | :5678 |  | :8012 |  | (one-shot)     |
-  +---------+   +-----------+  +-------+  +-------+  +----------------+
+  +---------+   +-----------+  +-------+  +-------+  +----------------+  +-------------+
+  |  mysql  |   |   minio   |  |  n8n  |  | kkfv  |  | minio-init     |  | centrifugo  |
+  |  :3306  |   | :9000/01  |  | :5678 |  | :8012 |  | (one-shot)     |  | :8001       |
+  +---------+   +-----------+  +-------+  +-------+  +----------------+  +-------------+
        |              |
        v              v
   mysql_data      minio_data               n8n_data
   (volume)        (volume)                 (volume)
 ```
 
-**Contenedores**: `reciclame-mysql-local`, `reciclame-app`, `reciclame-minio`, `reciclame-minio-init`, `reciclame-n8n`, `reciclame-kkfileview`
+**Contenedores**: `reciclame-mysql-local`, `reciclame-app`, `reciclame-minio`, `reciclame-minio-init`, `reciclame-n8n`, `reciclame-kkfileview`, `reciclame-centrifugo`
 
 **Volúmenes Docker**: `reciclame_mysql_data`, `reciclame_minio_data`, `reciclame_n8n_data`
 
@@ -46,7 +46,7 @@ Entorno de desarrollo local con MySQL, MinIO, n8n, kkfileview y la app Spring Bo
 
 - **Docker Desktop** con `docker compose` v2 (incluido en Docker 20.10+).
 - **BuildKit** habilitado (Docker 29 lo trae por defecto). Si usas una versión vieja, exporta `DOCKER_BUILDKIT=1` antes de los builds.
-- **Puertos libres en el host**: `8080`, `9000`, `9001`, `5678`, `8012`.
+- **Puertos libres en el host**: `8080`, `9000`, `9001`, `5678`, `8012`, `8001`.
 - **Archivo de seed**: `src/main/resources/db/reciclame_db.sql` (ya está en el repo, no se descarga nada externo).
 
 ---
@@ -113,6 +113,8 @@ docker compose -f docker-compose.local.yml logs --tail=200 mysql
 | MinIO API             | http://localhost:9000              | — (la app genera URLs firmadas) |
 | n8n                   | http://localhost:5678              | crear cuenta en primer arranque |
 | kkfileview            | http://localhost:8012              | — (sin auth, lo llama la app) |
+| Centrifugo (chat WS)  | ws://localhost:8001/connection/websocket | JWT generado por la app (endpoint `/api/chat/token`) |
+| Centrifugo Admin UI   | http://localhost:8001/admin        | `admin` / `admin`           |
 | MySQL (interno)       | `mysql:3306` (red Docker)          | `root` / `root`             |
 
 > MySQL **no** expone el puerto 3306 al host a propósito. Se accede solo desde los contenedores de la red `reciclame-local`. Si necesitas conectarte desde MySQL Workbench u otro cliente, usa `docker exec reciclame-mysql-local mysql -uroot -proot reciclame_db`.
@@ -297,7 +299,35 @@ docker compose -f docker-compose.local.yml down
 
 ---
 
-## 17. Archivos relevantes
+## 17. Centrifugo (chat interno en tiempo real)
+
+El chat 1↔1 entre Socios y Administradores usa **Centrifugo** como bróker de WebSockets. Spring publica los mensajes vía HTTP API; los browsers se conectan vía WebSocket con un JWT que la app genera. No hay nada que configurar manualmente — el contenedor está listo apenas levantas el compose.
+
+```powershell
+# Verificar salud
+curl http://localhost:8001/health
+# Esperado: {}
+
+# Ver logs (cada subscribe/publish queda registrado)
+docker compose -f docker-compose.local.yml logs -f centrifugo
+```
+
+**Cómo probar el chat:**
+1. Abre dos navegadores: uno normal (ej. login como `admin@reciclame.com`) y otro en incógnito (ej. `socio@reciclame.com`).
+2. En ambos, clic en el ícono 💬 del topbar — debe aparecer el badge **"En línea"** en verde.
+3. Desde la pestaña **Contactos** elige al otro usuario y envía un mensaje.
+4. El mensaje aparece en tiempo real en ambas ventanas sin recargar.
+
+> SUPERADMIN y VISUALIZADOR no participan en el chat (el ícono no se muestra para esos roles).
+
+**Variables del compose** (no las cambies salvo necesidad):
+- `CENTRIFUGO_TOKEN_HMAC_SECRET_KEY` — debe coincidir con `centrifugo.secret` de `application.properties`.
+- `CENTRIFUGO_API_KEY` — debe coincidir con `centrifugo.api.key`.
+- `CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_CLIENT=true` — permite que cualquier cliente autenticado se suscriba a su canal `chat#<userId>`.
+
+---
+
+## 18. Archivos relevantes
 
 | Ruta                                               | Propósito                                                |
 |----------------------------------------------------|----------------------------------------------------------|
