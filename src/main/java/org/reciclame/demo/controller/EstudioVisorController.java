@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,21 +57,32 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "SuperAdmin/estudios-visor", "/superadmin/estudios");
     }
 
-    // ── Socio (solo estudios públicos) ────────────────────────
+    // ── Socio (puede ver todos los estudios) ─────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
+                                   @RequestParam(value = "from", required = false) String from,
                                    @AuthenticationPrincipal UserDetails user) {
         setupSocio(model, user.getUsername());
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
-        return cargarVisorPublico(id, model, "Socio/estudios-visor", "/socio/estudios");
+        String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/estudios";
+        // El socio puede ver TODOS los estudios (públicos y no-públicos).
+        return cargarVisor(id, model, "Socio/estudios-visor", urlRetorno);
     }
 
     // ── Visualizador (solo documentos públicos) ───────────────
     @GetMapping("/visualizador/estudios/{id}/ver")
-    public String verEstudioVisualizador(@PathVariable Long id, Model model) {
+    public String verEstudioVisualizador(@PathVariable Long id, Model model,
+                                         @AuthenticationPrincipal UserDetails user) {
         model.addAttribute("rol", "VISUALIZADOR");
         model.addAttribute("rolNombre", "Visualizador");
+        model.addAttribute("notifUrl", "/visualizador/notificaciones");
+        try {
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId())));
+        } catch (Exception e) {
+            model.addAttribute("noLeidasCount", 0);
+        }
         return cargarVisorPublico(id, model, "Visualizador/estudios-visor", "/visualizador/estudios");
     }
 

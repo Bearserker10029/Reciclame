@@ -17,7 +17,11 @@ import java.time.Instant;
         @Index(name = "idx_mensajes_conversacion",
                 columnList = "conversacion_id"),
         @Index(name = "idx_mensajes_fecha",
-                columnList = "created_at")})
+                columnList = "created_at"),
+        @Index(name = "idx_mensajes_rol_fecha",
+                columnList = "rol, created_at"),
+        @Index(name = "idx_mensajes_error",
+                columnList = "es_error, created_at")})
 public class MensajesChatbot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,6 +49,42 @@ public class MensajesChatbot {
     @ColumnDefault("0")
     @Column(name = "derivado_soporte", nullable = false)
     private Boolean derivadoSoporte;
+
+    /** Latencia entre pregunta del usuario y respuesta del bot (ms) */
+    @Column(name = "duracion_ms")
+    private Long duracionMs;
+
+    /** Tokens aprox. consumidos (entrada+salida) */
+    @Column(name = "tokens_estimados")
+    private Integer tokensEstimados;
+
+    /** Modelo LLM usado (ej: minimax, gpt-4o-mini) */
+    @Column(name = "modelo", length = 60)
+    private String modelo;
+
+    /** 1 = hubo error al generar la respuesta */
+    @ColumnDefault("0")
+    @Column(name = "es_error", nullable = false)
+    private Boolean esError;
+
+    @Column(name = "mensaje_error", length = 500)
+    private String mensajeError;
+
+    /** SQL ejecutado por el agente (truncado a 4000 chars) */
+    @Lob
+    @Column(name = "sql_ejecutado")
+    private String sqlEjecutado;
+
+    /** Cantidad de filas devueltas por la tool SQL */
+    @Column(name = "filas_devueltas")
+    private Integer filasDevueltas;
+
+    /** Datos extra del callback (intents, scores, etc.) */
+    @Column(name = "metadata", columnDefinition = "json")
+    private String metadata;
+
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
 
     @ColumnDefault("CURRENT_TIMESTAMP")
     @Column(name = "created_at", nullable = false)

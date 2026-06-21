@@ -9,6 +9,7 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/socio/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -369,8 +370,8 @@
     }
 
     .badge-solo {
-      background: rgba(156, 163, 175, .12);
-      color: #6B7280;
+      background: rgba(46, 204, 113, .12);
+      color: #27AE60;
       padding: 4px 10px;
       border-radius: 999px;
       font-size: 10px;
@@ -645,7 +646,7 @@
     }
 
     .vista-toggle-btn.active {
-      background: #2ECC71;
+      background: #2c5282;
       color: #fff;
     }
 
@@ -1030,6 +1031,7 @@
                                     (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
                                     (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                       th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                      th:data-tematica="${e.tematicaCodigo}"
                       th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
                       th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                       <td>
@@ -1072,12 +1074,16 @@
                               style="font-size:9px;margin-right:3px;"></i>Otro</span>
                         </th:block>
                       </td>
-                      <td><span class="badge-solo"><i class="fas fa-eye"
-                            style="font-size:8px;margin-right:3px;"></i>Solo lectura</span></td>
+                      <td><span class="badge-solo"><i class="fas fa-download"
+                            style="font-size:8px;margin-right:3px;"></i>Ver y descargar</span></td>
                       <td class="text-center">
                         <div style="display:inline-flex;align-items:center;gap:6px;">
                           <a class="btn-action-icon" title="Ver" th:href="@{/socio/estudios/{id}/ver(id=${e.id})}">
                             <i class="fas fa-eye"></i>
+                          </a>
+                          <a class="btn-action-icon" title="Descargar" target="_blank"
+                            th:href="@{/api/documentos/descargar(url=${e.archivoUrl},titulo=${e.titulo},tipo='ESTUDIO',docId=${e.id})}">
+                            <i class="fas fa-download"></i>
                           </a>
                           <button class="btn-action-icon" title="Compartir" th:attr="onclick=|driveShareEstudio('${e.titulo}')|">
                             <i class="fas fa-share-alt"></i>
@@ -1103,7 +1109,7 @@
               <div id="paginacion-wrapper"
                 style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
                 <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
-                <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
+                <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-left:auto;"></div>
               </div>
             </div>
 
@@ -1169,34 +1175,6 @@
               </div>
             </div>
 
-            <div class="side-card" style="animation:fadeUp .5s .3s ease both;">
-              <div
-                style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:14px;display:flex;align-items:center;gap:7px;">
-                <i class="fas fa-list-alt" style="color:#3498DB;font-size:12px;"></i> Resumen
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;">Total estudios</span>
-                <span id="sum-total-est" style="font-size:14px;font-weight:800;color:#1B3A5C;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-file-pdf" style="font-size:10px;color:#E74C3C;"></i>PDF
-                </span>
-                <span id="sum-pdf-est" style="font-size:14px;font-weight:800;color:#E74C3C;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-chart-bar" style="font-size:10px;color:#27AE60;"></i>Otros formatos
-                </span>
-                <span id="sum-otros-est" style="font-size:14px;font-weight:800;color:#27AE60;">—</span>
-              </div>
-              <div class="summary-row">
-                <span style="font-size:12px;color:#6B7280;display:flex;align-items:center;gap:4px;">
-                  <i class="fas fa-clock" style="font-size:10px;color:#F39C12;"></i>Actualizados 30 días
-                </span>
-                <span id="sum-recientes-est" style="font-size:14px;font-weight:800;color:#F39C12;">—</span>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -1258,13 +1236,11 @@
 
             var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
             rows.forEach(function (r) {
-              var titulo = (r.dataset.titulo || '').toLowerCase();
-              var desc = (r.dataset.descripcion || '').toLowerCase();
-              var combined = titulo + ' ' + desc;
-              if (combined.includes('econom') || combined.includes('circular')) cEC++;
-              else if (combined.includes('residuos') || combined.includes('gestión')) cGR++;
-              else if (combined.includes('envase') || combined.includes('embalaje')) cEE++;
-              else if (combined.includes('extendida') || combined.includes('rep')) cREP++;
+              var tema = (r.dataset.tematica || '').toUpperCase();
+              if (tema === 'EC') cEC++;
+              else if (tema === 'GR') cGR++;
+              else if (tema === 'EE') cEE++;
+              else if (tema === 'REP') cREP++;
             });
 
             setText('sum-total-est', total);
@@ -1324,9 +1300,12 @@
             paginacionDiv.innerHTML = '';
             if (totalPaginas <= 1) return;
 
+            var _pBtnBase = 'border:1px solid #E5E7EB;background:#fff;color:#374151;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+            var _pBtnActive = 'border:1px solid #1B3A5C;background:#1B3A5C;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+
             var btnAnt = document.createElement('button');
-            btnAnt.textContent = '← Ant';
-            btnAnt.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+            btnAnt.textContent = '‹';
+            btnAnt.style.cssText = _pBtnBase + (paginaActual === 1 ? 'opacity:.4;' : '');
             btnAnt.onclick = function () { if (paginaActual > 1) { paginaActual--; mostrarPagina(paginaActual); } };
             paginacionDiv.appendChild(btnAnt);
 
@@ -1335,17 +1314,16 @@
                 var btn = document.createElement('button');
                 btn.textContent = pageNum;
                 btn.id = 'btn-pagina-' + pageNum;
-                btn.style.cssText = (pageNum === 1)
-                  ? 'padding:5px 10px;border:1px solid #2ECC71;border-radius:6px;background:#2ECC71;cursor:pointer;font-size:11px;color:#fff;font-family:inherit;margin-right:2px;'
-                  : 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;margin-right:2px;';
+                btn.style.cssText = (pageNum === paginaActual) ? _pBtnActive : _pBtnBase;
                 btn.onclick = function () { paginaActual = pageNum; mostrarPagina(pageNum); };
                 paginacionDiv.appendChild(btn);
               })(i);
             }
 
             var btnSig = document.createElement('button');
-            btnSig.textContent = 'Sig →';
-            btnSig.style.cssText = 'padding:5px 10px;border:1px solid #E5E7EB;border-radius:6px;background:#fff;cursor:pointer;font-size:11px;color:#6B7280;font-family:inherit;';
+            btnSig.textContent = '›';
+            var _total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            btnSig.style.cssText = _pBtnBase + (paginaActual === _total ? 'opacity:.4;' : '');
             btnSig.onclick = function () {
               var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
               if (paginaActual < total) { paginaActual++; mostrarPagina(paginaActual); }
@@ -1372,13 +1350,11 @@
 
           function actualizarBotonesPaginacion() {
             var total = Math.ceil(getFilasActivas().length / ITEMS_POR_PAGINA);
+            var _pBtnBase = 'border:1px solid #E5E7EB;background:#fff;color:#374151;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
+            var _pBtnActive = 'border:1px solid #1B3A5C;background:#1B3A5C;color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;';
             for (var i = 1; i <= total; i++) {
               var btn = document.getElementById('btn-pagina-' + i);
-              if (btn) {
-                btn.style.background = (i === paginaActual) ? '#2ECC71' : '#fff';
-                btn.style.borderColor = (i === paginaActual) ? '#2ECC71' : '#E5E7EB';
-                btn.style.color = (i === paginaActual) ? '#fff' : '#6B7280';
-              }
+              if (btn) btn.style.cssText = (i === paginaActual) ? _pBtnActive : _pBtnBase;
             }
           }
 
@@ -1473,12 +1449,14 @@
               var titulo = row.dataset.titulo || '';
               var anio = row.dataset.anio || '';
               var id = row.dataset.id || '';
+              var url = row.dataset.url || '';
               var ic = iconMap[tipo] || iconMap.otro;
               var badge = badgeMap[tipo] || badgeMap.otro;
 
               return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
                 '<div class="grid-card-actions">' +
                 '<a href="/socio/estudios/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-eye"></i></a>' +
+                '<a href="/api/documentos/descargar?url=' + encodeURIComponent(url) + '&titulo=' + encodeURIComponent(titulo) + '&tipo=ESTUDIO&docId=' + encodeURIComponent(id) + '" target="_blank" class="btn-view" title="Descargar" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-download"></i></a>' +
                 '</div>' +
                 '<div class="grid-card-icon-area" style="background:' + ic.bg + '">' +
                 '<i class="' + ic.cls + '" style="color:' + ic.color + ';"></i>' +

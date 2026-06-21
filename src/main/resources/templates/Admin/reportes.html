@@ -497,6 +497,18 @@
               </a>
             </div>
 
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span style="font-size:12px;font-weight:600;color:#6B7280;">Chatbot:</span>
+              <a id="chat-export-pdf" href="#" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
+                <i class="fas fa-file-pdf"></i> PDF
+              </a>
+              <a id="chat-export-xlsx" href="#" class="btn-export"
+                style="padding:8px 14px;font-size:12px;text-decoration:none;">
+                <i class="fas fa-file-excel"></i> XLSX
+              </a>
+            </div>
+
           </div>
         </div>
 
@@ -698,15 +710,180 @@
         </div>
 
         <div id="rtab-content-chatbot" style="display:none;">
+
+          <!-- Filtros -->
           <div
-            style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:16px;padding:60px;box-shadow:0 4px 24px rgba(0,0,0,.08);text-align:center;">
-            <div
-              style="width:80px;height:80px;border-radius:20px;background:linear-gradient(135deg,#E5E7EB,#F3F4F6);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
-              <i class="fas fa-robot" style="font-size:36px;color:#9CA3AF;"></i>
+            style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:16px;padding:18px 22px;margin-bottom:24px;box-shadow:0 4px 24px rgba(0,0,0,.08);animation:fadeUp .35s ease both;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Desde</label>
+              <input id="chat-desde" type="date" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;" />
             </div>
-            <div style="font-size:18px;font-weight:700;color:#1B3A5C;margin-bottom:8px;">Chatbot Analytics</div>
-            <div style="font-size:13px;color:#9CA3AF;">Métricas de uso del chatbot Recíclame — en desarrollo.</div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Hasta</label>
+              <input id="chat-hasta" type="date" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Rol</label>
+              <select id="chat-rol" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;min-width:160px;">
+                <option value="">Todos</option>
+                <option th:each="r : ${chatRolList}" th:value="${r.id}" th:text="${r.nombre}"></option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Usuario</label>
+              <select id="chat-usuario" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;min-width:200px;">
+                <option value="">Todos</option>
+                <option th:each="u : ${chatUsuariosList}" th:value="${u.id}" th:text="${u.nombreCompleto}"></option>
+              </select>
+            </div>
+            <div>
+              <button id="chat-filtrar" style="padding:9px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,#1B3A5C,#2c5282);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:7px;box-shadow:0 4px 14px rgba(27,58,92,.3);">
+                <i class="fas fa-filter"></i> Filtrar
+              </button>
+            </div>
           </div>
+
+          <!-- KPIs -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;">
+            <div class="stat-card" style="animation-delay:.05s">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Conversaciones</div>
+              <div id="kpi-conv" style="font-size:30px;font-weight:800;color:#1B3A5C;line-height:1;margin-top:6px;" th:text="${chatStats.totalConversaciones}">0</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:6px;">en el rango</div>
+            </div>
+            <div class="stat-card" style="animation-delay:.1s">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Mensajes totales</div>
+              <div id="kpi-msg" style="font-size:30px;font-weight:800;color:#1B3A5C;line-height:1;margin-top:6px;" th:text="${chatStats.totalMensajes}">0</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:6px;">
+                <span id="kpi-msg-u" th:text="${chatStats.totalMensajesUsuario}">0</span> user /
+                <span id="kpi-msg-b" th:text="${chatStats.totalMensajesBot}">0</span> bot
+              </div>
+            </div>
+            <div class="stat-card" style="animation-delay:.15s">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Usuarios unicos</div>
+              <div id="kpi-users" style="font-size:30px;font-weight:800;color:#1B3A5C;line-height:1;margin-top:6px;" th:text="${chatStats.usuariosUnicos}">0</div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:6px;">conversaron con el bot</div>
+            </div>
+            <div class="stat-card" style="animation-delay:.2s">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Latencia promedio</div>
+              <div id="kpi-lat" style="font-size:30px;font-weight:800;color:#1B3A5C;line-height:1;margin-top:6px;">
+                <span th:text="${chatStats.latenciaPromedioMs}">0</span><span style="font-size:14px;color:#6B7280;"> ms</span>
+              </div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:6px;">respuesta del bot</div>
+            </div>
+            <div class="stat-card" style="animation-delay:.25s">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Errores / soporte</div>
+              <div style="display:flex;gap:14px;margin-top:6px;">
+                <div>
+                  <div id="kpi-err" style="font-size:24px;font-weight:800;color:#E74C3C;line-height:1;" th:text="${chatStats.totalErrores}">0</div>
+                  <div style="font-size:10px;color:#9CA3AF;">errores</div>
+                </div>
+                <div>
+                  <div id="kpi-sop" style="font-size:24px;font-weight:800;color:#F39C12;line-height:1;" th:text="${chatStats.totalDerivadosSoporte}">0</div>
+                  <div style="font-size:10px;color:#9CA3AF;">derivados</div>
+                </div>
+                <div>
+                  <div style="font-size:24px;font-weight:800;color:#2ECC71;line-height:1;">
+                    <span th:text="${chatStats.feedbackPositivo}">0</span>
+                    <i class="fas fa-thumbs-up" style="font-size:12px;margin-left:2px;"></i>
+                  </div>
+                  <div style="font-size:10px;color:#9CA3AF;">positivos</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts -->
+          <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:22px;">
+            <div class="chart-card">
+              <div class="chart-title">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(46,204,113,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-chart-area" style="color:#2ECC71;font-size:13px;"></i>
+                </div>
+                Mensajes por día (USER vs BOT)
+              </div>
+              <div style="position:relative;height:240px;"><canvas id="chat-chart-mensajes"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(27,58,92,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-chart-pie" style="color:#1B3A5C;font-size:13px;"></i>
+                </div>
+                Conversaciones por rol
+              </div>
+              <div style="position:relative;height:240px;"><canvas id="chat-chart-roles"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Tops -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;">
+            <div class="chart-card">
+              <div class="chart-title">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(243,156,18,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-tags" style="color:#F39C12;font-size:13px;"></i>
+                </div>
+                Top 5 intents detectados
+              </div>
+              <div id="chat-top-intents"></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(52,152,219,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-user-tie" style="color:#3498DB;font-size:13px;"></i>
+                </div>
+                Top 5 usuarios más activos
+              </div>
+              <div id="chat-top-usuarios"></div>
+            </div>
+          </div>
+
+          <!-- Tabla de conversaciones -->
+          <div class="chart-card">
+            <div class="chart-title">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-comments" style="color:#8B5CF6;font-size:13px;"></i>
+              </div>
+              Listado de conversaciones
+              <span style="margin-left:auto;font-size:11px;color:#9CA3AF;font-weight:500;">Click en una fila para ver los mensajes</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table id="chat-tabla" style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead>
+                  <tr style="background:#F0F4F8;">
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Fecha</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Usuario</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Rol</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Empresa</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Idioma</th>
+                    <th style="padding:10px 8px;text-align:center;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Msgs</th>
+                    <th style="padding:10px 8px;text-align:center;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Errores</th>
+                    <th style="padding:10px 8px;text-align:right;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Duracion</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Primera pregunta</th>
+                  </tr>
+                </thead>
+                <tbody id="chat-tabla-body">
+                </tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+              <div id="chat-paginacion-info" style="font-size:12px;color:#6B7280;"></div>
+              <div style="display:flex;gap:6px;">
+                <button id="chat-prev" class="btn-export" style="padding:7px 12px;font-size:11px;">&laquo; Anterior</button>
+                <button id="chat-next" class="btn-export" style="padding:7px 12px;font-size:11px;">Siguiente &raquo;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal de detalle -->
+          <div id="chat-modal" style="display:none;position:fixed;inset:0;background:rgba(27,58,92,.55);z-index:9999;align-items:center;justify-content:center;padding:32px;">
+            <div style="background:#fff;border-radius:16px;max-width:780px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25);">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #F0F4F8;">
+                <div style="font-size:15px;font-weight:700;color:#1B3A5C;">Detalle de la conversacion</div>
+                <button onclick="document.getElementById('chat-modal').style.display='none'" style="background:none;border:none;font-size:18px;color:#6B7280;cursor:pointer;"><i class="fas fa-times"></i></button>
+              </div>
+              <div id="chat-modal-body" style="padding:18px 22px;"></div>
+            </div>
+          </div>
+
         </div>
 
         <script th:inline="javascript">
@@ -828,6 +1005,289 @@
           }, 400);
 
           initCharts();
+
+          // ====================================================================
+          //  CHATBOT ANALYTICS — JS
+          // ====================================================================
+          (function () {
+            var chatCtx = {
+              api: '/api/chatbot',
+              exportBase: '/admin/reportes/export/chatbot',
+              page: 0,
+              size: 20,
+              totalPages: 0,
+              chartMensajes: null,
+              chartRoles: null,
+              statsData: null
+            };
+
+            function fmtNumber(n) { return (n || 0).toLocaleString(); }
+            function escapeHtml(s) {
+              if (s == null) return '';
+              return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+            function truncar(s, n) {
+              if (s == null) return '';
+              var t = String(s);
+              return t.length > n ? t.substring(0, n) + '…' : t;
+            }
+
+            function paramsFiltro() {
+              var p = new URLSearchParams();
+              var d = document.getElementById('chat-desde').value;
+              var h = document.getElementById('chat-hasta').value;
+              var r = document.getElementById('chat-rol').value;
+              var u = document.getElementById('chat-usuario').value;
+              if (d) p.append('desde', d);
+              if (h) p.append('hasta', h);
+              if (r) p.append('rolId', r);
+              if (u) p.append('usuarioId', u);
+              return p;
+            }
+
+            function actualizarLinksExport() {
+              var qs = paramsFiltro().toString();
+              document.getElementById('chat-export-pdf').href  = chatCtx.exportBase + '.pdf?'  + qs;
+              document.getElementById('chat-export-xlsx').href = chatCtx.exportBase + '.xlsx?' + qs;
+            }
+
+            function cargarEstadisticas() {
+              var qs = paramsFiltro().toString();
+              fetch(chatCtx.api + '/estadisticas' + (qs ? '?' + qs : ''), { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                  if (!data) return;
+                  chatCtx.statsData = data;
+                  document.getElementById('kpi-conv').textContent  = fmtNumber(data.totalConversaciones);
+                  document.getElementById('kpi-msg').textContent   = fmtNumber(data.totalMensajes);
+                  document.getElementById('kpi-msg-u').textContent = fmtNumber(data.totalMensajesUsuario);
+                  document.getElementById('kpi-msg-b').textContent = fmtNumber(data.totalMensajesBot);
+                  document.getElementById('kpi-users').textContent = fmtNumber(data.usuariosUnicos);
+                  document.getElementById('kpi-lat').innerHTML     = fmtNumber(Math.round(data.latenciaPromedioMs)) + '<span style="font-size:14px;color:#6B7280;"> ms</span>';
+                  document.getElementById('kpi-err').textContent   = fmtNumber(data.totalErrores);
+                  document.getElementById('kpi-sop').textContent   = fmtNumber(data.totalDerivadosSoporte);
+                  renderChartMensajes(data.mensajesPorDia || []);
+                  renderChartRoles(data.conversacionesPorRol || []);
+                  renderTopIntents(data.topIntents || []);
+                  renderTopUsuarios(data.topUsuarios || []);
+                })
+                .catch(function (e) { console.warn('Error cargando estadisticas chatbot', e); });
+            }
+
+            function cargarConversaciones() {
+              var p = paramsFiltro();
+              p.append('page', chatCtx.page);
+              p.append('size', chatCtx.size);
+              fetch(chatCtx.api + '/conversaciones?' + p.toString(), { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                  if (!data) return;
+                  chatCtx.totalPages = data.totalPages || 0;
+                  renderTabla(data.content || []);
+                  var desde = (chatCtx.page * chatCtx.size) + 1;
+                  var hasta = Math.min((chatCtx.page + 1) * chatCtx.size, data.totalElements);
+                  document.getElementById('chat-paginacion-info').textContent =
+                    'Mostrando ' + (data.totalElements === 0 ? 0 : desde) + '–' + (data.totalElements === 0 ? 0 : hasta) +
+                    ' de ' + fmtNumber(data.totalElements) + ' conversaciones';
+                  document.getElementById('chat-prev').disabled = chatCtx.page <= 0;
+                  document.getElementById('chat-next').disabled = (chatCtx.page + 1) >= chatCtx.totalPages;
+                })
+                .catch(function (e) { console.warn('Error cargando conversaciones chatbot', e); });
+            }
+
+            function renderTabla(filas) {
+              var tbody = document.getElementById('chat-tabla-body');
+              if (!filas.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="padding:32px 16px;text-align:center;color:#9CA3AF;">' +
+                  '<i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>' +
+                  'Sin conversaciones registradas en este rango.</td></tr>';
+                return;
+              }
+              var html = '';
+              filas.forEach(function (f) {
+                var fecha = f.fechaInicio ? new Date(f.fechaInicio).toLocaleString('es-PE') : '—';
+                html += '<tr style="border-bottom:1px solid #F3F4F6;cursor:pointer;transition:background .15s;" ' +
+                        'onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'transparent\'" ' +
+                        'onclick="window.__chatbotVerDetalle(' + f.conversacionId + ')">' +
+                  '<td style="padding:10px 8px;color:#374151;white-space:nowrap;">' + escapeHtml(fecha) + '</td>' +
+                  '<td style="padding:10px 8px;color:#1B3A5C;font-weight:600;">' + escapeHtml(f.usuarioNombre || '—') + '</td>' +
+                  '<td style="padding:10px 8px;"><span style="padding:3px 8px;border-radius:6px;background:rgba(27,58,92,.08);color:#1B3A5C;font-size:10px;font-weight:700;">' + escapeHtml(f.usuarioRol || '—') + '</span></td>' +
+                  '<td style="padding:10px 8px;color:#6B7280;">' + escapeHtml(f.usuarioEmpresa || '—') + '</td>' +
+                  '<td style="padding:10px 8px;color:#6B7280;text-align:center;">' + escapeHtml((f.idioma || 'es').toUpperCase()) + '</td>' +
+                  '<td style="padding:10px 8px;text-align:center;color:#374151;font-weight:700;">' + fmtNumber(f.totalMensajes) + '</td>' +
+                  '<td style="padding:10px 8px;text-align:center;">' +
+                    (f.errores > 0 ? '<span style="color:#E74C3C;font-weight:700;">' + f.errores + '</span>' : '<span style="color:#9CA3AF;">0</span>') +
+                  '</td>' +
+                  '<td style="padding:10px 8px;text-align:right;color:#374151;">' + (f.duracionTotalMs || 0) + ' ms</td>' +
+                  '<td style="padding:10px 8px;color:#374151;">' + escapeHtml(truncar(f.primeraPregunta, 100)) + '</td>' +
+                '</tr>';
+              });
+              tbody.innerHTML = html;
+            }
+
+            function renderChartMensajes(rows) {
+              var labels = rows.map(function (r) { return r.fecha; });
+              var users  = rows.map(function (r) { return r.user; });
+              var bots   = rows.map(function (r) { return r.bot; });
+              var c = document.getElementById('chat-chart-mensajes');
+              if (chatCtx.chartMensajes) { chatCtx.chartMensajes.destroy(); }
+              if (!labels.length) { labels = ['Sin datos']; users = [0]; bots = [0]; }
+              chatCtx.chartMensajes = new Chart(c, {
+                type: 'bar',
+                data: {
+                  labels: labels,
+                  datasets: [
+                    { label: 'Usuario', data: users, backgroundColor: '#3498DB', borderRadius: 6, borderSkipped: false, stack: 's' },
+                    { label: 'Bot',     data: bots,  backgroundColor: '#2ECC71', borderRadius: 6, borderSkipped: false, stack: 's' }
+                  ]
+                },
+                options: {
+                  responsive: true, maintainAspectRatio: false,
+                  animation: { duration: 900 },
+                  plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+                  scales: {
+                    x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 } } },
+                    y: { stacked: true, grid: { color: '#F3F4F6' }, ticks: { font: { size: 10 } } }
+                  }
+                }
+              });
+            }
+
+            function renderChartRoles(rows) {
+              var labels = rows.map(function (r) { return r.rol; });
+              var data   = rows.map(function (r) { return r.total; });
+              var palette = ['#1B3A5C', '#2ECC71', '#F39C12', '#E74C3C', '#8B5CF6', '#3498DB'];
+              var colors  = labels.map(function (_, i) { return palette[i % palette.length]; });
+              var c = document.getElementById('chat-chart-roles');
+              if (chatCtx.chartRoles) { chatCtx.chartRoles.destroy(); }
+              if (!labels.length) { labels = ['Sin datos']; data = [0]; colors = ['#D1D5DB']; }
+              chatCtx.chartRoles = new Chart(c, {
+                type: 'doughnut',
+                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                options: {
+                  responsive: true, maintainAspectRatio: false,
+                  cutout: '60%',
+                  plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 10 } } }
+                }
+              });
+            }
+
+            function renderTopIntents(rows) {
+              var html = '';
+              if (!rows.length) {
+                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
+                document.getElementById('chat-top-intents').innerHTML = html;
+                return;
+              }
+              var max = rows[0].total || 1;
+              rows.forEach(function (r, i) {
+                var pct = Math.round((r.total * 100) / max);
+                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
+                html += '<div class="rank-item">' +
+                  '<div class="rank-badge badge-other" style="background:rgba(243,156,18,.1);color:#F39C12;">' + (i + 1) + '</div>' +
+                  '<span style="flex:1;font-size:13px;color:#374151;font-weight:500;">' + escapeHtml(r.intent) + '</span>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
+                '</div>';
+              });
+              document.getElementById('chat-top-intents').innerHTML = html;
+            }
+
+            function renderTopUsuarios(rows) {
+              var html = '';
+              if (!rows.length) {
+                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
+                document.getElementById('chat-top-usuarios').innerHTML = html;
+                return;
+              }
+              var max = rows[0].total || 1;
+              rows.forEach(function (r, i) {
+                var pct = Math.round((r.total * 100) / max);
+                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
+                html += '<div class="rank-item">' +
+                  '<div class="rank-badge badge-other" style="background:rgba(52,152,219,.1);color:#3498DB;">' + (i + 1) + '</div>' +
+                  '<span style="flex:1;font-size:13px;color:#1B3A5C;font-weight:600;">' + escapeHtml(r.nombre) + '</span>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
+                '</div>';
+              });
+              document.getElementById('chat-top-usuarios').innerHTML = html;
+              // animar barras
+              setTimeout(function () {
+                document.querySelectorAll('#chat-top-intents .rank-bar[data-w], #chat-top-usuarios .rank-bar[data-w]').forEach(function (bar) {
+                  bar.style.width = bar.dataset.w;
+                });
+              }, 100);
+            }
+
+            window.__chatbotVerDetalle = function (id) {
+              var modal = document.getElementById('chat-modal');
+              var body  = document.getElementById('chat-modal-body');
+              body.innerHTML = '<div style="padding:24px;text-align:center;color:#9CA3AF;"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+              modal.style.display = 'flex';
+              fetch(chatCtx.api + '/conversaciones/' + id + '/mensajes', { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (msgs) {
+                  if (!msgs.length) {
+                    body.innerHTML = '<div style="color:#9CA3AF;text-align:center;">Sin mensajes.</div>';
+                    return;
+                  }
+                  var html = '';
+                  msgs.forEach(function (m) {
+                    var bg = m.rol === 'USER' ? '#E0F2FE' : '#ECFDF5';
+                    var fg = m.rol === 'USER' ? '#1B3A5C' : '#15803D';
+                    var tag = m.rol === 'USER' ? 'Tú' : 'La Buena Cajita';
+                    var meta = [];
+                    if (m.duracionMs != null) meta.push(m.duracionMs + ' ms');
+                    if (m.tokensEstimados != null) meta.push(m.tokensEstimados + ' tokens');
+                    if (m.intentDetectado) meta.push('intent: ' + m.intentDetectado);
+                    if (m.esError) meta.push('ERROR');
+                    html += '<div style="margin-bottom:12px;">' +
+                      '<div style="font-size:11px;font-weight:700;color:' + fg + ';text-transform:uppercase;letter-spacing:.04em;">' + tag + '</div>' +
+                      '<div style="background:' + bg + ';padding:12px 14px;border-radius:10px;color:#1B3A5C;font-size:13px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;">' + escapeHtml(m.contenido) + '</div>' +
+                      (meta.length ? '<div style="font-size:10px;color:#9CA3AF;margin-top:4px;">' + escapeHtml(meta.join(' · ')) + '</div>' : '') +
+                    '</div>';
+                  });
+                  body.innerHTML = html;
+                })
+                .catch(function () {
+                  body.innerHTML = '<div style="color:#E74C3C;text-align:center;">Error al cargar mensajes.</div>';
+                });
+            };
+
+            function aplicarFiltros() {
+              chatCtx.page = 0;
+              actualizarLinksExport();
+              cargarEstadisticas();
+              cargarConversaciones();
+            }
+
+            document.getElementById('chat-filtrar').addEventListener('click', aplicarFiltros);
+            document.getElementById('chat-prev').addEventListener('click', function () {
+              if (chatCtx.page > 0) { chatCtx.page--; cargarConversaciones(); }
+            });
+            document.getElementById('chat-next').addEventListener('click', function () {
+              if (chatCtx.page + 1 < chatCtx.totalPages) { chatCtx.page++; cargarConversaciones(); }
+            });
+
+            // Exponer para que se llame desde switchReportTab al abrir el tab
+            window.__chatbotInit = aplicarFiltros;
+
+            // Cerrar modal al click fuera
+            document.getElementById('chat-modal').addEventListener('click', function (e) {
+              if (e.target === this) this.style.display = 'none';
+            });
+
+            // Si el server render ya paso data (en el primer paint), los KPIs ya están.
+            // Igual lanzamos la carga inicial cuando se abra el tab chatbot.
+            var originalSwitch = window.switchReportTab;
+            window.switchReportTab = function (tab) {
+              if (originalSwitch) originalSwitch(tab);
+              if (tab === 'chatbot' && window.__chatbotInit) window.__chatbotInit();
+            };
+          })();
         </script>
 
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>

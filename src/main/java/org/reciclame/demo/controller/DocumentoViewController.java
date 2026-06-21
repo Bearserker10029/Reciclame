@@ -2,8 +2,12 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.DocumentPreviewService;
+import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
+import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,20 +32,27 @@ import java.util.Map;
 public class DocumentoViewController {
 
     private static final int EXPIRY_MINUTOS = 15;
+    private static final Logger log = LoggerFactory.getLogger(DocumentoViewController.class);
 
     private final MinioStorageService minioStorageService;
     private final DocumentPreviewService documentPreviewService;
     private final AuditoriaService auditoriaService;
     private final UsuarioService usuarioService;
+    private final NormativaService normativaService;
+    private final EstudioService estudioService;
 
     public DocumentoViewController(MinioStorageService minioStorageService,
                                    DocumentPreviewService documentPreviewService,
                                    AuditoriaService auditoriaService,
-                                   UsuarioService usuarioService) {
+                                   UsuarioService usuarioService,
+                                   NormativaService normativaService,
+                                   EstudioService estudioService) {
         this.minioStorageService = minioStorageService;
         this.documentPreviewService = documentPreviewService;
         this.auditoriaService = auditoriaService;
         this.usuarioService = usuarioService;
+        this.normativaService = normativaService;
+        this.estudioService = estudioService;
     }
 
     /**
@@ -149,6 +160,8 @@ public class DocumentoViewController {
     public void descargarDocumento(
             @RequestParam("url") String url,
             @RequestParam(name = "titulo", required = false, defaultValue = "documento") String titulo,
+            @RequestParam(name = "tipo", required = false) String tipo,
+            @RequestParam(name = "docId", required = false) Long docId,
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request,
             HttpServletResponse response) throws IOException {
@@ -223,6 +236,20 @@ public class DocumentoViewController {
                 AuditoriaService.ACCION_DESCARGAR_DOCUMENTO, AuditoriaService.MODULO_ESTUDIOS,
                 "Descarga autorizada: \"" + titulo + "\"",
                 null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        // Incrementar contador de descargas del documento (si se conoce tipo + id)
+        if (docId != null && tipo != null) {
+            try {
+                if ("NORMATIVA".equalsIgnoreCase(tipo)) {
+                    normativaService.incrementarDescargas(docId);
+                } else if ("ESTUDIO".equalsIgnoreCase(tipo)) {
+                    estudioService.incrementarDescargas(docId);
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo incrementar contador de descargas (tipo={}, id={}): {}",
+                        tipo, docId, e.getMessage());
+            }
+        }
 
         try (InputStream is = conn.getInputStream()) {
             is.transferTo(response.getOutputStream());

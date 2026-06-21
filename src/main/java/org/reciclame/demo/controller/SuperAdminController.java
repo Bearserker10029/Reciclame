@@ -3,6 +3,7 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.dto.EmpresaRequestDTO;
 import org.reciclame.demo.dto.ParametrosSistemaRequestDTO;
 import org.reciclame.demo.service.AuditoriaService;
+import org.reciclame.demo.service.ChatbotService;
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.EtiquetaService;
@@ -66,6 +67,7 @@ public class SuperAdminController extends AdminController {
     private final AuditoriaService auditoriaService;
     private final ParametrosSistemaService parametrosSistemaService;
     private final ReporteService reporteService;
+    private final ChatbotService chatbotService;
 
     public SuperAdminController(UsuarioService usuarioService,
             NormativaService normativaService,
@@ -79,11 +81,12 @@ public class SuperAdminController extends AdminController {
             NotificacionService notificacionService,
             AuditoriaService auditoriaService,
             ParametrosSistemaService parametrosSistemaService,
-            ReporteService reporteService) {
+            ReporteService reporteService,
+            ChatbotService chatbotService) {
         super(usuarioService, normativaService, estudioService, empresaService,
                 rolService, tematicaService, etiquetaService,
-                tiposNormativaService, estadosNormativaService, notificacionService, 
-                auditoriaService, reporteService);
+                tiposNormativaService, estadosNormativaService, notificacionService,
+                auditoriaService, reporteService, chatbotService);
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -97,6 +100,7 @@ public class SuperAdminController extends AdminController {
         this.auditoriaService = auditoriaService;
         this.parametrosSistemaService = parametrosSistemaService;
         this.reporteService = reporteService;
+        this.chatbotService = chatbotService;
     }
 
     protected void setupCommonAttributes(Model model, String correo) {
@@ -270,6 +274,25 @@ public class SuperAdminController extends AdminController {
                 ? (int)(usuariosActivos.size() * 100.0 / todosUsuariosR.size()) : 0;
         model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
         model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
+
+        // Chatbot Analytics — KPIs por defecto (ultimos 30 dias)
+        // Envuelto en try/catch para que un fallo en el modulo del chatbot NO tumbe la pagina de reportes.
+        try {
+            Instant hace30dChat = Instant.now().minus(Duration.ofDays(30));
+            var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now());
+            model.addAttribute("chatStats", chatStats);
+        } catch (Exception ex) {
+            System.err.println("[reportes] Error cargando chatStats (chatbot): " + ex.getMessage());
+            model.addAttribute("chatStats", new org.reciclame.demo.dto.ChatbotEstadisticasDTO());
+        }
+        try {
+            model.addAttribute("chatRolList", rolService.listarRoles());
+            model.addAttribute("chatUsuariosList", usuarioService.listarUsuarios());
+        } catch (Exception ex) {
+            System.err.println("[reportes] Error cargando listas de roles/usuarios para filtro chatbot: " + ex.getMessage());
+            model.addAttribute("chatRolList", java.util.Collections.emptyList());
+            model.addAttribute("chatUsuariosList", java.util.Collections.emptyList());
+        }
 
         return "SuperAdmin/reportes";
     }
@@ -858,6 +881,28 @@ return "redirect:/superadmin/notificaciones";
     protected void exportarNormativasXLSX(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
         super.exportarNormativasXLSX(response, user);
+    }
+
+    // ====================================================================
+    //  CHATBOT ANALYTICS — overrides para ruta /superadmin/...
+    // ====================================================================
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/chatbot.pdf")
+    protected void exportarChatbotPDF(jakarta.servlet.http.HttpServletResponse response,
+            @RequestParam(value = "desde", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate desde,
+            @RequestParam(value = "hasta", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate hasta)
+            throws IOException {
+        super.exportarChatbotPDF(response, desde, hasta);
+    }
+
+    @Override
+    @GetMapping("/superadmin/reportes/export/chatbot.xlsx")
+    protected void exportarChatbotXLSX(jakarta.servlet.http.HttpServletResponse response,
+            @RequestParam(value = "desde", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate desde,
+            @RequestParam(value = "hasta", required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate hasta)
+            throws IOException {
+        super.exportarChatbotXLSX(response, desde, hasta);
     }
 
 

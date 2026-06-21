@@ -74,7 +74,7 @@ public class LoginController {
                     redirectUrl = "/socio/inicio";
                     break;
                 } else if (role.equals("ROLE_VISUALIZADOR")) {
-                    redirectUrl = "/visualizador/normativo";
+                    redirectUrl = "/visualizador/inicio";
                     break;
                 }
             }

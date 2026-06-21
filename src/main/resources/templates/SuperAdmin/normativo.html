@@ -233,9 +233,9 @@
     }
 
     .norm-tab.active {
-      background: linear-gradient(135deg, #2ECC71, #27AE60);
+      background: linear-gradient(135deg, #1B3A5C, #2c5282);
       color: #fff;
-      box-shadow: 0 4px 14px rgba(46, 204, 113, .35);
+      box-shadow: 0 3px 12px rgba(27, 58, 92, .28);
     }
 
     .norm-tab .count-badge {
@@ -581,7 +581,7 @@
     }
 
     .vista-toggle-btn.active {
-      background: #2ECC71;
+      background: #2c5282;
       color: #fff;
     }
 
@@ -1048,7 +1048,7 @@
                   <div id="donut-center-val" style="font-size:26px;font-weight:800;color:#1B3A5C;line-height:1;">—</div>
                   <div
                     style="font-size:9px;color:#9CA3AF;font-weight:700;text-transform:uppercase;letter-spacing:.06em;">
-                    Vigentes</div>
+                    Normativas</div>
                 </div>
               </div>
               <div style="display:flex;flex-direction:column;gap:6px;">
@@ -1139,16 +1139,28 @@
           //  INICIALIZACIÓN: computa contadores desde las filas DOM
           //  (no hardcodeados — refleja los datos reales de ${normativas})
           // ════════════════════════════════════════════════════════
-          (function initCounts() {
+          var donutNormChart = null;
+
+          function setText(id, val) {
+            var el = document.getElementById(id);
+            if (el) el.textContent = val;
+          }
+
+          function updateTematicaPanel(tab) {
             var rows = document.querySelectorAll('.norm-row');
-            var total = rows.length;
-            var nac = 0, intl = 0, vig = 0, consulta = 0;
+            var total = 0, nac = 0, intl = 0, vig = 0, consulta = 0;
             var cEC = 0, cGR = 0, cEE = 0, cREP = 0;
 
             rows.forEach(function (r) {
               var ambito = (r.dataset.ambito || '').toUpperCase();
+              var matchTab = tab === 'todos'
+                || (tab === 'nacional' && ambito === 'NACIONAL')
+                || (tab === 'internacional' && ambito === 'INTERNACIONAL');
+              if (!matchTab) return;
+
               var estado = (r.dataset.estado || '').toLowerCase();
               var tema = (r.dataset.tema || '').toUpperCase();
+              total++;
               if (ambito === 'NACIONAL') nac++;
               if (ambito === 'INTERNACIONAL') intl++;
               if (estado.includes('vigente')) vig++;
@@ -1158,17 +1170,6 @@
               if (tema === 'EE') cEE++;
               if (tema === 'REP') cREP++;
             });
-
-            // Hero stats
-            setText('hs-total', total);
-            setText('hs-nacional', nac);
-            setText('hs-intl', intl);
-            setText('hs-vigentes', vig);
-
-            // Tab badges
-            setText('badge-todos', total);
-            setText('badge-nacional', nac);
-            setText('badge-intl', intl);
 
             // Sidebar KPIs
             setText('kpi-ec', cEC);
@@ -1184,17 +1185,47 @@
             setText('sum-consulta', consulta);
 
             // Donut center
-            setText('donut-center-val', vig);
+            setText('donut-center-val', total);
+
+            if (donutNormChart) {
+              donutNormChart.data.datasets[0].data = [cEC, cGR, cEE, cREP];
+              donutNormChart.update();
+            }
+          }
+
+          (function initCounts() {
+            var rows = document.querySelectorAll('.norm-row');
+            var total = rows.length;
+            var nac = 0, intl = 0, vig = 0;
+
+            rows.forEach(function (r) {
+              var ambito = (r.dataset.ambito || '').toUpperCase();
+              var estado = (r.dataset.estado || '').toLowerCase();
+              if (ambito === 'NACIONAL') nac++;
+              if (ambito === 'INTERNACIONAL') intl++;
+              if (estado.includes('vigente')) vig++;
+            });
+
+            // Hero stats
+            setText('hs-total', total);
+            setText('hs-nacional', nac);
+            setText('hs-intl', intl);
+            setText('hs-vigentes', vig);
+
+            // Tab badges
+            setText('badge-todos', total);
+            setText('badge-nacional', nac);
+            setText('badge-intl', intl);
 
             // Donut chart
             var ctx = document.getElementById('donut-norm');
             if (ctx && window.Chart) {
-              new Chart(ctx, {
+              donutNormChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
                   labels: ['EC', 'GR', 'EE', 'REP'],
                   datasets: [{
-                    data: [cEC, cGR, cEE, cREP],
+                    data: [0, 0, 0, 0],
                     backgroundColor: ['#22C55E', '#38BDF8', '#F59E0B', '#EF4444'],
                     borderWidth: 0, hoverOffset: 4
                   }]
@@ -1208,10 +1239,7 @@
               });
             }
 
-            function setText(id, val) {
-              var el = document.getElementById(id);
-              if (el) el.textContent = val;
-            }
+            updateTematicaPanel('todos');
           })();
 
           // ── Populate year filter ──
@@ -1284,6 +1312,8 @@
 
             var noRes = document.getElementById('no-results-norm');
             if (noRes) noRes.style.display = (visibles === 0) ? 'block' : 'none';
+
+            updateTematicaPanel(tab);
 
             inicializarPaginacion();
             mostrarPagina(1);
@@ -1468,26 +1498,46 @@
           // ════════════════════════════════════════════════════════
           //  ELIMINAR normativa (borrado lógico)
           // ════════════════════════════════════════════════════════
-          async function eliminarNormativa(id) {
-            if (!confirm('¿Eliminar esta normativa? La acción es reversible desde la base de datos.')) return;
-            try {
-              var res = await fetch('/api/normativas/' + id, { method: 'DELETE' });
-              if (!res.ok) {
-                var data = await res.json();
-                alert('Error: ' + (data.error || 'No se pudo eliminar'));
-                return;
-              }
-              var row = document.querySelector('.norm-row[data-id="' + id + '"]');
-              if (row) {
-                row.style.transition = 'opacity .4s,transform .4s';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(20px)';
-                setTimeout(function () { row.remove(); applyNormFilter(); }, 420);
-              }
-            } catch (e) {
-              alert('Error de red: ' + e.message);
-            }
+          var _idEliminarNormativa = null;
+          function abrirModalEliminarNormativa(id) {
+            _idEliminarNormativa = id;
+            var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+            var nombre = row ? row.dataset.titulo : id;
+            document.getElementById('modal-eliminar-nombre').textContent = nombre;
+            document.getElementById('modal-eliminar').style.display = 'flex';
           }
+          function cerrarModalEliminar() {
+            document.getElementById('modal-eliminar').style.display = 'none';
+            _idEliminarNormativa = null;
+          }
+          document.addEventListener('click', function (e) {
+            if (e.target.id === 'modal-eliminar') cerrarModalEliminar();
+          });
+          async function eliminarNormativa(id) {
+            abrirModalEliminarNormativa(id);
+          }
+          document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('btn-confirmar-eliminar').addEventListener('click', function () {
+              var id = _idEliminarNormativa;
+              if (!id) return;
+              cerrarModalEliminar();
+              fetch('/api/normativas/' + id, { method: 'DELETE' })
+                .then(function (res) {
+                  if (!res.ok) {
+                    res.json().then(function (d) { alert('Error: ' + (d.error || 'No se pudo eliminar')); });
+                    return;
+                  }
+                  var row = document.querySelector('.norm-row[data-id="' + id + '"]');
+                  if (row) {
+                    row.style.transition = 'opacity .4s,transform .4s';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+                    setTimeout(function () { row.remove(); applyNormFilter(); }, 420);
+                  }
+                })
+                .catch(function (e) { alert('Error de red: ' + e.message); });
+            });
+          });
 
           // ════════════════════════════════════════════════════════
           //  PAGINACIÓN (5 por página) — patrón idéntico al Admin
@@ -1665,6 +1715,23 @@
 
     <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+  </div>
+
+  <!-- ── Modal eliminar normativa ── -->
+  <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+      <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:28px;"></i>
+      </div>
+      <h3 style="margin:0 0 8px;font-size:18px;font-weight:800;color:#1B3A5C;">Eliminar Normativa</h3>
+      <p style="margin:0 0 6px;font-size:14px;color:#6B7280;">¿Estás seguro de que deseas eliminar esta normativa?</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#1B3A5C;font-weight:600;" id="modal-eliminar-nombre"></p>
+      <p style="margin:0 0 20px;font-size:12px;color:#E74C3C;">Esta acción es reversible.</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <button onclick="cerrarModalEliminar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;">Cancelar</button>
+        <button id="btn-confirmar-eliminar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
+      </div>
+    </div>
   </div>
 
 </body>

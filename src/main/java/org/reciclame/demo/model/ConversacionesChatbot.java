@@ -16,7 +16,9 @@ import java.time.Instant;
         @Index(name = "idx_conversaciones_usuario",
                 columnList = "usuario_id"),
         @Index(name = "idx_conversaciones_fecha",
-                columnList = "created_at")})
+                columnList = "created_at"),
+        @Index(name = "idx_conversaciones_ultimo",
+                columnList = "ultimo_mensaje_at")})
 public class ConversacionesChatbot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,9 +34,33 @@ public class ConversacionesChatbot {
     @Column(name = "idioma", nullable = false, length = 5)
     private String idioma;
 
+    @Column(name = "titulo", length = 200)
+    private String titulo;
+
     @Lob
     @Column(name = "resumen")
     private String resumen;
+
+    @ColumnDefault("0")
+    @Column(name = "total_mensajes", nullable = false)
+    private Integer totalMensajes;
+
+    @ColumnDefault("0")
+    @Column(name = "duracion_total_ms", nullable = false)
+    private Long duracionTotalMs;
+
+    @Column(name = "ultimo_mensaje_at")
+    private Instant ultimoMensajeAt;
+
+    @Column(name = "ip_address", length = 45)
+    private String ipAddress;
+
+    @Column(name = "user_agent", length = 500)
+    private String userAgent;
+
+    @ColumnDefault("0")
+    @Column(name = "cerrada_por_usuario", nullable = false)
+    private Boolean cerradaPorUsuario;
 
     @ColumnDefault("1")
     @Column(name = "estado_activo", nullable = false)

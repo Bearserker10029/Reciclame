@@ -49,3 +49,6 @@ skills-lock.json
 
 # Jira
 Jira.csv
+
+# Variables de entorno (credenciales, API keys, URLs sensibles)
+.env
