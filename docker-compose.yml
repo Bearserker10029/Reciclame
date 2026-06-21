@@ -32,6 +32,10 @@ services:
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
     volumes:
       - backup_data:/backups
     networks:
@@ -70,6 +74,10 @@ services:
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
     volumes:
       - backup_data:/backups
     networks:
@@ -108,6 +116,10 @@ services:
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
     volumes:
       - backup_data:/backups
     networks:
@@ -172,6 +184,29 @@ services:
       - n8n_data:/home/node/.n8n
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - reciclame-net
+
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: reciclame-centrifugo
+    restart: unless-stopped
+    # NO se expone al host: el browser llega via nginx-proxy-manager (wss://...)
+    # Solo accesible internamente desde la red reciclame-net.
+    expose:
+      - "8000"
+    environment:
+      CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_SECRET}
+      CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY}
+      CENTRIFUGO_ALLOWED_ORIGINS: ${CENTRIFUGO_ALLOWED_ORIGINS}
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_CLIENT: "true"
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_ANONYMOUS: "false"
+    command: centrifugo --health --log_level=info
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
     networks:
       - reciclame-net
 
