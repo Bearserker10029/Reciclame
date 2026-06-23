@@ -306,7 +306,7 @@
           <div class="banners-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
 
             <!-- Banner Estudios -->
-            <div onclick="navTo('estudios')"
+            <div id="tour-estudios" onclick="navTo('estudios')"
               style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
@@ -356,7 +356,7 @@
             </div>
 
             <!-- Banner Normativo -->
-            <div onclick="navTo('normativo')"
+            <div id="tour-normativo" onclick="navTo('normativo')"
               style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
               onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
               onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
@@ -759,6 +759,87 @@
   </script>
 
   <div th:replace="~{components/notif-toast :: notif-toast}"></div>
+
+  <!-- ── Onboarding Tour (Intro.js) ───────────────────────── -->
+  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"/>
+  <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+  <style>
+    .introjs-tooltip { font-family:'Inter',sans-serif!important;border-radius:14px!important;box-shadow:0 12px 40px rgba(0,0,0,.18)!important;min-width:280px!important;max-width:320px!important; }
+    .introjs-tooltiptext { font-size:13px!important;color:#374151!important;line-height:1.55!important; }
+    .introjs-tooltip-title { font-size:14px!important;font-weight:700!important;color:#1B3A5C!important; }
+    .introjs-button { font-family:'Inter',sans-serif!important;font-size:12px!important;font-weight:600!important;border-radius:8px!important;padding:7px 16px!important;text-shadow:none!important; }
+    .introjs-nextbutton { background:#1B3A5C!important;color:#fff!important;border-color:#1B3A5C!important; }
+    .introjs-nextbutton:hover { background:#15314d!important; }
+    .introjs-prevbutton { color:#6B7280!important;border-color:#E5E7EB!important;background:#fff!important; }
+    .introjs-skipbutton { color:#9CA3AF!important;font-size:18px!important; }
+    .introjs-helperLayer { border-radius:12px!important;box-shadow:rgba(0,0,0,.5) 0 0 0 9999px!important; }
+    .introjs-progress { background:#E5E7EB!important;border-radius:4px!important; }
+    .introjs-progressbar { background:#2ECC71!important;border-radius:4px!important; }
+  </style>
+  <script>
+  (function () {
+    var TOUR_KEY = 'reciclame:tour:admin:v1';
+    if (localStorage.getItem(TOUR_KEY)) return;
+
+    var pasos = [
+      {
+        element: document.getElementById('topbar-search'),
+        title: '🔍 Buscador global',
+        intro: 'Busca normativas, estudios y usuarios en tiempo real. Presiona <b>/</b> desde cualquier página para activarlo rápidamente.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('notif-btn'),
+        title: '🔔 Notificaciones',
+        intro: 'Recibe alertas en tiempo real. Como Admin, también recibirás notificaciones cuando haya nuevas solicitudes de registro.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('chat-side-btn'),
+        title: '💬 Chat interno',
+        intro: 'Comunícate directamente con los Socios de la plataforma. Los mensajes llegan en tiempo real.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('tour-normativo'),
+        title: '⚖️ Gestión Normativa',
+        intro: 'Sube, edita y administra todas las normativas del repositorio. Puedes controlar visibilidad, estado y metadatos.',
+        position: 'top'
+      },
+      {
+        element: document.getElementById('tour-estudios'),
+        title: '📂 Gestión de Estudios',
+        intro: 'Administra los reportes e infografías del equipo técnico Recíclame.',
+        position: 'top'
+      }
+    ].filter(function(p) { return p.element != null; });
+
+    if (pasos.length === 0) return;
+
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        introJs()
+          .setOptions({
+            steps: pasos,
+            nextLabel: 'Siguiente →',
+            prevLabel: '← Anterior',
+            doneLabel: '¡Entendido! 🎉',
+            skipLabel: '✕',
+            showProgress: true,
+            showBullets: false,
+            scrollToElement: true,
+            scrollPadding: 80,
+            exitOnOverlayClick: false,
+            disableInteraction: false
+          })
+          .oncomplete(function () { localStorage.setItem(TOUR_KEY, '1'); })
+          .onexit(function ()     { localStorage.setItem(TOUR_KEY, '1'); })
+          .start();
+      }, 800);
+    });
+  })();
+  </script>
+
 </body>
 
 </html>
