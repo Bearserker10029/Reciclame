@@ -91,11 +91,13 @@ public class VisualizadorController {
         }).collect(java.util.stream.Collectors.toList());
         model.addAttribute("donutData", donutData);
 
+        model.addAttribute("topNormativas", normativaService.topMasVistas());
+
         usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(u.getId());
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(java.util.stream.Collectors.toList()));
-
             model.addAttribute("documentosVistos", documentosRecientesService.contarDocumentosVistos(u.getId()));
+            model.addAttribute("recientesUsuario", documentosRecientesService.listarUltimos(u.getId(), 5));
         });
 
         return "Visualizador/inicio";

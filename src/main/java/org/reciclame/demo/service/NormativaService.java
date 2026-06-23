@@ -122,6 +122,13 @@ public class NormativaService {
                 .collect(Collectors.toList());
     }
 
+    public List<NormativaResponseDTO> topMasVistas() {
+        return normativaRepository.findTop5ByEstadoActivoTrueAndEsPublicaTrueOrderByVisualizacionesCountDesc()
+                .stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // ── READ ONE ──────────────────────────────────────────────
     public NormativaResponseDTO obtenerNormativaPorId(Long id) {
         return toResponseDTO(normativaRepository.findById(id)

@@ -3,6 +3,7 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.dto.NotificacionResponseDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
 import org.reciclame.demo.service.AuditoriaService;
+import org.reciclame.demo.service.DocumentosRecientesService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MiUnidadService;
 import org.reciclame.demo.service.NormativaService;
@@ -38,6 +39,7 @@ public class SocioController {
     private final TematicaService tematicaService;
     private final AuditoriaService auditoriaService;
     private final MiUnidadService miUnidadService;
+    private final DocumentosRecientesService documentosRecientesService;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
@@ -46,7 +48,8 @@ public class SocioController {
                           SocioReportesService socioReportesService,
                           TematicaService tematicaService,
                           AuditoriaService auditoriaService,
-                          MiUnidadService miUnidadService) {
+                          MiUnidadService miUnidadService,
+                          DocumentosRecientesService documentosRecientesService) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
@@ -55,6 +58,7 @@ public class SocioController {
         this.tematicaService = tematicaService;
         this.auditoriaService = auditoriaService;
         this.miUnidadService = miUnidadService;
+        this.documentosRecientesService = documentosRecientesService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -107,22 +111,26 @@ public class SocioController {
         }).collect(Collectors.toList());
         model.addAttribute("donutData", donutData);
         
+        model.addAttribute("topNormativas", normativaService.topMasVistas());
+
         if (userId != null) {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(userId);
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(Collectors.toList()));
-            
+
             long descargasCount = auditoriaService.listarAuditoriasPorUsuario(userId).stream()
                     .filter(a -> AuditoriaService.ACCION_DESCARGAR_DOCUMENTO.equals(a.getAccion()))
                     .count();
             model.addAttribute("descargasCount", descargasCount);
-            
+
             model.addAttribute("itemsMiUnidad", miUnidadService.contarItemsUsuario(userId));
+            model.addAttribute("recientesUsuario", documentosRecientesService.listarUltimos(userId, 5));
         } else {
             model.addAttribute("notificacionesRecientes", List.of());
             model.addAttribute("descargasCount", 0);
             model.addAttribute("itemsMiUnidad", 0);
+            model.addAttribute("recientesUsuario", List.of());
         }
-        
+
         return "Socio/inicio";
     }
 

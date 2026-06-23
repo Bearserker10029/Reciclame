@@ -116,6 +116,9 @@
       }
       .search-footer a { color:#1B3A5C; font-size:12px; font-weight:600; text-decoration:none; }
       .search-footer a:hover { text-decoration:underline; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes slideInRight  { from { opacity:0; transform:translateX(60px); } to { opacity:1; transform:translateX(0); } }
+      @keyframes slideOutRight { from { opacity:1; transform:translateX(0); }   to { opacity:0; transform:translateX(60px); } }
       @media (max-width: 768px) {
         #topbar-search { width: 200px; }
         #search-dropdown { width: 90vw; }
@@ -442,8 +445,17 @@
                   if (tabActual === 'convs' && $('chat-side-panel').classList.contains('open'))
                     cargarConversaciones();
                 } else if (data.tipo === 'leido') {
-                  // El otro participante leyó mis mensajes → pintar checks azules
                   cspMarcarMisChecksComoLeidos(data.conversacionId);
+                } else if (data.tipo === 'notificacion') {
+                  mostrarToastNotif(data);
+                  reproducirDing();
+                  incrementarBadgeNotif();
+                  if (Notification.permission === 'granted') {
+                    new Notification('Recíclame — ' + (data.titulo || 'Nueva notificación'), {
+                      body: data.mensaje || '',
+                      icon: '/assets/img/logo.png'
+                    });
+                  }
                 }
               });
               suscripcion.subscribe();
@@ -475,6 +487,60 @@
             if (!el) return;
             if (n > 0) { el.textContent = n; el.style.display = 'flex'; }
             else el.style.display = 'none';
+          }
+
+          // ── Notificaciones push del sistema ──────────────────────
+          function incrementarBadgeNotif() {
+            const el = document.getElementById('notif-badge');
+            if (!el) return;
+            const actual = parseInt(el.textContent || '0', 10) || 0;
+            const nuevo = actual + 1;
+            el.textContent = nuevo;
+            el.style.display = 'flex';
+          }
+
+          function mostrarToastNotif(data) {
+            const iconos = {
+              'NUEVA_NORMATIVA': { icon: 'fa-gavel',   color: '#1B3A5C' },
+              'NUEVO_ESTUDIO':   { icon: 'fa-flask',   color: '#2ECC71' },
+              'MENSAJE_ADMIN':   { icon: 'fa-envelope', color: '#9B59B6' }
+            };
+            const cfg = iconos[data.notifTipo] || { icon: 'fa-bell', color: '#F39C12' };
+
+            const toast = document.createElement('div');
+            toast.style.cssText = [
+              'position:fixed', 'bottom:80px', 'right:24px', 'z-index:99999',
+              'background:#fff', 'border-radius:12px',
+              'box-shadow:0 8px 32px rgba(0,0,0,.18)',
+              'padding:14px 16px', 'display:flex', 'gap:12px', 'align-items:flex-start',
+              'max-width:340px', 'width:calc(100vw - 48px)',
+              'border-left:4px solid ' + cfg.color,
+              'animation:slideInRight .3s ease',
+              'cursor:pointer'
+            ].join(';');
+
+            toast.innerHTML =
+              '<div style="width:36px;height:36px;border-radius:9px;background:' + cfg.color + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+              + '<i class="fas ' + cfg.icon + '" style="color:#fff;font-size:15px;"></i></div>'
+              + '<div style="flex:1;min-width:0;">'
+              + '<div style="font-size:13px;font-weight:700;color:#1B3A5C;margin-bottom:2px;">' + escHtml(data.titulo || 'Nueva notificación') + '</div>'
+              + '<div style="font-size:12px;color:#6B7280;line-height:1.4;">' + escHtml(data.mensaje || '') + '</div>'
+              + (data.enlace ? '<a href="' + escHtml(data.enlace) + '" style="font-size:11px;font-weight:600;color:#2ECC71;text-decoration:none;margin-top:4px;display:inline-block;">Ver →</a>' : '')
+              + '</div>'
+              + '<button onclick="this.parentNode.remove()" style="background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;padding:0;line-height:1;flex-shrink:0;">✕</button>';
+
+            if (data.enlace) {
+              toast.addEventListener('click', function(e) {
+                if (e.target.tagName === 'BUTTON' || e.target.tagName === 'A') return;
+                window.location.href = data.enlace;
+              });
+            }
+
+            document.body.appendChild(toast);
+            setTimeout(function() {
+              toast.style.animation = 'slideOutRight .3s ease forwards';
+              setTimeout(function() { toast.remove(); }, 300);
+            }, 6000);
           }
 
           window.abrirChatSide = function () {
@@ -765,18 +831,40 @@
 
       // ── Search box global ─────────────────────────────────────
       (function () {
-        var form   = document.getElementById('topbar-search');
-        var input  = document.getElementById('topbar-search-input');
+        var form     = document.getElementById('topbar-search');
+        var input    = document.getElementById('topbar-search-input');
         var dropdown = document.getElementById('search-dropdown');
         if (!form || !input || !dropdown) return;
 
         var debounceTimer = null;
-        var currentReq = 0;
-        var minChars = 2;
+        var currentReq    = 0;
+        var minChars      = 2;
+        var activeIdx     = -1;
+        var RECIENTES_KEY = 'sb:recientes';
+        var MAX_REC       = 5;
 
         function isOpen() { return dropdown.classList.contains('open'); }
-        function open()  { dropdown.classList.add('open'); }
-        function close() { dropdown.classList.remove('open'); }
+        function open()   { dropdown.classList.add('open'); activeIdx = -1; }
+        function close()  { dropdown.classList.remove('open'); activeIdx = -1; }
+
+        // ── Recientes en localStorage ───────────────────────────
+        function getRecientes() {
+          try { return JSON.parse(localStorage.getItem(RECIENTES_KEY) || '[]'); } catch(e) { return []; }
+        }
+        function guardarReciente(r) {
+          var lista = getRecientes().filter(function(x){ return x.url !== r.url; });
+          lista.unshift({ titulo: r.titulo, url: r.url, tipo: r.tipo });
+          if (lista.length > MAX_REC) lista.length = MAX_REC;
+          try { localStorage.setItem(RECIENTES_KEY, JSON.stringify(lista)); } catch(e) {}
+        }
+        function borrarRecientes() {
+          try { localStorage.removeItem(RECIENTES_KEY); } catch(e) {}
+          showRecientes();
+        }
+
+        function labelTipo(tipo) {
+          return tipo === 'NORMATIVA' ? 'Normativas' : tipo === 'ESTUDIO' ? 'Estudios' : tipo === 'USUARIO' ? 'Usuarios' : tipo;
+        }
 
         function highlight(text, q) {
           if (!q || !text) return escHtml(text || '');
@@ -791,105 +879,175 @@
           return '<div class="ic ic-normativa"><i class="fas fa-file"></i></div>';
         }
 
-        function renderResults(data) {
-          var resultados = (data && data.resultados) || [];
-          var tipos = (data && data.tiposPermitidos) || [];
-          if (tipos.length === 0) {
-            dropdown.innerHTML = '<div class="search-empty">No tienes permisos para buscar.</div>';
-            positionDropdown();
-            open();
-            return;
-          }
-          if (resultados.length === 0) {
-            dropdown.innerHTML = '<div class="search-empty"><i class="fas fa-search" style="display:block;font-size:20px;color:#D1D5DB;margin-bottom:8px;"></i>Sin resultados para &laquo;' + escHtml(data.query || '') + '&raquo;</div>';
-            positionDropdown();
-            open();
-            return;
-          }
-          var grouped = {};
-          resultados.forEach(function (r) {
-            (grouped[r.tipo] = grouped[r.tipo] || []).push(r);
-          });
-          var order = ['NORMATIVA', 'ESTUDIO', 'USUARIO'].filter(function (t) { return grouped[t]; });
-          var html = '';
-          order.forEach(function (tipo) {
-            html += '<div class="search-section-title">' + escHtml(tipo) + ' (' + grouped[tipo].length + ')</div>';
-            grouped[tipo].forEach(function (r) {
-              html += '<a class="search-item" href="' + escHtml(r.url || '#') + '">'
-                    +   iconFor(r.tipo)
-                    +   '<div class="body">'
-                    +     '<div class="titulo">' + escHtml(r.titulo || '(sin título)') + '</div>'
-                    +     '<div class="subtitulo">' + highlight(r.subtitulo || r.correo || '', data.query) + '</div>'
-                    +   '</div>'
-                    + '</a>';
-            });
-          });
-          html += '<div class="search-footer"><a href="/buscar?q=' + encodeURIComponent(data.query || '') + '">Ver todos los resultados →</a></div>';
-          dropdown.innerHTML = html;
+        function positionDropdown() {
+          var rect = input.getBoundingClientRect();
+          dropdown.style.top   = (rect.bottom + 6) + 'px';
+          dropdown.style.left  = rect.left + 'px';
+          dropdown.style.width = Math.max(rect.width, 380) + 'px';
+        }
+
+        // ── Spinner ─────────────────────────────────────────────
+        function showSpinner() {
+          dropdown.innerHTML = '<div class="search-empty" style="padding:20px 0;">'
+            + '<div style="display:inline-block;width:20px;height:20px;border:2px solid #E5E7EB;border-top-color:#1B3A5C;border-radius:50%;animation:spin .6s linear infinite;"></div>'
+            + '</div>';
           positionDropdown();
           open();
         }
 
+        // ── Recientes ───────────────────────────────────────────
+        function showRecientes() {
+          var lista = getRecientes();
+          positionDropdown();
+          if (lista.length === 0) {
+            dropdown.innerHTML = '<div class="search-empty" style="padding:20px;">'
+              + '<i class="fas fa-search" style="font-size:22px;color:#E5E7EB;display:block;margin-bottom:8px;"></i>'
+              + 'Escribe para buscar normativas y estudios</div>';
+          } else {
+            var html = '<div class="search-section-title" style="display:flex;justify-content:space-between;align-items:center;">'
+              + '<span>Buscado recientemente</span>'
+              + '<button onclick="window._sbBorrarRec()" style="background:none;border:none;color:#9CA3AF;font-size:10px;cursor:pointer;font-family:inherit;">Borrar</button>'
+              + '</div>';
+            lista.forEach(function(r) {
+              html += '<a class="search-item sb-item" href="' + escHtml(r.url) + '">'
+                + '<div class="ic" style="background:#F3F4F6;"><i class="fas fa-clock" style="color:#9CA3AF;font-size:11px;"></i></div>'
+                + '<div class="body"><div class="titulo">' + escHtml(r.titulo) + '</div>'
+                + '<div class="subtitulo">' + escHtml(labelTipo(r.tipo)) + '</div></div>'
+                + '</a>';
+            });
+            dropdown.innerHTML = html;
+          }
+          open();
+        }
+        window._sbBorrarRec = borrarRecientes;
+
+        // ── Render resultados ────────────────────────────────────
+        function renderResults(data) {
+          var resultados = (data && data.resultados) || [];
+          var tipos      = (data && data.tiposPermitidos) || [];
+          if (tipos.length === 0) {
+            dropdown.innerHTML = '<div class="search-empty">No tienes permisos para buscar.</div>';
+            positionDropdown(); open(); return;
+          }
+          if (resultados.length === 0) {
+            dropdown.innerHTML = '<div class="search-empty">'
+              + '<i class="fas fa-search" style="display:block;font-size:20px;color:#D1D5DB;margin-bottom:8px;"></i>'
+              + 'Sin resultados para &laquo;' + escHtml(data.query || '') + '&raquo;</div>';
+            positionDropdown(); open(); return;
+          }
+          var grouped = {};
+          resultados.forEach(function(r) { (grouped[r.tipo] = grouped[r.tipo] || []).push(r); });
+          var order = ['NORMATIVA','ESTUDIO','USUARIO'].filter(function(t){ return grouped[t]; });
+          var html  = '';
+          order.forEach(function(tipo) {
+            html += '<div class="search-section-title">' + escHtml(labelTipo(tipo)) + ' <span style="font-weight:400;color:#9CA3AF;">(' + grouped[tipo].length + ')</span></div>';
+            grouped[tipo].forEach(function(r) {
+              html += '<a class="search-item sb-item" href="' + escHtml(r.url || '#') + '" data-titulo="' + escHtml(r.titulo||'') + '" data-tipo="' + escHtml(r.tipo||'') + '">'
+                    + iconFor(r.tipo)
+                    + '<div class="body">'
+                    +   '<div class="titulo">' + highlight(r.titulo || '(sin título)', data.query) + '</div>'
+                    +   '<div class="subtitulo">' + highlight(r.subtitulo || r.correo || '', data.query) + '</div>'
+                    + '</div></a>';
+            });
+          });
+          html += '<div class="search-footer"><a href="/buscar?q=' + encodeURIComponent(data.query || '') + '">Ver todos los resultados →</a></div>';
+          dropdown.innerHTML = html;
+
+          // Guardar reciente al hacer click
+          dropdown.querySelectorAll('a.sb-item').forEach(function(a) {
+            a.addEventListener('click', function() {
+              guardarReciente({ titulo: a.dataset.titulo, url: a.getAttribute('href'), tipo: a.dataset.tipo });
+            });
+          });
+
+          positionDropdown(); open();
+        }
+
+        // ── Fetch ────────────────────────────────────────────────
         function fetchResults(q) {
           currentReq++;
           var myReq = currentReq;
-          console.log('[SEARCH] fetch:', q);
+          showSpinner();
           fetch('/api/search?q=' + encodeURIComponent(q), { credentials: 'same-origin' })
-            .then(function (r) {
-              console.log('[SEARCH] response status:', r.status);
-              if (!r.ok) {
-                return r.text().then(function (txt) {
-                  throw new Error('HTTP ' + r.status + ': ' + (txt.length > 100 ? txt.substring(0, 100) : txt));
-                });
-              }
+            .then(function(r) {
+              if (!r.ok) return r.text().then(function(t){ throw new Error('HTTP ' + r.status); });
               return r.json();
             })
-            .then(function (data) {
+            .then(function(data) {
               if (myReq !== currentReq) return;
-              console.log('[SEARCH] data:', data);
               renderResults(data);
             })
-            .catch(function (err) {
+            .catch(function(err) {
               if (myReq !== currentReq) return;
-              console.error('[SEARCH] error:', err);
-              dropdown.innerHTML = '<div class="search-empty"><i class="fas fa-exclamation-circle" style="color:#E74C3C;font-size:16px;display:block;margin-bottom:6px;"></i>Error: ' + escHtml(err.message || 'Error de conexión') + '</div>';
-              positionDropdown();
-              open();
+              dropdown.innerHTML = '<div class="search-empty"><i class="fas fa-exclamation-circle" style="color:#E74C3C;font-size:16px;display:block;margin-bottom:6px;"></i>'
+                + 'Error al buscar. Intenta de nuevo.</div>';
+              positionDropdown(); open();
             });
         }
 
-        // ── Listeners ──────────────────────────────────────────
-        function positionDropdown() {
-          var rect = input.getBoundingClientRect();
-          dropdown.style.top  = (rect.bottom + 8) + 'px';
-          dropdown.style.left = rect.left + 'px';
-          dropdown.style.width = rect.width + 'px';
+        // ── Navegación por teclado ───────────────────────────────
+        function getItems() { return Array.from(dropdown.querySelectorAll('a.sb-item')); }
+
+        function setActive(idx) {
+          var items = getItems();
+          items.forEach(function(el, i) {
+            el.style.background = i === idx ? '#EBF5FB' : '';
+          });
+          activeIdx = idx;
+          if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
         }
 
-        input.addEventListener('input', function () {
-          var q = input.value.trim();
-          clearTimeout(debounceTimer);
-          if (q.length < minChars) { close(); return; }
-          debounceTimer = setTimeout(function () { fetchResults(q); }, 220);
-        });
-
-        input.addEventListener('focus', function () {
-          if (input.value.trim().length >= minChars && dropdown.innerHTML.trim().length > 0) {
-            positionDropdown();
-            open();
+        input.addEventListener('keydown', function(e) {
+          if (!isOpen()) return;
+          var items = getItems();
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActive(Math.min(activeIdx + 1, items.length - 1));
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActive(Math.max(activeIdx - 1, 0));
+          } else if (e.key === 'Enter') {
+            if (activeIdx >= 0 && items[activeIdx]) {
+              e.preventDefault();
+              guardarReciente({ titulo: items[activeIdx].dataset.titulo, url: items[activeIdx].getAttribute('href'), tipo: items[activeIdx].dataset.tipo });
+              items[activeIdx].click();
+            }
+          } else if (e.key === 'Escape') {
+            close();
           }
         });
 
-        // Cerrar dropdown al hacer click FUERA del input y FUERA del dropdown
-        document.addEventListener('click', function (e) {
-          if (form.contains(e.target)) return;       // click dentro del form (input)
-          if (dropdown.contains(e.target)) return;    // click dentro del dropdown
+        // ── Listeners ────────────────────────────────────────────
+        input.addEventListener('input', function() {
+          var q = input.value.trim();
+          clearTimeout(debounceTimer);
+          if (q.length < minChars) { close(); if (document.activeElement === input) showRecientes(); return; }
+          debounceTimer = setTimeout(function() { fetchResults(q); }, 220);
+        });
+
+        input.addEventListener('focus', function() {
+          var q = input.value.trim();
+          if (q.length >= minChars && dropdown.innerHTML.trim().length > 0) {
+            positionDropdown(); open();
+          } else if (q.length < minChars) {
+            showRecientes();
+          }
+        });
+
+        document.addEventListener('click', function(e) {
+          if (form.contains(e.target)) return;
+          if (dropdown.contains(e.target)) return;
           close();
         });
 
-        // Cerrar con Escape
-        document.addEventListener('keydown', function (e) {
+        document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape' && isOpen()) close();
+          // Atajo / o Ctrl+K → enfocar el buscador
+          if ((e.key === '/' || (e.ctrlKey && e.key === 'k')) && document.activeElement !== input && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            input.focus();
+            input.select();
+          }
         });
       })();
     </script>
