@@ -39,7 +39,7 @@ public class PasswordResetController {
                                              RedirectAttributes ra) {
         if (authService.validarToken(token).isEmpty()) {
             ra.addFlashAttribute("errorRecovery", "El enlace ha expirado o ya fue utilizado. Solicita uno nuevo.");
-            return "redirect:/login";
+            return "redirect:/service/repositorio/login";
         }
         model.addAttribute("token", token);
         return "auth/restablecer-contrasena";
@@ -64,6 +64,6 @@ public class PasswordResetController {
         } catch (IllegalArgumentException e) {
             ra.addFlashAttribute("errorRecovery", "El enlace ha expirado o ya fue utilizado.");
         }
-        return "redirect:/login";
+        return "redirect:/service/repositorio/login";
     }
 }

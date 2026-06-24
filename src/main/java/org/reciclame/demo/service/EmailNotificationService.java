@@ -23,6 +23,14 @@ public class EmailNotificationService {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    /**
+     * Path del login (canónico). Configurable vía {@code app.login-path}.
+     * Por defecto: {@code /service/repositorio/login}, alineado con el patrón
+     * del menú "Ejes de Gestión +" del sitio público.
+     */
+    @Value("${app.login-path:/service/repositorio/login}")
+    private String loginPath;
+
     public EmailNotificationService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
@@ -75,7 +83,7 @@ public class EmailNotificationService {
                 <strong style="color:#2ECC71">aprobada</strong>. Ya puedes acceder con tus credenciales.</p>
                 """,
                 "Iniciar sesión",
-                baseUrl + "/login"
+                baseUrl + loginPath
         ));
     }
 
@@ -119,7 +127,7 @@ public class EmailNotificationService {
                 <strong style="color:#2ECC71">reactivada</strong>. Ya puedes ingresar normalmente.</p>
                 """,
                 "Iniciar sesión",
-                baseUrl + "/login"
+                baseUrl + loginPath
         ));
     }
 
@@ -163,7 +171,7 @@ public class EmailNotificationService {
                 <p style="margin:0 0 20px">Accede a la plataforma para revisar el documento completo.</p>
                 """,
                 "Ver normativa",
-                baseUrl + "/login"
+                baseUrl + loginPath
         ));
     }
 
