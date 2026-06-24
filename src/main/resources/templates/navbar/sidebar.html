@@ -19,14 +19,33 @@
     .nav-subitem { padding: 6px 10px !important; font-size: 12px !important; }
     .nav-subitem.active { background: rgba(46,204,113,.18); color: #fff !important; }
 
-    /* ── Mobile: ocultar sidebar, mostrar dock ── */
+    /* ── Mobile: sidebar como drawer off-canvas, mostrar dock ── */
     @media (max-width: 767px) {
-      .sidebar-nav { display: none !important; }
+      .sidebar-nav {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; bottom: 0 !important;
+        width: 280px !important; max-width: 85vw !important;
+        height: 100vh !important; z-index: 9999 !important;
+        transform: translateX(-100%) !important;
+        transition: transform .28s cubic-bezier(.4,0,.2,1) !important;
+        box-shadow: 6px 0 24px rgba(0,0,0,.28) !important;
+        overflow-y: auto !important;
+        display: flex !important;
+      }
+      .sidebar-nav.drawer-open { transform: translateX(0) !important; }
       #mobile-dock { display: flex !important; }
       body { padding-bottom: 64px; }
+      /* Scrim */
+      #sidebar-scrim {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.52); backdrop-filter: blur(2px);
+        z-index: 9998; opacity: 0; transition: opacity .25s;
+      }
+      #sidebar-scrim.open { display: block; opacity: 1; }
     }
     @media (min-width: 768px) {
       #mobile-dock { display: none !important; }
+      #sidebar-scrim { display: none !important; }
     }
 
     /* ── Bottom Dock ── */
@@ -233,9 +252,9 @@
       <a class="dock-item" th:href="@{/socio/mi-unidad}">
         <i class="fas fa-cloud"></i><span>Mi Unidad</span>
       </a>
-      <a class="dock-item" th:href="@{/socio/perfil}">
-        <i class="fas fa-user"></i><span>Perfil</span>
-      </a>
+      <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+        <i class="fas fa-ellipsis-h"></i><span>Más</span>
+      </button>
     </th:block>
 
     <!-- ADMIN -->
@@ -354,7 +373,7 @@
       document.addEventListener('click', function (e) {
         if (window.innerWidth > 767) return;
         var rol = document.body.getAttribute('data-rol');
-        if (rol !== 'ADMIN' && rol !== 'SUPERADMIN') return;
+        if (rol !== 'ADMIN' && rol !== 'SUPERADMIN' && rol !== 'SOCIO') return;
         var item = e.target.closest('.sidebar-nav .nav-item, .sidebar-nav .nav-subitem');
         if (!item) return;
         setTimeout(_cerrarDrawer, 50);

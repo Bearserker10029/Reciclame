@@ -420,6 +420,39 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+
+      /* Stats 4 cols → 1 col en mobile (más espacio para texto) */
+      div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      div[style*="grid-template-columns:repeat(5,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+      /* Stat card: padding reducido, ícono más pequeño, texto que cabe */
+      .stat-card { padding: 14px 12px !important; }
+      .stat-card div[style*="font-size:11px"] { font-size: 10px !important; letter-spacing: .04em !important; }
+      .stat-card div[style*="width:44px"] { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
+      .stat-card div[style*="font-size:32px"] { font-size: 24px !important; }
+
+      /* Gráficas apiladas */
+      div[style*="grid-template-columns:2fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+      /* Chart.js responsive: el canvas debe estar en contenedor con ancho definido */
+      .chart-card { padding: 16px !important; }
+      .chart-card > div[style*="position:relative"] { width: 100% !important; overflow: hidden !important; }
+      canvas { width: 100% !important; max-width: 100% !important; }
+
+      /* Tabla chatbot: ocultar cols secundarias (Rol, Empresa, Idioma, Errores, Primera pregunta) */
+      #chat-tabla { min-width: unset !important; font-size: 11px !important; }
+      #chat-tabla th:nth-child(3), #chat-tabla td:nth-child(3),
+      #chat-tabla th:nth-child(4), #chat-tabla td:nth-child(4),
+      #chat-tabla th:nth-child(5), #chat-tabla td:nth-child(5),
+      #chat-tabla th:nth-child(7), #chat-tabla td:nth-child(7),
+      #chat-tabla th:nth-child(9), #chat-tabla td:nth-child(9) { display: none !important; }
+
+      /* Selects de filtros: ancho completo */
+      select[style*="min-width"] { min-width: unset !important; width: 100% !important; }
+    }
   </style>
 </head>
 
