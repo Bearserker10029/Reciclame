@@ -24,6 +24,16 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 16px !important; padding-bottom: 80px !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+      .glass-card > div[style*="display:flex;align-items:center;gap:32px"] { flex-direction: column !important; align-items: flex-start !important; }
+      .tr-grid { grid-template-columns: 1fr !important; }
+      .tr-cards { grid-template-columns: 1fr 1fr !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;

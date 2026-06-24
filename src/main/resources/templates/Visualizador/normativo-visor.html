@@ -89,6 +89,10 @@
       color: #EF4444;
       font-weight: 600;
     }
+    @media (max-width: 767px) {
+      #mobile-dock { display: none !important; }
+      iframe[allowfullscreen] { min-height: calc(100vh - 100px) !important; }
+    }
   </style>
 </head>
 

@@ -722,6 +722,72 @@
         transform: scale(1.4);
       }
     }
+
+    /* ═══ RESPONSIVE MOBILE ══════════════════════════════════════ */
+    @media (max-width: 767px) {
+      body {
+        overflow: auto; /* login form scroll on small screens */
+        background: var(--navy);
+      }
+
+      .layout {
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      /* Panel izquierdo: full width, sin altura mínima forzada */
+      .left {
+        width: 100%;
+        min-height: 100vh;
+        padding: 32px 24px 48px;
+        box-shadow: none;
+      }
+
+      /* Ocultar panel derecho (decorativo) en mobile */
+      .right {
+        display: none !important;
+      }
+
+      /* Logo más compacto */
+      .logo-area {
+        margin-bottom: 20px;
+      }
+
+      .logo-area img {
+        height: 30px;
+      }
+
+      /* Reducir tamaño de título */
+      .section-title {
+        font-size: 18px;
+      }
+
+      /* Formulario: campos táctiles más grandes */
+      .glass-input,
+      .glass-input.form-control {
+        font-size: 16px; /* evita zoom automático en iOS */
+        padding: 12px 14px 12px 38px;
+      }
+
+      .btn-primary,
+      .btn.btn-primary {
+        padding: 14px 20px;
+        font-size: 15px;
+      }
+
+      /* Panel registro: puede ser largo, asegurar scroll */
+      #panel-registro {
+        overflow-y: visible;
+      }
+
+      /* success-box más compacta */
+      .success-box {
+        padding: 18px;
+      }
+
+      /* Glow outline puede generar artefactos en mobile — reducir */
+      .glow-outline { display: none; }
+    }
   </style>
 </head>
 

@@ -529,26 +529,21 @@ select.form-control {
 #app-dock {
   display: none;
   position: fixed;
-  left: 8px;
-  right: 8px;
-  bottom: 8px;
-  width: auto;
-  max-width: calc(100vw - 16px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   box-sizing: border-box;
-  z-index: 997;
-  background: rgba(255, 255, 255, .82);
-  backdrop-filter: blur(18px) saturate(180%);
-  -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, .6);
-  border-radius: 22px;
-  box-shadow:
-    0 12px 32px rgba(27, 58, 92, .18),
-    0 2px 6px rgba(0, 0, 0, .08),
-    inset 0 1px 0 rgba(255, 255, 255, .7);
-  padding: 6px;
-  justify-content: space-around;
-  align-items: center;
-  gap: 2px;
+  z-index: 9990;
+  background: #1B3A5C;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, .2);
+  padding: 0;
+  height: 60px;
+  justify-content: stretch;
+  align-items: stretch;
+  gap: 0;
 }
 .dock-item {
   flex: 1;
@@ -556,20 +551,19 @@ select.form-control {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 7px 2px 5px;
-  border-radius: 14px;
+  gap: 3px;
+  padding: 6px 2px;
+  border-radius: 0;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #6B7280;
+  color: rgba(255, 255, 255, .55);
   font-family: inherit;
-  font-size: 9.5px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: .01em;
   text-decoration: none;
   position: relative;
-  transition: transform .15s ease, color .15s ease, background .15s ease;
+  transition: color .15s ease, background .15s ease;
   min-width: 0;
   -webkit-tap-highlight-color: transparent;
 }
@@ -581,18 +575,38 @@ select.form-control {
   white-space: nowrap;
   line-height: 1.1;
 }
-.dock-item:hover { background: rgba(46, 204, 113, .08); color: #1B3A5C; }
-.dock-item:active { transform: scale(.92); }
+.dock-item:hover { color: #2ECC71; background: transparent; }
+.dock-item:active { transform: scale(.95); }
 .dock-item.active { color: #2ECC71; }
-.dock-item.active i { filter: drop-shadow(0 1px 2px rgba(46, 204, 113, .4)); }
+.dock-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: #2ECC71;
+  border-radius: 0 0 3px 3px;
+}
+.dock-item--more { color: rgba(255, 255, 255, .55) !important; background: transparent !important; }
+.dock-item--more i {
+  background: none !important;
+  color: rgba(255, 255, 255, .7) !important;
+  width: auto !important; height: auto !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 18px !important;
+  display: inline !important;
+  filter: none !important;
+}
+.dock-item--more:hover { color: #2ECC71 !important; background: transparent !important; }
+.dock-item--more:hover i { transform: none !important; color: #2ECC71 !important; }
 .dock-item .dock-badge {
   position: absolute;
-  top: 3px;
-  right: 22%;
+  top: 5px;
+  right: calc(50% - 18px);
   min-width: 16px;
   height: 16px;
-  padding: 0 4px;
-  border-radius: 999px;
+  padding: 0 3px;
+  border-radius: 8px;
   background: #E74C3C;
   color: #fff;
   font-size: 9px;
@@ -600,14 +614,13 @@ select.form-control {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(231, 76, 60, .5);
-  border: 1.5px solid #fff;
+  border: 1.5px solid #1B3A5C;
 }
 
 /* (FAB eliminado: el drawer se abre desde el ítem "Más" del dock) */
 
 /* ── Media query: activar layout mobile ───────────────────── */
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   /* Topbar más compacto */
   #navbar {
     height: 56px !important;
@@ -912,7 +925,7 @@ select.form-control {
 }
 
 /* Visores iframe: ocultar dock (esos modos son fullscreen) */
-@media (max-width: 760px) {
+@media (max-width: 767px) {
   body.iframe-fullscreen #app-dock,
   body.iframe-fullscreen .topbar-burger { display: none !important; }
   body.iframe-fullscreen main { padding-bottom: 16px !important; }
@@ -938,11 +951,31 @@ select.form-control {
 
 /* Safe area iOS (notch/home indicator) */
 @supports (padding: max(0px)) {
-  @media (max-width: 760px) {
+  @media (max-width: 767px) {
     #app-dock {
       left: max(8px, env(safe-area-inset-left));
       right: max(8px, env(safe-area-inset-right));
       bottom: max(8px, env(safe-area-inset-bottom));
     }
+  }
+}
+
+/* ── Responsive mobile: chatbot sobre el dock ── */
+@media (max-width: 767px) {
+  #chatbot-bubble {
+    bottom: 72px !important;
+    right: 14px !important;
+    width: 56px !important;
+    height: 56px !important;
+  }
+  #chatbot-bubble img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  #chatbot-panel {
+    bottom: 136px !important;
+    right: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-height: 60vh !important;
   }
 }

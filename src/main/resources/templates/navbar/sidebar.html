@@ -19,6 +19,49 @@
     .nav-subitem { padding: 6px 10px !important; font-size: 12px !important; }
     .nav-subitem.active { background: rgba(46,204,113,.18); color: #fff !important; }
 
+    /* ── Mobile: ocultar sidebar, mostrar dock ── */
+    @media (max-width: 767px) {
+      .sidebar-nav { display: none !important; }
+      #mobile-dock { display: flex !important; }
+      body { padding-bottom: 64px; }
+    }
+    @media (min-width: 768px) {
+      #mobile-dock { display: none !important; }
+    }
+
+    /* ── Bottom Dock ── */
+    #mobile-dock {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9990;
+      height: 60px;
+      background: #1B3A5C;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: none;
+      align-items: stretch;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+    }
+    .dock-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      cursor: pointer; color: rgba(255,255,255,.55);
+      font-size: 10px; font-weight: 600; text-decoration: none;
+      transition: color .15s, background .15s;
+      padding: 6px 2px; position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dock-item i { font-size: 18px; }
+    .dock-item:hover, .dock-item.active { color: #2ECC71; }
+    .dock-item.active::after {
+      content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+      height: 2px; background: #2ECC71; border-radius: 0 0 3px 3px;
+    }
+    .dock-badge {
+      position: absolute; top: 5px; right: calc(50% - 18px);
+      background: #E74C3C; color: #fff; font-size: 9px; font-weight: 800;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; border: 1.5px solid #1B3A5C;
+    }
+
     /* Gradient masks for scroll indication */
     .scroll-mask {
       position: fixed;
@@ -151,6 +194,89 @@
       </div>
     </div>
   </aside>
+
+  <!-- ── Bottom Dock (mobile only) ── -->
+  <nav id="mobile-dock">
+
+    <!-- VISUALIZADOR -->
+    <th:block th:if="${rol == 'VISUALIZADOR'}">
+      <a class="dock-item" th:href="@{/visualizador/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/notificaciones}" style="position:relative;">
+        <i class="fas fa-bell"></i>
+        <span th:if="${noLeidasCount != null and noLeidasCount > 0}" class="dock-badge" th:text="${noLeidasCount}">0</span>
+        <span>Alertas</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/perfil}">
+        <i class="fas fa-user"></i><span>Perfil</span>
+      </a>
+    </th:block>
+
+    <!-- SOCIO -->
+    <th:block th:if="${rol == 'SOCIO'}">
+      <a class="dock-item" th:href="@{/socio/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/mi-unidad}">
+        <i class="fas fa-cloud"></i><span>Mi Unidad</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/perfil}">
+        <i class="fas fa-user"></i><span>Perfil</span>
+      </a>
+    </th:block>
+
+    <!-- ADMIN -->
+    <th:block th:if="${rol == 'ADMIN'}">
+      <a class="dock-item" th:href="@{/admin/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/usuarios}">
+        <i class="fas fa-users"></i><span>Usuarios</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/notificaciones}" style="position:relative;">
+        <i class="fas fa-bell"></i>
+        <span th:if="${noLeidasCount != null and noLeidasCount > 0}" class="dock-badge" th:text="${noLeidasCount}">0</span>
+        <span>Alertas</span>
+      </a>
+    </th:block>
+
+    <!-- SUPERADMIN: usa dock.html propio, no se renderiza aquí -->
+
+  </nav>
+
+  <script>
+    // Marcar item activo en el dock
+    document.addEventListener('DOMContentLoaded', function() {
+      var path = window.location.pathname;
+      document.querySelectorAll('#mobile-dock .dock-item').forEach(function(a) {
+        var href = a.getAttribute('href');
+        if (href && path.startsWith(href) && href !== '/') {
+          a.classList.add('active');
+        } else if (href === path) {
+          a.classList.add('active');
+        }
+      });
+    });
+  </script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {

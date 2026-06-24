@@ -4,6 +4,16 @@
 <body>
   <th:block th:fragment="perfil-content">
     <style>
+      @media (max-width: 767px) {
+        /* Layout principal perfil: 1 columna */
+        div[style*="grid-template-columns:1fr 340px"] { grid-template-columns: 1fr !important; }
+        /* Ocultar tarjeta credencial en mobile (queda al fondo y ocupa mucho) */
+        div[style*="grid-template-columns:1fr 340px"] > div:last-child { display: none; }
+        /* Form fields: 1 columna en mobile */
+        div[style*="grid-template-columns:1fr 1fr"][style*="gap:14px"] { grid-template-columns: 1fr !important; }
+        main { padding-bottom: 80px !important; }
+      }
+
       @keyframes fadeUp {
         from {
           opacity: 0;

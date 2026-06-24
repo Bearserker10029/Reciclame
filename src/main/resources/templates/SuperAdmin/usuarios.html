@@ -30,6 +30,16 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      .table-responsive { overflow-x: auto; }
+      table { min-width: unset !important; font-size: 12px !important; }
+      table th:nth-child(3), table td:nth-child(3),
+      table th:nth-child(5), table td:nth-child(5) { display: none !important; }
+      .filter-row, div[style*="display:flex"][style*="gap"][style*="flex-wrap"] { flex-wrap: wrap !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
