@@ -252,20 +252,21 @@
       <a class="dock-item" th:href="@{/admin/usuarios}">
         <i class="fas fa-users"></i><span>Usuarios</span>
       </a>
-      <a class="dock-item" th:href="@{/admin/notificaciones}" style="position:relative;">
-        <i class="fas fa-bell"></i>
-        <span th:if="${noLeidasCount != null and noLeidasCount > 0}" class="dock-badge" th:text="${noLeidasCount}">0</span>
-        <span>Alertas</span>
-      </a>
+      <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+        <i class="fas fa-ellipsis-h"></i><span>Más</span>
+      </button>
     </th:block>
 
     <!-- SUPERADMIN: usa dock.html propio, no se renderiza aquí -->
 
   </nav>
 
-  <script>
-    // Marcar item activo en el dock
+  <!-- Scrim del drawer del sidebar (mobile) — fuera del nav, a nivel de body -->
+  <div id="sidebar-scrim" onclick="reciclameCerrarDrawer()"></div>
+
+<script>
     document.addEventListener('DOMContentLoaded', function() {
+      // Marcar item activo en el dock
       var path = window.location.pathname;
       document.querySelectorAll('#mobile-dock .dock-item').forEach(function(a) {
         var href = a.getAttribute('href');
@@ -275,7 +276,98 @@
           a.classList.add('active');
         }
       });
+
+      // Si estamos en Admin: el botón "Alertas" fue reemplazado por "Más".
+      // Mantener el contador de notificaciones en el badge del item "Notificaciones"
+      // dentro del sidebar (no en el dock).
+      var rol = document.body.getAttribute('data-rol');
+      if (rol === 'ADMIN' && window.innerWidth <= 767) {
+        var sidebarNotif = document.getElementById('nav-notificaciones');
+        if (sidebarNotif) {
+          var badge = sidebarNotif.querySelector('span[style*="E74C3C"], span[style*="background:#E74C3C"]');
+          if (badge && badge.textContent && parseInt(badge.textContent, 10) > 0) {
+            // Asegurar que el badge sea visible al menos en mobile
+            badge.style.display = 'flex';
+          }
+        }
+      }
     });
+  </script>
+
+  <!-- ── Drawer del sidebar (Admin y SuperAdmin) ── -->
+  <script>
+    (function () {
+      /* Funciones unificadas para Admin y SuperAdmin.
+         El sidebar-nav en mobile está oculto por el media query de Sergio
+         (`display:none !important`). Al abrir el drawer forzamos visibilidad
+         y posición fija con !important inline; al cerrar quitamos los overrides
+         para que el media query vuelva a ocultar el sidebar. */
+      function _abrirDrawer() {
+        if (window.innerWidth > 767) return;
+        var sb = document.querySelector('.sidebar-nav');
+        var sc = document.getElementById('sidebar-scrim');
+        if (sb) {
+          sb.style.setProperty('display', 'flex', 'important');
+          sb.style.setProperty('position', 'fixed', 'important');
+          sb.style.setProperty('top', '0', 'important');
+          sb.style.setProperty('left', '0', 'important');
+          sb.style.setProperty('bottom', '0', 'important');
+          sb.style.setProperty('height', '100vh', 'important');
+          sb.style.setProperty('width', '280px', 'important');
+          sb.style.setProperty('max-width', '85vw', 'important');
+          sb.style.setProperty('z-index', '9999', 'important');
+          sb.style.setProperty('transform', 'translateX(0)', 'important');
+          sb.classList.add('open');
+        }
+        if (sc) sc.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function _cerrarDrawer() {
+        if (window.innerWidth > 767) return;
+        var sb = document.querySelector('.sidebar-nav');
+        var sc = document.getElementById('sidebar-scrim');
+        if (sb) {
+          sb.classList.remove('open');
+          sb.style.removeProperty('display');
+          sb.style.removeProperty('position');
+          sb.style.removeProperty('top');
+          sb.style.removeProperty('left');
+          sb.style.removeProperty('bottom');
+          sb.style.removeProperty('height');
+          sb.style.removeProperty('width');
+          sb.style.removeProperty('max-width');
+          sb.style.removeProperty('z-index');
+          sb.style.removeProperty('transform');
+        }
+        if (sc) sc.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      /* Exponer con los nombres unificados (compatibilidad con dock.html de SuperAdmin) */
+      window.reciclameAbrirDrawer = _abrirDrawer;
+      window.reciclameCerrarDrawer = _cerrarDrawer;
+      /* Mantener también el alias usado desde sidebar.html */
+      window.reciclameAbrirDrawerAdmin = _abrirDrawer;
+      window.reciclameCerrarDrawerAdmin = _cerrarDrawer;
+
+      /* Cerrar el drawer al hacer click en cualquier nav-item del sidebar (mobile) */
+      document.addEventListener('click', function (e) {
+        if (window.innerWidth > 767) return;
+        var rol = document.body.getAttribute('data-rol');
+        if (rol !== 'ADMIN' && rol !== 'SUPERADMIN') return;
+        var item = e.target.closest('.sidebar-nav .nav-item, .sidebar-nav .nav-subitem');
+        if (!item) return;
+        setTimeout(_cerrarDrawer, 50);
+      }, true);
+
+      /* Cerrar con Escape */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && window.innerWidth <= 767) {
+          var rol = document.body.getAttribute('data-rol');
+          if (rol === 'ADMIN' || rol === 'SUPERADMIN') _cerrarDrawer();
+        }
+      });
+    })();
   </script>
 
   <script>

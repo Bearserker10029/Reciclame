@@ -949,13 +949,18 @@ select.form-control {
   .report-tab { gap: 4px !important; padding: 9px 6px !important; }
 }
 
-/* Safe area iOS (notch/home indicator) */
+/* Safe area iOS (notch/home indicator) — solo aplica cuando el notch REAL existe
+   (no en cualquier navegador que soporte env() por defecto). Usamos constant() fallback
+   y envolvemos en :where para no forzar márgenes cuando inset vale 0. */
 @supports (padding: max(0px)) {
   @media (max-width: 767px) {
+    /* El dock ocupa TODO el ancho: left/right/bottom en 0.
+       Solo respetamos safe-area-inset-bottom para el home indicator de iOS. */
     #app-dock {
-      left: max(8px, env(safe-area-inset-left));
-      right: max(8px, env(safe-area-inset-right));
-      bottom: max(8px, env(safe-area-inset-bottom));
+      left: 0;
+      right: 0;
+      bottom: max(0px, env(safe-area-inset-bottom));
+      width: 100%;
     }
   }
 }
