@@ -222,6 +222,13 @@
       }
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 16px !important; padding-bottom: 80px !important; }
+      .tr-grid { grid-template-columns: 1fr !important; }
+      .tr-cards { grid-template-columns: 1fr 1fr !important; }
+    }
+
     @media (max-width: 768px) {
       main {
         padding: 16px !important;

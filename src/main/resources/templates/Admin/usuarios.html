@@ -520,6 +520,20 @@
       animation: rowHighlight 2.8s ease-out forwards;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      /* Tabla usuarios: scroll horizontal, ocultar columnas secundarias */
+      .table-responsive { overflow-x: auto; }
+      table { min-width: unset !important; font-size: 12px !important; }
+      table th:nth-child(3), table td:nth-child(3),
+      table th:nth-child(5), table td:nth-child(5) { display: none !important; }
+      /* Filtros */
+      .filter-row, div[style*="display:flex"][style*="gap"][style*="flex-wrap"] { flex-wrap: wrap !important; }
+      /* Stats 2 col */
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr 1fr !important; }
+    }
+
     /* ── Entry animations ───────────────────────────────── */
     @keyframes fadeUp {
       from {

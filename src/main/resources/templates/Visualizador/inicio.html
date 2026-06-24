@@ -24,6 +24,21 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      /* Layout principal: sidebar oculto, content a full width */
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 16px !important; padding-bottom: 80px !important; }
+      /* Hero banners: 1 columna */
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+      /* Stats: 2 columnas en mobile */
+      div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+      /* Donut: apilar */
+      .glass-card > div[style*="display:flex;align-items:center;gap:32px"] { flex-direction: column !important; align-items: flex-start !important; }
+      /* Top recientes: 1 columna */
+      .tr-grid { grid-template-columns: 1fr !important; }
+      .tr-cards { grid-template-columns: 1fr 1fr !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;

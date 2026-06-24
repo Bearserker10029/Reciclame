@@ -25,6 +25,31 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      .norm-layout { grid-template-columns: 1fr !important; }
+      .norm-layout > aside { display: none; }
+      .filter-row { flex-wrap: wrap; gap: 8px !important; }
+      .filter-row > * { flex: 1 1 calc(50% - 4px) !important; min-width: 120px; }
+      .norm-tabs { gap: 4px !important; }
+      .norm-tab { padding: 7px 12px !important; font-size: 12px !important; }
+      /* SuperAdmin normativo tiene 8 cols: Título(1) Año(2) Tipo(3) Clasif(4) Estado(5) Temática(6) Acceso(7) Gestión(8) */
+      #norm-table { min-width: unset !important; width: 100%; table-layout: fixed; }
+      #norm-table th:nth-child(3), #norm-table td:nth-child(3),
+      #norm-table th:nth-child(4), #norm-table td:nth-child(4),
+      #norm-table th:nth-child(6), #norm-table td:nth-child(6),
+      #norm-table th:nth-child(8), #norm-table td:nth-child(8) { display: none !important; }
+      #norm-table th:nth-child(1) { width: 45% !important; }
+      #norm-table th:nth-child(2) { width: 15% !important; }
+      #norm-table th:nth-child(5) { width: 20% !important; }
+      #norm-table th:nth-child(7) { width: 20% !important; }
+      #norm-table td:first-child { font-size: 11px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      #norm-table td:nth-child(7) .btn { padding: 3px 8px !important; font-size: 11px !important; }
+      /* Ocultar texto de botones, solo ícono */
+      #norm-table td:nth-child(7) .norm-btn-label { display: none !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
