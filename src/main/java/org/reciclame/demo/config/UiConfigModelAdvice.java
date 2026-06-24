@@ -1,6 +1,7 @@
 package org.reciclame.demo.config;
 
 import org.reciclame.demo.service.ConfiguracionUiRolService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -19,12 +20,16 @@ public class UiConfigModelAdvice {
 
     private final ConfiguracionUiRolService service;
 
+    @Value("${chatbot.enabled:true}")
+    private boolean chatbotEnabled;
+
     public UiConfigModelAdvice(ConfiguracionUiRolService service) {
         this.service = service;
     }
 
     @ModelAttribute
     public void addUiConfig(Model model) {
+        model.addAttribute("chatbotHabilitado", chatbotEnabled);
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null || !auth.isAuthenticated()) return;

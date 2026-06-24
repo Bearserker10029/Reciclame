@@ -478,14 +478,14 @@ public abstract class BaseReportesController {
         for (Map<String, Object> r : stats.getConversacionesPorRol()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", r.get("rol"));
-            row.put("value", r.get("total"));
+            row.put("value", ((Number) r.get("total")).intValue());
             rolData.add(row);
         }
         List<Map<String, ?>> mensajesData = new ArrayList<>();
         for (Map<String, Object> r : stats.getMensajesPorDia()) {
             Map<String, Object> row = new HashMap<>();
             row.put("category", r.get("fecha"));
-            row.put("value", ((Number) r.get("user")).longValue() + ((Number) r.get("bot")).longValue());
+            row.put("value", ((Number) r.get("user")).intValue() + ((Number) r.get("bot")).intValue());
             mensajesData.add(row);
         }
 
@@ -529,14 +529,14 @@ public abstract class BaseReportesController {
         for (Map<String, Object> r : stats.getConversacionesPorRol()) {
             Map<String, Object> row = new HashMap<>();
             row.put("label", r.get("rol"));
-            row.put("value", r.get("total"));
+            row.put("value", ((Number) r.get("total")).intValue());
             rolData.add(row);
         }
         List<Map<String, ?>> mensajesData = new ArrayList<>();
         for (Map<String, Object> r : stats.getMensajesPorDia()) {
             Map<String, Object> row = new HashMap<>();
             row.put("category", r.get("fecha"));
-            row.put("value", ((Number) r.get("user")).longValue() + ((Number) r.get("bot")).longValue());
+            row.put("value", ((Number) r.get("user")).intValue() + ((Number) r.get("bot")).intValue());
             mensajesData.add(row);
         }
 
