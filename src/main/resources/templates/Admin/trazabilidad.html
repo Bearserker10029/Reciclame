@@ -189,6 +189,22 @@
       padding: 12px 20px; background: #FAFBFC; border-top: 1px solid #F3F4F6;
       display: flex; align-items: center; justify-content: space-between;
     }
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      /* Tabla: cols Fecha(1) Usuario(2) Acción(3) Módulo(4) Descripción(5) IP(6) Resultado(7) Detalle(8) */
+      /* Ocultar: Módulo(4), Descripción(5), IP(6), Detalle(8) */
+      .table th:nth-child(4), .table td:nth-child(4),
+      .table th:nth-child(5), .table td:nth-child(5),
+      .table th:nth-child(6), .table td:nth-child(6),
+      .table th:nth-child(8), .table td:nth-child(8) { display: none !important; }
+      .table { min-width: unset !important; font-size: 11px !important; }
+      .table td { padding: 8px 6px !important; }
+      /* Chips de módulo encima de la tabla */
+      div[style*="flex-wrap:wrap"] { gap: 6px !important; }
+      /* Filtros apilados */
+      div[style*="min-width:200px"] { min-width: unset !important; width: 100% !important; }
+      .traza-footer { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+    }
   </style>
 </head>
 
