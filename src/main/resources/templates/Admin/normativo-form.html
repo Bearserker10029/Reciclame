@@ -381,6 +381,13 @@
     #toast-norm.error {
       background: linear-gradient(135deg, #E74C3C, #C0392B);
     }
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      /* Layout principal 1fr 380px → 1 col */
+      div[style*="grid-template-columns:1fr 380px"] { grid-template-columns: 1fr !important; }
+      /* Campos dobles 1fr 1fr → 1 col */
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
   </style>
 </head>
 
