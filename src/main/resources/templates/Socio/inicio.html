@@ -480,7 +480,7 @@
       var prefix = window.location.pathname.startsWith('/visualizador') ? '/visualizador' : '/socio';
       window.location.href = prefix + '/' + (map[page] || page);
     }
-    function goLogin() { window.location.href = '/login'; }
+    function goLogin() { window.location.href = '/service/repositorio/login'; }
 
     document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('donut-admin');

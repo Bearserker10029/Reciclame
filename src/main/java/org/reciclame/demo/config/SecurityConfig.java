@@ -36,7 +36,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
+                        .requestMatchers("/", "/inicio", "/inicio/**",
+                                "/service/repositorio/login", "/service/repositorio/**",
+                                "/login", "/logout", "/registro", "/registro/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/legal/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
@@ -79,15 +81,15 @@ public class SecurityConfig {
                 )
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
+                        .loginPage("/service/repositorio/login")
+                        .loginProcessingUrl("/service/repositorio/login")
                         .successHandler(successHandler)
-                        .failureUrl("/login?error=true")
+                        .failureUrl("/service/repositorio/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessUrl("/service/repositorio/login?logout=true")
                         // Support both container sessions (dev) and Spring Session cookie (prod)
                         .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)

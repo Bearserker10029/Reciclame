@@ -37,7 +37,7 @@ public class RoleBasedAccessDeniedHandler implements AccessDeniedHandler {
             String redirectUrl = resolveHomeByRole(auth);
             response.sendRedirect(request.getContextPath() + redirectUrl);
         } else {
-            response.sendRedirect(request.getContextPath() + "/login");
+            response.sendRedirect(request.getContextPath() + "/service/repositorio/login");
         }
     }
 
@@ -51,6 +51,6 @@ public class RoleBasedAccessDeniedHandler implements AccessDeniedHandler {
                 case "ROLE_IMPERSONATOR":  return "/socio/inicio";
             }
         }
-        return "/login";
+        return "/service/repositorio/login";
     }
 }
