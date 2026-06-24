@@ -55,6 +55,10 @@
       max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .doc-meta { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+    @media (max-width: 767px) {
+      #mobile-dock { display: none !important; }
+      iframe[allowfullscreen] { min-height: calc(100vh - 100px) !important; }
+    }
   </style>
 </head>
 

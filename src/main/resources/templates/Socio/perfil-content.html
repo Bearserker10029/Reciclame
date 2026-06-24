@@ -4,6 +4,13 @@
 <body>
   <th:block th:fragment="perfil-content">
     <style>
+      @media (max-width: 767px) {
+        div[style*="grid-template-columns:1fr 340px"] { grid-template-columns: 1fr !important; }
+        div[style*="grid-template-columns:1fr 340px"] > div:last-child { display: none; }
+        div[style*="grid-template-columns:1fr 1fr"][style*="gap:14px"] { grid-template-columns: 1fr !important; }
+        main { padding-bottom: 80px !important; }
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;

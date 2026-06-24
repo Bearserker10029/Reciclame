@@ -25,6 +25,32 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      .norm-layout { grid-template-columns: 1fr !important; }
+      .norm-layout > aside { display: none; }
+      .filter-row { flex-wrap: wrap; gap: 8px !important; }
+      .filter-row > * { flex: 1 1 calc(50% - 4px) !important; min-width: 120px; }
+      .norm-tabs { gap: 4px !important; }
+      .norm-tab { padding: 7px 12px !important; font-size: 12px !important; }
+      /* Tabla normativo: ocultar Tipo(3), Clasif(4), Temática(6) — quedan Título, Año, Estado, Acciones */
+      #norm-table { min-width: unset !important; width: 100%; }
+      #norm-table th:nth-child(3), #norm-table td:nth-child(3),
+      #norm-table th:nth-child(4), #norm-table td:nth-child(4),
+      #norm-table th:nth-child(6), #norm-table td:nth-child(6) { display: none !important; }
+      #norm-table td:first-child { max-width: 130px !important; font-size: 11px !important; }
+      /* Acciones: solo mostrar ícono ver */
+      #norm-table td:last-child .norm-btn-label { display: none !important; }
+      #norm-table td:last-child { padding: 6px 4px !important; }
+      /* Donut: centrar */
+      .side-card { display: none !important; }
+      /* Mostrar distribución debajo del contenido principal en mobile */
+      .norm-layout { display: flex !important; flex-direction: column !important; }
+      .norm-layout > aside { display: block !important; order: 2; margin-top: 16px; }
+      .norm-layout > div:first-child { order: 1; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
