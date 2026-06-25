@@ -10,9 +10,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
  * Proxy reverso autenticado para kkfileview.
@@ -37,9 +40,15 @@ public class KkfileviewViewerProxyController {
     @Value("${kkfileview.url}")
     private String kkfileviewUrl;
 
+    private final HttpClient httpClient;
+
+    public KkfileviewViewerProxyController(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
+
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/**")
-    public void proxy(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void proxy(HttpServletRequest request, HttpServletResponse response) throws IOException, InterruptedException {
         String requestUri = request.getRequestURI();
         String contextPath = request.getContextPath();
         if (!contextPath.isEmpty()) {
@@ -52,23 +61,30 @@ public class KkfileviewViewerProxyController {
         String query = request.getQueryString();
         String targetUrl = kkfileviewUrl + kkPath + (query != null ? "?" + query : "");
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(targetUrl).openConnection();
-        conn.setInstanceFollowRedirects(true);
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(300_000);
-        conn.setRequestMethod("GET");
+        HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                .uri(URI.create(targetUrl))
+                .timeout(Duration.ofMinutes(5))
+                .GET();
 
         // Tell kkfileview to generate slide image URLs using the browser's origin + proxy prefix,
         // so the browser can load them directly through this proxy without extra URL rewriting.
         String xBaseUrl = buildBrowserBaseUrl(request);
         if (xBaseUrl != null) {
-            conn.setRequestProperty("X-Base-Url", xBaseUrl);
+            reqBuilder.header("X-Base-Url", xBaseUrl);
         }
 
-        int status = conn.getResponseCode();
+        HttpResponse<InputStream> upstream;
+        try {
+            upstream = httpClient.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+            return;
+        }
+
+        int status = upstream.statusCode();
         response.setStatus(status);
 
-        String contentType = conn.getContentType();
+        String contentType = upstream.headers().firstValue("content-type").orElse(null);
         if (contentType != null) {
             response.setContentType(contentType);
         }
@@ -76,7 +92,7 @@ public class KkfileviewViewerProxyController {
         boolean isHtml = contentType != null && contentType.contains("text/html");
         boolean isCss  = contentType != null && contentType.contains("text/css");
 
-        try (InputStream is = conn.getInputStream()) {
+        try (InputStream is = upstream.body()) {
             if (isHtml || isCss) {
                 String charset = extractCharset(contentType);
                 String body = new String(is.readAllBytes(), charset);
@@ -88,14 +104,12 @@ public class KkfileviewViewerProxyController {
                 response.setContentLengthLong(bytes.length);
                 response.getOutputStream().write(bytes);
             } else {
-                long contentLength = conn.getContentLengthLong();
+                long contentLength = upstream.headers().firstValueAsLong("content-length").orElse(-1L);
                 if (contentLength > 0) {
                     response.setContentLengthLong(contentLength);
                 }
                 is.transferTo(response.getOutputStream());
             }
-        } finally {
-            conn.disconnect();
         }
     }
 

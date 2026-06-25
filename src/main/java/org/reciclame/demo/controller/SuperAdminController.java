@@ -1001,4 +1001,16 @@ return "redirect:/superadmin/notificaciones";
             @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
         return super.exportarChatbotUnificado(req, user);
     }
+
+    // El SuperAdmin sí ve a los usuarios SuperAdmin en sus reportes.
+    @Override
+    protected boolean excluirSuperadminEnUsuarios() {
+        return false;
+    }
+
+    // El SuperAdmin también ve las acciones hechas por superadmin en la auditoría.
+    @Override
+    protected boolean excluirSuperadminEnAuditoria() {
+        return false;
+    }
 }

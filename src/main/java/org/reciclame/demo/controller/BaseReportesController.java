@@ -41,6 +41,53 @@ public abstract class BaseReportesController {
     protected abstract ChatbotService chatbotService();
     protected abstract EmailNotificationService emailNotificationService();
 
+    /**
+     * Indica si el export de usuarios debe excluir a los usuarios con rol SUPERADMIN.
+     * <ul>
+     *   <li>{@code true} → rol ADMIN (oculta superadmin en reportes y listados).</li>
+     *   <li>{@code false} → rol SUPERADMIN (los ve todos, incluidos superadmin).</li>
+     * </ul>
+     */
+    protected boolean excluirSuperadminEnUsuarios() {
+        return true; // default seguro: ADMIN
+    }
+
+    /**
+     * Indica si los reportes de auditoría deben ocultar las acciones realizadas
+     * por usuarios con rol SUPERADMIN. Mismo comportamiento que
+     * {@link #excluirSuperadminEnUsuarios()}: oculto en ADMIN, visible en SUPERADMIN.
+     */
+    protected boolean excluirSuperadminEnAuditoria() {
+        return true; // default seguro: ADMIN
+    }
+
+    protected List<UsuarioResponseDTO> usuariosFiltradosParaReporte(int limite) {
+        var base = (limite > 0)
+                ? usuarioService().listarUsuariosLimit(limite)
+                : usuarioService().listarUsuarios();
+        if (excluirSuperadminEnUsuarios()) {
+            return base.stream()
+                    .filter(u -> u.getRolNombre() == null || !"SUPERADMIN".equalsIgnoreCase(u.getRolNombre()))
+                    .toList();
+        }
+        return base;
+    }
+
+    /**
+     * Filtra la lista de auditorías para ocultar las acciones ejecutadas por
+     * usuarios con rol SUPERADMIN cuando {@link #excluirSuperadminEnAuditoria()}
+     * devuelve {@code true}. Auditoria solo guarda usuarioId, por lo que se
+     * cruza contra el catálogo actual de usuarios.
+     */
+    protected List<Auditoria> auditoriasFiltradasParaReporte(List<Auditoria> original) {
+        if (!excluirSuperadminEnAuditoria()) return original;
+        var idsSuperadmin = usuarioService().idsUsuariosSuperadmin();
+        if (idsSuperadmin.isEmpty()) return original;
+        return original.stream()
+                .filter(a -> a.getUsuarioId() == null || !idsSuperadmin.contains(a.getUsuarioId()))
+                .toList();
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     // Endpoint unificado de exportación de USUARIOS (descarga + correo)
     // ══════════════════════════════════════════════════════════════════════
@@ -69,7 +116,7 @@ public abstract class BaseReportesController {
         int limite = req.limite != null ? req.limite : 100;
         String accion = req.accion != null ? req.accion.toLowerCase() : "download";
 
-        List<UsuarioResponseDTO> usuarios = usuarioService().listarUsuariosLimit(limite);
+        List<UsuarioResponseDTO> usuarios = usuariosFiltradosParaReporte(limite);
         byte[] archivo;
         String nombreArchivo;
         String mime;
@@ -192,7 +239,9 @@ public abstract class BaseReportesController {
     protected void exportarAuditoriaPDF(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
-        List<Auditoria> auditorias = auditoriaService().listarAuditoriasUltimas100();
+        List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService().listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                : auditoriaService().listarAuditoriasUltimas100();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new HashMap<>();
             row.put("fechaAccion", a.getFechaAccion());
@@ -242,7 +291,9 @@ public abstract class BaseReportesController {
     protected void exportarAuditoriaXLSX(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
-        List<Auditoria> auditorias = auditoriaService().listarAuditoriasUltimas100();
+        List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService().listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                : auditoriaService().listarAuditoriasUltimas100();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new HashMap<>();
             row.put("fecha", a.getFechaAccion() != null ? fmt.format(a.getFechaAccion()) : "");
@@ -291,7 +342,7 @@ public abstract class BaseReportesController {
     @GetMapping("/admin/reportes/export/usuarios.pdf")
     protected void exportarUsuariosPDF(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
-        List<UsuarioResponseDTO> usuarios = usuarioService().listarUsuariosUltimos100();
+        List<UsuarioResponseDTO> usuarios = usuariosFiltradosParaReporte(0);
         List<Map<String, Object>> datos = usuarios.stream().map(u -> {
             Map<String, Object> row = new HashMap<>();
             row.put("nombreCompleto", u.getNombreCompleto());
@@ -340,7 +391,7 @@ public abstract class BaseReportesController {
     protected void exportarUsuariosXLSX(HttpServletResponse response,
             @AuthenticationPrincipal UserDetails user) throws IOException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
-        List<UsuarioResponseDTO> usuarios = usuarioService().listarUsuariosUltimos100();
+        List<UsuarioResponseDTO> usuarios = usuariosFiltradosParaReporte(0);
         List<Map<String, Object>> datos = usuarios.stream().map(u -> {
             Map<String, Object> row = new HashMap<>();
             row.put("nombreCompleto", u.getNombreCompleto());
@@ -717,7 +768,9 @@ public abstract class BaseReportesController {
         int limite = req.limite != null ? req.limite : 100;
         String accion = req.accion != null ? req.accion.toLowerCase() : "download";
 
-        List<Auditoria> auditorias = auditoriaService().listarAuditoriasLimit(limite);
+        List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService().listarAuditoriasLimitExcluyendoSuperadmin(limite)
+                : auditoriaService().listarAuditoriasLimit(limite);
         byte[] archivo;
         String nombreArchivo;
         String mime;

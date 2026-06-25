@@ -119,7 +119,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
-        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
 
@@ -165,11 +165,14 @@ public class AdminController extends BaseReportesController {
                 ? (int) Math.round((auditoriasEsteMes - auditoriasMesAnterior) * 100.0 / auditoriasMesAnterior)
                 : 0);
 
-        var auditorias = auditoriaService.listarAuditoriasPaginado(0, 50);
-        model.addAttribute("auditorias", auditorias.getContent());
+        var auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService.findAllExcluyendoAccionesDeSuperadmin(0, 50)
+                : auditoriaService.listarAuditoriasPaginado(0, 50);
+        var auditoriasInicio = auditorias.getContent();
+        model.addAttribute("auditorias", auditoriasInicio);
         model.addAttribute("currentPage", 0);
         model.addAttribute("totalPages", auditorias.getTotalPages());
-        model.addAttribute("totalElements", auditorias.getTotalElements());
+        model.addAttribute("totalElements", auditoriasInicio.size());
 
         // ── Distribución real por temática para el donut chart ──
         Map<String, Long> byTematica = normativaService.contarPorTematica();
@@ -210,7 +213,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
-        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
         return "Admin/usuarios";
@@ -256,7 +259,9 @@ public class AdminController extends BaseReportesController {
 
         var estudios   = estudioService.listarEstudios();
         var normativas = normativaService.listarNormativas();
-        var auditorias = auditoriaService.listarAuditoriasPaginado(0, 1000);
+        var auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService.findAllExcluyendoAccionesDeSuperadmin(0, 1000)
+                : auditoriaService.listarAuditoriasPaginado(0, 1000);
 
         int totalDescargas = estudios.stream()
                 .mapToInt(e -> e.getDescargasCount() != null ? e.getDescargasCount() : 0).sum()
@@ -326,7 +331,7 @@ public class AdminController extends BaseReportesController {
         });
         model.addAttribute("topDocumentos", topDocumentos);
 
-        var todosUsuarios = usuarioService.listarUsuarios();
+        var todosUsuarios = usuarioService.listarUsuariosNoSuperadmin();
         Map<Long, Map<String, Object>> usuariosMap = new HashMap<>();
         auditorias.getContent().forEach(a -> {
             Long usuarioId = a.getUsuarioId();
@@ -371,7 +376,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("usuariosActivos", usuariosActivosList);
         model.addAttribute("maxEstudios", estudios.isEmpty() ? 1 : estudios.size());
         model.addAttribute("maxNormativas", normativas.isEmpty() ? 1 : normativas.size());
-        var todosUsuariosR = usuarioService.listarUsuarios();
+        var todosUsuariosR = usuarioService.listarUsuariosNoSuperadmin();
         int pctUsuariosActivosBar = !todosUsuariosR.isEmpty()
                 ? (int)(usuariosActivosList.size() * 100.0 / todosUsuariosR.size()) : 0;
         model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
@@ -390,7 +395,7 @@ public class AdminController extends BaseReportesController {
         }
         try {
             model.addAttribute("chatRolList", rolService.listarRoles());
-            model.addAttribute("chatUsuariosList", usuarioService.listarUsuarios());
+            model.addAttribute("chatUsuariosList", usuarioService.listarUsuariosNoSuperadmin());
         } catch (Exception ex) {
             System.err.println("[reportes] Error cargando listas de roles/usuarios para filtro chatbot: " + ex.getMessage());
             model.addAttribute("chatRolList", java.util.Collections.emptyList());
@@ -405,7 +410,9 @@ public class AdminController extends BaseReportesController {
                                       @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
-        var auditorias = auditoriaService.listarAuditoriasUltimas100();
+        var auditorias = excluirSuperadminEnAuditoria()
+                ? auditoriaService.listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                : auditoriaService.listarAuditoriasUltimas100();
         var pw = response.getWriter();
         pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
         for (var a : auditorias) {

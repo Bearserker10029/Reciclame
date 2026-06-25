@@ -108,6 +108,39 @@ public class AuditoriaService {
         return stream.collect(Collectors.toList());
     }
 
+    /**
+     * Página de auditorías excluyendo acciones de usuarios con rol SUPERADMIN.
+     * Usado por la UI del ADMIN para que no vea nada del superadmin.
+     */
+    public Page<Auditoria> findAllExcluyendoAccionesDeSuperadmin(int page, int size) {
+        return auditoriaRepository.findAllExcluyendoAccionesDeSuperadmin(
+                org.springframework.data.domain.PageRequest.of(page, size));
+    }
+
+    /**
+     * Lista auditorías recientes con un límite, excluyendo las acciones
+     * ejecutadas por usuarios con rol SUPERADMIN (subquery contra Usuario/Rol
+     * en JPQL — no depende de carga LAZY).
+     *
+     <p>Si {@code limite <= 0} se devuelven todas (paginado completo, capped
+     * a 5000 filas para no reventar memoria).</p>
+     */
+    public List<Auditoria> listarAuditoriasLimitExcluyendoSuperadmin(int limite) {
+        int size = limite > 0 ? Math.min(limite, 5000) : 5000;
+        var page = auditoriaRepository.findAllExcluyendoAccionesDeSuperadminP(
+                org.springframework.data.domain.PageRequest.of(0, size));
+        return page.getContent();
+    }
+
+    /**
+     * Variante "últimas 100" del filtro anterior. Se usa en los exports
+     * legacy y en el CSV.
+     */
+    public List<Auditoria> listarAuditoriasUltimas100ExcluyendoSuperadmin() {
+        return auditoriaRepository.findAllExcluyendoAccionesDeSuperadminP(
+                org.springframework.data.domain.PageRequest.of(0, 100)).getContent();
+    }
+
     public List<Auditoria> listarAuditoriasUltimas100() {
         return auditoriaRepository.findTop100ByOrderByFechaAccionDesc();
     }

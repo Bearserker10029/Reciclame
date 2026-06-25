@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Build
-FROM maven:3.9-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9-eclipse-temurin-26-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn package -DskipTests -B
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:26-jre-alpine
 
 WORKDIR /app
 
