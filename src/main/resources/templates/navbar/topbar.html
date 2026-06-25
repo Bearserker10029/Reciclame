@@ -879,6 +879,7 @@
             notifData.forEach(function (n) { n.leida = true; });
             list.innerHTML = '<div class="notif-drop-empty"><i class="fas fa-bell-slash" style="font-size:24px;color:#D1D5DB;display:block;margin-bottom:8px;"></i>No tienes notificaciones sin leer.</div>';
             actualizarBadge(notifData);
+            location.reload();
           });
         };
 
