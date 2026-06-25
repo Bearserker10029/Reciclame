@@ -970,15 +970,21 @@
             <rect></rect>
           </svg>
           <div class="stat-item">
-            <div class="stat-num" th:text="${totalDocumentos != null ? totalDocumentos : 0}">0<span>K+</span></div>
+            <div class="stat-num">
+              <th:block th:text="${totalDocumentos != null ? totalDocumentos : 0}">0</th:block><span>K+</span>
+            </div>
             <div class="stat-lbl">Documentos</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num" th:text="${totalNormativas != null ? totalNormativas : 0}">0<span>+</span></div>
+            <div class="stat-num">
+              <th:block th:text="${totalNormativas != null ? totalNormativas : 0}">0</th:block><span>+</span>
+            </div>
             <div class="stat-lbl">Normativas</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num" th:text="${porcentajeActualizado != null ? porcentajeActualizado : 0}">0<span>%</span></div>
+            <div class="stat-num">
+              <th:block th:text="${porcentajeActualizado != null ? porcentajeActualizado : 0}">0</th:block><span>%</span>
+            </div>
             <div class="stat-lbl">Actualizado</div>
           </div>
         </div>

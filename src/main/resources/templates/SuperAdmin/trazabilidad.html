@@ -312,7 +312,7 @@
                     th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
                   <td>
                     <div style="font-size:12px;font-weight:600;color:#1B3A5C;white-space:nowrap;"
-                         th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</div>
+                         th:text="${a.fechaAccion != null ? #temporals.format(a.fechaAccion, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</div>
                   </td>
                   <td>
                     <div style="display:flex;align-items:center;gap:8px;">
