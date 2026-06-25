@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -48,27 +49,63 @@ public class MinioStorageService {
 
     /**
      * Sube el archivo a MinIO y devuelve la URL pública accesible desde el navegador.
+     * <p>
+     * Implementa reintentos automáticos (3 intentos con backoff) porque MinIO puede
+     * devolver "Try again" transitorio cuando está bajo presión de I/O o memoria
+     * (especialmente común en EC2 con RAM limitada). El cliente MinIO por default
+     * NO reintenta, propagando el error al usuario.
+     * </p>
      */
-    public String subirArchivo(MultipartFile archivo) {
-        try {
-            String nombreOriginal = archivo.getOriginalFilename() != null
-                    ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
-                    : "documento";
-            String objectName = UUID.randomUUID().toString().substring(0, 8) + "_" + nombreOriginal;
+    public String subirArchivo(MultipartFile archivo) throws IOException {
+        String nombreOriginal = archivo.getOriginalFilename() != null
+                ? archivo.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "_")
+                : "documento";
+        String objectName = UUID.randomUUID().toString().substring(0, 8) + "_" + nombreOriginal;
 
-            MinioClient client = buildInternalClient();
-            client.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucket)
-                            .object(objectName)
-                            .stream(archivo.getInputStream(), archivo.getSize(), -1)
-                            .contentType(archivo.getContentType())
-                            .build()
-            );
-            return buildPublicObjectUrl(objectName);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al subir archivo a MinIO: " + e.getMessage(), e);
+        MinioClient client = buildInternalClient();
+        PutObjectArgs args = PutObjectArgs.builder()
+                .bucket(bucket)
+                .object(objectName)
+                .stream(archivo.getInputStream(), archivo.getSize(), -1)
+                .contentType(archivo.getContentType())
+                .build();
+
+        Exception lastError = null;
+        // 3 intentos con backoff: 0s, 1s, 2s (cubre MinIO drive-offline recovery).
+        for (int intento = 1; intento <= 3; intento++) {
+            try {
+                client.putObject(args);
+                if (intento > 1) {
+                    log.info("Upload a MinIO exitoso en el intento {} ({})", intento, objectName);
+                }
+                return buildPublicObjectUrl(objectName);
+            } catch (Exception e) {
+                lastError = e;
+                log.warn("Upload a MinIO falló en intento {}/3 ({}): {}",
+                        intento, objectName, e.getMessage());
+                if (intento < 3) {
+                    try {
+                        Thread.sleep(1000L * intento); // 1s, 2s
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                    // Re-abrir el InputStream porque el SDK lo consume en cada intento.
+                    try {
+                        args = PutObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(objectName)
+                                .stream(archivo.getInputStream(), archivo.getSize(), -1)
+                                .contentType(archivo.getContentType())
+                                .build();
+                    } catch (IOException ioe) {
+                        throw new RuntimeException("No se pudo reabrir el stream para reintento: " + ioe.getMessage(), ioe);
+                    }
+                }
+            }
         }
+        throw new RuntimeException("Error al subir archivo a MinIO tras 3 intentos: "
+                + (lastError != null ? lastError.getMessage() : "unknown"), lastError);
     }
 
     /**

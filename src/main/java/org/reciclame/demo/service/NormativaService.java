@@ -2,6 +2,7 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
+import org.reciclame.demo.dto.VirusTotalVerdict;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -182,11 +183,26 @@ public class NormativaService {
                                                String auditorUsuarioNombre,
                                                String ipAddress,
                                                String userAgent) {
+        return crearNormativa(dto, archivoUrl, archivoTipoMime, null,
+                correoAutor, auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public NormativaResponseDTO crearNormativa(NormativaRequestDTO dto,
+                                               String archivoUrl,
+                                               String archivoTipoMime,
+                                               VirusTotalVerdict vtVerdict,
+                                               String correoAutor,
+                                               Long auditorUsuarioId,
+                                               String auditorUsuarioNombre,
+                                               String ipAddress,
+                                               String userAgent) {
         Usuario creadaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
                 .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
 
         Normativa n = new Normativa();
         mapDtoToEntity(dto, n, archivoUrl, archivoTipoMime);
+        applyVerdict(n, vtVerdict);
         n.setCreadaPor(creadaPor);
         n.setEstadoActivo(true);
         n.setVisualizacionesCount(0);
@@ -234,6 +250,20 @@ public class NormativaService {
                                                     String auditorUsuarioNombre,
                                                     String ipAddress,
                                                     String userAgent) {
+        return actualizarNormativa(id, dto, archivoUrl, archivoTipoMime, null,
+                auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public NormativaResponseDTO actualizarNormativa(Long id,
+                                                    NormativaRequestDTO dto,
+                                                    String archivoUrl,
+                                                    String archivoTipoMime,
+                                                    VirusTotalVerdict vtVerdict,
+                                                    Long auditorUsuarioId,
+                                                    String auditorUsuarioNombre,
+                                                    String ipAddress,
+                                                    String userAgent) {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
 
@@ -258,6 +288,10 @@ public class NormativaService {
         }
 
         mapDtoToEntity(dto, n, archivoUrl, archivoTipoMime);
+        if (vtVerdict != null) {
+            // sólo refrescamos los campos VT si llega archivo nuevo (veredicto presente)
+            applyVerdict(n, vtVerdict);
+        }
         n.setUpdatedAt(Instant.now());
 
         Normativa saved = normativaRepository.save(n);
@@ -344,6 +378,17 @@ public class NormativaService {
                 .ifPresent(n::setEstadoNormativa);
     }
 
+    private void applyVerdict(Normativa n, VirusTotalVerdict v) {
+        if (v == null) return;
+        n.setVtSha256(v.getSha256());
+        n.setVtVerdict(v.getVerdict() != null ? v.getVerdict().name() : null);
+        n.setVtMaliciousEngines(v.getMaliciousEngines());
+        n.setVtSuspiciousEngines(v.getSuspiciousEngines());
+        n.setVtTotalEngines(v.getTotalEngines());
+        n.setVtSkipped(Boolean.TRUE.equals(v.isSkipped()));
+        n.setVtScannedAt(v.getScannedAt());
+    }
+
     private void guardarEtiquetas(Normativa normativa, List<Long> etiquetasIds) {
         if (etiquetasIds == null || etiquetasIds.isEmpty()) return;
         for (Long etiquetaId : etiquetasIds) {
@@ -375,6 +420,15 @@ public class NormativaService {
         dto.setFechaDerogacion(n.getFechaDerogacion());
         dto.setArchivoUrl(n.getArchivoUrl());
         dto.setArchivoTipoMime(n.getArchivoTipoMime());
+
+        dto.setVtSha256(n.getVtSha256());
+        dto.setVtVerdict(n.getVtVerdict());
+        dto.setVtMaliciousEngines(n.getVtMaliciousEngines());
+        dto.setVtSuspiciousEngines(n.getVtSuspiciousEngines());
+        dto.setVtTotalEngines(n.getVtTotalEngines());
+        dto.setVtSkipped(n.getVtSkipped());
+        dto.setVtScannedAt(n.getVtScannedAt());
+
         dto.setEsPublica(n.getEsPublica());
         dto.setVisualizacionesCount(n.getVisualizacionesCount());
         dto.setDescargasCount(n.getDescargasCount());
