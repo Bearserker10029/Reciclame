@@ -75,14 +75,19 @@ public class LoginController {
             // Guardar datos del usuario en sesión
             HttpSession session = request.getSession();
             usuarioRepository.findByCorreoCorporativo(authentication.getName())
-                    .ifPresent(u -> session.setAttribute("usuarioSesion", new UsuarioSesion(
-                            u.getId(),
-                            u.getNombreCompleto(),
-                            u.getCorreoCorporativo(),
-                            u.getRol() != null ? u.getRol().getNombre() : null,
-                            u.getCargo(),
-                            u.getFotoUrl()
-                    )));
+                    .ifPresent(u -> {
+                        u.setUltimoLogin(Instant.now());
+                        usuarioRepository.save(u);
+
+                        session.setAttribute("usuarioSesion", new UsuarioSesion(
+                                u.getId(),
+                                u.getNombreCompleto(),
+                                u.getCorreoCorporativo(),
+                                u.getRol() != null ? u.getRol().getNombre() : null,
+                                u.getCargo(),
+                                u.getFotoUrl()
+                        ));
+                    });
 
             // Si el usuario venía de una URL protegida válida, redirigir allí
             DefaultSavedRequest savedRequest = (DefaultSavedRequest)
