@@ -33,6 +33,7 @@ public class NormativaService {
     private final UsuarioRepository              usuarioRepository;
     private final NotificacionService            notificacionService;
     private final AuditoriaService               auditoriaService;
+    private final MinioStorageService            minioStorageService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public NormativaService(NormativaRepository normativaRepository,
@@ -43,7 +44,8 @@ public class NormativaService {
                             EtiquetaRepository etiquetaRepository,
                             UsuarioRepository usuarioRepository,
                             NotificacionService notificacionService,
-                            AuditoriaService auditoriaService) {
+                            AuditoriaService auditoriaService,
+                            MinioStorageService minioStorageService) {
         this.normativaRepository          = normativaRepository;
         this.normativasEtiquetaRepository = normativasEtiquetaRepository;
         this.tematicaRepository           = tematicaRepository;
@@ -53,6 +55,7 @@ public class NormativaService {
         this.usuarioRepository            = usuarioRepository;
         this.notificacionService          = notificacionService;
         this.auditoriaService             = auditoriaService;
+        this.minioStorageService          = minioStorageService;
         this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
@@ -222,6 +225,19 @@ public class NormativaService {
                                                     String userAgent) {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
+
+        // Si llega un archivo nuevo y es distinto al actual, eliminar el viejo de MinIO
+        // para evitar archivos huérfanos y (en combinación con el nonce del visor) forzar
+        // que kkFileView sirva el archivo nuevo, no uno cacheado por fullfilename.
+        if (archivoUrl != null && n.getArchivoUrl() != null
+                && !archivoUrl.equals(n.getArchivoUrl())
+                && !n.getArchivoUrl().isBlank()) {
+            try {
+                minioStorageService.eliminarArchivo(n.getArchivoUrl());
+            } catch (Exception ex) {
+                System.err.println("Advertencia: no se pudo eliminar archivo anterior de MinIO: " + ex.getMessage());
+            }
+        }
 
         String datosAnteriores = null;
         try {

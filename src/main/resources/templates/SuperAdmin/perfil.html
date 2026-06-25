@@ -671,11 +671,9 @@
                       JP</div>
                     <div>
                       <div style="font-size:15px;font-weight:700;color:#fff;min-height:18px;"
-                        th:text="${usuario != null ? usuario.nombreCompleto : 'Socio'}">Juan
-                        Pérez Torres</div>
+                        th:text="${usuario != null ? usuario.nombreCompleto : ''}"></div>
                       <div style="font-size:11px;color:rgba(255,255,255,.65);min-height:14px;"
-                        th:text="${usuario != null ? usuario.correoCorporativo : 'correo@empresa.com'}">
-                        jperez@tetrapak.com</div>
+                        th:text="${usuario != null ? usuario.correoCorporativo : ''}"></div>
                     </div>
                   </div>
                   <div class="qr-container">

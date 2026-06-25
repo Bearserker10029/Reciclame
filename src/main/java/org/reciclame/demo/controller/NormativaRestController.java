@@ -114,7 +114,7 @@ public class NormativaRestController {
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
-    @PreAuthorize("hasRole('SUPERADMIN')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id,
                                       @AuthenticationPrincipal UserDetails user,

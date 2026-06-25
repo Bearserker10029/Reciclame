@@ -334,25 +334,6 @@
       text-decoration: underline;
     }
 
-    .superadmin-row {
-      margin-top: 14px;
-      border-top: 1px solid rgba(255, 255, 255, .08);
-      padding-top: 12px;
-      text-align: center;
-    }
-
-    .superadmin-link {
-      color: rgba(255, 255, 255, .28);
-      font-size: 10px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: color .15s;
-    }
-
-    .superadmin-link:hover {
-      color: rgba(255, 255, 255, .55);
-    }
-
     /* EMBED */
     .embed-banner {
       margin-top: auto;
@@ -438,22 +419,6 @@
     .success-icon {
       font-size: 48px;
       color: var(--green);
-    }
-
-    .superadmin-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(245, 158, 11, .15);
-      border: 1px solid rgba(245, 158, 11, .3);
-      color: #FBBF24;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: 5px 12px;
-      border-radius: 999px;
-      margin-bottom: 20px;
     }
 
     /* ═══ RIGHT — REDISEÑO ═══════════════════ */
@@ -857,12 +822,6 @@
 
         <p class="register-hint">¿No tienes cuenta? <a href="/registro">Solicitar acceso</a></p>
 
-        <div class="superadmin-row">
-          <a href="#" class="superadmin-link" onclick="showPanel('panel-superadmin');return false;">
-            <i class="fas fa-shield-alt" style="margin-right:5px;"></i>Acceso SuperAdmin
-          </a>
-        </div>
-
         <div class="embed-banner">
 
           <p class="footer-note">Repositorio Circular v2.0 · 2026</p>
@@ -955,40 +914,7 @@
         </div>
       </div>
 
-      <!-- SUPERADMIN -->
-      <div id="panel-superadmin" class="panel">
-        <div class="back-row">
-          <button class="btn back-btn" onclick="showPanel('panel-login')"><i class="fas fa-arrow-left"></i></button>
-          <div>
-            <div class="section-title" style="font-size:18px;margin-bottom:2px;">Acceso SuperAdmin</div>
-            <div style="color:rgba(255,255,255,.45);font-size:12px;">Credenciales de administrador del sistema</div>
-          </div>
-        </div>
-        <div class="superadmin-badge"><i class="fas fa-shield-alt"></i> Acceso restringido</div>
-        <form onsubmit="handleSuperAdmin(event)">
-          <div class="field-wrap">
-            <label class="field-label">Usuario administrador</label>
-            <div style="position:relative;"><i class="fas fa-user-shield field-icon"></i><input
-                class="glass-input form-control" type="text" placeholder="superadmin" /></div>
-          </div>
-          <div class="field-wrap">
-            <label class="field-label">Contraseña maestra</label>
-            <div style="position:relative;">
-              <i class="fas fa-key field-icon"></i>
-              <input id="inp-sa-pass" class="glass-input form-control" type="password" placeholder="••••••••"
-                style="padding-right:44px;" />
-              <button type="button" class="btn eye-btn" onclick="togglePass('inp-sa-pass',this)"><i
-                  class="fas fa-eye"></i></button>
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary" style="background:#F59E0B;"
-            onmouseover="this.style.background='#D97706'" onmouseout="this.style.background='#F59E0B'">
-            <i class="fas fa-shield-alt"></i> Entrar como SuperAdmin
-          </button>
-        </form>
-      </div>
-
-    </div><!-- /left -->
+      </div><!-- /left -->
 
 
     <!-- ═══════════════════════════════════════
@@ -1038,21 +964,21 @@
           <p>La plataforma de gestión de conocimiento en economía circular para socios de Recíclame Perú.</p>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats (valores reales desde BD vía LoginController) -->
         <div class="stats-row glow">
           <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none">
             <rect></rect>
           </svg>
           <div class="stat-item">
-            <div class="stat-num">2<span>K+</span></div>
+            <div class="stat-num" th:text="${totalDocumentos != null ? totalDocumentos : 0}">0<span>K+</span></div>
             <div class="stat-lbl">Documentos</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">340<span>+</span></div>
+            <div class="stat-num" th:text="${totalNormativas != null ? totalNormativas : 0}">0<span>+</span></div>
             <div class="stat-lbl">Normativas</div>
           </div>
           <div class="stat-item">
-            <div class="stat-num">89<span>%</span></div>
+            <div class="stat-num" th:text="${porcentajeActualizado != null ? porcentajeActualizado : 0}">0<span>%</span></div>
             <div class="stat-lbl">Actualizado</div>
           </div>
         </div>
@@ -1240,12 +1166,6 @@
         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Solicitar acceso';
         btn.disabled = false;
       });
-    }
-    function handleSuperAdmin(e) {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Autenticando...'; btn.disabled = true;
-      setTimeout(() => { btn.innerHTML = '<i class="fas fa-check"></i> Acceso concedido'; }, 1400);
     }
   </script>
 

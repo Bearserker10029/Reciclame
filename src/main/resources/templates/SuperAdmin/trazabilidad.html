@@ -486,9 +486,10 @@
                 && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
               if (ok && (fechaDesde || fechaHasta)) {
                 var fechaCelda = row.querySelector('td:first-child div:first-child')?.textContent || '';
-                var fechaParts = fechaCelda.substring(0, 10).split('/');
+                // La celda viene en formato "yyyy-MM-dd HH:mm:ss" (render Thymeleaf).
+                var fechaParts = fechaCelda.substring(0, 10).split('-');
                 if (fechaParts.length === 3) {
-                  var fechaRow = fechaParts[2] + '-' + fechaParts[1] + '-' + fechaParts[0];
+                  var fechaRow = fechaParts[0] + '-' + fechaParts[1] + '-' + fechaParts[2];
                   if (fechaDesde && fechaRow < fechaDesde) ok = false;
                   if (fechaHasta && fechaRow > fechaHasta) ok = false;
                 }

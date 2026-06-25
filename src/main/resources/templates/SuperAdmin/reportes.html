@@ -1273,6 +1273,10 @@
 
             window.__chatbotInit = aplicarFiltros;
 
+            // Inicializar los hrefs de los botones de export del chatbot al cargar la página,
+            // para que estén listos sin necesidad de entrar al tab "Chatbot Analytics" primero.
+            actualizarLinksExport();
+
             document.getElementById('chat-modal').addEventListener('click', function (e) {
               if (e.target === this) this.style.display = 'none';
             });

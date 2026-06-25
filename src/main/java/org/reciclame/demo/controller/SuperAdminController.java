@@ -173,20 +173,16 @@ public class SuperAdminController extends AdminController {
     // Kent,FullStack Developer https://github.com/Bearserker10029
     // Si no se muestra los usuarios, este es el culpable:
     
-    /*  ⠀⠀        MEGA KIRBY                  */    @GetMapping("/superadmin/usuarios")
-    /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠶⠦⡄⠀⠀⠀⠀⠀⠀⡴⠀⠀⠀     */    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
-    /*⠀⢀⣀⠀⠀⠀⣀⠤⠖⠒⠋⡉⠙⢲⣺⢅⡀⠀⠹⡀⠀⠀⠀⢀⡜⠁⠀     */        setupCommonAttributes(model, user.getUsername());
-    /*⣼⠉⠀⠉⠓⠏⠁⠀⠀⠀⠀⢯⣧⠈⢿⡆⠈⠓⢴⠇⠀⠀⣠⠊⠀⠀⠀⡀⠀   */        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
-    /*⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⡀⠄⠠⢀⠈⢣⡀⠀⠁⠀⢀⡤⠊⠀⠀  */          model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
-    /*⠈⢧⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⠎⠀⠀⠀⠘⡇⠀⢧⠀⠐⠊⠁⠀⠀⠀⠀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
-    /*⠀⢸⠳⣄⠀⠀⠀⠀⠀⠀⠀⠈⢺⠀⠀⠀⠀⠀⡇⠀⢸⠀⠀⠀⠀⢀⣀⣀⡀  */          model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
-    /*⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣆⠠⠄⢀⡀⢇⠀⢸⡀⠀⡀⠀⠀⠀⠀⠀  */          model.addAttribute("empresas", empresaService.listarEmpresas());
-    /*⠀⠘⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢃⠀⠀⠀⠈⠙⠆⡼⠛⢦⡀⠑⠢⣄⠀⠀  */          model.addAttribute("roles", rolService.listarRoles());
-    /*⠀⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⡌⠢⣀⠀⢀⡴⡰⠁⠀⢀⡇⠀⠀⠈⠑⠀  */          return "SuperAdmin/usuarios";
-    /*⠀⠀⠀⢸⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠗⠒⠚⠉⠀⠀⠀⠀⠀⠀  */
-    /*⠀⠀⠀⡜⠀⠉⠢⢄⣀⠀⠀⠀⠀⠀⣀⡤⠖⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
-    /*⠀⠀⠀⡇⠀⠀⠀⠀⣨⠟⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
-    /*⠀⠀⠀⠙⠂⠴⠒⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  */
+// MEGA KIRBY era un easter egg; quitamos la línea duplicada de todosUsuarios.
+    @GetMapping("/superadmin/usuarios")
+    public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
+        setupCommonAttributes(model, user.getUsername());
+        model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
+        model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
+        model.addAttribute("empresas", empresaService.listarEmpresas());
+        model.addAttribute("roles", rolService.listarRoles());
+        return "SuperAdmin/usuarios";
     }
 
     @Override
@@ -456,9 +452,17 @@ return "redirect:/superadmin/notificaciones";
                 dto.setNombreCompleto(nombreCompleto);
                 dto.setCorreoCorporativo(correoCorporativo);
                 var updated = usuarioService.actualizarUsuario(id, dto);
-                session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
-                        updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
-                        updated.getRolNombre(), null, null));
+                // Si NO hay una impersonación activa, refrescar usuarioSesion con los datos nuevos
+                // (caso normal: el SuperAdmin edita su propio perfil).
+                // Si SÍ hay impersonación activa, NO pisar usuarioSesion: los datos editados
+                // corresponden al impersonado, pero el "usuario real" de la sesión sigue siendo
+                // el SuperAdmin; pisar aquí causaría que el topbar se quede con datos del
+                // impersonado incluso después de salir de la impersonación.
+                if (session.getAttribute("IMPERSONATED_USER") == null) {
+                    session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                            updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
+                            updated.getRolNombre(), null, null));
+                }
                 ra.addFlashAttribute("exitoPerfil", "Información personal actualizada correctamente");
             });
         } catch (Exception e) {
@@ -628,9 +632,30 @@ return "redirect:/superadmin/notificaciones";
         String superAdminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
         session.setAttribute("ORIGINAL_USER", superAdminUsername);
-        session.setAttribute("IMPERSONATED_USER", usuarioService.obtenerUsuarioPorId(id).getNombreCompleto());
 
         Usuario usuarioTarget = usuarioService.obtenerUsuarioEntityPorId(id);
+
+        session.setAttribute("IMPERSONATED_USER", usuarioTarget.getNombreCompleto());
+
+        // Preservar el usuarioSesion original del SuperAdmin para restaurarlo al salir.
+        // Si ya hay una sesión ORIGINAL guardada de una impersonación previa anidada, no la pisamos.
+        if (session.getAttribute("ORIGINAL_USUARIO_SESION") == null) {
+            Object originalSesion = session.getAttribute("usuarioSesion");
+            if (originalSesion != null) {
+                session.setAttribute("ORIGINAL_USUARIO_SESION", originalSesion);
+            }
+        }
+
+        // Setear usuarioSesion con los datos del usuario impersonado para que el topbar
+        // (que lee de session.usuarioSesion) muestre nombre/rol correctos durante la impersonación.
+        session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                usuarioTarget.getId(),
+                usuarioTarget.getNombreCompleto(),
+                usuarioTarget.getCorreoCorporativo(),
+                usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNombre() : "USUARIO",
+                usuarioTarget.getCargo(),
+                usuarioTarget.getFotoUrl()
+        ));
 
         String rolNombre = usuarioTarget.getRol() != null ? usuarioTarget.getRol().getNombre() : "USUARIO";
 
@@ -700,6 +725,29 @@ return "redirect:/superadmin/notificaciones";
 
         session.removeAttribute("ORIGINAL_USER");
         session.removeAttribute("IMPERSONATED_USER");
+
+        // Restaurar el usuarioSesion del SuperAdmin original (guardado al impersonar).
+        // Si por alguna razón ORIGINAL_USUARIO_SESION es null, regenerarlo desde la BD
+        // para que el topbar nunca quede con datos del impersonado.
+        Object originalSesion = session.getAttribute("ORIGINAL_USUARIO_SESION");
+        if (originalSesion != null) {
+            session.setAttribute("usuarioSesion", originalSesion);
+        } else if (originalUser != null) {
+            org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.findByCorreo(originalUser)
+                    .map(u -> usuarioService.obtenerUsuarioEntityPorId(u.getId()))
+                    .orElse(null);
+            if (usuarioOriginal != null) {
+                session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
+                        usuarioOriginal.getId(),
+                        usuarioOriginal.getNombreCompleto(),
+                        usuarioOriginal.getCorreoCorporativo(),
+                        usuarioOriginal.getRol() != null ? usuarioOriginal.getRol().getNombre() : "SUPERADMIN",
+                        usuarioOriginal.getCargo(),
+                        usuarioOriginal.getFotoUrl()
+                ));
+            }
+        }
+        session.removeAttribute("ORIGINAL_USUARIO_SESION");
 
         redirectAttributes.addFlashAttribute("mensaje", "Has vuelto a tu sesión de SuperAdmin");
         return "redirect:/superadmin/inicio";

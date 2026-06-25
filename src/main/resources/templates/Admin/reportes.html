@@ -1308,6 +1308,10 @@
             // Exponer para que se llame desde switchReportTab al abrir el tab
             window.__chatbotInit = aplicarFiltros;
 
+            // Inicializar los hrefs de los botones de export del chatbot al cargar la página,
+            // para que estén listos sin necesidad de entrar al tab "Chatbot Analytics" primero.
+            actualizarLinksExport();
+
             // Cerrar modal al click fuera
             document.getElementById('chat-modal').addEventListener('click', function (e) {
               if (e.target === this) this.style.display = 'none';
