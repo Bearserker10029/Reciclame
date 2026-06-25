@@ -9,6 +9,24 @@
 <th:block th:fragment="sidebar">
   <script>
     document.body.setAttribute('data-rol', /*[[${rol}]]*/ 'default');
+
+    // Shim global de navTo() para los onclick del sidebar.
+    // Detecta el prefijo de la URL actual (no depende de ${rol} para no
+    // acoplarse a cómo cada controller setea esa variable).
+    // Si un template ya define navTo() más adelante, este check lo respeta.
+    if (typeof window.navTo === 'undefined') {
+      window.navTo = function (page) {
+        var map = { 'admin-docs': 'documentos' };
+        var path = window.location.pathname || '';
+        var prefix = '/';
+        if (path.indexOf('/superadmin') === 0)      prefix = '/superadmin';
+        else if (path.indexOf('/admin') === 0)      prefix = '/admin';
+        else if (path.indexOf('/socio') === 0)      prefix = '/socio';
+        else if (path.indexOf('/visualizador') === 0) prefix = '/visualizador';
+        var target = map[page] || page;
+        window.location.href = prefix + '/' + target;
+      };
+    }
   </script>
   <style>
     .sidebar-nav::-webkit-scrollbar { width: 4px; }

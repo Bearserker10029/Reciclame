@@ -675,7 +675,7 @@
                   <div class="name">Archivo actual</div>
                   <div class="hint">Sube un nuevo archivo solo si quieres reemplazarlo</div>
                 </div>
-                <a th:href="@{/api/documentos/ver(url=${estudio.archivoUrl})}" target="_blank"
+                <a th:href="@{/superadmin/estudios/{id}/ver(id=${estudio.id})}" target="_blank"
                   style="font-size:11px;color:#2ECC71;font-weight:600;text-decoration:none;">
                   <i class="fas fa-eye"></i> Ver
                 </a>

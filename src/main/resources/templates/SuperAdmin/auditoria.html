@@ -417,9 +417,10 @@
           var fechaCelda = row.querySelector('td:first-child')?.textContent || '';
           var fechaStr = fechaCelda.trim();
           if (fechaStr && fechaStr !== '—') {
-            var fechaParts = fechaStr.split(' ')[0].split('/');
+            // La celda viene en formato "yyyy-MM-dd HH:mm:ss" (render Thymeleaf).
+            var fechaParts = fechaStr.split(' ')[0].split('-');
             if (fechaParts.length === 3) {
-              var fechaRow = new Date(fechaParts[2], fechaParts[1] - 1, fechaParts[0]);
+              var fechaRow = new Date(fechaParts[0], fechaParts[1] - 1, fechaParts[2]);
               var ahora = new Date();
               var diffMs = ahora - fechaRow;
               if (rango === '' || rango === '24h') { if (diffMs > 86400000) ok = false; }

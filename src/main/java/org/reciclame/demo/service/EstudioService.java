@@ -160,6 +160,19 @@ public class EstudioService {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
 
+        // Si llega un archivo nuevo y es distinto al actual, eliminar el viejo de MinIO
+        // para evitar archivos huérfanos y (en combinación con el nonce del visor) forzar
+        // que kkFileView sirva el archivo nuevo, no uno cacheado por fullfilename.
+        if (archivoUrl != null && e.getArchivoUrl() != null
+                && !archivoUrl.equals(e.getArchivoUrl())
+                && !e.getArchivoUrl().isBlank()) {
+            try {
+                minioStorageService.eliminarArchivo(e.getArchivoUrl());
+            } catch (Exception ex) {
+                System.err.println("Advertencia: no se pudo eliminar archivo anterior de MinIO: " + ex.getMessage());
+            }
+        }
+
         String datosAnteriores = null;
         try {
             datosAnteriores = objectMapper.writeValueAsString(toResponseDTO(e));
