@@ -140,6 +140,17 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponseDTO> listarUsuariosLimit(int limite) {
+        var stream = usuarioRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     public List<UsuarioResponseDTO> listarUsuariosActivos() {
         return usuarioRepository.findAll().stream()
                 .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()))

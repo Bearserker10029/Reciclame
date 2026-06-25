@@ -2,6 +2,8 @@ package org.reciclame.demo.controller;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.reciclame.demo.model.EstadoSolicitud;
+import org.reciclame.demo.repository.SolicitudesRegistroRepository;
 import org.reciclame.demo.service.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,6 +35,8 @@ public class AdminController extends BaseReportesController {
     private final AuditoriaService auditoriaService;
     private final ReporteService reporteService;
     private final ChatbotService chatbotService;
+    private final SolicitudesRegistroRepository solicitudesRepo;
+    private final EmailNotificationService emailNotificationService;
 
     public AdminController(UsuarioService usuarioService, NormativaService normativaService,
                            EstudioService estudioService, EmpresaService empresaService,
@@ -41,7 +45,9 @@ public class AdminController extends BaseReportesController {
                            TiposNormativaService tiposNormativaService,
                            EstadosNormativaService estadosNormativaService,
                            NotificacionService notificacionService, AuditoriaService auditoriaService,
-                           ReporteService reporteService, ChatbotService chatbotService) {
+                           ReporteService reporteService, ChatbotService chatbotService,
+                           SolicitudesRegistroRepository solicitudesRepo,
+                           EmailNotificationService emailNotificationService) {
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -55,7 +61,12 @@ public class AdminController extends BaseReportesController {
         this.auditoriaService = auditoriaService;
         this.reporteService = reporteService;
         this.chatbotService = chatbotService;
+        this.solicitudesRepo = solicitudesRepo;
+        this.emailNotificationService = emailNotificationService;
     }
+
+    @Override
+    protected EmailNotificationService emailNotificationService() { return emailNotificationService; }
 
     @Override
     protected UsuarioService usuarioService() { return usuarioService; }
@@ -107,6 +118,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
@@ -197,6 +209,7 @@ public class AdminController extends BaseReportesController {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());

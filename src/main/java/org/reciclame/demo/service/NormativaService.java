@@ -91,6 +91,17 @@ public class NormativaService {
                 .collect(Collectors.toList());
     }
 
+    public List<NormativaResponseDTO> listarNormativasLimit(int limite) {
+        var stream = normativaRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     public Map<String, Long> contarPorTematica() {
         Map<String, Long> conteo = new HashMap<>();
         List<Normativa> activas = normativaRepository.findByEstadoActivoTrue();
