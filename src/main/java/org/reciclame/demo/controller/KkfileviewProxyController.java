@@ -30,6 +30,9 @@ public class KkfileviewProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(KkfileviewProxyController.class);
 
+    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
+    private static final int STREAM_BUFFER_BYTES = 256 * 1024;
+
     @Value("${minio.bucket}")
     private String bucket;
 
@@ -125,9 +128,18 @@ public class KkfileviewProxyController {
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
+        // kkfileview puede reintentar varias veces (preview/imágenes). Permitimos cache HTTP
+        // por 5 minutos en cliente y 10 en CDN/proxy, dado que la URL firmada dura 10 min.
+        response.setHeader("Cache-Control", "private, max-age=300");
 
-        try (InputStream is = upstream.body()) {
-            is.transferTo(response.getOutputStream());
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 }

@@ -1,6 +1,6 @@
 services:
   reciclame-app1:
-    image: sergiogrunfeld2026/reciclame:latest
+    image: kent10029/reciclame:latest
     container_name: reciclame-app1
     platform: linux/amd64
     restart: unless-stopped
@@ -40,13 +40,14 @@ services:
       - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - JAVA_OPTS=-Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app2:
-    image: sergiogrunfeld2026/reciclame:latest
+    image: kent10029/reciclame:latest
     container_name: reciclame-app2
     platform: linux/amd64
     restart: unless-stopped
@@ -86,13 +87,14 @@ services:
       - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - JAVA_OPTS=-Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app3:
-    image: sergiogrunfeld2026/reciclame:latest
+    image: kent10029/reciclame:latest
     container_name: reciclame-app3
     platform: linux/amd64
     restart: unless-stopped
@@ -132,6 +134,7 @@ services:
       - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      - JAVA_OPTS=-Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
@@ -215,7 +218,7 @@ services:
       CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_ANONYMOUS: "false"
     command: centrifugo --health --log_level=info
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8000/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8000/health" ]
       interval: 15s
       timeout: 3s
       retries: 5
@@ -257,15 +260,31 @@ services:
   kkfileview:
     image: keking/kkfileview:latest
     container_name: reciclame-kkfileview
-    ports:
-      - "8012:8012"
+    expose:
+      - "8012"
     depends_on:
       - minio-init
     environment:
       - KK_HTTP_PREVIEW=${KK_HTTP_PREVIEW}
       - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${SPRING_FREEMARKER_TEMPLATE_LOADER_PATH}
+      - KK_CACHE_ENABLED=true
+      - KK_OFFICE_PREVIEW_SWITCH_ROW=true
+      - KK_OFFICE_PREVIEW_SWITCH_PPT=true
+      - KK_OFFICE_PREVIEW_SWITCH_PDF=true
+      - KK_OFFICE_PREVIEW_SWITCH_XLS=true
+      - KK_MAX_FILE_SIZE=200MB
+      - JAVA_OPTS=-Xms512m -Xmx2g -XX:+UseG1GC -XX:MaxGCPauseMillis=200
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
+      - kkfileview_cache:/opt/kkFileView/file
+      - kkfileview_cache_index:/opt/kkFileView/index
+    healthcheck:
+      # kkfileview responde en / con HTML, pero /index es estable.
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8012/ >/dev/null 2>&1 || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -282,3 +301,5 @@ volumes:
   npm_letsencrypt:
   redis_data:
   backup_data:
+  kkfileview_cache:
+  kkfileview_cache_index:

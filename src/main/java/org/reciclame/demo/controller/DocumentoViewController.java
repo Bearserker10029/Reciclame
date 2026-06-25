@@ -35,6 +35,8 @@ import java.util.Map;
 public class DocumentoViewController {
 
     private static final int EXPIRY_MINUTOS = 15;
+    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
+    private static final int STREAM_BUFFER_BYTES = 256 * 1024;
     private static final Logger log = LoggerFactory.getLogger(DocumentoViewController.class);
 
     private final MinioStorageService minioStorageService;
@@ -137,9 +139,17 @@ public class DocumentoViewController {
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
+        // Cache corto: el navegador puede reusar si el usuario navega atrás/adelante sin re-stripear MinIO.
+        response.setHeader("Cache-Control", "private, max-age=300");
 
-        try (InputStream is = upstream.body()) {
-            is.transferTo(response.getOutputStream());
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 
@@ -271,8 +281,14 @@ public class DocumentoViewController {
             }
         }
 
-        try (InputStream is = upstream.body()) {
-            is.transferTo(response.getOutputStream());
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 
