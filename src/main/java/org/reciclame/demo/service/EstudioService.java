@@ -71,6 +71,17 @@ public class EstudioService {
                 .collect(Collectors.toList());
     }
 
+    public List<EstudioResponseDTO> listarEstudiosLimit(int limite) {
+        var stream = estudioRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     public List<Map<String, Object>> agregarPorTematica() {
         List<EstudioResponseDTO> estudios = listarEstudios();
         return estudios.stream()

@@ -165,7 +165,7 @@
           <label class="field-label">Nombre completo</label>
           <div style="position:relative;">
             <i class="fas fa-user field-icon"></i>
-            <input class="glass-input form-control" type="text" name="nombre"
+            <input id="inp-nombre" class="glass-input form-control" type="text" name="nombre"
                    th:value="${nombre}" placeholder="Ej: María López Torres" required />
           </div>
         </div>
@@ -174,7 +174,7 @@
           <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
           <div style="position:relative;">
             <i class="fas fa-id-card field-icon"></i>
-            <input class="glass-input form-control" type="text" name="dni"
+            <input id="inp-dni" class="glass-input form-control" type="text" name="dni"
                    th:value="${dni}" placeholder="74521836" maxlength="8" pattern="\d{8}" required />
           </div>
         </div>
@@ -184,15 +184,14 @@
           <div style="position:relative;">
             <i class="fas fa-envelope field-icon"></i>
             <input id="inp-correo" class="glass-input form-control" type="email" name="correo"
-                   th:value="${correo}" placeholder="usuario@reciclame.org"
-                   pattern="^[a-zA-Z0-9._%+\-]+@reciclame\.org$"
+                   th:value="${correo}" placeholder="usuario@empresa.com"
                    required oninput="validateCorreo()" />
           </div>
           <div id="err-correo" class="field-error">
             <i class="fas fa-exclamation-triangle"></i>
             <span id="err-correo-msg"></span>
           </div>
-          <p class="domain-hint"><i class="fas fa-info-circle"></i>Solo se aceptan correos @reciclame.org</p>
+          <p class="domain-hint"><i class="fas fa-info-circle"></i>Ingresa tu correo electrónico</p>
         </div>
 
         <div class="field-wrap" style="margin-bottom:20px;">
@@ -303,7 +302,7 @@
   setGlowEffectRx();
   window.addEventListener('resize', setGlowEffectRx);
 
-  var DOMAIN_RE = /^[a-zA-Z0-9._%+\-]+@reciclame\.org$/;
+  var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
 
   function validateCorreo() {
     var input  = document.getElementById('inp-correo');
@@ -314,28 +313,23 @@
     var ok     = true;
 
     if (val === '') {
-      errMsg.textContent = 'El correo corporativo es requerido';
+      errMsg.textContent = 'El correo es requerido';
       ok = false;
-    } else if (!val.includes('@') || val.indexOf('@') === 0) {
-      errMsg.textContent = 'Ingresa un correo válido (ejemplo@reciclame.org)';
-      ok = false;
-    } else if (!DOMAIN_RE.test(val)) {
-      errMsg.textContent = 'Solo se aceptan correos corporativos (@reciclame.org)';
+    } else if (!EMAIL_RE.test(val)) {
+      errMsg.textContent = 'Ingresa un correo electrónico válido';
       ok = false;
     }
 
     if (ok) {
       errDiv.classList.remove('show');
       input.classList.remove('input-error');
-      btn.disabled = false;
     } else {
       errDiv.classList.add('show');
       input.classList.add('input-error');
-      btn.disabled = true;
     }
   }
 
-  document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     var inp = document.getElementById('inp-correo');
     if (inp && inp.value) validateCorreo();
 

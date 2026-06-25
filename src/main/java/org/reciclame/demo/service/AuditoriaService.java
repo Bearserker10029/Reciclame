@@ -97,6 +97,17 @@ public class AuditoriaService {
         return auditoriaRepository.findAllExcludingSeguridad(pageable);
     }
 
+    public List<Auditoria> listarAuditoriasLimit(int limite) {
+        var stream = auditoriaRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getFechaAccion() == null) return 1;
+                    if (b.getFechaAccion() == null) return -1;
+                    return b.getFechaAccion().compareTo(a.getFechaAccion());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.collect(Collectors.toList());
+    }
+
     public List<Auditoria> listarAuditoriasUltimas100() {
         return auditoriaRepository.findTop100ByOrderByFechaAccionDesc();
     }

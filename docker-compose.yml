@@ -1,6 +1,6 @@
 services:
   reciclame-app1:
-    image: kent10029/reciclame:latest
+    image: sergiogrunfeld2026/reciclame:latest
     container_name: reciclame-app1
     platform: linux/amd64
     restart: unless-stopped
@@ -36,13 +36,17 @@ services:
       - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
       - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
       - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app2:
-    image: kent10029/reciclame:latest
+    image: sergiogrunfeld2026/reciclame:latest
     container_name: reciclame-app2
     platform: linux/amd64
     restart: unless-stopped
@@ -78,13 +82,17 @@ services:
       - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
       - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
       - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
     volumes:
       - backup_data:/backups
     networks:
       - reciclame-net
 
   reciclame-app3:
-    image: kent10029/reciclame:latest
+    image: sergiogrunfeld2026/reciclame:latest
     container_name: reciclame-app3
     platform: linux/amd64
     restart: unless-stopped
@@ -120,6 +128,10 @@ services:
       - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
       - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
       - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
     volumes:
       - backup_data:/backups
     networks:

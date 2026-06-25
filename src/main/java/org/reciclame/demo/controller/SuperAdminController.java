@@ -4,6 +4,7 @@ import org.reciclame.demo.dto.EmpresaRequestDTO;
 import org.reciclame.demo.dto.ParametrosSistemaRequestDTO;
 import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.ChatbotService;
+import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.EmpresaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.EtiquetaService;
@@ -37,10 +38,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.GrantedAuthority;
+import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.model.Normativa;
 import org.reciclame.demo.model.Estudio;
+import org.reciclame.demo.repository.SolicitudesRegistroRepository;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -68,6 +71,7 @@ public class SuperAdminController extends AdminController {
     private final ParametrosSistemaService parametrosSistemaService;
     private final ReporteService reporteService;
     private final ChatbotService chatbotService;
+    private final SolicitudesRegistroRepository solicitudesRepo;
 
     public SuperAdminController(UsuarioService usuarioService,
             NormativaService normativaService,
@@ -82,11 +86,14 @@ public class SuperAdminController extends AdminController {
             AuditoriaService auditoriaService,
             ParametrosSistemaService parametrosSistemaService,
             ReporteService reporteService,
-            ChatbotService chatbotService) {
+            ChatbotService chatbotService,
+            SolicitudesRegistroRepository solicitudesRepo,
+            EmailNotificationService emailNotificationService) {
         super(usuarioService, normativaService, estudioService, empresaService,
                 rolService, tematicaService, etiquetaService,
                 tiposNormativaService, estadosNormativaService, notificacionService,
-                auditoriaService, reporteService, chatbotService);
+                auditoriaService, reporteService, chatbotService, solicitudesRepo,
+                emailNotificationService);
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
@@ -101,6 +108,7 @@ public class SuperAdminController extends AdminController {
         this.parametrosSistemaService = parametrosSistemaService;
         this.reporteService = reporteService;
         this.chatbotService = chatbotService;
+        this.solicitudesRepo = solicitudesRepo;
     }
 
     protected void setupCommonAttributes(Model model, String correo) {
@@ -155,6 +163,7 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
@@ -173,12 +182,12 @@ public class SuperAdminController extends AdminController {
     // Kent,FullStack Developer https://github.com/Bearserker10029
     // Si no se muestra los usuarios, este es el culpable:
     
-// MEGA KIRBY era un easter egg; quitamos la línea duplicada de todosUsuarios.
     @GetMapping("/superadmin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
+        model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
@@ -953,5 +962,43 @@ return "redirect:/superadmin/notificaciones";
         super.exportarChatbotXLSX(response, desde, hasta);
     }
 
+    // ====================================================================
+    //  Endpoints unificados POST — overrides para ruta /superadmin/...
+    // ====================================================================
 
+    @Override
+    @org.springframework.web.bind.annotation.PostMapping("/superadmin/reportes/export/usuarios")
+    @org.springframework.web.bind.annotation.ResponseBody
+    protected org.springframework.http.ResponseEntity<?> exportarUsuariosUnificado(
+            @org.springframework.web.bind.annotation.RequestBody ExportRequest req,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) throws IOException {
+        return super.exportarUsuariosUnificado(req, user);
+    }
+
+    @Override
+    @org.springframework.web.bind.annotation.PostMapping("/superadmin/reportes/export/auditoria")
+    @org.springframework.web.bind.annotation.ResponseBody
+    protected org.springframework.http.ResponseEntity<?> exportarAuditoriaUnificado(
+            @org.springframework.web.bind.annotation.RequestBody ExportRequest req,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        return super.exportarAuditoriaUnificado(req, user);
+    }
+
+    @Override
+    @org.springframework.web.bind.annotation.PostMapping("/superadmin/reportes/export/normativas")
+    @org.springframework.web.bind.annotation.ResponseBody
+    protected org.springframework.http.ResponseEntity<?> exportarNormativasUnificado(
+            @org.springframework.web.bind.annotation.RequestBody ExportRequest req,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        return super.exportarNormativasUnificado(req, user);
+    }
+
+    @Override
+    @org.springframework.web.bind.annotation.PostMapping("/superadmin/reportes/export/chatbot")
+    @org.springframework.web.bind.annotation.ResponseBody
+    protected org.springframework.http.ResponseEntity<?> exportarChatbotUnificado(
+            @org.springframework.web.bind.annotation.RequestBody ExportRequest req,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        return super.exportarChatbotUnificado(req, user);
+    }
 }
