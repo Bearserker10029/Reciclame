@@ -93,53 +93,6 @@ services:
     networks:
       - reciclame-net
 
-  reciclame-app3:
-    image: kent10029/reciclame:latest
-    container_name: reciclame-app3
-    platform: linux/amd64
-    restart: unless-stopped
-    expose:
-      - "8080"
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - MINIO_URL=${MINIO_URL}
-      - MINIO_INTERNAL_URL=${MINIO_INTERNAL_URL}
-      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
-      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
-      - MINIO_BUCKET=${MINIO_BUCKET}
-      - KKFILEVIEW_URL=${KKFILEVIEW_URL}
-      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
-      - N8N_CHATBOT_WEBHOOK_URL=${N8N_CHATBOT_WEBHOOK_URL}
-      - APP_BASE_URL=${APP_BASE_URL}
-      - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
-      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
-      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
-      - APP_BACKUP_PATH=${APP_BACKUP_PATH}
-      - VERIFICA_API_KEY=${VERIFICA_API_KEY}
-      - ATENEA_API_KEY=${ATENEA_API_KEY}
-      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
-      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
-      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
-      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
-      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
-      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
-      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
-      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
-      - JAVA_OPTS=-Xms512m -Xmx1536m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
-    volumes:
-      - backup_data:/backups
-    networks:
-      - reciclame-net
-
   redis:
     image: redis:7.4-alpine
     container_name: reciclame-redis
@@ -166,7 +119,6 @@ services:
     depends_on:
       - reciclame-app1
       - reciclame-app2
-      - reciclame-app3
     networks:
       - reciclame-net
 

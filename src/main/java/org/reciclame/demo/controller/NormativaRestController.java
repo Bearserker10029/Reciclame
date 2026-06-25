@@ -4,9 +4,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
+import org.reciclame.demo.dto.VirusTotalVerdict;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.service.VirusTotalScanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +28,16 @@ public class NormativaRestController {
     private final NormativaService normativaService;
     private final MinioStorageService minioStorageService;
     private final UsuarioService usuarioService;
+    private final VirusTotalScanService virusTotalScanService;
 
     public NormativaRestController(NormativaService normativaService,
                                    MinioStorageService minioStorageService,
-                                   UsuarioService usuarioService) {
+                                   UsuarioService usuarioService,
+                                   VirusTotalScanService virusTotalScanService) {
         this.normativaService = normativaService;
         this.minioStorageService = minioStorageService;
         this.usuarioService = usuarioService;
+        this.virusTotalScanService = virusTotalScanService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -61,11 +66,25 @@ public class NormativaRestController {
             @RequestPart("normativa") @Valid NormativaRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws java.io.IOException {
         try {
             String archivoUrl      = null;
             String archivoTipoMime = null;
+            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
+                // 1) Escanear contra VirusTotal ANTES de tocar MinIO.
+                //    Si devuelve MALICIOUS, lanza VirusTotalException → 400.
+                vtVerdict = virusTotalScanService.scan(archivo);
+                if (!vtVerdict.isAllowed()) {
+                    return ResponseEntity.badRequest().body(Map.of(
+                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
+                            "tipo", "VIRUS_DETECTADO",
+                            "verdict", vtVerdict.getVerdict().name(),
+                            "malicious", vtVerdict.getMaliciousEngines(),
+                            "suspicious", vtVerdict.getSuspiciousEngines()
+                    ));
+                }
+                // 2) Limpio (o skipped por fail-open): recién ahora subimos a MinIO.
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
@@ -75,7 +94,8 @@ public class NormativaRestController {
             String ipAddress = request.getRemoteAddr();
             String userAgent = request.getHeader("User-Agent");
             NormativaResponseDTO resultado = normativaService.crearNormativa(
-                    dto, archivoUrl, archivoTipoMime, user.getUsername(),
+                    dto, archivoUrl, archivoTipoMime, vtVerdict,
+                    user.getUsername(),
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
         } catch (RuntimeException e) {
@@ -91,11 +111,22 @@ public class NormativaRestController {
             @RequestPart("normativa") @Valid NormativaRequestDTO dto,
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
-            HttpServletRequest request) {
+            HttpServletRequest request) throws java.io.IOException {
         try {
             String archivoUrl      = null;
             String archivoTipoMime = null;
+            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
+                vtVerdict = virusTotalScanService.scan(archivo);
+                if (!vtVerdict.isAllowed()) {
+                    return ResponseEntity.badRequest().body(Map.of(
+                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
+                            "tipo", "VIRUS_DETECTADO",
+                            "verdict", vtVerdict.getVerdict().name(),
+                            "malicious", vtVerdict.getMaliciousEngines(),
+                            "suspicious", vtVerdict.getSuspiciousEngines()
+                    ));
+                }
                 archivoUrl      = simularSubida(archivo);
                 archivoTipoMime = archivo.getContentType();
             }
@@ -105,7 +136,7 @@ public class NormativaRestController {
             String ipAddress = request.getRemoteAddr();
             String userAgent = request.getHeader("User-Agent");
             NormativaResponseDTO resultado = normativaService.actualizarNormativa(
-                    id, dto, archivoUrl, archivoTipoMime,
+                    id, dto, archivoUrl, archivoTipoMime, vtVerdict,
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
@@ -133,7 +164,7 @@ public class NormativaRestController {
     }
 
     // ── Subida a MinIO ────────────────────────────────────────
-    private String simularSubida(MultipartFile archivo) {
+    private String simularSubida(MultipartFile archivo) throws java.io.IOException {
         return minioStorageService.subirArchivo(archivo);
     }
 }

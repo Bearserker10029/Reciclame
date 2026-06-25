@@ -2,6 +2,7 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
+import org.reciclame.demo.dto.VirusTotalVerdict;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
 import org.springframework.stereotype.Service;
@@ -113,6 +114,20 @@ public class EstudioService {
                                            String auditorUsuarioNombre,
                                            String ipAddress,
                                            String userAgent) {
+        return crearEstudio(dto, archivoUrl, archivoTipoMime, null,
+                correoAutor, auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public EstudioResponseDTO crearEstudio(EstudioRequestDTO dto,
+                                           String archivoUrl,
+                                           String archivoTipoMime,
+                                           VirusTotalVerdict vtVerdict,
+                                           String correoAutor,
+                                           Long auditorUsuarioId,
+                                           String auditorUsuarioNombre,
+                                           String ipAddress,
+                                           String userAgent) {
         Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
@@ -121,6 +136,7 @@ public class EstudioService {
 
         Estudio e = new Estudio();
         mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        applyVerdict(e, vtVerdict);
         e.setSubidaPor(subidaPor);
         e.setEstadoActivo(true);
         e.setVisualizacionesCount(0);
@@ -168,6 +184,20 @@ public class EstudioService {
                                                 String auditorUsuarioNombre,
                                                 String ipAddress,
                                                 String userAgent) {
+        return actualizarEstudio(id, dto, archivoUrl, archivoTipoMime, null,
+                auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public EstudioResponseDTO actualizarEstudio(Long id,
+                                                EstudioRequestDTO dto,
+                                                String archivoUrl,
+                                                String archivoTipoMime,
+                                                VirusTotalVerdict vtVerdict,
+                                                Long auditorUsuarioId,
+                                                String auditorUsuarioNombre,
+                                                String ipAddress,
+                                                String userAgent) {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
 
@@ -195,6 +225,9 @@ public class EstudioService {
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
         mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        if (vtVerdict != null) {
+            applyVerdict(e, vtVerdict);
+        }
         e.setUpdatedAt(Instant.now());
 
         Estudio saved = estudioRepository.save(e);
@@ -330,6 +363,17 @@ public class EstudioService {
         }
     }
 
+    private void applyVerdict(Estudio e, VirusTotalVerdict v) {
+        if (v == null) return;
+        e.setVtSha256(v.getSha256());
+        e.setVtVerdict(v.getVerdict() != null ? v.getVerdict().name() : null);
+        e.setVtMaliciousEngines(v.getMaliciousEngines());
+        e.setVtSuspiciousEngines(v.getSuspiciousEngines());
+        e.setVtTotalEngines(v.getTotalEngines());
+        e.setVtSkipped(Boolean.TRUE.equals(v.isSkipped()));
+        e.setVtScannedAt(v.getScannedAt());
+    }
+
     private void guardarEtiquetas(Estudio estudio, List<Long> etiquetasIds) {
         if (etiquetasIds == null || etiquetasIds.isEmpty()) return;
         for (Long etiquetaId : etiquetasIds) {
@@ -358,6 +402,15 @@ public class EstudioService {
         dto.setAnio(e.getAnio());
         dto.setArchivoUrl(e.getArchivoUrl());
         dto.setArchivoTipoMime(e.getArchivoTipoMime());
+
+        dto.setVtSha256(e.getVtSha256());
+        dto.setVtVerdict(e.getVtVerdict());
+        dto.setVtMaliciousEngines(e.getVtMaliciousEngines());
+        dto.setVtSuspiciousEngines(e.getVtSuspiciousEngines());
+        dto.setVtTotalEngines(e.getVtTotalEngines());
+        dto.setVtSkipped(e.getVtSkipped());
+        dto.setVtScannedAt(e.getVtScannedAt());
+
         dto.setEsPublico(e.getEsPublico());
         dto.setVisualizacionesCount(e.getVisualizacionesCount());
         dto.setDescargasCount(e.getDescargasCount());

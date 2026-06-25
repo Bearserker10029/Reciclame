@@ -563,6 +563,12 @@
         <!-- ══ ERROR BANNER ══ -->
         <div id="form-error"></div>
 
+        <!-- ══ INFO: ESCANEO VIRUS TOTAL ══ -->
+        <div style="background:#e7f1ff;border:1px solid #b6d4fe;color:#052c65;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Todo archivo adjunto se escanea automáticamente contra <strong>VirusTotal</strong> antes de almacenarse. Si el antivirus detecta malware, la subida será rechazada.</span>
+        </div>
+
         <!-- ══ FORM GRID ══ -->
         <div class="form-grid">
 
@@ -904,7 +910,7 @@
         : '<i class="fas fa-plus-circle"></i> Crear estudio';
 
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
+      btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> Escaneando con VirusTotal…';
 
       try {
         var url = IS_EDIT ? '/api/estudios/' + ESTUDIO_ID : '/api/estudios';
@@ -919,6 +925,21 @@
             // Errores campo por campo del @Valid
             mostrarErroresBackend(data.errores);
             showToast('Revisa los campos marcados.', 'error');
+          } else if (data.tipo === 'VIRUS_DETECTADO') {
+            var detalle = '';
+            if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
+            if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';
+            errBanner.innerHTML =
+              '<i class="fas fa-shield-virus" style="color:#dc3545;margin-right:8px;"></i>' +
+              '<strong>Archivo rechazado por VirusTotal.</strong> ' +
+              (data.mensaje || '') +
+              (detalle ? '<br><small>' + detalle + '</small>' : '');
+            errBanner.style.display = 'block';
+            errBanner.style.background = '#f8d7da';
+            errBanner.style.color = '#842029';
+            errBanner.style.border = '1px solid #f5c2c7';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showToast('Archivo rechazado por antivirus.', 'error');
           } else {
             // Error de negocio genérico (RuntimeException del servicio)
             errBanner.textContent = data.mensaje || 'Error al guardar.';

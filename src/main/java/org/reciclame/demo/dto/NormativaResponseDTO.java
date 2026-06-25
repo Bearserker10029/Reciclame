@@ -38,6 +38,15 @@ public class NormativaResponseDTO {
     private String archivoUrl;
     private String archivoTipoMime;
 
+    // ── VirusTotal (auditoría de escaneo) ──────────────────────
+    private String vtSha256;
+    private String vtVerdict;
+    private Integer vtMaliciousEngines;
+    private Integer vtSuspiciousEngines;
+    private Integer vtTotalEngines;
+    private Boolean vtSkipped;
+    private Instant vtScannedAt;
+
     private Boolean esPublica;
     private Integer visualizacionesCount;
     private Integer descargasCount;
