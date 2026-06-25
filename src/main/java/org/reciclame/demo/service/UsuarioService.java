@@ -166,6 +166,19 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Devuelve el conjunto de IDs de usuarios con rol SUPERADMIN.
+     * Útil para filtrar listados donde la entidad referenciada solo guarda usuarioId
+     * (p. ej. Auditoria) y se requiere ocultar las acciones de superadmin en el
+     * contexto del rol ADMIN.
+     */
+    public java.util.Set<Long> idsUsuariosSuperadmin() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getRol() != null && "SUPERADMIN".equals(u.getRol().getNombre()))
+                .map(org.reciclame.demo.model.Usuario::getId)
+                .collect(Collectors.toCollection(java.util.HashSet::new));
+    }
+
     public List<UsuarioResponseDTO> listarUsuariosPendientes() {
         return usuarioRepository.findAll().stream()
                 .filter(u -> "PENDIENTE".equals(u.getEstadoCuenta()))
