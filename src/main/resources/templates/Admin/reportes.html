@@ -922,34 +922,17 @@
           window.switchReportTab = switchReportTab;
 
           function initCharts() {
-            var normasData = /*[[${normativas}]]*/[];
-            var tematicasData = /*[[${tematicas}]]*/[];
-            var actividadData = /*[[${actividadDiaria}]]*/[];
-            var colorMap = {};
-            if (tematicasData) {
-              tematicasData.forEach(function (t) {
-                if (t.codigo && t.colorHex) colorMap[t.codigo] = t.colorHex;
-              });
-            }
-            var temaCounts = {};
-            if (normasData) {
-              normasData.forEach(function (n) {
-                var key = n.tematicaCodigo || 'Otro';
-                temaCounts[key] = (temaCounts[key] || 0) + (n.descargasCount || 0);
-              });
-            }
-            var tLabels = Object.keys(temaCounts);
-            var tData = tLabels.map(function (k) { return temaCounts[k]; });
-            var tColors = tLabels.map(function (k) { return colorMap[k] || '#95A5A6'; });
-
-            var aLabels = [];
-            var aData = [];
-            if (actividadData && actividadData.length > 0) {
-              actividadData.forEach(function (d) {
-                aLabels.push(d.fecha);
-                aData.push(d.count);
-              });
-            }
+            // Usamos los arrays pre-procesados del controller (Strings e Integers) en lugar
+            // de inyectar los DTOs completos. Antes inyectabamos `normativas` y `tematicas`,
+            // que contienen LocalDate/Instant, y el inline JS de Thymeleaf reventaba al
+            // serializarlos → todo el <script> quedaba inválido y ningún botón funcionaba.
+            var aLabels = /*[[${chartIngresosLabels}]]*/ [];
+            var aData   = /*[[${chartIngresosData}]]*/   [];
+            var tLabels = /*[[${chartTematicaLabels}]]*/ [];
+            var tData   = /*[[${chartTematicaData}]]*/   [];
+            // Colores fijos por temática — mantiene la paleta original sin depender del DTO.
+            var tColorMap = { 'EC': '#2ECC71', 'GR': '#3498DB', 'EE': '#F39C12', 'REP': '#9B59B6' };
+            var tColors = tLabels.map(function (k) { return tColorMap[k] || '#95A5A6'; });
 
             const ci = document.getElementById('chart-ingresos');
             if (ci && !ci.chart) {
@@ -1406,6 +1389,9 @@
     </div>
 
     <script>
+      // Exponemos en window para que los onclick inline las encuentren incluso si otro
+      // bloque <script th:inline> de la misma página falla por un problema de
+      // serialización de Thymeleaf (LocalDate/Instant).
       var _expFormato = 'pdf';
       var _expLimite = 100;
       var _expEntidad = 'usuarios';
@@ -1416,6 +1402,7 @@
         document.getElementById('export-error').style.display = 'none';
         document.getElementById('modal-export-usuarios').style.display = 'flex';
       }
+      window.abrirModalExport = abrirModalExport;
       // Backwards compat
       function abrirModalExportUsuarios() { abrirModalExport('usuarios', 'Usuarios'); }
       function cerrarModalExportUsuarios() {
