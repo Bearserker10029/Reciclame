@@ -318,10 +318,10 @@
 
       <div style="flex:1"></div>
       <div style="display:flex;align-items:center;gap:20px;">
-        <!-- Ícono de chat interno (oculto para SUPERADMIN) -->
+        <!-- Ícono de chat interno (oculto para SUPERADMIN, excepto durante impersonación) -->
         <th:block sec:authorize="isAuthenticated()"
                   th:if="${session.usuarioSesion?.rolNombre != null
-                          and session.usuarioSesion.rolNombre != 'SUPERADMIN'
+                          and (session.usuarioSesion.rolNombre != 'SUPERADMIN' or session.IMPERSONATED_USER != null)
                           and session.usuarioSesion.rolNombre != 'VISUALIZADOR'}">
           <div id="chat-side-btn" style="position:relative;cursor:pointer;display:flex;align-items:center;"
                title="Chat interno">
@@ -377,7 +377,7 @@
     <!-- ── Panel lateral de chat ─────────────────────────────── -->
     <th:block sec:authorize="isAuthenticated()"
               th:if="${session.usuarioSesion?.rolNombre != null
-                      and session.usuarioSesion.rolNombre != 'SUPERADMIN'
+                      and (session.usuarioSesion.rolNombre != 'SUPERADMIN' or session.IMPERSONATED_USER != null)
                       and session.usuarioSesion.rolNombre != 'VISUALIZADOR'}">
       <div id="chat-side-backdrop" onclick="window.cerrarChatSide && cerrarChatSide()"></div>
       <aside id="chat-side-panel" role="dialog" aria-label="Chat interno">
