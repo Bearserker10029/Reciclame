@@ -222,7 +222,7 @@ services:
       - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
       # Heap Node.js acotado para no comerse la RAM disponible
-      - NODE_OPTIONS=--max-old-space-size=256
+      - NODE_OPTIONS=--max-old-space-size=1024
     volumes:
       - n8n_data:/home/node/.n8n
     extra_hosts:

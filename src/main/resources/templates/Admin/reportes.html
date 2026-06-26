@@ -530,10 +530,10 @@
         </div>
 
         <div class="tab-bar">
-          <button id="rtab-actividad" class="report-tab active" onclick="switchReportTab('actividad')">
+          <button id="rtab-actividad" class="report-tab active" onclick="window.switchReportTab && window.switchReportTab('actividad')">
             <i class="fas fa-chart-bar"></i> Actividad
           </button>
-          <button id="rtab-chatbot" class="report-tab" onclick="switchReportTab('chatbot')">
+          <button id="rtab-chatbot" class="report-tab" onclick="window.switchReportTab && window.switchReportTab('chatbot')">
             <i class="fas fa-robot"></i> Chatbot Analytics
           </button>
         </div>
@@ -743,7 +743,7 @@
               <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Rol</label>
               <select id="chat-rol" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;min-width:160px;">
                 <option value="">Todos</option>
-                <option th:each="r : ${chatRolList}" th:value="${r.id}" th:text="${r.nombre}"></option>
+                <option th:each="r : ${chatRolList}" th:if="${r.nombre == null or r.nombre.toString().toUpperCase() != 'SUPERADMIN'}" th:value="${r.id}" th:text="${r.nombre}"></option>
               </select>
             </div>
             <div>
@@ -917,36 +917,22 @@
               document.getElementById('rtab-chatbot').classList.add('active');
             }
           }
+          // Exponer al scope global para que los onclick inline (que se resuelven
+          // contra window) lo encuentren pase lo que pase con th:inline processing.
+          window.switchReportTab = switchReportTab;
 
           function initCharts() {
-            var normasData = /*[[${normativas}]]*/[];
-            var tematicasData = /*[[${tematicas}]]*/[];
-            var actividadData = /*[[${actividadDiaria}]]*/[];
-            var colorMap = {};
-            if (tematicasData) {
-              tematicasData.forEach(function (t) {
-                if (t.codigo && t.colorHex) colorMap[t.codigo] = t.colorHex;
-              });
-            }
-            var temaCounts = {};
-            if (normasData) {
-              normasData.forEach(function (n) {
-                var key = n.tematicaCodigo || 'Otro';
-                temaCounts[key] = (temaCounts[key] || 0) + (n.descargasCount || 0);
-              });
-            }
-            var tLabels = Object.keys(temaCounts);
-            var tData = tLabels.map(function (k) { return temaCounts[k]; });
-            var tColors = tLabels.map(function (k) { return colorMap[k] || '#95A5A6'; });
-
-            var aLabels = [];
-            var aData = [];
-            if (actividadData && actividadData.length > 0) {
-              actividadData.forEach(function (d) {
-                aLabels.push(d.fecha);
-                aData.push(d.count);
-              });
-            }
+            // Usamos los arrays pre-procesados del controller (Strings e Integers) en lugar
+            // de inyectar los DTOs completos. Antes inyectabamos `normativas` y `tematicas`,
+            // que contienen LocalDate/Instant, y el inline JS de Thymeleaf reventaba al
+            // serializarlos → todo el <script> quedaba inválido y ningún botón funcionaba.
+            var aLabels = /*[[${chartIngresosLabels}]]*/ [];
+            var aData   = /*[[${chartIngresosData}]]*/   [];
+            var tLabels = /*[[${chartTematicaLabels}]]*/ [];
+            var tData   = /*[[${chartTematicaData}]]*/   [];
+            // Colores fijos por temática — mantiene la paleta original sin depender del DTO.
+            var tColorMap = { 'EC': '#2ECC71', 'GR': '#3498DB', 'EE': '#F39C12', 'REP': '#9B59B6' };
+            var tColors = tLabels.map(function (k) { return tColorMap[k] || '#95A5A6'; });
 
             const ci = document.getElementById('chart-ingresos');
             if (ci && !ci.chart) {
@@ -1066,8 +1052,10 @@
 
             function actualizarLinksExport() {
               var qs = paramsFiltro().toString();
-              document.getElementById('chat-export-pdf').href  = chatCtx.exportBase + '.pdf?'  + qs;
-              document.getElementById('chat-export-xlsx').href = chatCtx.exportBase + '.xlsx?' + qs;
+              var pdfEl  = document.getElementById('chat-export-pdf');
+              var xlsxEl = document.getElementById('chat-export-xlsx');
+              if (pdfEl)  pdfEl.href  = chatCtx.exportBase + '.pdf?'  + qs;
+              if (xlsxEl) xlsxEl.href = chatCtx.exportBase + '.xlsx?' + qs;
             }
 
             function cargarEstadisticas() {
@@ -1089,6 +1077,11 @@
                   renderChartRoles(data.conversacionesPorRol || []);
                   renderTopIntents(data.topIntents || []);
                   renderTopUsuarios(data.topUsuarios || []);
+                  // Forzar resize después de que el canvas ya es visible (el tab puede estar oculto la 1ra vez)
+                  setTimeout(function () {
+                    if (chatCtx.chartMensajes) { try { chatCtx.chartMensajes.resize(); } catch (e) {} }
+                    if (chatCtx.chartRoles)    { try { chatCtx.chartRoles.resize(); }    catch (e) {} }
+                  }, 60);
                 })
                 .catch(function (e) { console.warn('Error cargando estadisticas chatbot', e); });
             }
@@ -1116,7 +1109,8 @@
 
             function renderTabla(filas) {
               var tbody = document.getElementById('chat-tabla-body');
-              if (!filas.length) {
+              if (!tbody) return;
+              if (!filas || !filas.length) {
                 tbody.innerHTML = '<tr><td colspan="9" style="padding:32px 16px;text-align:center;color:#9CA3AF;">' +
                   '<i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>' +
                   'Sin conversaciones registradas en este rango.</td></tr>';
@@ -1145,19 +1139,20 @@
             }
 
             function renderChartMensajes(rows) {
-              var labels = rows.map(function (r) { return r.fecha; });
-              var users  = rows.map(function (r) { return r.user; });
-              var bots   = rows.map(function (r) { return r.bot; });
+              var lm = (rows || []).map(function (r) { return r.fecha; });
+              var um = (rows || []).map(function (r) { return r.user; });
+              var bm = (rows || []).map(function (r) { return r.bot; });
               var c = document.getElementById('chat-chart-mensajes');
-              if (chatCtx.chartMensajes) { chatCtx.chartMensajes.destroy(); }
-              if (!labels.length) { labels = ['Sin datos']; users = [0]; bots = [0]; }
+              if (!c) return;
+              if (!lm.length) { lm = ['Sin datos']; um = [0]; bm = [0]; }
+              if (chatCtx.chartMensajes) { try { chatCtx.chartMensajes.destroy(); } catch (e) {} chatCtx.chartMensajes = null; }
               chatCtx.chartMensajes = new Chart(c, {
                 type: 'bar',
                 data: {
-                  labels: labels,
+                  labels: lm,
                   datasets: [
-                    { label: 'Usuario', data: users, backgroundColor: '#3498DB', borderRadius: 6, borderSkipped: false, stack: 's' },
-                    { label: 'Bot',     data: bots,  backgroundColor: '#2ECC71', borderRadius: 6, borderSkipped: false, stack: 's' }
+                    { label: 'Usuario', data: um, backgroundColor: '#3498DB', borderRadius: 6, borderSkipped: false, stack: 's' },
+                    { label: 'Bot',     data: bm, backgroundColor: '#2ECC71', borderRadius: 6, borderSkipped: false, stack: 's' }
                   ]
                 },
                 options: {
@@ -1173,16 +1168,17 @@
             }
 
             function renderChartRoles(rows) {
-              var labels = rows.map(function (r) { return r.rol; });
-              var data   = rows.map(function (r) { return r.total; });
-              var palette = ['#1B3A5C', '#2ECC71', '#F39C12', '#E74C3C', '#8B5CF6', '#3498DB'];
-              var colors  = labels.map(function (_, i) { return palette[i % palette.length]; });
+              var lr = (rows || []).map(function (r) { return r.rol; });
+              var dr = (rows || []).map(function (r) { return r.total; });
+              var pal = ['#1B3A5C', '#2ECC71', '#F39C12', '#E74C3C', '#8B5CF6', '#3498DB'];
+              var cr  = lr.map(function (_, i) { return pal[i % pal.length]; });
               var c = document.getElementById('chat-chart-roles');
-              if (chatCtx.chartRoles) { chatCtx.chartRoles.destroy(); }
-              if (!labels.length) { labels = ['Sin datos']; data = [0]; colors = ['#D1D5DB']; }
+              if (!c) return;
+              if (!lr.length) { lr = ['Sin datos']; dr = [0]; cr = ['#D1D5DB']; }
+              if (chatCtx.chartRoles) { try { chatCtx.chartRoles.destroy(); } catch (e) {} chatCtx.chartRoles = null; }
               chatCtx.chartRoles = new Chart(c, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                data: { labels: lr, datasets: [{ data: dr, backgroundColor: cr, borderWidth: 2, borderColor: '#fff' }] },
                 options: {
                   responsive: true, maintainAspectRatio: false,
                   cutout: '60%',
@@ -1192,51 +1188,45 @@
             }
 
             function renderTopIntents(rows) {
-              var html = '';
-              if (!rows.length) {
-                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
-                document.getElementById('chat-top-intents').innerHTML = html;
+              var cont = document.getElementById('chat-top-intents');
+              if (!cont) return;
+              if (!rows || !rows.length) {
+                cont.innerHTML = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
                 return;
               }
-              var max = rows[0].total || 1;
+              var max1 = rows[0].total || 1;
+              var hi = '';
               rows.forEach(function (r, i) {
-                var pct = Math.round((r.total * 100) / max);
-                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
-                html += '<div class="rank-item">' +
+                var pct = Math.round(r.total * 100 / max1);
+                hi += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(243,156,18,.1);color:#F39C12;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#374151;font-weight:500;">' + escapeHtml(r.intent) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
-              document.getElementById('chat-top-intents').innerHTML = html;
+              cont.innerHTML = hi;
             }
 
             function renderTopUsuarios(rows) {
-              var html = '';
-              if (!rows.length) {
-                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
-                document.getElementById('chat-top-usuarios').innerHTML = html;
+              var cont = document.getElementById('chat-top-usuarios');
+              if (!cont) return;
+              if (!rows || !rows.length) {
+                cont.innerHTML = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
                 return;
               }
-              var max = rows[0].total || 1;
+              var max2 = rows[0].total || 1;
+              var hu = '';
               rows.forEach(function (r, i) {
-                var pct = Math.round((r.total * 100) / max);
-                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
-                html += '<div class="rank-item">' +
+                var pct = Math.round(r.total * 100 / max2);
+                hu += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(52,152,219,.1);color:#3498DB;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#1B3A5C;font-weight:600;">' + escapeHtml(r.nombre) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
-              document.getElementById('chat-top-usuarios').innerHTML = html;
-              // animar barras
-              setTimeout(function () {
-                document.querySelectorAll('#chat-top-intents .rank-bar[data-w], #chat-top-usuarios .rank-bar[data-w]').forEach(function (bar) {
-                  bar.style.width = bar.dataset.w;
-                });
-              }, 100);
+              cont.innerHTML = hu;
             }
 
             window.__chatbotVerDetalle = function (id) {
@@ -1306,7 +1296,10 @@
             var originalSwitch = window.switchReportTab;
             window.switchReportTab = function (tab) {
               if (originalSwitch) originalSwitch(tab);
-              if (tab === 'chatbot' && window.__chatbotInit) window.__chatbotInit();
+              if (tab === 'chatbot' && window.__chatbotInit) {
+                // Pequeño delay para que el canvas tenga tamaño visible antes de pintar
+                setTimeout(window.__chatbotInit, 30);
+              }
             };
           })();
         </script>
@@ -1396,6 +1389,9 @@
     </div>
 
     <script>
+      // Exponemos en window para que los onclick inline las encuentren incluso si otro
+      // bloque <script th:inline> de la misma página falla por un problema de
+      // serialización de Thymeleaf (LocalDate/Instant).
       var _expFormato = 'pdf';
       var _expLimite = 100;
       var _expEntidad = 'usuarios';
@@ -1406,6 +1402,7 @@
         document.getElementById('export-error').style.display = 'none';
         document.getElementById('modal-export-usuarios').style.display = 'flex';
       }
+      window.abrirModalExport = abrirModalExport;
       // Backwards compat
       function abrirModalExportUsuarios() { abrirModalExport('usuarios', 'Usuarios'); }
       function cerrarModalExportUsuarios() {
