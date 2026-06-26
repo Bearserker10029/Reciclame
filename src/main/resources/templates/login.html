@@ -753,6 +753,94 @@
       /* Glow outline puede generar artefactos en mobile — reducir */
       .glow-outline { display: none; }
     }
+
+    /* ── Botón escaneo QR (solo móvil/tablet) ─────────────────── */
+    .qr-scan-row {
+      display: none; /* oculto en desktop */
+      margin: 14px 0 6px;
+    }
+    @media (max-width: 1024px), (hover: none) and (pointer: coarse) {
+      .qr-scan-row { display: block; }
+    }
+    .qr-scan-divider {
+      display: flex; align-items: center;
+      color: rgba(255,255,255,.4);
+      font-size: 12px;
+      margin: 4px 0 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .qr-scan-divider::before,
+    .qr-scan-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,.15);
+    }
+    .qr-scan-divider span { padding: 0 12px; }
+    .qr-scan-btn {
+      width: 100%;
+      padding: 14px 20px;
+      background: rgba(46,204,113,.12);
+      border: 1.5px solid rgba(46,204,113,.5);
+      color: var(--green, #2ECC71);
+      font-weight: 600;
+      font-size: 15px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer;
+      transition: background .2s, transform .12s;
+    }
+    .qr-scan-btn:hover { background: rgba(46,204,113,.22); }
+    .qr-scan-btn:active { transform: scale(.98); }
+    .qr-scan-btn i { font-size: 18px; }
+
+    /* ── Modal del scanner ────────────────────────────────────── */
+    .qr-scanner-modal {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.92);
+      z-index: 9999;
+      flex-direction: column;
+      padding: 16px;
+    }
+    .qr-scanner-modal.open { display: flex; }
+    .qr-scanner-header {
+      display: flex; align-items: center; justify-content: space-between;
+      color: #fff; margin-bottom: 14px;
+      flex-shrink: 0;
+    }
+    .qr-scanner-title { font-size: 16px; font-weight: 600; }
+    .qr-scanner-close {
+      background: rgba(255,255,255,.1);
+      border: none; color: #fff;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      font-size: 18px; cursor: pointer;
+    }
+    .qr-scanner-viewport {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #000;
+    }
+    #qr-reader { width: 100%; max-width: 480px; }
+    #qr-reader video { border-radius: 12px; }
+    .qr-scanner-hint {
+      color: rgba(255,255,255,.7);
+      text-align: center;
+      font-size: 13px;
+      padding: 14px 0 6px;
+      flex-shrink: 0;
+    }
+    .qr-scanner-error {
+      color: #ff7a7a;
+      text-align: center;
+      font-size: 13px;
+      padding: 8px 0;
+      display: none;
+    }
+    .qr-scanner-error.show { display: block; }
   </style>
 </head>
 
@@ -819,6 +907,14 @@
           </div>
           <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
         </form>
+
+        <!-- Botón de escaneo QR: visible solo en móvil/tablet (≤ 1024px ancho) -->
+        <div id="qr-scan-row" class="qr-scan-row">
+          <div class="qr-scan-divider"><span>o</span></div>
+          <button type="button" class="btn qr-scan-btn" onclick="abrirScannerQr()">
+            <i class="fas fa-qrcode"></i> Escanear QR para iniciar sesión
+          </button>
+        </div>
 
         <p class="register-hint">¿No tienes cuenta? <a href="/registro">Solicitar acceso</a></p>
 
@@ -1173,6 +1269,129 @@
         btn.disabled = false;
       });
     }
+  </script>
+
+  <!-- ═══════════════════════ Scanner QR (móvil/tablet) ═══════════════════════ -->
+  <div id="qr-scanner-modal" class="qr-scanner-modal" role="dialog" aria-modal="true">
+    <div class="qr-scanner-header">
+      <div class="qr-scanner-title">
+        <i class="fas fa-qrcode" style="margin-right:8px;color:var(--green);"></i>
+        Escanear código QR
+      </div>
+      <button class="qr-scanner-close" onclick="cerrarScannerQr()" aria-label="Cerrar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="qr-scanner-viewport">
+      <div id="qr-reader"></div>
+    </div>
+    <div class="qr-scanner-hint">
+      Apunta la cámara al QR que aparece en el perfil de tu cuenta.
+    </div>
+    <div id="qr-scanner-error" class="qr-scanner-error"></div>
+  </div>
+
+  <!-- Librería html5-qrcode: carga bajo demanda al abrir el scanner -->
+  <script>
+    (function () {
+      var html5QrInstance = null;
+      var html5QrLibLoaded = false;
+      var procesandoToken = false;
+
+      function cargarLibreria(cb) {
+        if (html5QrLibLoaded || typeof Html5Qrcode !== 'undefined') { cb(); return; }
+        var s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js';
+        s.onload = function () { html5QrLibLoaded = true; cb(); };
+        s.onerror = function () {
+          mostrarError('No se pudo cargar el lector de QR. Revisa tu conexión.');
+        };
+        document.head.appendChild(s);
+      }
+
+      function mostrarError(msg) {
+        var el = document.getElementById('qr-scanner-error');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+      }
+      function limpiarError() {
+        var el = document.getElementById('qr-scanner-error');
+        if (el) { el.classList.remove('show'); el.textContent = ''; }
+      }
+
+      window.abrirScannerQr = function () {
+        var modal = document.getElementById('qr-scanner-modal');
+        if (!modal) return;
+        modal.classList.add('open');
+        limpiarError();
+        procesandoToken = false;
+
+        cargarLibreria(function () {
+          try {
+            html5QrInstance = new Html5Qrcode('qr-reader', { verbose: false });
+            var config = {
+              fps: 10,
+              qrbox: function (vw, vh) {
+                var size = Math.min(vw, vh) * 0.75;
+                return { width: size, height: size };
+              },
+              aspectRatio: 1.0
+            };
+            html5QrInstance.start(
+              { facingMode: 'environment' }, // cámara trasera
+              config,
+              onQrDetectado,
+              function () { /* ignorar errores de cada frame */ }
+            ).catch(function (err) {
+              mostrarError('No se pudo acceder a la cámara: ' + (err && err.message ? err.message : err));
+            });
+          } catch (e) {
+            mostrarError('Error iniciando el scanner: ' + e.message);
+          }
+        });
+      };
+
+      window.cerrarScannerQr = function () {
+        var modal = document.getElementById('qr-scanner-modal');
+        if (modal) modal.classList.remove('open');
+        if (html5QrInstance) {
+          html5QrInstance.stop().catch(function () {}).finally(function () {
+            try { html5QrInstance.clear(); } catch (e) {}
+            html5QrInstance = null;
+          });
+        }
+      };
+
+      function onQrDetectado(decodedText) {
+        if (procesandoToken) return;
+        procesandoToken = true;
+
+        // El QR debe contener una URL con /auth/qr?token=... del mismo origen.
+        var urlValida = null;
+        try {
+          var parsed = new URL(decodedText, window.location.origin);
+          if (parsed.pathname === '/auth/qr' && parsed.searchParams.get('token')) {
+            urlValida = parsed.toString();
+          }
+        } catch (e) { /* QR no es una URL válida */ }
+
+        if (!urlValida) {
+          procesandoToken = false;
+          mostrarError('El QR no corresponde a un código de inicio de sesión válido.');
+          return;
+        }
+
+        // Detener cámara y redirigir al endpoint que crea la sesión
+        if (html5QrInstance) {
+          html5QrInstance.stop().catch(function () {}).finally(function () {
+            window.location.href = urlValida;
+          });
+        } else {
+          window.location.href = urlValida;
+        }
+      }
+    })();
   </script>
 
 </body>

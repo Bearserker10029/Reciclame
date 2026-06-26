@@ -527,16 +527,28 @@
           document.querySelectorAll('.stat-bar[data-w]').forEach(function (b) { b.style.width = b.dataset.w; });
         }, 500);
 
-        try {
-          if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
-            new QRCode(document.getElementById('qr-code'), {
-              text: 'RECICLAME-' + qrUserId + '-' + qrUserDni,
-              width: 152, height: 152,
-              colorDark: '#1B3A5C', colorLight: '#ffffff',
-              correctLevel: QRCode.CorrectLevel.M
-            });
-          }
-        } catch (e) { console.error('Error generando QR:', e); }
+        cargarQrLogin();
+        setInterval(cargarQrLogin, 4 * 60 * 1000);
+        function cargarQrLogin() {
+          var qrEl = document.getElementById('qr-code');
+          if (!qrEl || typeof QRCode === 'undefined') return;
+          fetch('/api/perfil/qr-token', { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+              if (!data || !data.url) {
+                qrEl.innerHTML = '<div style="font-size:11px;color:#9CA3AF;">QR no disponible</div>';
+                return;
+              }
+              qrEl.innerHTML = '';
+              new QRCode(qrEl, {
+                text: data.url,
+                width: 152, height: 152,
+                colorDark: '#1B3A5C', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+              });
+            })
+            .catch(function (e) { console.error('Error generando QR:', e); });
+        }
 
         var correoInput = document.querySelector('input[name="correoCorporativo"]');
         if (correoInput) {
