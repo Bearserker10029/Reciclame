@@ -14,7 +14,9 @@ import java.util.Base64;
 @Service
 public class DocumentPreviewService {
 
-    private static final long KK_PROXY_TOKEN_TTL_SECONDS = 120;
+    // TTL generoso: la conversión Office de archivos 2-3 MB puede tardar hasta 5-8 min en AWS.
+    // El token solo lo usa kkfileview (no el browser), así que 600s es seguro.
+    private static final long KK_PROXY_TOKEN_TTL_SECONDS = 600;
 
     private final MinioStorageService minioStorageService;
     private final String kkfileviewUrl;

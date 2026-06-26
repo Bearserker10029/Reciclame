@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<body>
+
+<!--
+  Fragmento reutilizable para el visor de documentos con kkfileview.
+  Muestra un loading overlay mientras el iframe carga y reintenta automáticamente
+  si kkfileview tarda más de lo esperado (archivos .docx/.pptx de 2-3 MB).
+
+  Uso:
+    <th:block th:replace="~{components/document-viewer :: viewer(
+        archivoUrl=${entity.archivoUrl},
+        titulo=${entity.titulo},
+        mime=${entity.archivoTipoMime})}">
+    </th:block>
+-->
+<th:block th:fragment="viewer(archivoUrl, titulo, mime)">
+
+  <style>
+    .doc-viewer-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-height: calc(100vh - 130px);
+    }
+    .doc-viewer-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      z-index: 10;
+      gap: 16px;
+      transition: opacity .3s;
+    }
+    .doc-viewer-loading.hidden { opacity: 0; pointer-events: none; }
+    .doc-viewer-spinner {
+      width: 48px; height: 48px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #2ECC71;
+      border-radius: 50%;
+      animation: doc-spin 0.9s linear infinite;
+    }
+    @keyframes doc-spin { to { transform: rotate(360deg); } }
+    .doc-viewer-loading-text {
+      font-size: 14px; color: #64748b; text-align: center; max-width: 320px;
+    }
+    .doc-viewer-loading-text strong { color: #1B3A5C; display: block; margin-bottom: 4px; }
+    .doc-viewer-retry-btn {
+      display: none;
+      margin-top: 8px;
+      padding: 8px 20px;
+      background: #1B3A5C;
+      color: #fff;
+      border: none; border-radius: 6px;
+      cursor: pointer; font-size: 13px;
+    }
+    .doc-viewer-retry-btn:hover { background: #163050; }
+    .doc-viewer-iframe {
+      flex: 1; border: none; width: 100%;
+      min-height: calc(100vh - 130px);
+    }
+  </style>
+
+  <div class="doc-viewer-wrap" id="docViewerWrap">
+    <!-- Overlay de carga -->
+    <div class="doc-viewer-loading" id="docViewerLoading">
+      <div class="doc-viewer-spinner"></div>
+      <div class="doc-viewer-loading-text">
+        <strong id="docViewerMsg">Preparando visualización...</strong>
+        <span id="docViewerSubMsg">Los documentos Office (.docx, .pptx) pueden tardar
+          unos segundos en procesarse la primera vez.</span>
+      </div>
+      <button class="doc-viewer-retry-btn" id="docViewerRetryBtn" onclick="docViewerRetry()">
+        Reintentar
+      </button>
+    </div>
+
+    <!-- iframe del visor -->
+    <iframe id="docViewerIframe"
+            class="doc-viewer-iframe"
+            th:src="@{/api/documentos/visor(url=${archivoUrl},titulo=${titulo},mime=${mime})}"
+            allowfullscreen
+            onload="docViewerOnLoad()"
+            onerror="docViewerOnError()">
+    </iframe>
+  </div>
+
+  <script th:inline="javascript">
+    (function () {
+      var iframeEl   = document.getElementById('docViewerIframe');
+      var loadingEl  = document.getElementById('docViewerLoading');
+      var msgEl      = document.getElementById('docViewerMsg');
+      var subMsgEl   = document.getElementById('docViewerSubMsg');
+      var retryBtn   = document.getElementById('docViewerRetryBtn');
+      var baseUrl    = iframeEl ? iframeEl.src : '';
+
+      var FAST_TIMEOUT   = 30000;   // 30s → mensaje "tardando más de lo normal"
+      var RETRY_TIMEOUT  = 120000;  // 2 min → ofrecer reintentar
+      var fastTimer, retryTimer;
+      var retryCount = 0;
+      var MAX_RETRIES = 3;
+
+      function startTimers() {
+        clearTimers();
+        fastTimer = setTimeout(function () {
+          msgEl.textContent = 'Procesando documento...';
+          subMsgEl.textContent = 'Los archivos grandes pueden tardar 1-2 minutos la primera vez. Por favor espera.';
+        }, FAST_TIMEOUT);
+
+        retryTimer = setTimeout(function () {
+          if (retryCount < MAX_RETRIES) {
+            msgEl.textContent = 'La carga está tomando más tiempo de lo esperado';
+            subMsgEl.textContent = 'Reintentando automáticamente... (' + (retryCount + 1) + '/' + MAX_RETRIES + ')';
+            docViewerRetry();
+          } else {
+            msgEl.textContent = 'No se pudo cargar el documento';
+            subMsgEl.textContent = 'El servidor está procesando el archivo. Puedes reintentar manualmente.';
+            retryBtn.style.display = 'inline-block';
+          }
+        }, RETRY_TIMEOUT);
+      }
+
+      function clearTimers() {
+        if (fastTimer)  clearTimeout(fastTimer);
+        if (retryTimer) clearTimeout(retryTimer);
+      }
+
+      window.docViewerOnLoad = function () {
+        try {
+          // Si el iframe carga una página de error de kkfileview, no ocultar el overlay.
+          var doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
+          var body = doc && doc.body ? doc.body.innerText : '';
+          if (body && (body.includes('error') || body.length < 50)) {
+            // Posible página de error — dejar timers corriendo
+            return;
+          }
+        } catch (e) { /* cross-origin: el iframe cargó algo → OK */ }
+        clearTimers();
+        loadingEl.classList.add('hidden');
+        setTimeout(function () { loadingEl.style.display = 'none'; }, 300);
+      };
+
+      window.docViewerOnError = function () {
+        clearTimers();
+        if (retryCount < MAX_RETRIES) {
+          docViewerRetry();
+        } else {
+          msgEl.textContent = 'Error al cargar el documento';
+          subMsgEl.textContent = 'Puedes intentar recargar la página.';
+          retryBtn.style.display = 'inline-block';
+        }
+      };
+
+      window.docViewerRetry = function () {
+        retryCount++;
+        retryBtn.style.display = 'none';
+        msgEl.textContent = 'Reintentando...';
+        subMsgEl.textContent = 'Intento ' + retryCount + ' de ' + MAX_RETRIES;
+        loadingEl.classList.remove('hidden');
+        loadingEl.style.display = 'flex';
+        // Forzar recarga del iframe con cache-bust
+        iframeEl.src = baseUrl + '&_r=' + Date.now();
+        startTimers();
+      };
+
+      // Iniciar timers al cargar la página
+      if (iframeEl) startTimers();
+    })();
+  </script>
+
+</th:block>
+
+</body>
+</html>
