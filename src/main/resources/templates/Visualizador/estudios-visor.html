@@ -140,10 +140,13 @@
           </a>
         </div>
 
-        <!-- iframe fullscreen (solo cuando el archivo existe) -->
-        <iframe th:if="${archivoDisponible}"
-          th:src="@{/api/documentos/visor(url=${estudio.archivoUrl},titulo=${estudio.titulo},mime=${estudio.archivoTipoMime})}"
-          style="flex:1;border:none;width:100%;min-height:calc(100vh - 130px);" allowfullscreen>
+        <!-- Visor con loading overlay y retry automático -->
+        <th:block th:if="${archivoDisponible}"
+          th:replace="~{components/document-viewer :: viewer(
+            archivoUrl=${estudio.archivoUrl},
+            titulo=${estudio.titulo},
+            mime=${estudio.archivoTipoMime})}">
+        </th:block>
         </iframe>
 
       <th:block th:replace="~{navbar/footer :: footer}"></th:block>

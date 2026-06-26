@@ -92,7 +92,7 @@ public class KkfileviewViewerProxyController {
 
         HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
                 .uri(URI.create(targetUrl))
-                .timeout(Duration.ofMinutes(5))
+                .timeout(Duration.ofMinutes(10)) // 10min: margen para conversión Office de archivos 2-3 MB
                 .GET();
 
         // Tell kkfileview to generate slide image URLs using the browser's origin + proxy prefix,

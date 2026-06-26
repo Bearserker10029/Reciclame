@@ -637,7 +637,7 @@ return "redirect:/superadmin/notificaciones";
 
     @PostMapping("/superadmin/impersonar/{id}")
     public String impersonarUsuario(@PathVariable Long id, HttpServletRequest request,
-            HttpSession session, RedirectAttributes redirectAttributes) {
+            HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttributes) {
         String superAdminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
 
         session.setAttribute("ORIGINAL_USER", superAdminUsername);
@@ -683,6 +683,10 @@ return "redirect:/superadmin/notificaciones";
         authToken.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        // Spring Security 6 no guarda el contexto automáticamente — hay que persistirlo a la sesión
+        // para que las llamadas AJAX posteriores usen el auth del usuario impersonado.
+        new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
+                .saveContext(SecurityContextHolder.getContext(), request, response);
 
         auditoriaService.registrarAccion(null, superAdminUsername,
                 AuditoriaService.ACCION_IMPERSONAR, AuditoriaService.MODULO_USUARIOS,
@@ -701,7 +705,8 @@ return "redirect:/superadmin/notificaciones";
     }
 
     @PostMapping("/superadmin/impersonar/salir")
-    public String salirImpersonacion(HttpSession session, RedirectAttributes redirectAttributes) {
+    public String salirImpersonacion(HttpSession session, RedirectAttributes redirectAttributes,
+                                     HttpServletRequest request, HttpServletResponse response) {
         String originalUser = (String) session.getAttribute("ORIGINAL_USER");
         String impersonatedUser = (String) session.getAttribute("IMPERSONATED_USER");
 
@@ -724,6 +729,8 @@ return "redirect:/superadmin/notificaciones";
                         principal, null, authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
+                        .saveContext(SecurityContextHolder.getContext(), request, response);
 
                 auditoriaService.registrarAccion(null, originalUser,
                         AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
