@@ -1,30 +1,41 @@
-<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
-<jasperReport name="auditoria_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="26858bcc-3dff-4298-bb2d-700e02f758d9">
-	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#3399FF" fontName="SansSerif" fontSize="10.0" bold="true"/>
-	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
-	<style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9.0"/>
-	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
-	<dataset name="AuditoriaAccionesDataset" uuid="bbd5a2f4-f248-410a-93d2-74a3bac10458">
+<!-- Reciclame — Reporte de Auditoría (rediseño de marca 2026) -->
+<jasperReport name="auditoria_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="3a1b2c3d-0001-4e5f-a001-000000000001">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+
+	<style name="rowStyle"    fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#6B7280" fontName="SansSerif" fontSize="8.0"/>
+	<style name="urlStyle"    forecolor="#27AE60" fontName="SansSerif" fontSize="8.0" bold="true"/>
+
+	<dataset name="AccionDataset" uuid="3a1b2c3d-0002-4e5f-a001-000000000002">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
 	</dataset>
-	<dataset name="AuditoriaEstadoDataset" uuid="7d130af2-164d-4195-8d44-4e30b1f8cf4c">
+	<dataset name="EstadoDataset" uuid="3a1b2c3d-0003-4e5f-a001-000000000003">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
 	</dataset>
+
 	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<field name="fechaAccion" class="java.time.Instant"/>
-	<field name="accion" class="java.lang.String"/>
-	<field name="modulo" class="java.lang.String"/>
-	<field name="estado" class="java.lang.String"/>
-	<field name="usuarioNombre" class="java.lang.String"/>
-	<field name="ipAddress" class="java.lang.String"/>
+
+	<field name="fecha"       class="java.lang.String"/>
+	<field name="accion"      class="java.lang.String"/>
+	<field name="modulo"      class="java.lang.String"/>
+	<field name="estado"      class="java.lang.String"/>
+	<field name="usuario"     class="java.lang.String"/>
+	<field name="ip"          class="java.lang.String"/>
 	<field name="descripcion" class="java.lang.String"/>
-	<background height="802" splitType="Stretch">
-		<element kind="chart" chartType="pie3D" uuid="277d0843-a323-42d6-a649-03b09bb8535a" x="900" y="160" width="260" height="140" showLegend="false" evaluationTime="Report">
+
+	<background height="760" splitType="Stretch">
+		<element kind="image" uuid="3a1b2c3d-0010-4e5f-a001-000000000010" positionType="FixRelativeToBottom" mode="Transparent" x="40" y="310" width="500" height="180" linkType="None" linkTarget="Self">
+			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
+		</element>
+		<element kind="staticText" uuid="3a1b2c3d-0011-4e5f-a001-000000000011" x="900" y="105" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Acciones por Tipo]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="3a1b2c3d-0012-4e5f-a001-000000000012" x="888" y="124" width="272" height="180" showLegend="true" evaluationTime="Report">
 			<dataset kind="pie">
-				<datasetRun uuid="d8807f7a-b314-4f28-8368-cf3063acc64f" subDataset="AuditoriaAccionesDataset">
+				<datasetRun uuid="3a1b2c3d-0013-4e5f-a001-000000000013" subDataset="AccionDataset">
 					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
 				</datasetRun>
 				<series>
@@ -32,19 +43,22 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#2ECC71"/>
+				<seriesColor order="1" color="#1B3A5C"/>
+				<seriesColor order="2" color="#3498DB"/>
+				<seriesColor order="3" color="#F39C12"/>
+				<seriesColor order="4" color="#E74C3C"/>
+				<seriesColor order="5" color="#8B5CF6"/>
 			</plot>
 		</element>
-		<element kind="chart" chartType="pie3D" uuid="04465ecb-7367-42eb-a919-0acd189a84bb" x="900" y="340" width="260" height="140" showLegend="false" evaluationTime="Report">
+		<element kind="staticText" uuid="3a1b2c3d-0014-4e5f-a001-000000000014" x="900" y="320" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Distribución por Estado]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="3a1b2c3d-0015-4e5f-a001-000000000015" x="888" y="340" width="272" height="180" showLegend="true" evaluationTime="Report">
 			<dataset kind="pie">
-				<datasetRun uuid="a9812903-39cf-4068-922b-e9c09740dab5" subDataset="AuditoriaEstadoDataset">
+				<datasetRun uuid="3a1b2c3d-0016-4e5f-a001-000000000016" subDataset="EstadoDataset">
 					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
 				</datasetRun>
 				<series>
@@ -52,99 +66,133 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#27AE60"/>
+				<seriesColor order="1" color="#E74C3C"/>
+				<seriesColor order="2" color="#F39C12"/>
+				<seriesColor order="3" color="#3498DB"/>
 			</plot>
 		</element>
-		<element kind="image" uuid="d58ba9f6-0c80-4033-8cc6-0102987a1cc1" positionType="FixRelativeToBottom" stretchType="NoStretch" mode="Transparent" x="100" y="291" width="640" height="220" linkType="None" linkTarget="Self">
-			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
-		</element>
 	</background>
-	<title height="60" splitType="Stretch">
-		<element kind="staticText" uuid="79df661a-4126-4b1e-9f2f-0add2423432d" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">
-			<text><![CDATA[Reporte de Auditoria]]></text>
+
+	<!-- TÍTULO: fondo navy con texto blanco usando staticText apilados -->
+	<title height="90" splitType="Stretch">
+		<!-- Fondo navy — staticText vacío modo Opaque -->
+		<element kind="staticText" uuid="3a1b2c3d-0020-4e5f-a001-000000000020" mode="Opaque" x="0" y="0" width="1160" height="90" backcolor="#1B3A5C">
+			<text><![CDATA[]]></text>
+		</element>
+		<!-- Acento verde izquierdo -->
+		<element kind="staticText" uuid="3a1b2c3d-0021-4e5f-a001-000000000021" mode="Opaque" x="0" y="0" width="6" height="90" backcolor="#2ECC71">
+			<text><![CDATA[]]></text>
+		</element>
+		<!-- Título principal -->
+		<element kind="staticText" uuid="3a1b2c3d-0022-4e5f-a001-000000000022" mode="Transparent" x="16" y="8" width="860" height="44" forecolor="#FFFFFF" fontName="SansSerif" fontSize="26.0" bold="true" vTextAlign="Middle">
+			<text><![CDATA[Reporte de Auditoría]]></text>
+		</element>
+		<!-- Subtítulo verde -->
+		<element kind="staticText" uuid="3a1b2c3d-0023-4e5f-a001-000000000023" mode="Transparent" x="16" y="56" width="860" height="24" forecolor="#2ECC71" fontName="SansSerif" fontSize="11.0" vTextAlign="Middle">
+			<text><![CDATA[Repositorio Circular de Economía Circular  ·  reciclame.org]]></text>
 		</element>
 	</title>
-	<columnHeader height="30" splitType="Stretch">
-		<element kind="line" uuid="f54f68d3-520e-4af3-a185-791ee52f854c" x="0" y="28" width="898" height="2">
+
+	<!-- ENCABEZADO DE COLUMNAS: fondo verde -->
+	<columnHeader height="34" splitType="Stretch">
+		<element kind="staticText" uuid="3a1b2c3d-0030-4e5f-a001-000000000030" mode="Opaque" x="0" y="0" width="880" height="34" backcolor="#27AE60">
+			<text><![CDATA[]]></text>
+		</element>
+		<element kind="line" uuid="3a1b2c3d-0031-4e5f-a001-000000000031" x="0" y="33" width="880" height="1">
 			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
 		</element>
-		<element kind="staticText" uuid="8771a276-1041-4635-97c9-d281de57b457" mode="Opaque" x="-1" y="0" width="120" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Fecha]]></text>
-		</element>
-		<element kind="staticText" uuid="cd20aa17-0a07-4fa5-94e7-89bbc4210a5c" mode="Opaque" x="239" y="0" width="100" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Modulo]]></text>
-		</element>
-		<element kind="staticText" uuid="23a26540-5bbf-481b-994b-2455550e2405" mode="Opaque" x="339" y="0" width="80" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Estado]]></text>
-		</element>
-		<element kind="staticText" uuid="59491418-1006-4068-9cbb-fa6641b8082f" mode="Opaque" x="419" y="0" width="160" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Usuario]]></text>
-		</element>
-		<element kind="staticText" uuid="e440c51f-6ec3-4956-880e-c38abd17a166" mode="Opaque" x="579" y="0" width="100" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[IP]]></text>
-		</element>
-		<element kind="staticText" uuid="29832f9a-a956-4b71-85b6-976fc1935d58" mode="Opaque" x="679" y="0" width="219" height="28" backcolor="#244771" fontName="SansSerif" bold="true" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Descripcion]]></text>
-			<box style="headerStyle">
-				<pen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-			</box>
-		</element>
-		<element kind="staticText" uuid="034a5f30-8df0-4569-bdb2-ec455b5f7e14" mode="Opaque" x="119" y="0" width="120" height="28" backcolor="#244771" fontName="SansSerif" bold="true" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Accion]]></text>
-			<box style="headerStyle">
-				<pen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-				<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#FFFFFF"/>
-			</box>
-		</element>
+		<element kind="staticText" uuid="3a1b2c3d-0032-4e5f-a001-000000000032" mode="Transparent" x="2"   y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Fecha]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0033-4e5f-a001-000000000033" mode="Transparent" x="110" y="0" width="128" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Acción]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0034-4e5f-a001-000000000034" mode="Transparent" x="238" y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Módulo]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0035-4e5f-a001-000000000035" mode="Transparent" x="346" y="0" width="88"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Estado]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0036-4e5f-a001-000000000036" mode="Transparent" x="434" y="0" width="158" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Usuario]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0037-4e5f-a001-000000000037" mode="Transparent" x="592" y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[IP]]></text></element>
+		<element kind="staticText" uuid="3a1b2c3d-0038-4e5f-a001-000000000038" mode="Transparent" x="700" y="0" width="180" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Descripción]]></text></element>
 	</columnHeader>
+
+	<!-- DETALLE: fondo alternado con rowAltStyle -->
 	<detail>
-		<band height="40" splitType="Stretch">
-			<element kind="textField" uuid="fb887d24-2c4a-480e-a27d-919ba1eedb8f" x="0" y="0" width="119" height="40" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{fechaAccion} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(java.time.ZoneId.of("America/Lima")).format($F{fechaAccion}) : ""]]></expression>
+		<band height="25" splitType="Stretch">
+			<element kind="textField" uuid="3a1b2c3d-0042-4e5f-a001-000000000042" mode="Opaque" x="2"   y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+				<expression><![CDATA[$F{fecha}]]></expression>
 			</element>
-			<element kind="textField" uuid="bca1933f-5a77-45e3-863d-82e84bfc51ed" x="120" y="0" width="119" height="40" hTextAlign="Left" style="rowAltStyle">
+			<element kind="textField" uuid="3a1b2c3d-00a2-4e5f-a001-000000000042" mode="Opaque" x="2"   y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{fecha}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-0043-4e5f-a001-000000000043" mode="Opaque" x="110" y="0" width="128" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
 				<expression><![CDATA[$F{accion}]]></expression>
 			</element>
-			<element kind="textField" uuid="bd66ba90-4217-41f4-806a-c2753e2f8ac3" x="240" y="0" width="99" height="40" hTextAlign="Center" style="rowAltStyle">
+			<element kind="textField" uuid="3a1b2c3d-00a3-4e5f-a001-000000000043" mode="Opaque" x="110" y="0" width="128" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{accion}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-0044-4e5f-a001-000000000044" mode="Opaque" x="238" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
 				<expression><![CDATA[$F{modulo}]]></expression>
 			</element>
-			<element kind="textField" uuid="028dad47-e360-4a56-bc8e-7d1729f4fbbc" x="340" y="0" width="79" height="40" hTextAlign="Center" style="rowAltStyle">
+			<element kind="textField" uuid="3a1b2c3d-00a4-4e5f-a001-000000000044" mode="Opaque" x="238" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{modulo}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-0045-4e5f-a001-000000000045" mode="Opaque" x="346" y="0" width="88"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
 				<expression><![CDATA[$F{estado}]]></expression>
 			</element>
-			<element kind="textField" uuid="4388aadc-7a6a-4965-bbf4-065559abf332" x="420" y="0" width="159" height="40" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{usuarioNombre}]]></expression>
+			<element kind="textField" uuid="3a1b2c3d-00a5-4e5f-a001-000000000045" mode="Opaque" x="346" y="0" width="88"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{estado}]]></expression>
 			</element>
-			<element kind="textField" uuid="4e58df8a-1961-4690-9142-2aaf87579242" x="580" y="0" width="99" height="40" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{ipAddress}]]></expression>
+			<element kind="textField" uuid="3a1b2c3d-0046-4e5f-a001-000000000046" mode="Opaque" x="434" y="0" width="158" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+				<expression><![CDATA[$F{usuario}]]></expression>
 			</element>
-			<element kind="textField" uuid="9004cf00-6ff5-41ae-9af3-7d45b6520f1b" x="679" y="0" width="219" height="40" hTextAlign="Left" style="rowAltStyle">
+			<element kind="textField" uuid="3a1b2c3d-00a6-4e5f-a001-000000000046" mode="Opaque" x="434" y="0" width="158" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{usuario}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-0047-4e5f-a001-000000000047" mode="Opaque" x="592" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+				<expression><![CDATA[$F{ip}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-00a7-4e5f-a001-000000000047" mode="Opaque" x="592" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{ip}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-0048-4e5f-a001-000000000048" mode="Opaque" x="700" y="0" width="180" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
 				<expression><![CDATA[$F{descripcion}]]></expression>
+			</element>
+			<element kind="textField" uuid="3a1b2c3d-00a8-4e5f-a001-000000000048" mode="Opaque" x="700" y="0" width="180" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 != 0]]></printWhenExpression>
+				<expression><![CDATA[$F{descripcion}]]></expression>
+			</element>
+			<element kind="line" uuid="3a1b2c3d-0049-4e5f-a001-000000000049" x="0" y="24" width="880" height="1">
+				<pen lineWidth="0.5" lineColor="#D1D5DB"/>
 			</element>
 		</band>
 	</detail>
-	<pageFooter height="25" splitType="Stretch">
-		<element kind="line" uuid="877081f0-3c58-40a8-b80e-05050444e30d" x="0" y="0" width="1160" height="1">
-			<pen lineWidth="1.0" lineColor="#1B3A5C"/>
+
+	<pageFooter height="36" splitType="Stretch">
+		<element kind="line" uuid="3a1b2c3d-0050-4e5f-a001-000000000050" x="0" y="0" width="1160" height="1">
+			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
 		</element>
-		<element kind="textField" uuid="f800fbb3-73ab-48ca-9daf-37c8f65b024e" x="0" y="5" width="400" height="20" style="footerStyle">
+		<element kind="line" uuid="3a1b2c3d-0051-4e5f-a001-000000000051" x="0" y="2" width="1160" height="1">
+			<pen lineWidth="1.0" lineColor="#2ECC71"/>
+		</element>
+		<element kind="textField" uuid="3a1b2c3d-0052-4e5f-a001-000000000052" x="0" y="8" width="400" height="22" style="footerStyle">
 			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
 		</element>
-		<element kind="textField" uuid="7c15b697-eea5-4eb5-bd77-d8443c9e50e8" x="960" y="5" width="200" height="20" hTextAlign="Right" style="footerStyle">
-			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+		<element kind="staticText" uuid="3a1b2c3d-0053-4e5f-a001-000000000053" x="430" y="8" width="300" height="22" hTextAlign="Center" style="urlStyle">
+			<text><![CDATA[reciclame.org]]></text>
+		</element>
+		<element kind="textField" uuid="3a1b2c3d-0054-4e5f-a001-000000000054" x="960" y="8" width="200" height="22" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
 		</element>
 	</pageFooter>
 </jasperReport>

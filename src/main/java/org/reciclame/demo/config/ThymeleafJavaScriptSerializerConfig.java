@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.standard.StandardDialect;
-import org.thymeleaf.standard.serializer.StandardJavaScriptSerializer;
+import org.thymeleaf.standard.serializer.IStandardJavaScriptSerializer;
 
 /**
  * Reemplaza el {@code JavaScriptSerializer} por defecto de Thymeleaf por uno que
@@ -53,7 +53,14 @@ public class ThymeleafJavaScriptSerializerConfig {
             return;
         }
 
-        standard.setJavaScriptSerializer(new StandardJavaScriptSerializer(mapper));
+        standard.setJavaScriptSerializer((IStandardJavaScriptSerializer) (object, writer) -> {
+            try {
+                writer.write(mapper.writeValueAsString(object));
+            } catch (Exception e) {
+                throw new org.thymeleaf.exceptions.TemplateProcessingException(
+                        "Error serializando valor a JavaScript inline", e);
+            }
+        });
         log.info("Thymeleaf JavaScript serializer configurado con JavaTimeModule.");
     }
 }

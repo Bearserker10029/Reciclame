@@ -1,32 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio style for Reciclame Chatbot Analytics -->
+<!-- Reciclame — Reporte de Chatbot Analytics (rediseño de marca 2026) -->
 <jasperReport name="chatbot_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="cb800001-3dff-4298-bb2d-700e02f75800">
-	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#1B3A5C" fontName="SansSerif" fontSize="10.0" bold="true"/>
-	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
-	<style name="rowAltStyle" backcolor="#F0F4F8" fontName="SansSerif" fontSize="9.0"/>
-	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+
+	<style name="rowStyle"    fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#6B7280" fontName="SansSerif" fontSize="8.0"/>
+	<style name="urlStyle"    forecolor="#27AE60" fontName="SansSerif" fontSize="8.0" bold="true"/>
+
 	<dataset name="ChatbotRolDataset" uuid="cb810001-f248-410a-93d2-74a3bac10458">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
 	</dataset>
 	<dataset name="ChatbotMensajesDataset" uuid="cb810002-164d-4195-8d44-4e30b1f8cf4c">
 		<field name="category" class="java.lang.String"/>
-		<field name="value" class="java.lang.Integer"/>
+		<field name="value"    class="java.lang.Integer"/>
 	</dataset>
+
 	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<field name="fecha" class="java.lang.String"/>
-	<field name="usuario" class="java.lang.String"/>
-	<field name="rol" class="java.lang.String"/>
-	<field name="empresa" class="java.lang.String"/>
-	<field name="pregunta" class="java.lang.String"/>
+
+	<field name="fecha"     class="java.lang.String"/>
+	<field name="usuario"   class="java.lang.String"/>
+	<field name="rol"       class="java.lang.String"/>
+	<field name="empresa"   class="java.lang.String"/>
+	<field name="pregunta"  class="java.lang.String"/>
 	<field name="respuesta" class="java.lang.String"/>
-	<field name="mensajes" class="java.lang.Integer"/>
-	<field name="errores" class="java.lang.Integer"/>
-	<field name="duracion" class="java.lang.Long"/>
-	<field name="idioma" class="java.lang.String"/>
-	<background height="802" splitType="Stretch">
-		<element kind="chart" chartType="pie3D" uuid="cb820001-a323-42d6-a649-03b09bb8535a" x="900" y="160" width="260" height="140" showLegend="true" evaluationTime="Report">
+	<field name="mensajes"  class="java.lang.Integer"/>
+	<field name="errores"   class="java.lang.Integer"/>
+	<field name="duracion"  class="java.lang.Long"/>
+	<field name="idioma"    class="java.lang.String"/>
+
+	<background height="760" splitType="Stretch">
+		<element kind="image" uuid="cb820005-0c80-4033-8cc6-0102987a1cc1" positionType="FixRelativeToBottom" mode="Transparent" x="40" y="310" width="500" height="180" linkType="None" linkTarget="Self">
+			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
+		</element>
+		<element kind="staticText" uuid="chat-0011" x="900" y="105" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Sesiones por Rol de Usuario]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="cb820001-a323-42d6-a649-03b09bb8535a" x="888" y="124" width="272" height="185" showLegend="true" evaluationTime="Report">
 			<dataset kind="pie">
 				<datasetRun uuid="cb820002-b314-4f28-8368-cf3063acc64f" subDataset="ChatbotRolDataset">
 					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
@@ -36,16 +46,19 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
 				<seriesColor order="0" color="#2ECC71"/>
-				<seriesColor order="1" color="#3498DB"/>
-				<seriesColor order="2" color="#F39C12"/>
-				<seriesColor order="3" color="#E74C3C"/>
+				<seriesColor order="1" color="#1B3A5C"/>
+				<seriesColor order="2" color="#3498DB"/>
+				<seriesColor order="3" color="#F39C12"/>
 				<seriesColor order="4" color="#8B5CF6"/>
 			</plot>
 		</element>
-		<element kind="chart" chartType="bar3D" uuid="cb820003-7367-42eb-a919-0acd189a84bb" x="900" y="320" width="260" height="180" showLegend="false" evaluationTime="Report">
+		<element kind="staticText" uuid="chat-0014" x="900" y="326" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Mensajes por Mes]]></text>
+		</element>
+		<element kind="chart" chartType="bar" uuid="cb820003-7367-42eb-a919-0acd189a84bb" x="888" y="346" width="272" height="185" showLegend="false" evaluationTime="Report">
 			<dataset kind="category">
 				<datasetRun uuid="cb820004-39cf-4068-922b-e9c09740dab5" subDataset="ChatbotMensajesDataset">
 					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
@@ -56,83 +69,64 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#1B3A5C"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#2ECC71"/>
 			</plot>
 		</element>
-		<element kind="image" uuid="cb820005-0c80-4033-8cc6-0102987a1cc1" positionType="FixRelativeToBottom" stretchType="NoStretch" mode="Transparent" x="100" y="291" width="640" height="220" linkType="None" linkTarget="Self">
-			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
-		</element>
 	</background>
-	<title height="60" splitType="Stretch">
-		<element kind="staticText" uuid="cb830001-4126-4b1e-9f2f-0add2423432d" x="0" y="10" width="1160" height="40" fontSize="22.0" bold="true" hTextAlign="Center">
-			<text><![CDATA[Reporte de Chatbot Analytics - Reciclame]]></text>
-		</element>
+
+	<title height="90" splitType="Stretch">
+		<element kind="staticText" uuid="chat-0020" mode="Opaque" x="0" y="0" width="1160" height="90" backcolor="#1B3A5C"><text><![CDATA[]]></text></element>
+		<element kind="staticText" uuid="chat-0021" mode="Opaque" x="0" y="0" width="6" height="90" backcolor="#2ECC71"><text><![CDATA[]]></text></element>
+		<element kind="staticText" uuid="chat-0022" mode="Transparent" x="16" y="8" width="860" height="44" forecolor="#FFFFFF" fontName="SansSerif" fontSize="26.0" bold="true" vTextAlign="Middle"><text><![CDATA[Reporte de Chatbot Analytics]]></text></element>
+		<element kind="staticText" uuid="chat-0023" mode="Transparent" x="16" y="56" width="860" height="24" forecolor="#2ECC71" fontName="SansSerif" fontSize="11.0" vTextAlign="Middle"><text><![CDATA[Repositorio Circular de Economía Circular  ·  reciclame.org]]></text></element>
 	</title>
-	<columnHeader height="30" splitType="Stretch">
-		<element kind="line" uuid="cb830002-520e-4af3-a185-791ee52f854c" x="0" y="28" width="898" height="2">
-			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
-		</element>
-		<element kind="staticText" uuid="cb830003-1041-4635-97c9-d281de57b457" mode="Opaque" x="0" y="0" width="110" height="28" forecolor="#FFFFFF" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Fecha]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830004-0a07-4fa5-94e7-89bbc4210a5c" mode="Opaque" x="110" y="0" width="130" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Usuario]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830005-5bbf-481b-994b-2455550e2405" mode="Opaque" x="240" y="0" width="80" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Rol]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830006-1006-4068-9cbb-fa6641b8082f" mode="Opaque" x="320" y="0" width="120" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Empresa]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830007-6ec3-4956-880e-c38abd17a166" mode="Opaque" x="440" y="0" width="220" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Primera Pregunta]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830008-a956-4b71-85b6-976fc1935d58" mode="Opaque" x="660" y="0" width="100" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Mensajes]]></text>
-		</element>
-		<element kind="staticText" uuid="cb830009-0001-4b71-85b6-976fc1935d58" mode="Opaque" x="760" y="0" width="60" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Errores]]></text>
-		</element>
-		<element kind="staticText" uuid="cb83000a-0002-4b71-85b6-976fc1935d58" mode="Opaque" x="820" y="0" width="78" height="28" backcolor="#1B3A5C" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Idioma]]></text>
-		</element>
+
+	<columnHeader height="34" splitType="Stretch">
+		<element kind="staticText" uuid="chat-0030" mode="Opaque" x="0" y="0" width="900" height="34" backcolor="#27AE60"><text><![CDATA[]]></text></element>
+		<element kind="line" uuid="chat-0031" x="0" y="33" width="900" height="1"><pen lineWidth="2.0" lineColor="#1B3A5C"/></element>
+		<element kind="staticText" uuid="chat-0032" mode="Transparent" x="2"   y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Fecha]]></text></element>
+		<element kind="staticText" uuid="chat-0033" mode="Transparent" x="110" y="0" width="128" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Usuario]]></text></element>
+		<element kind="staticText" uuid="chat-0034" mode="Transparent" x="238" y="0" width="78"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Rol]]></text></element>
+		<element kind="staticText" uuid="chat-0035" mode="Transparent" x="316" y="0" width="118" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Empresa]]></text></element>
+		<element kind="staticText" uuid="chat-0036" mode="Transparent" x="434" y="0" width="228" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Primera Pregunta]]></text></element>
+		<element kind="staticText" uuid="chat-0037" mode="Transparent" x="662" y="0" width="88"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Mensajes]]></text></element>
+		<element kind="staticText" uuid="chat-0038" mode="Transparent" x="750" y="0" width="68"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Errores]]></text></element>
+		<element kind="staticText" uuid="chat-0039" mode="Transparent" x="818" y="0" width="82"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Idioma]]></text></element>
 	</columnHeader>
+
 	<detail>
 		<band height="26" splitType="Stretch">
-			<element kind="textField" uuid="cb840001-aaaa-4b1e-9f2f-0add2423432d" x="0" y="0" width="110" height="22" hTextAlign="Center" style="rowStyle">
-				<expression><![CDATA[$F{fecha}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840002-bbbb-4b1e-9f2f-0add2423432d" x="110" y="0" width="130" height="22" hTextAlign="Left" style="rowStyle">
-				<expression><![CDATA[$F{usuario}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840003-cccc-4b1e-9f2f-0add2423432d" x="240" y="0" width="80" height="22" hTextAlign="Center" style="rowStyle">
-				<expression><![CDATA[$F{rol}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840004-dddd-4b1e-9f2f-0add2423432d" x="320" y="0" width="120" height="22" hTextAlign="Left" style="rowStyle">
-				<expression><![CDATA[$F{empresa}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840005-eeee-4b1e-9f2f-0add2423432d" x="440" y="0" width="220" height="22" hTextAlign="Left" style="rowStyle">
-				<expression><![CDATA[$F{pregunta}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840006-ffff-4b1e-9f2f-0add2423432d" x="660" y="0" width="100" height="22" hTextAlign="Center" style="rowStyle">
-				<expression><![CDATA[$F{mensajes}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840007-1111-4b1e-9f2f-0add2423432d" x="760" y="0" width="60" height="22" hTextAlign="Center" style="rowStyle">
-				<expression><![CDATA[$F{errores}]]></expression>
-			</element>
-			<element kind="textField" uuid="cb840008-2222-4b1e-9f2f-0add2423432d" x="820" y="0" width="78" height="22" hTextAlign="Center" style="rowStyle">
-				<expression><![CDATA[$F{idioma}]]></expression>
-			</element>
+			<element kind="textField" uuid="chat-0042" mode="Opaque" x="2"   y="0" width="108" height="26" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{fecha}]]></expression></element>
+			<element kind="textField" uuid="chat-00a2" mode="Opaque" x="2"   y="0" width="108" height="26" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{fecha}]]></expression></element>
+			<element kind="textField" uuid="chat-0043" mode="Opaque" x="110" y="0" width="128" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{usuario}]]></expression></element>
+			<element kind="textField" uuid="chat-00a3" mode="Opaque" x="110" y="0" width="128" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{usuario}]]></expression></element>
+			<element kind="textField" uuid="chat-0044" mode="Opaque" x="238" y="0" width="78"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{rol}]]></expression></element>
+			<element kind="textField" uuid="chat-00a4" mode="Opaque" x="238" y="0" width="78"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{rol}]]></expression></element>
+			<element kind="textField" uuid="chat-0045" mode="Opaque" x="316" y="0" width="118" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{empresa}]]></expression></element>
+			<element kind="textField" uuid="chat-00a5" mode="Opaque" x="316" y="0" width="118" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{empresa}]]></expression></element>
+			<element kind="textField" uuid="chat-0046" mode="Opaque" x="434" y="0" width="228" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{pregunta}]]></expression></element>
+			<element kind="textField" uuid="chat-00a6" mode="Opaque" x="434" y="0" width="228" height="26" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{pregunta}]]></expression></element>
+			<element kind="textField" uuid="chat-0047" mode="Opaque" x="662" y="0" width="88"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{mensajes}]]></expression></element>
+			<element kind="textField" uuid="chat-00a7" mode="Opaque" x="662" y="0" width="88"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{mensajes}]]></expression></element>
+			<element kind="textField" uuid="chat-0048" mode="Opaque" x="750" y="0" width="68"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{errores}]]></expression></element>
+			<element kind="textField" uuid="chat-00a8" mode="Opaque" x="750" y="0" width="68"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{errores}]]></expression></element>
+			<element kind="textField" uuid="chat-0049" mode="Opaque" x="818" y="0" width="82"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{idioma}]]></expression></element>
+			<element kind="textField" uuid="chat-00a9" mode="Opaque" x="818" y="0" width="82"  height="26" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{idioma}]]></expression></element>
+			<element kind="line" uuid="chat-004a" x="0" y="25" width="900" height="1"><pen lineWidth="0.5" lineColor="#D1D5DB"/></element>
 		</band>
 	</detail>
-	<pageFooter height="30" splitType="Stretch">
-		<element kind="textField" uuid="cb850001-aaaa-4b1e-9f2f-0add2423432d" x="0" y="10" width="600" height="18" hTextAlign="Left" style="footerStyle">
-			<expression><![CDATA["Reciclame - Chatbot Analytics - generado " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
+
+	<pageFooter height="36" splitType="Stretch">
+		<element kind="line" uuid="chat-0050" x="0" y="0" width="1160" height="1"><pen lineWidth="2.0" lineColor="#1B3A5C"/></element>
+		<element kind="line" uuid="chat-0051" x="0" y="2" width="1160" height="1"><pen lineWidth="1.0" lineColor="#2ECC71"/></element>
+		<element kind="textField" uuid="chat-0052" x="0" y="8" width="400" height="22" style="footerStyle">
+			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
 		</element>
-		<element kind="textField" uuid="cb850002-bbbb-4b1e-9f2f-0add2423432d" x="900" y="10" width="200" height="18" hTextAlign="Right" style="footerStyle">
-			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER}]]></expression>
+		<element kind="staticText" uuid="chat-0053" x="430" y="8" width="300" height="22" hTextAlign="Center" style="urlStyle"><text><![CDATA[reciclame.org]]></text></element>
+		<element kind="textField" uuid="chat-0054" x="960" y="8" width="200" height="22" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
 		</element>
 	</pageFooter>
 </jasperReport>

@@ -5,156 +5,84 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import net.sf.jasperreports.engine.util.JRLoader;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.chart.*;
 import org.apache.poi.xssf.usermodel.*;
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.encoders.EncoderUtil;
-import org.jfree.chart.encoders.ImageFormat;
-import org.jfree.data.general.DefaultPieDataset;
-import org.jfree.data.category.DefaultCategoryDataset;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class ReporteService {
 
-    private static final short HEADER_BG = 0x006699;
+    // ── Brand palette ──────────────────────────────────────────────────────
+    private static final byte[] NAVY      = {(byte)0x1B,(byte)0x3A,(byte)0x5C};
+    private static final byte[] GRN_DARK  = {(byte)0x27,(byte)0xAE,(byte)0x60};
+    private static final byte[] ROW_ALT   = {(byte)0xF0,(byte)0xFF,(byte)0xF4};
+    private static final byte[] GRAY_TXT  = {(byte)0x6B,(byte)0x72,(byte)0x80};
+    private static final byte[] BORDER_CL = {(byte)0xD1,(byte)0xD5,(byte)0xDB};
+    private static final byte[] WHITE     = {(byte)0xFF,(byte)0xFF,(byte)0xFF};
+    private static final byte[] NAVY_FOOT = {(byte)0x0F,(byte)0x25,(byte)0x40};
+
+    // ── Jasper helpers ─────────────────────────────────────────────────────
 
     private JasperReport cargarReporte(String reporte) throws JRException {
         InputStream jasperStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jasper");
-        if (jasperStream != null) {
-            return (JasperReport) JRLoader.loadObject(jasperStream);
-        }
+        if (jasperStream != null) return (JasperReport) JRLoader.loadObject(jasperStream);
         InputStream jrxmlStream = this.getClass().getResourceAsStream("/reports/" + reporte + ".jrxml");
-        if (jrxmlStream == null) {
-            throw new RuntimeException("No se encontró el reporte: " + reporte);
-        }
+        if (jrxmlStream == null) throw new RuntimeException("No se encontró el reporte: " + reporte);
         return JasperCompileManager.compileReport(jrxmlStream);
     }
 
     public byte[] generarReport(String reporte) {
         try {
-            JasperReport jasperReport = cargarReporte(reporte);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, new java.util.HashMap<>(), new JREmptyDataSource());
-            return JasperExportManager.exportReportToPdf(jasperPrint);
-        } catch (JRException e) {
-            throw new RuntimeException("Error generating report: " + reporte, e);
-        }
+            JasperReport jr = cargarReporte(reporte);
+            JasperPrint jp = JasperFillManager.fillReport(jr, new java.util.HashMap<>(), new JREmptyDataSource());
+            return JasperExportManager.exportReportToPdf(jp);
+        } catch (JRException e) { throw new RuntimeException("Error generating report: " + reporte, e); }
     }
 
     public byte[] generarReportePDF(String reporte, JRDataSource dataSource, Map<String, Object> params) {
         try {
-            JasperReport jasperReport = cargarReporte(reporte);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, params != null ? params : new java.util.HashMap<>(), dataSource);
-            return JasperExportManager.exportReportToPdf(jasperPrint);
-        } catch (JRException e) {
-            throw new RuntimeException("Error generating PDF report: " + reporte, e);
-        }
+            JasperReport jr = cargarReporte(reporte);
+            JasperPrint jp = JasperFillManager.fillReport(jr, params != null ? params : new java.util.HashMap<>(), dataSource);
+            return JasperExportManager.exportReportToPdf(jp);
+        } catch (JRException e) { throw new RuntimeException("Error generating PDF report: " + reporte, e); }
     }
 
     public byte[] generarReportePDF(String reporte, List<?> data, Map<String, Object> params) {
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(data);
-        return generarReportePDF(reporte, dataSource, params);
+        return generarReportePDF(reporte, new JRBeanCollectionDataSource(data), params);
     }
 
     public byte[] generarReportePDF(String reporte, List<?> mainData, Map<String, Object> params,
                                     JRDataSource... chartDataSources) {
         try {
-            JasperReport jasperReport = cargarReporte(reporte);
-
-            Map<String, Object> finalParams = params != null ? params : new java.util.HashMap<>();
-            for (int i = 0; i < chartDataSources.length; i++) {
-                finalParams.put("chartData" + (i + 1), chartDataSources[i]);
-            }
-
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(mainData);
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, finalParams, dataSource);
-            return JasperExportManager.exportReportToPdf(jasperPrint);
-        } catch (JRException e) {
-            throw new RuntimeException("Error generating PDF report: " + reporte, e);
-        }
+            JasperReport jr = cargarReporte(reporte);
+            Map<String, Object> fp = params != null ? params : new java.util.HashMap<>();
+            for (int i = 0; i < chartDataSources.length; i++) fp.put("chartData" + (i + 1), chartDataSources[i]);
+            JasperPrint jp = JasperFillManager.fillReport(jr, fp, new JRBeanCollectionDataSource(mainData));
+            return JasperExportManager.exportReportToPdf(jp);
+        } catch (JRException e) { throw new RuntimeException("Error generating PDF report: " + reporte, e); }
     }
 
-    public byte[] generarReporteExcel(String title, String subtitle, String[] headers, List<Map<String, Object>> data) {
-        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-            XSSFSheet sheet = workbook.createSheet(title);
+    // ── Excel — tabla de datos limpia ──────────────────────────────────────
 
-            for (int i = 0; i < headers.length; i++) {
-                sheet.setColumnWidth(i, 4000);
-            }
-
-            int rowIndex = 0;
-
-            XSSFRow titleRow = sheet.createRow(rowIndex++);
-            titleRow.setHeight((short) 900);
-            XSSFCell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue(title);
-            XSSFCellStyle titleStyle = createTitleStyle(workbook);
-            titleCell.setCellStyle(titleStyle);
-            if (headers.length > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, headers.length - 1));
-            }
-
-            XSSFRow subtitleRow = sheet.createRow(rowIndex++);
-            subtitleRow.setHeight((short) 400);
-            XSSFCell subCell = subtitleRow.createCell(0);
-            subCell.setCellValue(subtitle);
-            XSSFCellStyle subStyle = createSubtitleStyle(workbook);
-            subCell.setCellStyle(subStyle);
-            if (headers.length > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, headers.length - 1));
-            }
-
-            rowIndex++;
-
-            XSSFRow headerRow = sheet.createRow(rowIndex++);
-            headerRow.setHeight((short) 400);
-            for (int i = 0; i < headers.length; i++) {
-                XSSFCell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(createHeaderStyle(workbook));
-            }
-
-            for (int i = 0; i < data.size(); i++) {
-                Map<String, Object> row = data.get(i);
-                XSSFRow dataRow = sheet.createRow(rowIndex++);
-                dataRow.setHeight((short) 350);
-
-                int colIndex = 0;
-                for (String header : headers) {
-                    XSSFCell cell = dataRow.createCell(colIndex++);
-                    Object value = row.get(toCamelCase(header));
-                    if (value != null) {
-                        cell.setCellValue(value.toString());
-                    } else {
-                        cell.setCellValue("");
-                    }
-                    cell.setCellStyle(createDataStyle(workbook, i % 2 == 0));
-                }
-            }
-
-            int footerRow = rowIndex + 2;
-            XSSFRow footRow = sheet.createRow(footerRow);
-            footRow.setHeight((short) 350);
-            XSSFCell dateCell = footRow.createCell(0);
-            dateCell.setCellValue("Fecha de generación: " + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-            XSSFCellStyle footerStyle = createFooterStyle(workbook);
-            dateCell.setCellStyle(footerStyle);
-            if (headers.length > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(footerRow, footerRow, 0, headers.length - 1));
-            }
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
-        } catch (Exception e) {
-            throw new RuntimeException("Error generating Excel report: " + title, e);
-        }
+    public byte[] generarReporteExcel(String title, String subtitle, String[] headers,
+                                       List<Map<String, Object>> data) {
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            XSSFSheet sheet = wb.createSheet(title.length() > 31 ? title.substring(0, 31) : title);
+            buildDataSheet(wb, sheet, title, subtitle, headers, data);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) { throw new RuntimeException("Error generating Excel: " + title, e); }
     }
+
+    // ── Excel — tabla + hoja de gráficos nativos ───────────────────────────
 
     public byte[] generarReporteExcelConGraficos(String title, String subtitle, String[] headers,
                                                   List<Map<String, Object>> data,
@@ -168,286 +96,361 @@ public class ReporteService {
                                                   List<Map<String, ?>> chart1Data,
                                                   List<Map<String, ?>> chart2Data,
                                                   List<Map<String, ?>> chart3Data) {
-        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
-            XSSFSheet sheet = workbook.createSheet(title);
+        try (XSSFWorkbook wb = new XSSFWorkbook()) {
+            // Hoja 1: datos
+            String safeTitle = title.length() > 31 ? title.substring(0, 31) : title;
+            XSSFSheet dataSheet = wb.createSheet(safeTitle);
+            buildDataSheet(wb, dataSheet, title, subtitle, headers, data);
 
-            for (int i = 0; i < headers.length; i++) {
-                sheet.setColumnWidth(i, 4000);
-            }
+            // Hoja 2: gráficos nativos
+            XSSFSheet chartSheet = wb.createSheet("Gráficos");
+            buildChartSheet(wb, chartSheet, title, chart1Data, chart2Data, chart3Data);
 
-            int rowIndex = 0;
+            // Activar hoja de datos al abrir
+            wb.setActiveSheet(0);
 
-            XSSFRow titleRow = sheet.createRow(rowIndex++);
-            titleRow.setHeight((short) 900);
-            XSSFCell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue(title);
-            XSSFCellStyle titleStyle = createTitleStyle(workbook);
-            titleCell.setCellStyle(titleStyle);
-            if (headers.length > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, headers.length - 1));
-            }
-
-            XSSFRow subtitleRow = sheet.createRow(rowIndex++);
-            subtitleRow.setHeight((short) 400);
-            XSSFCell subCell = subtitleRow.createCell(0);
-            subCell.setCellValue(subtitle);
-            XSSFCellStyle subStyle = createSubtitleStyle(workbook);
-            subCell.setCellStyle(subStyle);
-            if (headers.length > 1) {
-                sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, headers.length - 1));
-            }
-
-            rowIndex++;
-
-            XSSFRow headerRow = sheet.createRow(rowIndex++);
-            headerRow.setHeight((short) 400);
-            for (int i = 0; i < headers.length; i++) {
-                XSSFCell cell = headerRow.createCell(i);
-                cell.setCellValue(headers[i]);
-                cell.setCellStyle(createHeaderStyle(workbook));
-            }
-
-            for (int i = 0; i < data.size(); i++) {
-                Map<String, Object> row = data.get(i);
-                XSSFRow dataRow = sheet.createRow(rowIndex++);
-                dataRow.setHeight((short) 350);
-
-                int colIndex = 0;
-                for (String header : headers) {
-                    XSSFCell cell = dataRow.createCell(colIndex++);
-                    Object value = row.get(toCamelCase(header));
-                    if (value != null) {
-                        cell.setCellValue(value.toString());
-                    } else {
-                        cell.setCellValue("");
-                    }
-                    cell.setCellStyle(createDataStyle(workbook, i % 2 == 0));
-                }
-            }
-
-            int chartsStartRow = rowIndex + 2;
-            int chartColOffset = headers.length + 2;
-
-            if (chart1Data != null && !chart1Data.isEmpty()) {
-                createPieChart(workbook, sheet, "Chart 1: Distribution", chart1Data, chartsStartRow, chartColOffset);
-            }
-            if (chart2Data != null && !chart2Data.isEmpty()) {
-                createPieChart(workbook, sheet, "Chart 2: Distribution", chart2Data, chartsStartRow + 18, chartColOffset);
-            }
-            if (chart3Data != null && !chart3Data.isEmpty()) {
-                createBarChart(workbook, sheet, "Chart 3: By Category", chart3Data, chartsStartRow + 36, chartColOffset);
-            }
-
-            int footerRow = rowIndex + 2 + (chart3Data != null ? 54 : (chart2Data != null ? 36 : 18));
-            if (footerRow < sheet.getLastRowNum() + 4) {
-                XSSFRow footRow = sheet.createRow(footerRow);
-                footRow.setHeight((short) 350);
-                XSSFCell dateCell = footRow.createCell(0);
-                dateCell.setCellValue("Fecha de generación: " + java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-                XSSFCellStyle footerStyle = createFooterStyle(workbook);
-                dateCell.setCellStyle(footerStyle);
-                if (headers.length > 1) {
-                    sheet.addMergedRegion(new CellRangeAddress(footerRow, footerRow, 0, headers.length - 1));
-                }
-            }
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            wb.write(out);
+            return out.toByteArray();
         } catch (Exception e) {
-            throw new RuntimeException("Error generating Excel report with charts: " + title, e);
+            throw new RuntimeException("Error generating Excel with charts: " + title, e);
         }
     }
 
-    private void createPieChart(XSSFWorkbook workbook, XSSFSheet sheet, String title, List<Map<String, ?>> data, int startRow, int startCol) {
+    // ── Construcción de hoja de datos ─────────────────────────────────────
+
+    private void buildDataSheet(XSSFWorkbook wb, XSSFSheet sheet, String title, String subtitle,
+                                 String[] headers, List<Map<String, Object>> data) {
+        sheet.setDefaultColumnWidth(18);
+        int ri = 0;
+
+        // Franja de marca
+        XSSFRow brandRow = sheet.createRow(ri++);
+        brandRow.setHeight((short) 900);
+        XSSFCell brandCell = brandRow.createCell(0);
+        brandCell.setCellValue("♻ RECICLAME  —  Repositorio Circular de Economía Circular");
+        brandCell.setCellStyle(buildBrandStyle(wb));
+        mergeRow(sheet, ri - 1, headers.length);
+
+        // Título
+        XSSFRow titleRow = sheet.createRow(ri++);
+        titleRow.setHeight((short) 750);
+        XSSFCell tc = titleRow.createCell(0);
+        tc.setCellValue(title);
+        tc.setCellStyle(buildTitleStyle(wb));
+        mergeRow(sheet, ri - 1, headers.length);
+
+        // Subtítulo
+        XSSFRow subRow = sheet.createRow(ri++);
+        subRow.setHeight((short) 420);
+        XSSFCell sc = subRow.createCell(0);
+        sc.setCellValue(subtitle);
+        sc.setCellStyle(buildSubtitleStyle(wb));
+        mergeRow(sheet, ri - 1, headers.length);
+
+        // Separador
+        sheet.createRow(ri++).setHeight((short) 180);
+
+        // Encabezados de columna
+        XSSFRow hdrRow = sheet.createRow(ri++);
+        hdrRow.setHeight((short) 480);
+        for (int i = 0; i < headers.length; i++) {
+            XSSFCell c = hdrRow.createCell(i);
+            c.setCellValue(headers[i]);
+            c.setCellStyle(buildHeaderStyle(wb));
+        }
+
+        // Filas de datos
+        for (int i = 0; i < data.size(); i++) {
+            Map<String, Object> row = data.get(i);
+            XSSFRow dr = sheet.createRow(ri++);
+            dr.setHeight((short) 360);
+            XSSFCellStyle cs = buildDataStyle(wb, i % 2 == 1);
+            for (int j = 0; j < headers.length; j++) {
+                XSSFCell c = dr.createCell(j);
+                Object v = row.get(toCamelCase(headers[j]));
+                c.setCellValue(v != null ? v.toString() : "");
+                c.setCellStyle(cs);
+            }
+        }
+
+        // Separador
+        sheet.createRow(ri++).setHeight((short) 180);
+
+        // Pie de página
+        XSSFRow footRow = sheet.createRow(ri);
+        footRow.setHeight((short) 420);
+        XSSFCell fc = footRow.createCell(0);
+        fc.setCellValue("Generado: " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                + "   |   reciclame.org");
+        fc.setCellStyle(buildFooterStyle(wb));
+        mergeRow(sheet, ri, headers.length);
+
+        autoSizeCols(sheet, headers.length);
+    }
+
+    // ── Construcción de hoja de gráficos ──────────────────────────────────
+
+    private void buildChartSheet(XSSFWorkbook wb, XSSFSheet sheet, String reportTitle,
+                                  List<Map<String, ?>> chart1Data,
+                                  List<Map<String, ?>> chart2Data,
+                                  List<Map<String, ?>> chart3Data) {
+        sheet.setDefaultColumnWidth(14);
+
+        // Título de la hoja
+        XSSFRow titleRow = sheet.createRow(0);
+        titleRow.setHeight((short) 700);
+        XSSFCell tc = titleRow.createCell(0);
+        tc.setCellValue("Gráficos — " + reportTitle);
+        tc.setCellStyle(buildBrandStyle(wb));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 18));
+
+        int chartRow = 2;
+
+        if (chart1Data != null && !chart1Data.isEmpty()) {
+            addChartSectionLabel(wb, sheet, chartRow, 0, "Distribución por Categoría");
+            addNativePieChart(sheet, chart1Data, chartRow + 1, 0, chartRow + 18, 9);
+            chartRow += 20;
+        }
+        if (chart2Data != null && !chart2Data.isEmpty()) {
+            addChartSectionLabel(wb, sheet, chartRow, 0, "Distribución Secundaria");
+            addNativePieChart(sheet, chart2Data, chartRow + 1, 0, chartRow + 18, 9);
+            chartRow += 20;
+        }
+        if (chart3Data != null && !chart3Data.isEmpty()) {
+            addChartSectionLabel(wb, sheet, chartRow, 0, "Evolución por Período");
+            addNativeBarChart(sheet, chart3Data, chartRow + 1, 0, chartRow + 18, 9);
+        }
+    }
+
+    private void addChartSectionLabel(XSSFWorkbook wb, XSSFSheet sheet, int row, int col, String label) {
+        XSSFRow r = sheet.createRow(row);
+        r.setHeight((short) 420);
+        XSSFCell c = r.createCell(col);
+        c.setCellValue(label);
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setBold(true);
+        f.setFontHeightInPoints((short) 12);
+        f.setColor(new XSSFColor(NAVY, null));
+        st.setFont(f);
+        st.setFillForegroundColor(new XSSFColor(ROW_ALT, null));
+        st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        st.setBorderBottom(BorderStyle.MEDIUM);
+        st.setBottomBorderColor(new XSSFColor(GRN_DARK, null));
+        c.setCellStyle(st);
+        sheet.addMergedRegion(new CellRangeAddress(row, row, col, col + 8));
+    }
+
+    // ── Gráfico de torta nativo (XDDF) ────────────────────────────────────
+
+    private void addNativePieChart(XSSFSheet sheet, List<Map<String, ?>> data,
+                                    int r1, int c1, int r2, int c2) {
         if (data == null || data.isEmpty()) return;
-
         try {
-            // Crear dataset para el gráfico pie
-            DefaultPieDataset dataset = new DefaultPieDataset();
-            for (Map<String, ?> row : data) {
-                String label = row.get("label") != null ? row.get("label").toString() : "";
-                Object val = row.get("value");
-                double value = 0;
-                if (val instanceof Number) {
-                    value = ((Number) val).doubleValue();
-                } else if (val != null) {
-                    try {
-                        value = Double.parseDouble(val.toString());
-                    } catch (NumberFormatException e) {
-                        value = 0;
-                    }
-                }
-                dataset.setValue(label, value);
-            }
-
-            // Crear gráfico pie
-            JFreeChart pieChart = ChartFactory.createPieChart(
-                title,
-                dataset,
-                true,  // legend
-                false, // tooltips
-                false  // urls
-            );
-
-            // Convertir gráfico a imagen
-            byte[] imageBytes = EncoderUtil.encode(pieChart.createBufferedImage(400, 300), ImageFormat.PNG);
-
-            // Insertar imagen en el sheet
             XSSFDrawing drawing = sheet.createDrawingPatriarch();
-            XSSFClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
-            anchor.setCol1(startCol);
-            anchor.setCol2(startCol + 12);
-            anchor.setRow1(startRow);
-            anchor.setRow2(startRow + 18);
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, c1, r1, c2, r2);
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleOverlay(false);
 
-            drawing.createPicture(anchor, workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG));
+            XDDFChartLegend legend = chart.getOrAddLegend();
+            legend.setPosition(LegendPosition.BOTTOM);
+
+            String[] labels = data.stream()
+                    .map(m -> m.get("label") != null ? m.get("label").toString() : "")
+                    .toArray(String[]::new);
+            Double[] values = data.stream()
+                    .map(m -> { Object v = m.get("value"); return v instanceof Number ? ((Number)v).doubleValue() : 0.0; })
+                    .toArray(Double[]::new);
+
+            XDDFDataSource<String> cats = XDDFDataSourcesFactory.fromArray(labels);
+            XDDFNumericalDataSource<Double> vals = XDDFDataSourcesFactory.fromArray(values);
+
+            XDDFPieChartData pieData = (XDDFPieChartData) chart.createData(ChartTypes.PIE, null, null);
+            pieData.setVaryColors(true);
+            XDDFPieChartData.Series series = (XDDFPieChartData.Series) pieData.addSeries(cats, vals);
+            series.setExplosion(0L);
+            chart.plot(pieData);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating pie chart: " + title, e);
+            throw new RuntimeException("Error creating native pie chart", e);
         }
     }
 
-    private void createBarChart(XSSFWorkbook workbook, XSSFSheet sheet, String title, List<Map<String, ?>> data, int startRow, int startCol) {
+    // ── Gráfico de barras nativo (XDDF) ───────────────────────────────────
+
+    private void addNativeBarChart(XSSFSheet sheet, List<Map<String, ?>> data,
+                                    int r1, int c1, int r2, int c2) {
         if (data == null || data.isEmpty()) return;
-
         try {
-            // Crear dataset para el gráfico de barras
-            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            for (Map<String, ?> row : data) {
-                String category = row.get("category") != null ? row.get("category").toString() : 
-                                (row.get("label") != null ? row.get("label").toString() : "");
-                Object val = row.get("value");
-                double value = 0;
-                if (val instanceof Number) {
-                    value = ((Number) val).doubleValue();
-                } else if (val != null) {
-                    try {
-                        value = Double.parseDouble(val.toString());
-                    } catch (NumberFormatException e) {
-                        value = 0;
-                    }
-                }
-                dataset.addValue(value, "Values", category);
-            }
-
-            // Crear gráfico de barras
-            JFreeChart barChart = ChartFactory.createBarChart(
-                title,
-                "Category",
-                "Value",
-                dataset,
-                org.jfree.chart.plot.PlotOrientation.VERTICAL,
-                true,  // legend
-                false, // tooltips
-                false  // urls
-            );
-
-            // Convertir gráfico a imagen
-            byte[] imageBytes = EncoderUtil.encode(barChart.createBufferedImage(400, 300), ImageFormat.PNG);
-
-            // Insertar imagen en el sheet
             XSSFDrawing drawing = sheet.createDrawingPatriarch();
-            XSSFClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
-            anchor.setCol1(startCol);
-            anchor.setCol2(startCol + 12);
-            anchor.setRow1(startRow);
-            anchor.setRow2(startRow + 18);
+            XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, c1, r1, c2, r2);
+            XSSFChart chart = drawing.createChart(anchor);
+            chart.setTitleOverlay(false);
 
-            drawing.createPicture(anchor, workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG));
+            XDDFCategoryAxis xAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+            xAxis.setVisible(true);
+            XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+            yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+            String[] cats = data.stream()
+                    .map(m -> {
+                        if (m.get("category") != null) return m.get("category").toString();
+                        if (m.get("label") != null) return m.get("label").toString();
+                        return "";
+                    })
+                    .toArray(String[]::new);
+            Double[] vals = data.stream()
+                    .map(m -> { Object v = m.get("value"); return v instanceof Number ? ((Number)v).doubleValue() : 0.0; })
+                    .toArray(Double[]::new);
+
+            XDDFBarChartData barData = (XDDFBarChartData) chart.createData(ChartTypes.BAR, xAxis, yAxis);
+            barData.setBarDirection(BarDirection.COL);
+            barData.setVaryColors(true);
+
+            XDDFBarChartData.Series series = (XDDFBarChartData.Series) barData.addSeries(
+                    XDDFDataSourcesFactory.fromArray(cats),
+                    XDDFDataSourcesFactory.fromArray(vals)
+            );
+            series.setTitle("Valor", null);
+            series.setShowLeaderLines(false);
+            chart.plot(barData);
         } catch (Exception e) {
-            throw new RuntimeException("Error creating bar chart: " + title, e);
+            throw new RuntimeException("Error creating native bar chart", e);
         }
     }
 
-    private XSSFCellStyle createTitleStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Times New Roman");
-        font.setFontHeightInPoints((short) 28);
-        font.setBold(true);
-        font.setColor(IndexedColors.WHITE.getIndex());
-        style.setFont(font);
-        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 0x00, (byte) 0x66, (byte) 0x99}, null));
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        style.setAlignment(HorizontalAlignment.CENTER);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        return style;
+    // ── Estilos de celda ──────────────────────────────────────────────────
+
+    private XSSFCellStyle buildBrandStyle(XSSFWorkbook wb) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 14);
+        f.setBold(true);
+        f.setColor(new XSSFColor(WHITE, null));
+        st.setFont(f);
+        st.setFillForegroundColor(new XSSFColor(NAVY, null));
+        st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        st.setAlignment(HorizontalAlignment.CENTER);
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        return st;
     }
 
-    private XSSFCellStyle createSubtitleStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Times New Roman");
-        font.setFontHeightInPoints((short) 14);
-        font.setColor(new XSSFColor(new byte[]{(byte) 0x66, (byte) 0x66, (byte) 0x66}, null));
-        style.setFont(font);
-        style.setAlignment(HorizontalAlignment.RIGHT);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        return style;
+    private XSSFCellStyle buildTitleStyle(XSSFWorkbook wb) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 22);
+        f.setBold(true);
+        f.setColor(new XSSFColor(NAVY, null));
+        st.setFont(f);
+        st.setAlignment(HorizontalAlignment.LEFT);
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        st.setBorderLeft(BorderStyle.THICK);
+        st.setLeftBorderColor(new XSSFColor(GRN_DARK, null));
+        return st;
     }
 
-    private XSSFCellStyle createHeaderStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Times New Roman");
-        font.setFontHeightInPoints((short) 12);
-        font.setBold(true);
-        font.setColor(IndexedColors.WHITE.getIndex());
-        style.setFont(font);
-        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 0x00, (byte) 0x66, (byte) 0x99}, null));
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        style.setAlignment(HorizontalAlignment.CENTER);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
-        return style;
+    private XSSFCellStyle buildSubtitleStyle(XSSFWorkbook wb) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 11);
+        f.setColor(new XSSFColor(GRAY_TXT, null));
+        st.setFont(f);
+        st.setAlignment(HorizontalAlignment.LEFT);
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        st.setBorderLeft(BorderStyle.THICK);
+        st.setLeftBorderColor(new XSSFColor(GRN_DARK, null));
+        return st;
     }
 
-    private XSSFCellStyle createDataStyle(XSSFWorkbook workbook, boolean alternate) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Times New Roman");
-        font.setFontHeightInPoints((short) 11);
-        style.setFont(font);
-        if (alternate) {
-            style.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 0xF0, (byte) 0xEF, (byte) 0xEF}, null));
-            style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+    private XSSFCellStyle buildHeaderStyle(XSSFWorkbook wb) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 11);
+        f.setBold(true);
+        f.setColor(new XSSFColor(WHITE, null));
+        st.setFont(f);
+        st.setFillForegroundColor(new XSSFColor(GRN_DARK, null));
+        st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        st.setAlignment(HorizontalAlignment.CENTER);
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        st.setBorderBottom(BorderStyle.MEDIUM);
+        st.setBottomBorderColor(new XSSFColor(NAVY, null));
+        st.setBorderTop(BorderStyle.THIN);
+        st.setBorderLeft(BorderStyle.THIN);
+        st.setBorderRight(BorderStyle.THIN);
+        st.setTopBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setLeftBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setRightBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setWrapText(true);
+        return st;
+    }
+
+    private XSSFCellStyle buildDataStyle(XSSFWorkbook wb, boolean alt) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 10);
+        f.setColor(new XSSFColor(new byte[]{(byte)0x1F,(byte)0x29,(byte)0x37}, null));
+        st.setFont(f);
+        if (alt) {
+            st.setFillForegroundColor(new XSSFColor(ROW_ALT, null));
+            st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         }
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
-        return style;
+        st.setBorderBottom(BorderStyle.THIN);
+        st.setBorderTop(BorderStyle.THIN);
+        st.setBorderLeft(BorderStyle.THIN);
+        st.setBorderRight(BorderStyle.THIN);
+        st.setBottomBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setTopBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setLeftBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setRightBorderColor(new XSSFColor(BORDER_CL, null));
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        return st;
     }
 
-    private XSSFCellStyle createFooterStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setFontName("Times New Roman");
-        font.setFontHeightInPoints((short) 10);
-        font.setColor(new XSSFColor(new byte[]{(byte) 0xD0, (byte) 0xB4, (byte) 0x8E}));
-        style.setFont(font);
-        style.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 0x00, (byte) 0x66, (byte) 0x99}, null));
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        style.setAlignment(HorizontalAlignment.LEFT);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        return style;
+    private XSSFCellStyle buildFooterStyle(XSSFWorkbook wb) {
+        XSSFCellStyle st = wb.createCellStyle();
+        XSSFFont f = wb.createFont();
+        f.setFontName("Calibri");
+        f.setFontHeightInPoints((short) 9);
+        f.setColor(new XSSFColor(WHITE, null));
+        st.setFont(f);
+        st.setFillForegroundColor(new XSSFColor(NAVY_FOOT, null));
+        st.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        st.setAlignment(HorizontalAlignment.CENTER);
+        st.setVerticalAlignment(VerticalAlignment.CENTER);
+        return st;
+    }
+
+    // ── Utilidades ────────────────────────────────────────────────────────
+
+    private void mergeRow(XSSFSheet sheet, int row, int cols) {
+        if (cols > 1) sheet.addMergedRegion(new CellRangeAddress(row, row, 0, cols - 1));
+    }
+
+    private void autoSizeCols(XSSFSheet sheet, int count) {
+        for (int i = 0; i < count; i++) {
+            try { sheet.autoSizeColumn(i); } catch (Exception ignored) {}
+            if (sheet.getColumnWidth(i) > 20000) sheet.setColumnWidth(i, 20000);
+        }
     }
 
     private String toCamelCase(String str) {
         if (str == null || str.isEmpty()) return str;
-        String normalized = str.toLowerCase()
-            .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
-            .replace("ñ", "n").replace("ü", "u");
-        String[] words = normalized.split("\\s+");
-        StringBuilder result = new StringBuilder(words[0].toLowerCase());
+        String norm = str.toLowerCase()
+            .replace("á","a").replace("é","e").replace("í","i").replace("ó","o").replace("ú","u")
+            .replace("ñ","n").replace("ü","u");
+        String[] words = norm.split("\\s+");
+        StringBuilder sb = new StringBuilder(words[0]);
         for (int i = 1; i < words.length; i++) {
-            if (!words[i].isEmpty()) {
-                result.append(words[i].substring(0, 1).toUpperCase()).append(words[i].substring(1).toLowerCase());
-            }
+            if (!words[i].isEmpty())
+                sb.append(Character.toUpperCase(words[i].charAt(0))).append(words[i].substring(1));
         }
-        return result.toString();
+        return sb.toString();
     }
 }

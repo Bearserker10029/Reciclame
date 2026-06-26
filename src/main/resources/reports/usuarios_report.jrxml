@@ -1,31 +1,40 @@
-<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
-<jasperReport name="usuarios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="69187499-4f96-4949-be77-3975b676cfee">
-	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#3399FF" fontName="SansSerif" fontSize="10.0" bold="true"/>
-	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
-	<style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9.0"/>
-	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
-	<dataset name="UsuariosRolDataset" uuid="1abd3b23-8aa8-433c-9cf1-2c27da97f991">
+<!-- Reciclame — Reporte de Usuarios (rediseño de marca 2026) -->
+<jasperReport name="usuarios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="4b2c3d4e-0001-4f6a-b002-000000000001">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+
+	<style name="rowStyle"    fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#6B7280" fontName="SansSerif" fontSize="8.0"/>
+	<style name="urlStyle"    forecolor="#27AE60" fontName="SansSerif" fontSize="8.0" bold="true"/>
+
+	<dataset name="RolDataset" uuid="4b2c3d4e-0002-4f6a-b002-000000000002">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
 	</dataset>
-	<dataset name="UsuariosEstadoDataset" uuid="919e2cad-06ef-4a47-8cdf-abeec4e3ba92">
+	<dataset name="EstadoDataset" uuid="4b2c3d4e-0003-4f6a-b002-000000000003">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
 	</dataset>
+
 	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<field name="nombreCompleto" class="java.lang.String"/>
-	<field name="dni" class="java.lang.String"/>
+
+	<field name="nombreCompleto"    class="java.lang.String"/>
 	<field name="correoCorporativo" class="java.lang.String"/>
-	<field name="cargo" class="java.lang.String"/>
-	<field name="rolNombre" class="java.lang.String"/>
-	<field name="empresaNombre" class="java.lang.String"/>
-	<field name="estadoCuenta" class="java.lang.String"/>
-	<field name="ultimoLogin" class="java.time.Instant"/>
-	<background height="802" splitType="Stretch">
-		<element kind="chart" chartType="pie3D" uuid="24c7f932-637e-46e8-a7d4-3a46cbfa717e" x="890" y="160" width="260" height="140" showLegend="false" evaluationTime="Report">
+	<field name="cargo"             class="java.lang.String"/>
+	<field name="empresaNombre"     class="java.lang.String"/>
+	<field name="estadoCuenta"      class="java.lang.String"/>
+	<field name="ultimoLogin"       class="java.lang.String"/>
+
+	<background height="760" splitType="Stretch">
+		<element kind="image" uuid="4b2c3d4e-0010-4f6a-b002-000000000010" positionType="FixRelativeToBottom" mode="Transparent" x="40" y="310" width="500" height="180" linkType="None" linkTarget="Self">
+			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
+		</element>
+		<element kind="staticText" uuid="4b2c3d4e-0011-4f6a-b002-000000000011" x="900" y="105" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Distribución por Rol]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="4b2c3d4e-0012-4f6a-b002-000000000012" x="888" y="124" width="272" height="185" showLegend="true" evaluationTime="Report">
 			<dataset kind="pie">
-				<datasetRun uuid="a0fce8e3-cb50-405d-9178-d9fa71b5ba70" subDataset="UsuariosRolDataset">
+				<datasetRun uuid="4b2c3d4e-0013-4f6a-b002-000000000013" subDataset="RolDataset">
 					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
 				</datasetRun>
 				<series>
@@ -33,19 +42,21 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#2ECC71"/>
+				<seriesColor order="1" color="#1B3A5C"/>
+				<seriesColor order="2" color="#3498DB"/>
+				<seriesColor order="3" color="#F39C12"/>
+				<seriesColor order="4" color="#E74C3C"/>
 			</plot>
 		</element>
-		<element kind="chart" chartType="pie3D" uuid="a170b3df-3a74-4213-b0d3-e6e57d7a51f0" x="890" y="340" width="260" height="140" showLegend="false" evaluationTime="Report">
+		<element kind="staticText" uuid="4b2c3d4e-0014-4f6a-b002-000000000014" x="900" y="326" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Estado de Cuentas]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="4b2c3d4e-0015-4f6a-b002-000000000015" x="888" y="346" width="272" height="185" showLegend="true" evaluationTime="Report">
 			<dataset kind="pie">
-				<datasetRun uuid="bcd4e70b-da7d-4405-97f9-dafd22d58206" subDataset="UsuariosEstadoDataset">
+				<datasetRun uuid="4b2c3d4e-0016-4f6a-b002-000000000016" subDataset="EstadoDataset">
 					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
 				</datasetRun>
 				<series>
@@ -53,79 +64,72 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#27AE60"/>
+				<seriesColor order="1" color="#E74C3C"/>
+				<seriesColor order="2" color="#F39C12"/>
 			</plot>
 		</element>
-		<element kind="image" uuid="99a6cd2a-1ff4-436a-98eb-8f4ccc5b09f0" positionType="FixRelativeToBottom" stretchType="NoStretch" mode="Transparent" x="100" y="291" width="640" height="220" linkType="None" linkTarget="Self">
-			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
-		</element>
 	</background>
-	<title height="60" splitType="Stretch">
-		<element kind="staticText" uuid="bf6cc639-1826-4184-b101-9deb3fdeab9a" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">
+
+	<title height="90" splitType="Stretch">
+		<element kind="staticText" uuid="4b2c3d4e-0020-4f6a-b002-000000000020" mode="Opaque" x="0" y="0" width="1160" height="90" backcolor="#1B3A5C">
+			<text><![CDATA[]]></text>
+		</element>
+		<element kind="staticText" uuid="4b2c3d4e-0021-4f6a-b002-000000000021" mode="Opaque" x="0" y="0" width="6" height="90" backcolor="#2ECC71">
+			<text><![CDATA[]]></text>
+		</element>
+		<element kind="staticText" uuid="4b2c3d4e-0022-4f6a-b002-000000000022" mode="Transparent" x="16" y="8" width="860" height="44" forecolor="#FFFFFF" fontName="SansSerif" fontSize="26.0" bold="true" vTextAlign="Middle">
 			<text><![CDATA[Reporte de Usuarios]]></text>
 		</element>
+		<element kind="staticText" uuid="4b2c3d4e-0023-4f6a-b002-000000000023" mode="Transparent" x="16" y="56" width="860" height="24" forecolor="#2ECC71" fontName="SansSerif" fontSize="11.0" vTextAlign="Middle">
+			<text><![CDATA[Repositorio Circular de Economía Circular  ·  reciclame.org]]></text>
+		</element>
 	</title>
-	<columnHeader height="30" splitType="Stretch">
-		<element kind="line" uuid="8eadf4d7-8151-441c-a544-53cf8b128ae5" x="0" y="29" width="889" height="1">
+
+	<columnHeader height="34" splitType="Stretch">
+		<element kind="staticText" uuid="4b2c3d4e-0030-4f6a-b002-000000000030" mode="Opaque" x="0" y="0" width="890" height="34" backcolor="#27AE60">
+			<text><![CDATA[]]></text>
+		</element>
+		<element kind="line" uuid="4b2c3d4e-0031-4f6a-b002-000000000031" x="0" y="33" width="890" height="1">
 			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
 		</element>
-		<element kind="staticText" uuid="db9835e4-27f3-4997-8e3f-3d68b64caa9d" mode="Opaque" x="0" y="0" width="180" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Nombre Completo]]></text>
-		</element>
-		<element kind="staticText" uuid="8e3efdc2-29d5-4ced-ab98-1abd12c98cab" mode="Opaque" x="180" y="0" width="150" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Correo]]></text>
-		</element>
-		<element kind="staticText" uuid="c6347126-1b5b-480b-8f14-771f18565cee" mode="Opaque" x="330" y="0" width="140" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Cargo]]></text>
-		</element>
-		<element kind="staticText" uuid="69ddcd47-541e-4103-bd0e-241dbe554849" mode="Opaque" x="470" y="0" width="130" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Empresa]]></text>
-		</element>
-		<element kind="staticText" uuid="c3c7abae-cfe3-4b82-a5c2-fd6374f56a7d" mode="Opaque" x="600" y="0" width="110" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Estado]]></text>
-		</element>
-		<element kind="staticText" uuid="7cfcf67a-3554-4f57-bf74-9b48baa1b1f8" mode="Opaque" x="710" y="0" width="180" height="28" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Ultimo Login]]></text>
-		</element>
+		<element kind="staticText" uuid="4b2c3d4e-0032-4f6a-b002-000000000032" mode="Transparent" x="2"   y="0" width="188" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Nombre Completo]]></text></element>
+		<element kind="staticText" uuid="4b2c3d4e-0033-4f6a-b002-000000000033" mode="Transparent" x="190" y="0" width="158" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Correo Corporativo]]></text></element>
+		<element kind="staticText" uuid="4b2c3d4e-0034-4f6a-b002-000000000034" mode="Transparent" x="348" y="0" width="138" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Cargo]]></text></element>
+		<element kind="staticText" uuid="4b2c3d4e-0035-4f6a-b002-000000000035" mode="Transparent" x="486" y="0" width="138" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Empresa]]></text></element>
+		<element kind="staticText" uuid="4b2c3d4e-0036-4f6a-b002-000000000036" mode="Transparent" x="624" y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Estado]]></text></element>
+		<element kind="staticText" uuid="4b2c3d4e-0037-4f6a-b002-000000000037" mode="Transparent" x="732" y="0" width="158" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Último Acceso]]></text></element>
 	</columnHeader>
+
 	<detail>
 		<band height="25" splitType="Stretch">
-			<element kind="textField" uuid="20ef0c79-71bc-41a7-917f-37d7295bcf0a" x="0" y="0" width="180" height="25" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{nombreCompleto}]]></expression>
-			</element>
-			<element kind="textField" uuid="fdbfe2f3-363e-460f-b918-5de6a90d3954" x="180" y="0" width="150" height="25" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{correoCorporativo}]]></expression>
-			</element>
-			<element kind="textField" uuid="f0488c30-aa84-41d1-bf63-b96b51fd73a3" x="330" y="0" width="140" height="25" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{cargo} != null ? $F{cargo} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="c11c01e7-1c7e-4a46-819f-f7fc7533d466" x="470" y="0" width="130" height="25" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{empresaNombre} != null ? $F{empresaNombre} : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="49606efd-c906-436e-a3de-edf2c3f3b6c1" x="600" y="0" width="110" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{estadoCuenta}]]></expression>
-			</element>
-			<element kind="textField" uuid="d7c02827-aa71-46fe-9493-8eb87d10df4a" x="710" y="0" width="180" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{ultimoLogin} != null ? java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(java.time.ZoneId.of("America/Lima")).format($F{ultimoLogin}) : "Nunca"]]></expression>
-			</element>
+			<element kind="textField" uuid="4b2c3d4e-0042-4f6a-b002-000000000042" mode="Opaque" x="2"   y="0" width="188" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{nombreCompleto}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a2-4f6a-b002-000000000042" mode="Opaque" x="2"   y="0" width="188" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{nombreCompleto}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-0043-4f6a-b002-000000000043" mode="Opaque" x="190" y="0" width="158" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{correoCorporativo}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a3-4f6a-b002-000000000043" mode="Opaque" x="190" y="0" width="158" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{correoCorporativo}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-0044-4f6a-b002-000000000044" mode="Opaque" x="348" y="0" width="138" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{cargo}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a4-4f6a-b002-000000000044" mode="Opaque" x="348" y="0" width="138" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{cargo}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-0045-4f6a-b002-000000000045" mode="Opaque" x="486" y="0" width="138" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{empresaNombre}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a5-4f6a-b002-000000000045" mode="Opaque" x="486" y="0" width="138" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{empresaNombre}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-0046-4f6a-b002-000000000046" mode="Opaque" x="624" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{estadoCuenta}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a6-4f6a-b002-000000000046" mode="Opaque" x="624" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{estadoCuenta}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-0047-4f6a-b002-000000000047" mode="Opaque" x="732" y="0" width="158" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{ultimoLogin}]]></expression></element>
+			<element kind="textField" uuid="4b2c3d4e-00a7-4f6a-b002-000000000047" mode="Opaque" x="732" y="0" width="158" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{ultimoLogin}]]></expression></element>
+			<element kind="line" uuid="4b2c3d4e-0049-4f6a-b002-000000000049" x="0" y="24" width="890" height="1"><pen lineWidth="0.5" lineColor="#D1D5DB"/></element>
 		</band>
 	</detail>
-	<pageFooter height="30" splitType="Stretch">
-		<element kind="line" uuid="9702f2f6-6946-495c-900f-6963e9c9790d" x="0" y="0" width="1160" height="1">
-			<pen lineWidth="1.0" lineColor="#1B3A5C"/>
-		</element>
-		<element kind="textField" uuid="db6fc5c9-8715-4776-916d-75a458c4adc4" x="0" y="5" width="400" height="20" style="footerStyle">
+
+	<pageFooter height="36" splitType="Stretch">
+		<element kind="line" uuid="4b2c3d4e-0050-4f6a-b002-000000000050" x="0" y="0" width="1160" height="1"><pen lineWidth="2.0" lineColor="#1B3A5C"/></element>
+		<element kind="line" uuid="4b2c3d4e-0051-4f6a-b002-000000000051" x="0" y="2" width="1160" height="1"><pen lineWidth="1.0" lineColor="#2ECC71"/></element>
+		<element kind="textField" uuid="4b2c3d4e-0052-4f6a-b002-000000000052" x="0" y="8" width="400" height="22" style="footerStyle">
 			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
 		</element>
-		<element kind="textField" uuid="f18af906-7989-44e9-b5d3-0203e6628341" x="960" y="5" width="200" height="20" hTextAlign="Right" style="footerStyle">
-			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+		<element kind="staticText" uuid="4b2c3d4e-0053-4f6a-b002-000000000053" x="430" y="8" width="300" height="22" hTextAlign="Center" style="urlStyle"><text><![CDATA[reciclame.org]]></text></element>
+		<element kind="textField" uuid="4b2c3d4e-0054-4f6a-b002-000000000054" x="960" y="8" width="200" height="22" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
 		</element>
 	</pageFooter>
 </jasperReport>
