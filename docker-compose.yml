@@ -29,6 +29,7 @@ services:
       - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
       - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
@@ -40,7 +41,14 @@ services:
       - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
-      # Heap ajustado para t3.medium con 2 instancias activas (cada una ~900 MB)
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
+      # Heap ajustado para t3.medium con 2-3 instancias activas (cada una ~900 MB)
       - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
@@ -77,6 +85,7 @@ services:
       - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
       - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
@@ -88,6 +97,68 @@ services:
       - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
       - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
+      - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
+    volumes:
+      - backup_data:/backups
+    networks:
+      - reciclame-net
+
+  reciclame-app3:
+    image: kent10029/reciclame:latest
+    container_name: reciclame-app3
+    platform: linux/amd64
+    restart: unless-stopped
+    expose:
+      - "8080"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL}
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_INTERNAL_URL=${MINIO_INTERNAL_URL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - KKFILEVIEW_URL=${KKFILEVIEW_URL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_CHATBOT_WEBHOOK_URL=${N8N_CHATBOT_WEBHOOK_URL}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
+      - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
+      - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
+      - APP_BACKUP_PATH=${APP_BACKUP_PATH}
+      - VERIFICA_API_KEY=${VERIFICA_API_KEY}
+      - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
       - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
@@ -121,6 +192,7 @@ services:
     depends_on:
       - reciclame-app1
       - reciclame-app2
+      - reciclame-app3
     networks:
       - reciclame-net
 
@@ -163,6 +235,7 @@ services:
     container_name: reciclame-centrifugo
     restart: unless-stopped
     # NO se expone al host: el browser llega via nginx-proxy-manager (wss://...)
+    # Solo accesible internamente desde la red reciclame-net.
     expose:
       - "8000"
     environment:
