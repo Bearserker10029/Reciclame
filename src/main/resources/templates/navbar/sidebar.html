@@ -9,6 +9,24 @@
 <th:block th:fragment="sidebar">
   <script>
     document.body.setAttribute('data-rol', /*[[${rol}]]*/ 'default');
+
+    // Shim global de navTo() para los onclick del sidebar.
+    // Detecta el prefijo de la URL actual (no depende de ${rol} para no
+    // acoplarse a cómo cada controller setea esa variable).
+    // Si un template ya define navTo() más adelante, este check lo respeta.
+    if (typeof window.navTo === 'undefined') {
+      window.navTo = function (page) {
+        var map = { 'admin-docs': 'documentos' };
+        var path = window.location.pathname || '';
+        var prefix = '/';
+        if (path.indexOf('/superadmin') === 0)      prefix = '/superadmin';
+        else if (path.indexOf('/admin') === 0)      prefix = '/admin';
+        else if (path.indexOf('/socio') === 0)      prefix = '/socio';
+        else if (path.indexOf('/visualizador') === 0) prefix = '/visualizador';
+        var target = map[page] || page;
+        window.location.href = prefix + '/' + target;
+      };
+    }
   </script>
   <style>
     .sidebar-nav::-webkit-scrollbar { width: 4px; }
@@ -18,6 +36,68 @@
     .nav-item.active { background: rgba(46,204,113,.18); color: #fff !important; border-left: 3px solid #2ECC71; }
     .nav-subitem { padding: 6px 10px !important; font-size: 12px !important; }
     .nav-subitem.active { background: rgba(46,204,113,.18); color: #fff !important; }
+
+    /* ── Mobile: sidebar como drawer off-canvas, mostrar dock ── */
+    @media (max-width: 767px) {
+      .sidebar-nav {
+        position: fixed !important;
+        top: 0 !important; left: 0 !important; bottom: 0 !important;
+        width: 280px !important; max-width: 85vw !important;
+        height: 100vh !important; z-index: 9999 !important;
+        transform: translateX(-100%) !important;
+        transition: transform .28s cubic-bezier(.4,0,.2,1) !important;
+        box-shadow: 6px 0 24px rgba(0,0,0,.28) !important;
+        overflow-y: auto !important;
+        display: flex !important;
+      }
+      .sidebar-nav.drawer-open { transform: translateX(0) !important; }
+      #mobile-dock { display: flex !important; }
+      body { padding-bottom: 64px; }
+      /* Scrim */
+      #sidebar-scrim {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,.52); backdrop-filter: blur(2px);
+        z-index: 9998; opacity: 0; transition: opacity .25s;
+      }
+      #sidebar-scrim.open { display: block; opacity: 1; }
+    }
+    @media (min-width: 768px) {
+      #mobile-dock { display: none !important; }
+      #sidebar-scrim { display: none !important; }
+    }
+
+    /* ── Bottom Dock ── */
+    #mobile-dock {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9990;
+      height: 60px;
+      background: #1B3A5C;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: none;
+      align-items: stretch;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+    }
+    .dock-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      cursor: pointer; color: rgba(255,255,255,.55);
+      font-size: 10px; font-weight: 600; text-decoration: none;
+      transition: color .15s, background .15s;
+      padding: 6px 2px; position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dock-item i { font-size: 18px; }
+    .dock-item:hover, .dock-item.active { color: #2ECC71; }
+    .dock-item.active::after {
+      content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+      height: 2px; background: #2ECC71; border-radius: 0 0 3px 3px;
+    }
+    .dock-badge {
+      position: absolute; top: 5px; right: calc(50% - 18px);
+      background: #E74C3C; color: #fff; font-size: 9px; font-weight: 800;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 3px; border: 1.5px solid #1B3A5C;
+    }
 
     /* Gradient masks for scroll indication */
     .scroll-mask {
@@ -151,6 +231,181 @@
       </div>
     </div>
   </aside>
+
+  <!-- ── Bottom Dock (mobile only) ── -->
+  <nav id="mobile-dock">
+
+    <!-- VISUALIZADOR -->
+    <th:block th:if="${rol == 'VISUALIZADOR'}">
+      <a class="dock-item" th:href="@{/visualizador/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/notificaciones}" style="position:relative;">
+        <i class="fas fa-bell"></i>
+        <span th:if="${noLeidasCount != null and noLeidasCount > 0}" class="dock-badge" th:text="${noLeidasCount}">0</span>
+        <span>Alertas</span>
+      </a>
+      <a class="dock-item" th:href="@{/visualizador/perfil}">
+        <i class="fas fa-user"></i><span>Perfil</span>
+      </a>
+    </th:block>
+
+    <!-- SOCIO -->
+    <th:block th:if="${rol == 'SOCIO'}">
+      <a class="dock-item" th:href="@{/socio/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/socio/mi-unidad}">
+        <i class="fas fa-cloud"></i><span>Mi Unidad</span>
+      </a>
+      <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+        <i class="fas fa-ellipsis-h"></i><span>Más</span>
+      </button>
+    </th:block>
+
+    <!-- ADMIN -->
+    <th:block th:if="${rol == 'ADMIN'}">
+      <a class="dock-item" th:href="@{/admin/inicio}">
+        <i class="fas fa-home"></i><span>Inicio</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/normativo}">
+        <i class="fas fa-balance-scale"></i><span>Normativo</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/estudios}">
+        <i class="fas fa-file-alt"></i><span>Estudios</span>
+      </a>
+      <a class="dock-item" th:href="@{/admin/usuarios}">
+        <i class="fas fa-users"></i><span>Usuarios</span>
+      </a>
+      <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+        <i class="fas fa-ellipsis-h"></i><span>Más</span>
+      </button>
+    </th:block>
+
+    <!-- SUPERADMIN: usa dock.html propio, no se renderiza aquí -->
+
+  </nav>
+
+  <!-- Scrim del drawer del sidebar (mobile) — fuera del nav, a nivel de body -->
+  <div id="sidebar-scrim" onclick="reciclameCerrarDrawer()"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Marcar item activo en el dock
+      var path = window.location.pathname;
+      document.querySelectorAll('#mobile-dock .dock-item').forEach(function(a) {
+        var href = a.getAttribute('href');
+        if (href && path.startsWith(href) && href !== '/') {
+          a.classList.add('active');
+        } else if (href === path) {
+          a.classList.add('active');
+        }
+      });
+
+      // Si estamos en Admin: el botón "Alertas" fue reemplazado por "Más".
+      // Mantener el contador de notificaciones en el badge del item "Notificaciones"
+      // dentro del sidebar (no en el dock).
+      var rol = document.body.getAttribute('data-rol');
+      if (rol === 'ADMIN' && window.innerWidth <= 767) {
+        var sidebarNotif = document.getElementById('nav-notificaciones');
+        if (sidebarNotif) {
+          var badge = sidebarNotif.querySelector('span[style*="E74C3C"], span[style*="background:#E74C3C"]');
+          if (badge && badge.textContent && parseInt(badge.textContent, 10) > 0) {
+            // Asegurar que el badge sea visible al menos en mobile
+            badge.style.display = 'flex';
+          }
+        }
+      }
+    });
+  </script>
+
+  <!-- ── Drawer del sidebar (Admin y SuperAdmin) ── -->
+  <script>
+    (function () {
+      /* Funciones unificadas para Admin y SuperAdmin.
+         El sidebar-nav en mobile está oculto por el media query de Sergio
+         (`display:none !important`). Al abrir el drawer forzamos visibilidad
+         y posición fija con !important inline; al cerrar quitamos los overrides
+         para que el media query vuelva a ocultar el sidebar. */
+      function _abrirDrawer() {
+        if (window.innerWidth > 767) return;
+        var sb = document.querySelector('.sidebar-nav');
+        var sc = document.getElementById('sidebar-scrim');
+        if (sb) {
+          sb.style.setProperty('display', 'flex', 'important');
+          sb.style.setProperty('position', 'fixed', 'important');
+          sb.style.setProperty('top', '0', 'important');
+          sb.style.setProperty('left', '0', 'important');
+          sb.style.setProperty('bottom', '0', 'important');
+          sb.style.setProperty('height', '100vh', 'important');
+          sb.style.setProperty('width', '280px', 'important');
+          sb.style.setProperty('max-width', '85vw', 'important');
+          sb.style.setProperty('z-index', '9999', 'important');
+          sb.style.setProperty('transform', 'translateX(0)', 'important');
+          sb.classList.add('open');
+        }
+        if (sc) sc.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      }
+      function _cerrarDrawer() {
+        if (window.innerWidth > 767) return;
+        var sb = document.querySelector('.sidebar-nav');
+        var sc = document.getElementById('sidebar-scrim');
+        if (sb) {
+          sb.classList.remove('open');
+          sb.style.removeProperty('display');
+          sb.style.removeProperty('position');
+          sb.style.removeProperty('top');
+          sb.style.removeProperty('left');
+          sb.style.removeProperty('bottom');
+          sb.style.removeProperty('height');
+          sb.style.removeProperty('width');
+          sb.style.removeProperty('max-width');
+          sb.style.removeProperty('z-index');
+          sb.style.removeProperty('transform');
+        }
+        if (sc) sc.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      /* Exponer con los nombres unificados (compatibilidad con dock.html de SuperAdmin) */
+      window.reciclameAbrirDrawer = _abrirDrawer;
+      window.reciclameCerrarDrawer = _cerrarDrawer;
+      /* Mantener también el alias usado desde sidebar.html */
+      window.reciclameAbrirDrawerAdmin = _abrirDrawer;
+      window.reciclameCerrarDrawerAdmin = _cerrarDrawer;
+
+      /* Cerrar el drawer al hacer click en cualquier nav-item del sidebar (mobile) */
+      document.addEventListener('click', function (e) {
+        if (window.innerWidth > 767) return;
+        var rol = document.body.getAttribute('data-rol');
+        if (rol !== 'ADMIN' && rol !== 'SUPERADMIN' && rol !== 'SOCIO') return;
+        var item = e.target.closest('.sidebar-nav .nav-item, .sidebar-nav .nav-subitem');
+        if (!item) return;
+        setTimeout(_cerrarDrawer, 50);
+      }, true);
+
+      /* Cerrar con Escape */
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && window.innerWidth <= 767) {
+          var rol = document.body.getAttribute('data-rol');
+          if (rol === 'ADMIN' || rol === 'SUPERADMIN') _cerrarDrawer();
+        }
+      });
+    })();
+  </script>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {

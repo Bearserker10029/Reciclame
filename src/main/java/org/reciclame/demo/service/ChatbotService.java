@@ -128,6 +128,7 @@ public class ChatbotService {
             msgBot.setDuracionMs(req.getDuracionMs());
             msgBot.setTokensEstimados(req.getTokensEstimados());
             msgBot.setModelo(req.getModelo());
+            msgBot.setDerivadoSoporte(false);
             msgBot.setEsError(Boolean.TRUE.equals(req.getEsError()));
             msgBot.setMensajeError(truncar(req.getMensajeError(), 500));
             msgBot.setSqlEjecutado(truncar(req.getSqlEjecutado(), 4000));

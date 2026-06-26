@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recíclame — Chat interno</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://unpkg.com/centrifuge@5.3.5/dist/centrifuge.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F0F4F8; color: #1F2937; height: 100vh; overflow: hidden; }
+
+    .topbar {
+      height: 56px; background: linear-gradient(135deg, #1B3A5C, #2E5A88);
+      display: flex; align-items: center; padding: 0 20px; color: #fff;
+    }
+    .topbar a { color: #fff; text-decoration: none; margin-right: 12px; }
+    .topbar h1 { font-size: 16px; font-weight: 700; }
+    .ws-status { font-size: 11px; padding: 4px 10px; border-radius: 8px; margin-left: auto; font-weight: 600; }
+    .ws-status.online  { background: rgba(46,204,113,.25); color: #2ECC71; }
+    .ws-status.offline { background: rgba(231,76,60,.25); color: #E74C3C; }
+
+    .chat-layout { display: flex; height: calc(100vh - 56px); }
+
+    .sidebar { width: 320px; background: #fff; border-right: 1px solid #E5E7EB; display: flex; flex-direction: column; }
+    .sidebar-tabs { display: flex; border-bottom: 1px solid #E5E7EB; }
+    .sidebar-tabs button {
+      flex: 1; padding: 12px; background: #fff; border: none;
+      font-family: inherit; font-size: 13px; font-weight: 600; color: #6B7280;
+      cursor: pointer; border-bottom: 2px solid transparent;
+    }
+    .sidebar-tabs button.active { color: #1B3A5C; border-bottom-color: #1B3A5C; }
+    .sidebar-search { padding: 12px; border-bottom: 1px solid #E5E7EB; }
+    .sidebar-search input {
+      width: 100%; padding: 8px 12px; border: 1px solid #E5E7EB; border-radius: 8px;
+      font-family: inherit; font-size: 13px;
+    }
+    .sidebar-list { flex: 1; overflow-y: auto; }
+    .list-item {
+      display: flex; align-items: center; padding: 12px 16px; cursor: pointer;
+      border-bottom: 1px solid #F3F4F6; gap: 12px;
+    }
+    .list-item:hover { background: #F9FAFB; }
+    .list-item.active { background: #EBF5FB; }
+    .avatar {
+      width: 40px; height: 40px; border-radius: 50%; background: #1B3A5C;
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; flex-shrink: 0;
+    }
+    .item-body { flex: 1; min-width: 0; }
+    .item-name { font-size: 13.5px; font-weight: 600; color: #1F2937; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-meta { font-size: 11.5px; color: #6B7280; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .badge-unread {
+      background: #E74C3C; color: #fff; font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 10px; min-width: 20px; text-align: center;
+    }
+
+    .chat-window { flex: 1; display: flex; flex-direction: column; background: #F0F4F8; }
+    .chat-header { padding: 14px 20px; background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; gap: 12px; }
+    .chat-header .name { font-size: 15px; font-weight: 700; }
+    .chat-header .sub { font-size: 12px; color: #6B7280; }
+
+    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .msg { max-width: 60%; padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; word-wrap: break-word; }
+    .msg.mine   { align-self: flex-end; background: #1B3A5C; color: #fff; border-bottom-right-radius: 4px; }
+    .msg.theirs { align-self: flex-start; background: #fff; color: #1F2937; border-bottom-left-radius: 4px; border: 1px solid #E5E7EB; }
+    .msg-time { font-size: 10.5px; opacity: .65; margin-top: 4px; }
+
+    .chat-input { padding: 14px 20px; background: #fff; border-top: 1px solid #E5E7EB; display: flex; gap: 10px; }
+    .chat-input textarea {
+      flex: 1; resize: none; border: 1px solid #E5E7EB; border-radius: 10px;
+      padding: 10px 14px; font-family: inherit; font-size: 13.5px; max-height: 100px;
+    }
+    .chat-input button {
+      background: #1B3A5C; color: #fff; border: none; padding: 0 18px;
+      border-radius: 10px; font-family: inherit; font-weight: 700; cursor: pointer;
+    }
+    .chat-input button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .empty {
+      flex: 1; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; color: #9CA3AF; text-align: center; padding: 40px;
+    }
+    .empty i { font-size: 48px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="javascript:history.back()" title="Volver"><i class="fas fa-arrow-left"></i></a>
+    <h1>💬 Chat interno — Recíclame</h1>
+    <span id="ws-status" class="ws-status offline">Desconectado</span>
+  </div>
+
+  <div class="chat-layout">
+    <aside class="sidebar">
+      <div class="sidebar-tabs">
+        <button id="tab-convs" class="active" onclick="cambiarTab('convs')">Conversaciones</button>
+        <button id="tab-contactos" onclick="cambiarTab('contactos')">Contactos</button>
+      </div>
+      <div class="sidebar-search">
+        <input id="search-input" type="text" placeholder="Buscar..." oninput="filtrarLista()" />
+      </div>
+      <div id="sidebar-list" class="sidebar-list"></div>
+    </aside>
+
+    <section class="chat-window">
+      <div id="chat-empty" class="empty">
+        <i class="far fa-comments"></i>
+        <p>Selecciona una conversación o un contacto para empezar a chatear</p>
+      </div>
+
+      <div id="chat-active" style="display:none; flex:1; flex-direction:column;">
+        <div class="chat-header">
+          <div class="avatar" id="chat-avatar">?</div>
+          <div>
+            <div class="name" id="chat-name">—</div>
+            <div class="sub" id="chat-sub">—</div>
+          </div>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input">
+          <textarea id="msg-input" rows="1" placeholder="Escribe un mensaje..."
+                    onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();enviarMensaje();}"></textarea>
+          <button id="msg-send" onclick="enviarMensaje()">Enviar</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script th:inline="javascript">
+    const CENTRIFUGO_WS_URL = /*[[${centrifugoWsUrl}]]*/ 'ws://localhost:8001/connection/websocket';
+  </script>
+
+  <script>
+    let centrifuge = null;
+    let suscripcion = null;
+    let miUsuarioId = null;
+    let tabActual = 'convs';
+    let listaActual = [];
+    let conversacionActiva = null;
+
+    function setEstado(online) {
+      const el = document.getElementById('ws-status');
+      el.className = 'ws-status ' + (online ? 'online' : 'offline');
+      el.textContent = online ? 'En línea' : 'Desconectado';
+    }
+
+    async function inicializar() {
+      const resp = await fetch('/api/chat/token', { credentials: 'same-origin' });
+      if (!resp.ok) { alert('No se pudo obtener el token de chat'); return; }
+      const { token, canal, usuarioId } = await resp.json();
+      miUsuarioId = parseInt(usuarioId, 10);
+
+      centrifuge = new Centrifuge(CENTRIFUGO_WS_URL, { token });
+      centrifuge.on('connected',    () => setEstado(true));
+      centrifuge.on('disconnected', () => setEstado(false));
+      centrifuge.on('error',        (e) => console.warn('[Centrifugo]', e));
+
+      suscripcion = centrifuge.newSubscription(canal);
+      suscripcion.on('publication', (ctx) => {
+        const data = ctx.data;
+        if (data.tipo === 'mensaje') {
+          if (conversacionActiva && conversacionActiva.id === data.conversacionId) {
+            agregarMensajeEnVivo(data);
+            fetch('/api/chat/' + data.conversacionId + '/leer', {
+              method: 'POST', credentials: 'same-origin'
+            });
+          }
+          if (tabActual === 'convs') cargarConversaciones();
+        }
+      });
+      suscripcion.subscribe();
+      centrifuge.connect();
+
+      cargarConversaciones();
+    }
+
+    function cambiarTab(tab) {
+      tabActual = tab;
+      document.getElementById('tab-convs').classList.toggle('active', tab === 'convs');
+      document.getElementById('tab-contactos').classList.toggle('active', tab === 'contactos');
+      document.getElementById('search-input').value = '';
+      tab === 'convs' ? cargarConversaciones() : cargarContactos();
+    }
+
+    async function cargarConversaciones() {
+      const r = await fetch('/api/chat/conversaciones', { credentials: 'same-origin' });
+      const list = await r.json();
+      listaActual = list.map(c => ({
+        id: c.id, otro: c.otro, noLeidos: c.noLeidos, ultimoMensaje: c.ultimoMensaje, tipo: 'conv'
+      }));
+      renderLista();
+    }
+
+    async function cargarContactos() {
+      const r = await fetch('/api/chat/contactos', { credentials: 'same-origin' });
+      const list = await r.json();
+      listaActual = list.map(u => ({ otro: u, tipo: 'contacto' }));
+      renderLista();
+    }
+
+    function renderLista() {
+      const cont = document.getElementById('sidebar-list');
+      const q = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      const items = listaActual.filter(it =>
+        !q || (it.otro.nombreCompleto || '').toLowerCase().includes(q)
+             || (it.otro.correo || '').toLowerCase().includes(q));
+      if (items.length === 0) {
+        cont.innerHTML = '<div style="padding:20px;color:#9CA3AF;font-size:12.5px;text-align:center">Sin resultados</div>';
+        return;
+      }
+      cont.innerHTML = items.map(it => {
+        const iniciales = (it.otro.nombreCompleto || '?').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+        const sub = it.tipo === 'conv'
+          ? (it.ultimoMensaje || it.otro.empresa || it.otro.rol || '')
+          : (it.otro.empresa || it.otro.rol || '');
+        const badge = it.tipo === 'conv' && it.noLeidos > 0
+          ? `<span class="badge-unread">${it.noLeidos}</span>` : '';
+        const onclick = it.tipo === 'conv'
+          ? `abrirConversacion(${it.id}, ${JSON.stringify(it.otro).replace(/"/g,'&quot;')})`
+          : `iniciarConversacion(${it.otro.id})`;
+        return `
+          <div class="list-item" onclick='${onclick}'>
+            <div class="avatar">${iniciales}</div>
+            <div class="item-body">
+              <div class="item-name">${escapar(it.otro.nombreCompleto)}</div>
+              <div class="item-meta">${escapar(sub)}</div>
+            </div>
+            ${badge}
+          </div>`;
+      }).join('');
+    }
+    function filtrarLista() { renderLista(); }
+
+    async function iniciarConversacion(otroId) {
+      const r = await fetch('/api/chat/iniciar?otroId=' + otroId, {
+        method: 'POST', credentials: 'same-origin'
+      });
+      const c = await r.json();
+      abrirConversacion(c.id, c.otro);
+    }
+
+    async function abrirConversacion(id, otro) {
+      conversacionActiva = { id, otro };
+      document.getElementById('chat-empty').style.display = 'none';
+      document.getElementById('chat-active').style.display = 'flex';
+      const iniciales = (otro.nombreCompleto || '?').split(' ').map(s => s[0]).slice(0, 2).join('').toUpperCase();
+      document.getElementById('chat-avatar').textContent = iniciales;
+      document.getElementById('chat-name').textContent = otro.nombreCompleto;
+      document.getElementById('chat-sub').textContent = (otro.empresa || otro.rol || '');
+      await cargarHistorial(id);
+    }
+
+    async function cargarHistorial(id) {
+      const r = await fetch('/api/chat/' + id + '/mensajes', { credentials: 'same-origin' });
+      const msgs = await r.json();
+      const cont = document.getElementById('chat-messages');
+      cont.innerHTML = msgs.map(renderMensaje).join('');
+      cont.scrollTop = cont.scrollHeight;
+    }
+
+    function renderMensaje(m) {
+      const esMio = m.remitenteId === miUsuarioId;
+      const hora = m.createdAt ? new Date(m.createdAt).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `
+        <div class="msg ${esMio ? 'mine' : 'theirs'}">
+          ${escapar(m.contenido)}
+          <div class="msg-time">${hora}</div>
+        </div>`;
+    }
+
+    function agregarMensajeEnVivo(data) {
+      const cont = document.getElementById('chat-messages');
+      cont.insertAdjacentHTML('beforeend', renderMensaje({
+        remitenteId: data.remitenteId,
+        contenido: data.contenido,
+        createdAt: data.createdAt
+      }));
+      cont.scrollTop = cont.scrollHeight;
+    }
+
+    async function enviarMensaje() {
+      const input = document.getElementById('msg-input');
+      const texto = input.value.trim();
+      if (!texto || !conversacionActiva) return;
+      input.value = '';
+      try {
+        const r = await fetch('/api/chat/' + conversacionActiva.id + '/mensajes', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contenido: texto })
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          alert('Error: ' + (err.error || 'no se pudo enviar'));
+        }
+        // El mensaje aparece via Centrifugo (broadcast incluye al remitente)
+      } catch (e) {
+        alert('Error de red: ' + e.message);
+      }
+    }
+
+    function escapar(s) {
+      if (s == null) return '';
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      }[c]));
+    }
+
+    inicializar();
+  </script>
+</body>
+</html>

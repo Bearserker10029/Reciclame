@@ -3,6 +3,7 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.model.SolicitudesRegistro;
 import org.reciclame.demo.repository.SolicitudesRegistroRepository;
+import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.RegistroService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +19,18 @@ import java.util.regex.Pattern;
 public class RegistroController {
 
     private static final Pattern EMAIL_PATTERN =
-            Pattern.compile("^[a-zA-Z0-9._%+\\-]+@reciclame\\.org$");
+            Pattern.compile("^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$");
 
     private final SolicitudesRegistroRepository repository;
     private final RegistroService registroService;
+    private final EmailNotificationService emailService;
 
     public RegistroController(SolicitudesRegistroRepository repository,
-                              RegistroService registroService) {
+                              RegistroService registroService,
+                              EmailNotificationService emailService) {
         this.repository = repository;
         this.registroService = registroService;
+        this.emailService = emailService;
     }
 
     // ── Dedicated registration page ───────────────────────────
@@ -55,8 +59,8 @@ public class RegistroController {
         }
         if (!EMAIL_PATTERN.matcher(correo).matches()) {
             String msg = correo.contains("@")
-                    ? "Solo se aceptan correos corporativos (@reciclame.org)"
-                    : "Ingresa un correo válido (ejemplo@reciclame.org)";
+                    ? "Ingresa un correo electrónico válido"
+                    : "Ingresa un correo electrónico válido";
             return error(model, nombre, dni, correo, empresa, msg);
         }
         if (nombre.isBlank() || dni.isBlank() || empresa.isBlank()) {
@@ -113,8 +117,8 @@ public class RegistroController {
         if (correo.isEmpty()) return bad("El correo corporativo es requerido");
         if (!EMAIL_PATTERN.matcher(correo).matches()) {
             return bad(correo.contains("@")
-                    ? "Solo se aceptan correos corporativos (@reciclame.org)"
-                    : "Ingresa un correo válido (ejemplo@reciclame.org)");
+                    ? "Ingresa un correo electrónico válido"
+                    : "Ingresa un correo electrónico válido");
         }
         if (nombre.isBlank() || dni.isBlank() || empresa.isBlank())
             return bad("Todos los campos son requeridos");
@@ -140,6 +144,7 @@ public class RegistroController {
         s.setEstadoActivo(true);
         s.setCreatedAt(Instant.now());
         repository.save(s);
+        try { emailService.enviarBienvenida(correo, nombre); } catch (Exception ex) { /* no rollback */ }
     }
 
     private String error(Model model, String nombre, String dni,

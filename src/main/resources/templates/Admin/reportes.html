@@ -420,6 +420,39 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+
+      /* Stats 4 cols → 1 col en mobile (más espacio para texto) */
+      div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      div[style*="grid-template-columns:repeat(5,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+
+      /* Stat card: padding reducido, ícono más pequeño, texto que cabe */
+      .stat-card { padding: 14px 12px !important; }
+      .stat-card div[style*="font-size:11px"] { font-size: 10px !important; letter-spacing: .04em !important; }
+      .stat-card div[style*="width:44px"] { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
+      .stat-card div[style*="font-size:32px"] { font-size: 24px !important; }
+
+      /* Gráficas apiladas */
+      div[style*="grid-template-columns:2fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+      /* Chart.js responsive: el canvas debe estar en contenedor con ancho definido */
+      .chart-card { padding: 16px !important; }
+      .chart-card > div[style*="position:relative"] { width: 100% !important; overflow: hidden !important; }
+      canvas { width: 100% !important; max-width: 100% !important; }
+
+      /* Tabla chatbot: ocultar cols secundarias (Rol, Empresa, Idioma, Errores, Primera pregunta) */
+      #chat-tabla { min-width: unset !important; font-size: 11px !important; }
+      #chat-tabla th:nth-child(3), #chat-tabla td:nth-child(3),
+      #chat-tabla th:nth-child(4), #chat-tabla td:nth-child(4),
+      #chat-tabla th:nth-child(5), #chat-tabla td:nth-child(5),
+      #chat-tabla th:nth-child(7), #chat-tabla td:nth-child(7),
+      #chat-tabla th:nth-child(9), #chat-tabla td:nth-child(9) { display: none !important; }
+
+      /* Selects de filtros: ancho completo */
+      select[style*="min-width"] { min-width: unset !important; width: 100% !important; }
+    }
   </style>
 </head>
 
@@ -463,60 +496,44 @@
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Auditoría:</span>
-              <a href="/admin/reportes/export/auditoria.pdf" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-pdf"></i> PDF
-              </a>
-              <a href="/admin/reportes/export/auditoria.xlsx" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-excel"></i> XLSX
-              </a>
+              <button type="button" onclick="abrirModalExport('auditoria','Auditoría')" class="btn-export"
+                style="padding:8px 14px;font-size:12px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;border-radius:8px;color:#1B3A5C;font-family:inherit;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-file-export" style="color:#2ECC71;"></i> Exportar...
+              </button>
             </div>
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Usuarios:</span>
-              <a href="/admin/reportes/export/usuarios.pdf" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-pdf"></i> PDF
-              </a>
-              <a href="/admin/reportes/export/usuarios.xlsx" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-excel"></i> XLSX
-              </a>
+              <button type="button" onclick="abrirModalExport('usuarios','Usuarios')" class="btn-export"
+                style="padding:8px 14px;font-size:12px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;border-radius:8px;color:#1B3A5C;font-family:inherit;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-file-export" style="color:#2ECC71;"></i> Exportar...
+              </button>
             </div>
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Normativas:</span>
-              <a href="/admin/reportes/export/normativas.pdf" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-pdf"></i> PDF
-              </a>
-              <a href="/admin/reportes/export/normativas.xlsx" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-excel"></i> XLSX
-              </a>
+              <button type="button" onclick="abrirModalExport('normativas','Normativas y Estudios')" class="btn-export"
+                style="padding:8px 14px;font-size:12px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;border-radius:8px;color:#1B3A5C;font-family:inherit;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-file-export" style="color:#2ECC71;"></i> Exportar...
+              </button>
             </div>
 
             <div style="display:flex;align-items:center;gap:6px;">
               <span style="font-size:12px;font-weight:600;color:#6B7280;">Chatbot:</span>
-              <a id="chat-export-pdf" href="#" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-pdf"></i> PDF
-              </a>
-              <a id="chat-export-xlsx" href="#" class="btn-export"
-                style="padding:8px 14px;font-size:12px;text-decoration:none;">
-                <i class="fas fa-file-excel"></i> XLSX
-              </a>
+              <button type="button" onclick="abrirModalExport('chatbot','Chatbot Analytics')" class="btn-export"
+                style="padding:8px 14px;font-size:12px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;border-radius:8px;color:#1B3A5C;font-family:inherit;display:inline-flex;align-items:center;gap:6px;">
+                <i class="fas fa-file-export" style="color:#2ECC71;"></i> Exportar...
+              </button>
             </div>
 
           </div>
         </div>
 
         <div class="tab-bar">
-          <button id="rtab-actividad" class="report-tab active" onclick="switchReportTab('actividad')">
+          <button id="rtab-actividad" class="report-tab active" onclick="window.switchReportTab && window.switchReportTab('actividad')">
             <i class="fas fa-chart-bar"></i> Actividad
           </button>
-          <button id="rtab-chatbot" class="report-tab" onclick="switchReportTab('chatbot')">
+          <button id="rtab-chatbot" class="report-tab" onclick="window.switchReportTab && window.switchReportTab('chatbot')">
             <i class="fas fa-robot"></i> Chatbot Analytics
           </button>
         </div>
@@ -726,7 +743,7 @@
               <label style="display:block;font-size:11px;font-weight:700;color:#6B7280;margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase;">Rol</label>
               <select id="chat-rol" style="padding:9px 12px;border:1.5px solid #E5E7EB;border-radius:10px;font-size:13px;font-family:inherit;color:#374151;background:#fff;outline:none;min-width:160px;">
                 <option value="">Todos</option>
-                <option th:each="r : ${chatRolList}" th:value="${r.id}" th:text="${r.nombre}"></option>
+                <option th:each="r : ${chatRolList}" th:if="${r.nombre == null or r.nombre.toString().toUpperCase() != 'SUPERADMIN'}" th:value="${r.id}" th:text="${r.nombre}"></option>
               </select>
             </div>
             <div>
@@ -900,36 +917,22 @@
               document.getElementById('rtab-chatbot').classList.add('active');
             }
           }
+          // Exponer al scope global para que los onclick inline (que se resuelven
+          // contra window) lo encuentren pase lo que pase con th:inline processing.
+          window.switchReportTab = switchReportTab;
 
           function initCharts() {
-            var normasData = /*[[${normativas}]]*/[];
-            var tematicasData = /*[[${tematicas}]]*/[];
-            var actividadData = /*[[${actividadDiaria}]]*/[];
-            var colorMap = {};
-            if (tematicasData) {
-              tematicasData.forEach(function (t) {
-                if (t.codigo && t.colorHex) colorMap[t.codigo] = t.colorHex;
-              });
-            }
-            var temaCounts = {};
-            if (normasData) {
-              normasData.forEach(function (n) {
-                var key = n.tematicaCodigo || 'Otro';
-                temaCounts[key] = (temaCounts[key] || 0) + (n.descargasCount || 0);
-              });
-            }
-            var tLabels = Object.keys(temaCounts);
-            var tData = tLabels.map(function (k) { return temaCounts[k]; });
-            var tColors = tLabels.map(function (k) { return colorMap[k] || '#95A5A6'; });
-
-            var aLabels = [];
-            var aData = [];
-            if (actividadData && actividadData.length > 0) {
-              actividadData.forEach(function (d) {
-                aLabels.push(d.fecha);
-                aData.push(d.count);
-              });
-            }
+            // Usamos los arrays pre-procesados del controller (Strings e Integers) en lugar
+            // de inyectar los DTOs completos. Antes inyectabamos `normativas` y `tematicas`,
+            // que contienen LocalDate/Instant, y el inline JS de Thymeleaf reventaba al
+            // serializarlos → todo el <script> quedaba inválido y ningún botón funcionaba.
+            var aLabels = /*[[${chartIngresosLabels}]]*/ [];
+            var aData   = /*[[${chartIngresosData}]]*/   [];
+            var tLabels = /*[[${chartTematicaLabels}]]*/ [];
+            var tData   = /*[[${chartTematicaData}]]*/   [];
+            // Colores fijos por temática — mantiene la paleta original sin depender del DTO.
+            var tColorMap = { 'EC': '#2ECC71', 'GR': '#3498DB', 'EE': '#F39C12', 'REP': '#9B59B6' };
+            var tColors = tLabels.map(function (k) { return tColorMap[k] || '#95A5A6'; });
 
             const ci = document.getElementById('chart-ingresos');
             if (ci && !ci.chart) {
@@ -1049,8 +1052,10 @@
 
             function actualizarLinksExport() {
               var qs = paramsFiltro().toString();
-              document.getElementById('chat-export-pdf').href  = chatCtx.exportBase + '.pdf?'  + qs;
-              document.getElementById('chat-export-xlsx').href = chatCtx.exportBase + '.xlsx?' + qs;
+              var pdfEl  = document.getElementById('chat-export-pdf');
+              var xlsxEl = document.getElementById('chat-export-xlsx');
+              if (pdfEl)  pdfEl.href  = chatCtx.exportBase + '.pdf?'  + qs;
+              if (xlsxEl) xlsxEl.href = chatCtx.exportBase + '.xlsx?' + qs;
             }
 
             function cargarEstadisticas() {
@@ -1072,6 +1077,11 @@
                   renderChartRoles(data.conversacionesPorRol || []);
                   renderTopIntents(data.topIntents || []);
                   renderTopUsuarios(data.topUsuarios || []);
+                  // Forzar resize después de que el canvas ya es visible (el tab puede estar oculto la 1ra vez)
+                  setTimeout(function () {
+                    if (chatCtx.chartMensajes) { try { chatCtx.chartMensajes.resize(); } catch (e) {} }
+                    if (chatCtx.chartRoles)    { try { chatCtx.chartRoles.resize(); }    catch (e) {} }
+                  }, 60);
                 })
                 .catch(function (e) { console.warn('Error cargando estadisticas chatbot', e); });
             }
@@ -1099,7 +1109,8 @@
 
             function renderTabla(filas) {
               var tbody = document.getElementById('chat-tabla-body');
-              if (!filas.length) {
+              if (!tbody) return;
+              if (!filas || !filas.length) {
                 tbody.innerHTML = '<tr><td colspan="9" style="padding:32px 16px;text-align:center;color:#9CA3AF;">' +
                   '<i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>' +
                   'Sin conversaciones registradas en este rango.</td></tr>';
@@ -1128,19 +1139,20 @@
             }
 
             function renderChartMensajes(rows) {
-              var labels = rows.map(function (r) { return r.fecha; });
-              var users  = rows.map(function (r) { return r.user; });
-              var bots   = rows.map(function (r) { return r.bot; });
+              var lm = (rows || []).map(function (r) { return r.fecha; });
+              var um = (rows || []).map(function (r) { return r.user; });
+              var bm = (rows || []).map(function (r) { return r.bot; });
               var c = document.getElementById('chat-chart-mensajes');
-              if (chatCtx.chartMensajes) { chatCtx.chartMensajes.destroy(); }
-              if (!labels.length) { labels = ['Sin datos']; users = [0]; bots = [0]; }
+              if (!c) return;
+              if (!lm.length) { lm = ['Sin datos']; um = [0]; bm = [0]; }
+              if (chatCtx.chartMensajes) { try { chatCtx.chartMensajes.destroy(); } catch (e) {} chatCtx.chartMensajes = null; }
               chatCtx.chartMensajes = new Chart(c, {
                 type: 'bar',
                 data: {
-                  labels: labels,
+                  labels: lm,
                   datasets: [
-                    { label: 'Usuario', data: users, backgroundColor: '#3498DB', borderRadius: 6, borderSkipped: false, stack: 's' },
-                    { label: 'Bot',     data: bots,  backgroundColor: '#2ECC71', borderRadius: 6, borderSkipped: false, stack: 's' }
+                    { label: 'Usuario', data: um, backgroundColor: '#3498DB', borderRadius: 6, borderSkipped: false, stack: 's' },
+                    { label: 'Bot',     data: bm, backgroundColor: '#2ECC71', borderRadius: 6, borderSkipped: false, stack: 's' }
                   ]
                 },
                 options: {
@@ -1156,16 +1168,17 @@
             }
 
             function renderChartRoles(rows) {
-              var labels = rows.map(function (r) { return r.rol; });
-              var data   = rows.map(function (r) { return r.total; });
-              var palette = ['#1B3A5C', '#2ECC71', '#F39C12', '#E74C3C', '#8B5CF6', '#3498DB'];
-              var colors  = labels.map(function (_, i) { return palette[i % palette.length]; });
+              var lr = (rows || []).map(function (r) { return r.rol; });
+              var dr = (rows || []).map(function (r) { return r.total; });
+              var pal = ['#1B3A5C', '#2ECC71', '#F39C12', '#E74C3C', '#8B5CF6', '#3498DB'];
+              var cr  = lr.map(function (_, i) { return pal[i % pal.length]; });
               var c = document.getElementById('chat-chart-roles');
-              if (chatCtx.chartRoles) { chatCtx.chartRoles.destroy(); }
-              if (!labels.length) { labels = ['Sin datos']; data = [0]; colors = ['#D1D5DB']; }
+              if (!c) return;
+              if (!lr.length) { lr = ['Sin datos']; dr = [0]; cr = ['#D1D5DB']; }
+              if (chatCtx.chartRoles) { try { chatCtx.chartRoles.destroy(); } catch (e) {} chatCtx.chartRoles = null; }
               chatCtx.chartRoles = new Chart(c, {
                 type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+                data: { labels: lr, datasets: [{ data: dr, backgroundColor: cr, borderWidth: 2, borderColor: '#fff' }] },
                 options: {
                   responsive: true, maintainAspectRatio: false,
                   cutout: '60%',
@@ -1175,51 +1188,45 @@
             }
 
             function renderTopIntents(rows) {
-              var html = '';
-              if (!rows.length) {
-                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
-                document.getElementById('chat-top-intents').innerHTML = html;
+              var cont = document.getElementById('chat-top-intents');
+              if (!cont) return;
+              if (!rows || !rows.length) {
+                cont.innerHTML = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
                 return;
               }
-              var max = rows[0].total || 1;
+              var max1 = rows[0].total || 1;
+              var hi = '';
               rows.forEach(function (r, i) {
-                var pct = Math.round((r.total * 100) / max);
-                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
-                html += '<div class="rank-item">' +
+                var pct = Math.round(r.total * 100 / max1);
+                hi += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(243,156,18,.1);color:#F39C12;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#374151;font-weight:500;">' + escapeHtml(r.intent) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
-              document.getElementById('chat-top-intents').innerHTML = html;
+              cont.innerHTML = hi;
             }
 
             function renderTopUsuarios(rows) {
-              var html = '';
-              if (!rows.length) {
-                html = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
-                document.getElementById('chat-top-usuarios').innerHTML = html;
+              var cont = document.getElementById('chat-top-usuarios');
+              if (!cont) return;
+              if (!rows || !rows.length) {
+                cont.innerHTML = '<div style="padding:24px 12px;text-align:center;color:#9CA3AF;font-size:12px;">Sin datos.</div>';
                 return;
               }
-              var max = rows[0].total || 1;
+              var max2 = rows[0].total || 1;
+              var hu = '';
               rows.forEach(function (r, i) {
-                var pct = Math.round((r.total * 100) / max);
-                var cls = ['bar-1st','bar-2nd','bar-3rd','bar-4th','bar-5th'][i] || 'bar-5th';
-                html += '<div class="rank-item">' +
+                var pct = Math.round(r.total * 100 / max2);
+                hu += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(52,152,219,.1);color:#3498DB;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#1B3A5C;font-weight:600;">' + escapeHtml(r.nombre) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar ' + cls + '" data-w="' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
-              document.getElementById('chat-top-usuarios').innerHTML = html;
-              // animar barras
-              setTimeout(function () {
-                document.querySelectorAll('#chat-top-intents .rank-bar[data-w], #chat-top-usuarios .rank-bar[data-w]').forEach(function (bar) {
-                  bar.style.width = bar.dataset.w;
-                });
-              }, 100);
+              cont.innerHTML = hu;
             }
 
             window.__chatbotVerDetalle = function (id) {
@@ -1275,6 +1282,10 @@
             // Exponer para que se llame desde switchReportTab al abrir el tab
             window.__chatbotInit = aplicarFiltros;
 
+            // Inicializar los hrefs de los botones de export del chatbot al cargar la página,
+            // para que estén listos sin necesidad de entrar al tab "Chatbot Analytics" primero.
+            actualizarLinksExport();
+
             // Cerrar modal al click fuera
             document.getElementById('chat-modal').addEventListener('click', function (e) {
               if (e.target === this) this.style.display = 'none';
@@ -1285,7 +1296,10 @@
             var originalSwitch = window.switchReportTab;
             window.switchReportTab = function (tab) {
               if (originalSwitch) originalSwitch(tab);
-              if (tab === 'chatbot' && window.__chatbotInit) window.__chatbotInit();
+              if (tab === 'chatbot' && window.__chatbotInit) {
+                // Pequeño delay para que el canvas tenga tamaño visible antes de pintar
+                setTimeout(window.__chatbotInit, 30);
+              }
             };
           })();
         </script>
@@ -1294,6 +1308,202 @@
       </main>
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
+
+    <!-- ═══ Modal Exportar Usuarios ═══ -->
+    <div id="modal-export-usuarios" style="display:none;position:fixed;inset:0;background:rgba(8,18,32,.6);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:18px;width:90%;max-width:480px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#0F2236 0%,#1B3A5C 100%);padding:24px 28px;position:relative;">
+          <button onclick="cerrarModalExportUsuarios()" style="position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-size:13px;">✕</button>
+          <div style="width:44px;height:44px;border-radius:12px;background:rgba(46,204,113,.2);display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+            <i class="fas fa-file-export" style="color:#2ECC71;font-size:19px;"></i>
+          </div>
+          <h3 style="margin:0;color:#fff;font-size:17px;font-weight:800;">Exportar reporte de <span id="export-titulo">usuarios</span></h3>
+          <p style="margin:4px 0 0;color:rgba(255,255,255,.6);font-size:12px;">Elige formato, cantidad y cómo lo quieres recibir</p>
+        </div>
+        <div style="padding:24px 28px;">
+          <div id="export-error" style="display:none;background:#FEF2F2;border:1px solid #FCA5A5;color:#B91C1C;padding:10px 14px;border-radius:10px;font-size:12.5px;margin-bottom:14px;"></div>
+
+          <div style="margin-bottom:18px;">
+            <label style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:8px;">Formato</label>
+            <div style="display:flex;gap:8px;">
+              <button type="button" data-formato="pdf" class="exp-fmt-btn exp-fmt-active" onclick="seleccionarFormato('pdf')" style="flex:1;padding:12px;border:1.5px solid #2ECC71;background:#F0FFF4;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#1B3A5C;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <i class="fas fa-file-pdf" style="color:#E74C3C;"></i> PDF
+              </button>
+              <button type="button" data-formato="xlsx" class="exp-fmt-btn" onclick="seleccionarFormato('xlsx')" style="flex:1;padding:12px;border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:#6B7280;display:flex;align-items:center;justify-content:center;gap:6px;">
+                <i class="fas fa-file-excel" style="color:#27AE60;"></i> Excel
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:8px;">Cantidad de registros</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="export-limite-chips">
+              <button type="button" data-limite="50" onclick="seleccionarLimite(this,50)" class="exp-lim-btn" style="padding:7px 14px;border:1.5px solid #E5E7EB;background:#fff;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B7280;">50</button>
+              <button type="button" data-limite="100" onclick="seleccionarLimite(this,100)" class="exp-lim-btn exp-lim-active" style="padding:7px 14px;border:1.5px solid #1B3A5C;background:#1B3A5C;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#fff;">100</button>
+              <button type="button" data-limite="500" onclick="seleccionarLimite(this,500)" class="exp-lim-btn" style="padding:7px 14px;border:1.5px solid #E5E7EB;background:#fff;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B7280;">500</button>
+              <button type="button" data-limite="0" onclick="seleccionarLimite(this,0)" class="exp-lim-btn" style="padding:7px 14px;border:1.5px solid #E5E7EB;background:#fff;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:#6B7280;">Todos</button>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label style="font-size:11px;font-weight:700;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:8px;">¿Cómo lo recibes?</label>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="export-accion-radios">
+              <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #2ECC71;background:#F0FFF4;border-radius:10px;cursor:pointer;font-size:13px;color:#1B3A5C;font-weight:600;" class="exp-act-row exp-act-active" data-accion="download">
+                <input type="radio" name="exp-accion" value="download" checked style="margin:0;accent-color:#2ECC71;">
+                <i class="fas fa-download" style="color:#2ECC71;"></i> Descargar ahora
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;cursor:pointer;font-size:13px;color:#6B7280;font-weight:600;" class="exp-act-row" data-accion="email">
+                <input type="radio" name="exp-accion" value="email" style="margin:0;accent-color:#2ECC71;">
+                <i class="fas fa-envelope" style="color:#3498DB;"></i> Enviar a mi correo
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;cursor:pointer;font-size:13px;color:#6B7280;font-weight:600;" class="exp-act-row" data-accion="both">
+                <input type="radio" name="exp-accion" value="both" style="margin:0;accent-color:#2ECC71;">
+                <i class="fas fa-paper-plane" style="color:#9B59B6;"></i> Descargar + enviar por correo
+              </label>
+            </div>
+            <div id="export-correo-info" style="display:none;margin-top:10px;padding:10px 14px;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;font-size:12px;color:#374151;">
+              <i class="fas fa-envelope" style="color:#3498DB;"></i>
+              Se enviará al correo registrado en tu cuenta.
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 28px 22px;border-top:1px solid #F3F4F6;">
+          <button onclick="cerrarModalExportUsuarios()" style="padding:10px 22px;border:1.5px solid #E5E7EB;background:#fff;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:#6B7280;font-family:inherit;">Cancelar</button>
+          <button id="btn-export-confirm" onclick="ejecutarExportUsuarios()" style="padding:10px 24px;border:none;background:linear-gradient(135deg,#1B3A5C,#1d4e77);color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(27,58,92,.3);display:inline-flex;align-items:center;gap:7px;">
+            <i class="fas fa-check"></i> <span id="btn-export-label">Exportar</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Éxito Export -->
+    <div id="modal-export-ok" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-check" style="color:#27AE60;font-size:32px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">¡Listo!</h3>
+        <p id="modal-export-ok-msg" style="margin:8px 0 20px;font-size:14px;color:#6B7280;"></p>
+        <button onclick="document.getElementById('modal-export-ok').style.display='none'" style="padding:10px 28px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;">Aceptar</button>
+      </div>
+    </div>
+
+    <script>
+      // Exponemos en window para que los onclick inline las encuentren incluso si otro
+      // bloque <script th:inline> de la misma página falla por un problema de
+      // serialización de Thymeleaf (LocalDate/Instant).
+      var _expFormato = 'pdf';
+      var _expLimite = 100;
+      var _expEntidad = 'usuarios';
+
+      function abrirModalExport(entidad, titulo) {
+        _expEntidad = entidad;
+        document.getElementById('export-titulo').textContent = titulo || entidad;
+        document.getElementById('export-error').style.display = 'none';
+        document.getElementById('modal-export-usuarios').style.display = 'flex';
+      }
+      window.abrirModalExport = abrirModalExport;
+      // Backwards compat
+      function abrirModalExportUsuarios() { abrirModalExport('usuarios', 'Usuarios'); }
+      function cerrarModalExportUsuarios() {
+        document.getElementById('modal-export-usuarios').style.display = 'none';
+      }
+      function seleccionarFormato(f) {
+        _expFormato = f;
+        document.querySelectorAll('.exp-fmt-btn').forEach(function(b){
+          if (b.dataset.formato === f) {
+            b.style.border = '1.5px solid #2ECC71'; b.style.background = '#F0FFF4'; b.style.color = '#1B3A5C';
+          } else {
+            b.style.border = '1.5px solid #E5E7EB'; b.style.background = '#fff'; b.style.color = '#6B7280';
+          }
+        });
+      }
+      function seleccionarLimite(btn, n) {
+        _expLimite = n;
+        document.querySelectorAll('.exp-lim-btn').forEach(function(b){
+          if (parseInt(b.dataset.limite) === n) {
+            b.style.border = '1.5px solid #1B3A5C'; b.style.background = '#1B3A5C'; b.style.color = '#fff';
+          } else {
+            b.style.border = '1.5px solid #E5E7EB'; b.style.background = '#fff'; b.style.color = '#6B7280';
+          }
+        });
+      }
+
+      document.querySelectorAll('#export-accion-radios .exp-act-row').forEach(function(row){
+        row.addEventListener('click', function(){
+          document.querySelectorAll('#export-accion-radios .exp-act-row').forEach(function(r){
+            r.style.border = '1.5px solid #E5E7EB'; r.style.background = '#fff'; r.style.color = '#6B7280';
+          });
+          row.style.border = '1.5px solid #2ECC71'; row.style.background = '#F0FFF4'; row.style.color = '#1B3A5C';
+          var acc = row.dataset.accion;
+          document.getElementById('export-correo-info').style.display = (acc === 'email' || acc === 'both') ? 'block' : 'none';
+          var lbl = document.getElementById('btn-export-label');
+          if (acc === 'email') lbl.textContent = 'Enviar por correo';
+          else if (acc === 'both') lbl.textContent = 'Descargar y enviar';
+          else lbl.textContent = 'Descargar';
+        });
+      });
+
+      function ejecutarExportUsuarios() {
+        var accion = document.querySelector('input[name="exp-accion"]:checked').value;
+        var btn = document.getElementById('btn-export-confirm');
+        var btnHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+        document.getElementById('export-error').style.display = 'none';
+
+        var payload = { formato: _expFormato, limite: _expLimite, accion: accion };
+        var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin';
+        var url = base + '/reportes/export/' + _expEntidad;
+        var fileBase = (_expEntidad === 'normativas') ? 'normativas_estudios_report' : _expEntidad + '_report';
+
+        fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function(r){
+          if (!r.ok) {
+            return r.text().then(function(t){ throw new Error(t || 'Error en el servidor'); });
+          }
+          var ct = r.headers.get('Content-Type') || '';
+          if (ct.indexOf('application/json') >= 0) {
+            return r.json().then(function(data){
+              cerrarModalExportUsuarios();
+              document.getElementById('modal-export-ok-msg').textContent = data.mensaje || 'Reporte enviado.';
+              document.getElementById('modal-export-ok').style.display = 'flex';
+            });
+          } else {
+            var registros = r.headers.get('X-Registros') || '';
+            var emailSent = r.headers.get('X-Email-Sent') === 'true';
+            return r.blob().then(function(blob){
+              var bUrl = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = bUrl;
+              a.download = fileBase + '.' + _expFormato;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(bUrl);
+              cerrarModalExportUsuarios();
+              if (emailSent) {
+                document.getElementById('modal-export-ok-msg').textContent = 'Descargado (' + registros + ' registros) y enviado a tu correo.';
+                document.getElementById('modal-export-ok').style.display = 'flex';
+              }
+            });
+          }
+        }).catch(function(e){
+          document.getElementById('export-error').textContent = e.message || 'No se pudo procesar el reporte.';
+          document.getElementById('export-error').style.display = 'block';
+        }).finally(function(){
+          btn.disabled = false;
+          btn.innerHTML = btnHtml;
+        });
+      }
+
+      document.getElementById('modal-export-usuarios').addEventListener('click', function(e){
+        if (e.target === this) cerrarModalExportUsuarios();
+      });
+    </script>
   </div>
 
 </body>

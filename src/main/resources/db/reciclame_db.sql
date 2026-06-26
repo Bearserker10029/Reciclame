@@ -444,6 +444,13 @@ CREATE TABLE `estudios` (
     `anio` int DEFAULT NULL,
     `archivo_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
     `archivo_tipo_mime` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_sha256` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_verdict` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_malicious_engines` int DEFAULT NULL,
+    `vt_suspicious_engines` int DEFAULT NULL,
+    `vt_total_engines` int DEFAULT NULL,
+    `vt_skipped` tinyint(1) DEFAULT NULL,
+    `vt_scanned_at` timestamp NULL DEFAULT NULL,
     `normativa_relacionada_id` bigint DEFAULT NULL,
     `subida_por_id` bigint NOT NULL,
     `validado_por_id` bigint DEFAULT NULL,
@@ -460,6 +467,7 @@ CREATE TABLE `estudios` (
     KEY `idx_estudios_tematica` (`tematica_id`),
     KEY `idx_estudios_anio` (`anio`),
     KEY `idx_estudios_publico` (`es_publico`),
+    KEY `idx_estudios_vt_sha256` (`vt_sha256`),
     CONSTRAINT `fk_estudios_normativa` FOREIGN KEY (`normativa_relacionada_id`) REFERENCES `normativas` (`id`) ON DELETE SET NULL,
     CONSTRAINT `fk_estudios_subidor` FOREIGN KEY (`subida_por_id`) REFERENCES `usuarios` (`id`) ON DELETE RESTRICT,
     CONSTRAINT `fk_estudios_tematica` FOREIGN KEY (`tematica_id`) REFERENCES `tematicas` (`id`) ON DELETE RESTRICT,
@@ -653,6 +661,13 @@ CREATE TABLE `normativas` (
     `fecha_derogacion` date DEFAULT NULL,
     `archivo_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
     `archivo_tipo_mime` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_sha256` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_verdict` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `vt_malicious_engines` int DEFAULT NULL,
+    `vt_suspicious_engines` int DEFAULT NULL,
+    `vt_total_engines` int DEFAULT NULL,
+    `vt_skipped` tinyint(1) DEFAULT NULL,
+    `vt_scanned_at` timestamp NULL DEFAULT NULL,
     `creada_por_id` bigint NOT NULL,
     `validada_por_id` bigint DEFAULT NULL,
     `es_publica` tinyint(1) NOT NULL DEFAULT '0',
@@ -670,6 +685,7 @@ CREATE TABLE `normativas` (
     KEY `idx_normativas_anio` (`anio`),
     KEY `idx_normativas_publica` (`es_publica`),
     KEY `idx_normativas_clasificacion` (`clasificacion`),
+    KEY `idx_normativas_vt_sha256` (`vt_sha256`),
     KEY `idx_normativas_filtro` (
         `ambito`,
         `clasificacion`,
@@ -728,9 +744,16 @@ VALUES (
         NULL,
         'http://localhost:9000/reciclame-docs/1777348492547_LAB2_H791_G2.pdf',
         'application/pdf',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
         1,
         NULL,
-        0,
+        1,
+        NULL,
+        1,
         0,
         0,
         1,
@@ -753,6 +776,13 @@ VALUES (
         '2026-04-28',
         'http://localhost:9000/reciclame-docs/1777348540077_Invoice-ITSKHBXP-0001.pdf',
         'application/pdf',
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        1,
+        NULL,
         1,
         NULL,
         1,
@@ -1898,3 +1928,119 @@ CREATE TABLE IF NOT EXISTS `chatbot_feedback` (
 -- Necesario para soportar tipos MIME de archivos Word (.docx)
 ALTER TABLE normativas
     MODIFY COLUMN archivo_tipo_mime VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL;
+
+-- ============================================================
+-- CHAT INTERNO EN TIEMPO REAL (Centrifugo)
+-- Fecha: 2026-06-20
+-- Chat 1:1 entre Socios y Administradores. SUPERADMIN no participa.
+-- ============================================================
+
+DROP TABLE IF EXISTS `chat_mensajes`;
+DROP TABLE IF EXISTS `chat_conversaciones`;
+
+CREATE TABLE `chat_conversaciones` (
+    `id`                BIGINT       NOT NULL AUTO_INCREMENT,
+    `usuario_a_id`      BIGINT       NOT NULL,
+    `usuario_b_id`      BIGINT       NOT NULL,
+    `ultimo_mensaje`    TEXT         NULL,
+    `ultimo_mensaje_at` TIMESTAMP    NULL,
+    `created_at`        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_chat_par` (`usuario_a_id`, `usuario_b_id`),
+    KEY `idx_chat_a` (`usuario_a_id`),
+    KEY `idx_chat_b` (`usuario_b_id`),
+    CONSTRAINT `fk_chat_usra` FOREIGN KEY (`usuario_a_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_chat_usrb` FOREIGN KEY (`usuario_b_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'Conversaciones 1:1 del chat interno (Centrifugo)';
+
+CREATE TABLE `chat_mensajes` (
+    `id`              BIGINT       NOT NULL AUTO_INCREMENT,
+    `conversacion_id` BIGINT       NOT NULL,
+    `remitente_id`    BIGINT       NOT NULL,
+    `contenido`       TEXT         NOT NULL,
+    `leido`           TINYINT(1)   NOT NULL DEFAULT 0,
+    `leido_at`        TIMESTAMP    NULL,
+    `created_at`      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_msg_conv` (`conversacion_id`, `created_at`),
+    KEY `idx_msg_remitente` (`remitente_id`),
+    CONSTRAINT `fk_msg_conv` FOREIGN KEY (`conversacion_id`)
+        REFERENCES `chat_conversaciones` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_msg_remitente` FOREIGN KEY (`remitente_id`)
+        REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  COMMENT = 'Mensajes del chat interno';
+
+
+-- ─────────────────────────────────────────────────────────────
+-- Migración: agregar columnas de auditoría VirusTotal a las
+-- tablas `normativas` y `estudios`.
+--
+-- Aplicar contra RDS una sola vez antes del próximo deploy:
+--   mysql -h reciclame-db.cfowgekco09o.us-east-1.rds.amazonaws.com \
+--         -u admin -p reciclame_db < db/reciclame_db.sql
+--
+-- Es idempotente: las columnas sólo se agregan si no existen.
+-- ─────────────────────────────────────────────────────────────
+
+-- 1) normativas
+SET @tbl := 'normativas';
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'vt_sha256') = 0,
+    'ALTER TABLE normativas
+        ADD COLUMN vt_sha256           VARCHAR(64)  NULL AFTER archivo_tipo_mime,
+        ADD COLUMN vt_verdict          VARCHAR(20)  NULL AFTER vt_sha256,
+        ADD COLUMN vt_malicious_engines INT         NULL AFTER vt_verdict,
+        ADD COLUMN vt_suspicious_engines INT        NULL AFTER vt_malicious_engines,
+        ADD COLUMN vt_total_engines    INT          NULL AFTER vt_suspicious_engines,
+        ADD COLUMN vt_skipped          TINYINT(1)   NULL AFTER vt_total_engines,
+        ADD COLUMN vt_scanned_at       TIMESTAMP    NULL AFTER vt_skipped',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Índice auxiliar: permite filtrar/listar rápidamente las normativas con
+-- un SHA-256 conocido (útil para deduplicación futura).
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.statistics
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND index_name   = 'idx_normativas_vt_sha256') = 0,
+    'CREATE INDEX idx_normativas_vt_sha256 ON normativas (vt_sha256)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 2) estudios
+SET @tbl := 'estudios';
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'vt_sha256') = 0,
+    'ALTER TABLE estudios
+        ADD COLUMN vt_sha256           VARCHAR(64)  NULL AFTER archivo_tipo_mime,
+        ADD COLUMN vt_verdict          VARCHAR(20)  NULL AFTER vt_sha256,
+        ADD COLUMN vt_malicious_engines INT         NULL AFTER vt_verdict,
+        ADD COLUMN vt_suspicious_engines INT        NULL AFTER vt_malicious_engines,
+        ADD COLUMN vt_total_engines    INT          NULL AFTER vt_suspicious_engines,
+        ADD COLUMN vt_skipped          TINYINT(1)   NULL AFTER vt_total_engines,
+        ADD COLUMN vt_scanned_at       TIMESTAMP    NULL AFTER vt_skipped',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.statistics
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND index_name   = 'idx_estudios_vt_sha256') = 0,
+    'CREATE INDEX idx_estudios_vt_sha256 ON estudios (vt_sha256)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

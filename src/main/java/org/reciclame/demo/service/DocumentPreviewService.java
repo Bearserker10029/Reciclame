@@ -14,7 +14,9 @@ import java.util.Base64;
 @Service
 public class DocumentPreviewService {
 
-    private static final long KK_PROXY_TOKEN_TTL_SECONDS = 120;
+    // TTL generoso: la conversión Office de archivos 2-3 MB puede tardar hasta 5-8 min en AWS.
+    // El token solo lo usa kkfileview (no el browser), así que 600s es seguro.
+    private static final long KK_PROXY_TOKEN_TTL_SECONDS = 600;
 
     private final MinioStorageService minioStorageService;
     private final String kkfileviewUrl;
@@ -62,7 +64,32 @@ public class DocumentPreviewService {
     }
 
     public String buildFileName(String titulo, String archivoUrl) {
-        return sanitizeFileName(titulo) + extractExtension(archivoUrl);
+        // El sufijo basado en el objectName garantiza que kkFileView trate cada versión
+        // del archivo como un documento distinto (no sirve uno en caché cuando el
+        // archivo de MinIO fue reemplazado). Es invisible para el usuario porque
+        // kkFileView solo usa fullfilename como identificador lógico de cacheo.
+        String baseName = sanitizeFileName(titulo);
+        String ext = extractExtension(archivoUrl);
+        String versionTag = extractVersionTag(archivoUrl);
+        return baseName + (versionTag.isEmpty() ? "" : "_" + versionTag) + ext;
+    }
+
+    /** Extrae un tag corto del objectName de MinIO para invalidar el cache de kkFileView. */
+    private String extractVersionTag(String archivoUrl) {
+        try {
+            String path = archivoUrl.contains("?") ? archivoUrl.substring(0, archivoUrl.indexOf('?')) : archivoUrl;
+            int slash = path.lastIndexOf('/');
+            if (slash < 0 || slash == path.length() - 1) return "";
+            String objectName = path.substring(slash + 1);
+            // Tomamos los primeros 8 chars del objectName (en MinIO los objectNames
+            // incluyen un UUID corto o timestamp que cambia con cada upload).
+            if (objectName.length() <= 8) return objectName;
+            // Solo caracteres alfanuméricos para mantener el nombre de archivo limpio
+            String head = objectName.substring(0, 8);
+            return head.replaceAll("[^A-Za-z0-9]", "");
+        } catch (Exception ignored) {
+            return "";
+        }
     }
 
     public boolean isValidKkProxyToken(String token, String objectName, String fileName) {

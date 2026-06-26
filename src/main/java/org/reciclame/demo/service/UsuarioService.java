@@ -30,21 +30,26 @@ public class UsuarioService {
     private final AuditoriaService auditoriaService;
     private final PasswordEncoder passwordEncoder;
     private final NotificacionService notificacionService;
+    private final EmailNotificationService emailService;
     private final ObjectMapper objectMapper;
 
     public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository,
                          EmpresaRepository empresaRepository, AuditoriaService auditoriaService,
-                         PasswordEncoder passwordEncoder, NotificacionService notificacionService) {
+                         PasswordEncoder passwordEncoder, NotificacionService notificacionService,
+                         EmailNotificationService emailService) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.empresaRepository = empresaRepository;
         this.auditoriaService = auditoriaService;
         this.passwordEncoder = passwordEncoder;
         this.notificacionService = notificacionService;
+        this.emailService = emailService;
 
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     // ── CREATE ────────────────────────────────────────────────
@@ -137,6 +142,17 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponseDTO> listarUsuariosLimit(int limite) {
+        var stream = usuarioRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     public List<UsuarioResponseDTO> listarUsuariosActivos() {
         return usuarioRepository.findAll().stream()
                 .filter(u -> Boolean.TRUE.equals(u.getEstadoActivo()))
@@ -150,6 +166,19 @@ public class UsuarioService {
                 .filter(u -> u.getRol() == null || !"SUPERADMIN".equals(u.getRol().getNombre()))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Devuelve el conjunto de IDs de usuarios con rol SUPERADMIN.
+     * Útil para filtrar listados donde la entidad referenciada solo guarda usuarioId
+     * (p. ej. Auditoria) y se requiere ocultar las acciones de superadmin en el
+     * contexto del rol ADMIN.
+     */
+    public java.util.Set<Long> idsUsuariosSuperadmin() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getRol() != null && "SUPERADMIN".equals(u.getRol().getNombre()))
+                .map(org.reciclame.demo.model.Usuario::getId)
+                .collect(Collectors.toCollection(java.util.HashSet::new));
     }
 
     public List<UsuarioResponseDTO> listarUsuariosPendientes() {
@@ -303,6 +332,8 @@ public class UsuarioService {
             "Reactivar usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")",
             null, null, "EXITOSO", null, ipAddress, userAgent);
 
+        try { emailService.enviarReactivacion(usuarioGuardado.getCorreoCorporativo(), usuarioGuardado.getNombreCompleto()); } catch (Exception ex) { /* no rollback */ }
+
         return toResponseDTO(usuarioGuardado);
     }
 
@@ -338,6 +369,7 @@ public class UsuarioService {
             null, null, "EXITOSO", null, ipAddress, userAgent);
 
         try { notificacionService.notificarAprobacion(usuarioGuardado.getId()); } catch (Exception ex) { /* no rollback */ }
+        try { emailService.enviarAprobacion(usuarioGuardado.getCorreoCorporativo(), usuarioGuardado.getNombreCompleto()); } catch (Exception ex) { /* no rollback */ }
 
         return toResponseDTO(usuarioGuardado);
     }
@@ -350,7 +382,7 @@ public class UsuarioService {
 
     // ── RECHAZAR solicitud pendiente ──────────────────────────
     @Transactional
-    public UsuarioResponseDTO rechazarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
+    public UsuarioResponseDTO rechazarUsuario(Long id, String motivo, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         usuario.setEstadoCuenta("INACTIVO");
@@ -364,6 +396,7 @@ public class UsuarioService {
             null, null, "EXITOSO", null, ipAddress, userAgent);
 
         try { notificacionService.notificarRechazo(usuarioGuardado.getId()); } catch (Exception ex) { /* no rollback */ }
+        try { emailService.enviarRechazo(usuarioGuardado.getCorreoCorporativo(), usuarioGuardado.getNombreCompleto(), motivo != null ? motivo : "No se proporcionó un motivo"); } catch (Exception ex) { /* no rollback */ }
 
         return toResponseDTO(usuarioGuardado);
     }
@@ -371,7 +404,7 @@ public class UsuarioService {
     // ── RECHAZAR (overload sin auditoría para compatibilidad) ────────────
     @Transactional
     public UsuarioResponseDTO rechazarUsuario(Long id) {
-        return rechazarUsuario(id, null, "Sistema", null, null);
+        return rechazarUsuario(id, null, null, "Sistema", null, null);
     }
 
     // ── BLOQUEAR / DESBLOQUEAR ────────────────────────────────
@@ -390,6 +423,10 @@ public class UsuarioService {
         auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
             accion, AuditoriaService.MODULO_USUARIOS, descripcion,
             null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        if (bloquear) {
+            try { emailService.enviarBloqueo(usuarioGuardado.getCorreoCorporativo(), usuarioGuardado.getNombreCompleto()); } catch (Exception ex) { /* no rollback */ }
+        }
 
         return toResponseDTO(usuarioGuardado);
     }

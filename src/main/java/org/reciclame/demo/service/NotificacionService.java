@@ -21,13 +21,16 @@ public class NotificacionService {
     private final NotificacionRepository notificacionRepository;
     private final PreferenciasNotificacionRepository preferenciasRepository;
     private final UsuarioRepository usuarioRepository;
+    private final CentrifugoService centrifugoService;
 
     public NotificacionService(NotificacionRepository notificacionRepository,
                                PreferenciasNotificacionRepository preferenciasRepository,
-                               UsuarioRepository usuarioRepository) {
+                               UsuarioRepository usuarioRepository,
+                               CentrifugoService centrifugoService) {
         this.notificacionRepository = notificacionRepository;
         this.preferenciasRepository = preferenciasRepository;
         this.usuarioRepository = usuarioRepository;
+        this.centrifugoService = centrifugoService;
     }
 
     // ── READ ──────────────────────────────────────────────────
@@ -151,6 +154,7 @@ public class NotificacionService {
                     "Se ha publicado el estudio: " + titulo,
                     "/admin/estudios");
             notificacionRepository.save(n);
+            pushNotif(u.getId(), "Nuevo estudio disponible", "Se ha publicado: " + titulo, "NUEVO_ESTUDIO", "/socio/estudios");
         });
     }
 
@@ -166,6 +170,7 @@ public class NotificacionService {
                     "Se ha agregado al repositorio: " + titulo,
                     "/admin/normativo");
             notificacionRepository.save(n);
+            pushNotif(u.getId(), "Nueva normativa disponible", "Se agregó: " + titulo, "NUEVA_NORMATIVA", "/socio/normativo");
         });
     }
 
@@ -189,6 +194,18 @@ public class NotificacionService {
                     null);
             notificacionRepository.save(n);
         });
+    }
+
+    private void pushNotif(Long usuarioId, String titulo, String mensaje, String tipo, String enlace) {
+        try {
+            java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+            payload.put("tipo", "notificacion");
+            payload.put("notifTipo", tipo);
+            payload.put("titulo", titulo);
+            payload.put("mensaje", mensaje);
+            payload.put("enlace", enlace != null ? enlace : "");
+            centrifugoService.publicar("chat#" + usuarioId, payload);
+        } catch (Exception ex) { /* no rollback */ }
     }
 
     private Notificacione buildNotif(Usuario u, String tipo, String titulo, String mensaje, String enlace) {

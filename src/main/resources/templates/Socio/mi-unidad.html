@@ -22,6 +22,25 @@
       background: #F5F6FA;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 0 !important; padding-bottom: 72px !important; }
+      /* Grid de documentos: 2 col en mobile */
+      .mu-drive-grid-wrap { grid-template-columns: 1fr 1fr !important; gap: 10px !important; padding: 10px !important; }
+      /* Stats row: 2x2 */
+      div[style*="grid-template-columns:repeat(4,"] { grid-template-columns: 1fr 1fr !important; }
+      /* Tabla drive: ocultar Propietario(2), Tamaño(4), Ordenar(5) — quedan Nombre y Fecha */
+      .mu-drive-table { min-width: unset !important; width: 100% !important; font-size: 12px !important; }
+      .mu-drive-table th:nth-child(2), .mu-drive-table td:nth-child(2),
+      .mu-drive-table th:nth-child(4), .mu-drive-table td:nth-child(4),
+      .mu-drive-table th:nth-child(5), .mu-drive-table td:nth-child(5) { display: none !important; }
+      .mu-drive-table td:first-child { max-width: 180px !important; }
+      /* Botón crear carpeta a ancho completo */
+      .mu-btn-crear-carpeta { width: 100% !important; justify-content: center; }
+      /* Barra superior del drive */
+      .mu-top-bar { flex-wrap: wrap !important; gap: 8px !important; }
+    }
+
     @keyframes fadeInUp {
       from {
         opacity: 0;

@@ -2,8 +2,14 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.NotificacionResponseDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.dto.SocioReportesView;
 import org.reciclame.demo.service.AuditoriaService;
+import org.reciclame.demo.service.DocumentosRecientesService;
+import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.EstudioService;
+import org.reciclame.demo.service.ReporteService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.reciclame.demo.service.MiUnidadService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.NotificacionService;
@@ -21,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +45,9 @@ public class SocioController {
     private final TematicaService tematicaService;
     private final AuditoriaService auditoriaService;
     private final MiUnidadService miUnidadService;
+    private final DocumentosRecientesService documentosRecientesService;
+    private final ReporteService reporteService;
+    private final EmailNotificationService emailNotificationService;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
@@ -46,7 +56,10 @@ public class SocioController {
                           SocioReportesService socioReportesService,
                           TematicaService tematicaService,
                           AuditoriaService auditoriaService,
-                          MiUnidadService miUnidadService) {
+                          MiUnidadService miUnidadService,
+                          DocumentosRecientesService documentosRecientesService,
+                          ReporteService reporteService,
+                          EmailNotificationService emailNotificationService) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
@@ -55,6 +68,9 @@ public class SocioController {
         this.tematicaService = tematicaService;
         this.auditoriaService = auditoriaService;
         this.miUnidadService = miUnidadService;
+        this.documentosRecientesService = documentosRecientesService;
+        this.reporteService = reporteService;
+        this.emailNotificationService = emailNotificationService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -107,22 +123,26 @@ public class SocioController {
         }).collect(Collectors.toList());
         model.addAttribute("donutData", donutData);
         
+        model.addAttribute("topNormativas", normativaService.topMasVistas());
+
         if (userId != null) {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(userId);
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(Collectors.toList()));
-            
+
             long descargasCount = auditoriaService.listarAuditoriasPorUsuario(userId).stream()
                     .filter(a -> AuditoriaService.ACCION_DESCARGAR_DOCUMENTO.equals(a.getAccion()))
                     .count();
             model.addAttribute("descargasCount", descargasCount);
-            
+
             model.addAttribute("itemsMiUnidad", miUnidadService.contarItemsUsuario(userId));
+            model.addAttribute("recientesUsuario", documentosRecientesService.listarUltimos(userId, 5));
         } else {
             model.addAttribute("notificacionesRecientes", List.of());
             model.addAttribute("descargasCount", 0);
             model.addAttribute("itemsMiUnidad", 0);
+            model.addAttribute("recientesUsuario", List.of());
         }
-        
+
         return "Socio/inicio";
     }
 
@@ -206,6 +226,119 @@ public class SocioController {
                 () -> model.addAttribute("reporte", socioReportesService.construir(null))
         );
         return "Socio/reportes";
+    }
+
+    // ─── Export reportes personales del socio ─────────────────────────
+    public static class SocioExportRequest {
+        public String tipo;     // "actividad" | "miunidad" | "notificaciones"
+        public Integer limite;  // 0 = todos
+        public String accion;   // "download" | "email" | "both"
+    }
+
+    @PostMapping("/socio/reportes/export")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> exportarReporteSocio(
+            @RequestBody SocioExportRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+
+        var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
+        if (usuarioOpt.isEmpty()) return ResponseEntity.badRequest().body("Usuario no encontrado");
+        UsuarioResponseDTO uActual = usuarioOpt.get();
+
+        SocioReportesView vista = socioReportesService.construir(uActual.getId());
+        String tipo = req.tipo != null ? req.tipo.toLowerCase() : "actividad";
+        int limite = req.limite != null ? req.limite : 100;
+        String accion = req.accion != null ? req.accion.toLowerCase() : "download";
+
+        String tituloReporte;
+        String nombreArchivo;
+        String[] headers;
+        List<Map<String, Object>> datos = new ArrayList<>();
+        int totalRegistros;
+
+        switch (tipo) {
+            case "miunidad": {
+                tituloReporte = "Mi Unidad";
+                nombreArchivo = "mi_unidad_report.xlsx";
+                headers = new String[]{"Carpeta", "Título", "Tipo", "Fecha añadido"};
+                var filas = vista.getMiUnidad() != null ? vista.getMiUnidad() : List.<org.reciclame.demo.dto.SocioReporteMiUnidadFila>of();
+                int max = limite > 0 ? Math.min(limite, filas.size()) : filas.size();
+                for (int i = 0; i < max; i++) {
+                    var f = filas.get(i);
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("carpeta", f.getCarpeta());
+                    row.put("titulo", f.getTitulo());
+                    row.put("tipo", f.getTipoEtiqueta());
+                    row.put("fechaAnadido", f.getFechaAnadido());
+                    datos.add(row);
+                }
+                totalRegistros = max;
+                break;
+            }
+            case "notificaciones": {
+                tituloReporte = "Mis Notificaciones";
+                nombreArchivo = "notificaciones_report.xlsx";
+                headers = new String[]{"Fecha", "Título", "Estado"};
+                var filas = vista.getNotificaciones() != null ? vista.getNotificaciones() : List.<org.reciclame.demo.dto.SocioReporteNotifFila>of();
+                int max = limite > 0 ? Math.min(limite, filas.size()) : filas.size();
+                for (int i = 0; i < max; i++) {
+                    var f = filas.get(i);
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("fecha", f.getFecha());
+                    row.put("titulo", f.getTitulo());
+                    row.put("estado", f.getEstado());
+                    datos.add(row);
+                }
+                totalRegistros = max;
+                break;
+            }
+            default: {
+                tituloReporte = "Mi Actividad";
+                nombreArchivo = "mi_actividad_report.xlsx";
+                headers = new String[]{"Fecha y hora", "Título", "Tipo", "Detalle"};
+                var filas = vista.getActividad() != null ? vista.getActividad() : List.<org.reciclame.demo.dto.SocioReporteActividadFila>of();
+                int max = limite > 0 ? Math.min(limite, filas.size()) : filas.size();
+                for (int i = 0; i < max; i++) {
+                    var f = filas.get(i);
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("fechaHora", f.getFechaHora());
+                    row.put("titulo", f.getTitulo());
+                    row.put("tipo", f.getTipoEtiqueta());
+                    row.put("detalle", f.getDetalle());
+                    datos.add(row);
+                }
+                totalRegistros = max;
+                break;
+            }
+        }
+
+        byte[] archivo = reporteService.generarReporteExcel(tituloReporte,
+                "Reporte personal — " + uActual.getNombreCompleto(),
+                headers, datos);
+        String mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+        if ("email".equals(accion) || "both".equals(accion)) {
+            emailNotificationService.enviarReporteAdjunto(
+                    uActual.getCorreoCorporativo(),
+                    uActual.getNombreCompleto(),
+                    tituloReporte, totalRegistros,
+                    archivo, nombreArchivo, mime);
+            if ("email".equals(accion)) {
+                Map<String, Object> r = new HashMap<>();
+                r.put("enviado", true);
+                r.put("totalRegistros", totalRegistros);
+                r.put("correo", uActual.getCorreoCorporativo());
+                r.put("mensaje", "Reporte enviado a " + uActual.getCorreoCorporativo());
+                return ResponseEntity.ok(r);
+            }
+        }
+
+        return ResponseEntity.ok()
+                .header("Content-Type", mime)
+                .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
+                .header("X-Registros", String.valueOf(totalRegistros))
+                .header("X-Email-Sent", String.valueOf("both".equals(accion)))
+                .body(archivo);
     }
 
     @PostMapping("/socio/notificaciones/marcar/{id}")

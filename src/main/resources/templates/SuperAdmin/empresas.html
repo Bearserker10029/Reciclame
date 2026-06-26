@@ -29,6 +29,16 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      .table-responsive { overflow-x: auto; }
+      table { min-width: unset !important; font-size: 12px !important; }
+      table th:nth-child(3), table td:nth-child(3),
+      table th:nth-child(4), table td:nth-child(4) { display: none !important; }
+      .filter-row { flex-wrap: wrap !important; gap: 8px !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -592,6 +602,7 @@
           });
         </script>
 
+      <th:block th:replace="~{navbar/dock :: dock}"></th:block>
       <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>

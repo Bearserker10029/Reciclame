@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 /**
  * Proxy sin sesión para que kkfileview (en Docker) descargue archivos de MinIO.
@@ -27,23 +30,29 @@ public class KkfileviewProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(KkfileviewProxyController.class);
 
+    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
+    private static final int STREAM_BUFFER_BYTES = 256 * 1024;
+
     @Value("${minio.bucket}")
     private String bucket;
 
     private final MinioStorageService minioStorageService;
     private final DocumentPreviewService documentPreviewService;
+    private final HttpClient httpClient;
 
     public KkfileviewProxyController(MinioStorageService minioStorageService,
-                                     DocumentPreviewService documentPreviewService) {
+                                     DocumentPreviewService documentPreviewService,
+                                     HttpClient httpClient) {
         this.minioStorageService = minioStorageService;
         this.documentPreviewService = documentPreviewService;
+        this.httpClient = httpClient;
     }
 
     @GetMapping("/api/documentos/kk-proxy")
     public void proxy(@RequestParam("objectName") String objectName,
                       @RequestParam("fileName") String fileName,
                       @RequestParam("token") String token,
-                      HttpServletResponse response) throws IOException {
+                      HttpServletResponse response) throws IOException, InterruptedException {
         proxyInternal(objectName, fileName, token, response);
     }
 
@@ -51,14 +60,14 @@ public class KkfileviewProxyController {
     public void proxyConNombre(@PathVariable("objectName") String objectName,
                                @PathVariable("fileName") String fileName,
                                @RequestParam("token") String token,
-                               HttpServletResponse response) throws IOException {
+                               HttpServletResponse response) throws IOException, InterruptedException {
         proxyInternal(objectName, fileName, token, response);
     }
 
     private void proxyInternal(String objectName,
                                String fileName,
                                String token,
-                               HttpServletResponse response) throws IOException {
+                               HttpServletResponse response) throws IOException, InterruptedException {
         // Validate: plain filename only, no path traversal
         if (objectName == null || objectName.isBlank()
                 || objectName.contains("/") || objectName.contains("\\")
@@ -87,33 +96,50 @@ public class KkfileviewProxyController {
             return;
         }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(presignedUrl).openConnection();
-        conn.setConnectTimeout(10_000);
-        conn.setReadTimeout(120_000);
-        conn.setRequestMethod("GET");
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(presignedUrl))
+                .timeout(Duration.ofSeconds(120))
+                .GET()
+                .build();
 
-        int status = conn.getResponseCode();
-        if (status != HttpURLConnection.HTTP_OK) {
+        HttpResponse<InputStream> upstream;
+        try {
+            upstream = httpClient.send(req, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException e) {
+            log.error("kk-proxy: error conectando a MinIO para '{}': {}", objectName, e.getMessage());
+            response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+            return;
+        }
+
+        int status = upstream.statusCode();
+        if (status != HttpServletResponse.SC_OK) {
             log.warn("kk-proxy: MinIO devolvió {} para '{}'", status, objectName);
             response.setStatus(status);
-            conn.disconnect();
+            upstream.body().close();
             return;
         }
 
         response.setStatus(HttpServletResponse.SC_OK);
-        String contentType = conn.getContentType();
+        String contentType = upstream.headers().firstValue("content-type").orElse(null);
         if (contentType != null) {
             response.setContentType(contentType);
         }
-        long contentLength = conn.getContentLengthLong();
+        long contentLength = upstream.headers().firstValueAsLong("content-length").orElse(-1L);
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
+        // kkfileview puede reintentar varias veces (preview/imágenes). Permitimos cache HTTP
+        // por 5 minutos en cliente y 10 en CDN/proxy, dado que la URL firmada dura 10 min.
+        response.setHeader("Cache-Control", "private, max-age=300");
 
-        try (InputStream is = conn.getInputStream()) {
-            is.transferTo(response.getOutputStream());
-        } finally {
-            conn.disconnect();
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 }

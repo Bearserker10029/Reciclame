@@ -425,6 +425,12 @@
         <!-- ══ ERROR BANNER ══ -->
         <div id="form-error"></div>
 
+        <!-- ══ INFO: ESCANEO VIRUS TOTAL ══ -->
+        <div style="background:#e7f1ff;border:1px solid #b6d4fe;color:#052c65;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-shield-alt"></i>
+          <span>Todo archivo adjunto se escanea automáticamente contra <strong>VirusTotal</strong> antes de almacenarse. Si el antivirus detecta malware, la subida será rechazada.</span>
+        </div>
+
         <!-- ══ FORM GRID ══ -->
         <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
 
@@ -730,7 +736,7 @@
               var divArch = document.getElementById('archivo-actual');
               var linkArch = document.getElementById('archivo-actual-link');
               if (divArch) divArch.style.display = 'block';
-              if (linkArch) linkArch.href = INIT_DATA.archivoUrl;
+              if (linkArch) linkArch.href = '/superadmin/normativo/' + NORMATIVA_ID + '/ver';
             }
 
             var idsActivos = INIT_DATA.etiquetasIds || [];
@@ -856,19 +862,40 @@
               : '<i class="fas fa-save" style="margin-right:6px;"></i> Crear normativa';
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Guardando...';
+            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin" style="margin-right:6px;"></i> Escaneando con VirusTotal…';
 
             try {
               var url = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
               var method = IS_EDIT ? 'PUT' : 'POST';
 
               var res = await fetch(url, { method: method, body: formData });
-              var data = await res.json();
+
+              // Parsear JSON de forma segura: si el server devuelve 401 con HTML o body vacío,
+              // evitamos el "Unexpected end of JSON input" y mostramos un mensaje claro.
+              var data = {};
+              try { data = await res.json(); } catch (_) {
+                data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
+              }
 
               if (!res.ok) {
                 if (data.tipo === 'VALIDACION' && data.errores) {
                   mostrarErroresBackend(data.errores);
                   showToast('Revisa los campos marcados.', 'error');
+                } else if (data.tipo === 'VIRUS_DETECTADO') {
+                  var detalle = '';
+                  if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
+                  if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';
+                  errBanner.innerHTML =
+                    '<i class="fas fa-shield-virus" style="color:#dc3545;margin-right:8px;"></i>' +
+                    '<strong>Archivo rechazado por VirusTotal.</strong> ' +
+                    (data.mensaje || '') +
+                    (detalle ? '<br><small>' + detalle + '</small>' : '');
+                  errBanner.style.display = 'block';
+                  errBanner.style.background = '#f8d7da';
+                  errBanner.style.color = '#842029';
+                  errBanner.style.border = '1px solid #f5c2c7';
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  showToast('Archivo rechazado por antivirus.', 'error');
                 } else {
                   errBanner.textContent = data.mensaje || 'Error al guardar. Intenta de nuevo.';
                   errBanner.style.display = 'block';
@@ -900,6 +927,7 @@
           }
         </script>
 
+        <th:block th:replace="~{navbar/dock :: dock}"></th:block>
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>

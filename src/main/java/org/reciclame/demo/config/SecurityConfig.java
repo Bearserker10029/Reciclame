@@ -36,7 +36,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/logout", "/registro", "/registro/**").permitAll()
+                        .requestMatchers("/", "/inicio", "/inicio/**",
+                                "/service/repositorio/login", "/service/repositorio/**",
+                                "/login", "/logout", "/registro", "/registro/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/legal/**").permitAll()
                         .requestMatchers("/css/**", "/style.css", "/assets/**", "/js/**",
@@ -60,6 +62,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/consulta-ruc/**").hasRole("SUPERADMIN")
                         // API de usuarios: solo ADMINISTRADOR y SUPERADMIN
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMINISTRADOR", "SUPERADMIN")
+                        // Chat interno entre usuarios (Centrifugo)
+                        .requestMatchers("/api/chat/**").authenticated()
+                        .requestMatchers("/chat", "/chat/**").authenticated()
                         // Chatbot: cualquier usuario autenticado puede registrar su propia conversacion
                         .requestMatchers("/api/chatbot/registrar").authenticated()
                         // Chatbot analytics (KPIs, listados, detalle): solo Admin y SuperAdmin
@@ -76,15 +81,15 @@ public class SecurityConfig {
                 )
                 .userDetailsService(userDetailsService)
                 .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/login")
+                        .loginPage("/service/repositorio/login")
+                        .loginProcessingUrl("/service/repositorio/login")
                         .successHandler(successHandler)
-                        .failureUrl("/login?error=true")
+                        .failureUrl("/service/repositorio/login?error=true")
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessUrl("/service/repositorio/login?logout=true")
                         // Support both container sessions (dev) and Spring Session cookie (prod)
                         .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
@@ -92,12 +97,21 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler)
-                        // Solicitudes no autenticadas a endpoints de documentos → 401 en vez de redirect al login.
-                        // Incluye kk-view/** para que las imágenes de diapositivas (cargadas por <img> tags)
-                        // reciban 401 y no una redirección HTML al login que el browser no puede renderizar.
+                        // Solicitudes no autenticadas a cualquier endpoint REST → 401 con body JSON
+                        // (no redirect al login). Esto evita que fetch().json() truene con
+                        // "Unexpected end of JSON input" cuando la sesión se cae durante una
+                        // subida de archivo, o cuando el rol no alcanza.
                         .defaultAuthenticationEntryPointFor(
-                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                req -> req.getRequestURI().startsWith("/api/documentos/")
+                                (request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType("application/json;charset=UTF-8");
+                                    String body = "{\"mensaje\":\"Sesión expirada o no autenticado. Vuelve a iniciar sesión.\","
+                                                + "\"tipo\":\"UNAUTHORIZED\","
+                                                + "\"path\":\"" + request.getRequestURI() + "\"}";
+                                    response.getWriter().write(body);
+                                    response.getWriter().flush();
+                                },
+                                req -> req.getRequestURI().startsWith("/api/")
                         )
                 )
                 .headers(headers -> headers

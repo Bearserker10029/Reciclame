@@ -65,6 +65,30 @@ public class Normativa {
     @Column(name = "anio", nullable = false)
     private Integer anio;
 
+    // ── Auditoría VirusTotal ───────────────────────────────────
+    // Sólo se llena cuando el archivo adjunto fue escaneado por VT.
+    // Si el archivo es nulo (normativa sólo referenciada por URL externa), quedan NULL.
+    @Column(name = "vt_sha256", length = 64)
+    private String vtSha256;
+
+    @Column(name = "vt_verdict", length = 20)
+    private String vtVerdict;
+
+    @Column(name = "vt_malicious_engines")
+    private Integer vtMaliciousEngines;
+
+    @Column(name = "vt_suspicious_engines")
+    private Integer vtSuspiciousEngines;
+
+    @Column(name = "vt_total_engines")
+    private Integer vtTotalEngines;
+
+    @Column(name = "vt_skipped")
+    private Boolean vtSkipped;
+
+    @Column(name = "vt_scanned_at")
+    private Instant vtScannedAt;
+
     @Column(name = "fecha_promulgacion")
     private LocalDate fechaPromulgacion;
 

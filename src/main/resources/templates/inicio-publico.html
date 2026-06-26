@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recíclame Perú – Economía Circular</title>
+
+  <link rel="icon" type="image/png" href="/assets/images/reciclame/Isotipo-Reciclame-1.png"/>
+
+  <!-- Mismas hojas que reciclar.org -->
+  <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/material-design-iconic-font.min.css}" href="/assets/css/material-design-iconic-font.min.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/magnific-popup.css}" href="/assets/css/magnific-popup.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/animate.css}" href="/assets/css/animate.css" />
+  <link rel="stylesheet" th:href="@{/assets/css/theme.css}" href="/assets/css/theme.css" />
+  <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap" />
+
+  <style id="local-public-overrides">
+    :root{
+      --gradient-color-from:#26b0cf;
+      --gradient-color-to:#55b579;
+      --gradient-color-from-rgb:38,176,207;
+      --gradient-color-to-rgb:85,181,121;
+    }
+    body { font-family:'Poppins', sans-serif; margin:0; }
+    @media (min-width:1200px){
+      #ct-header-wrap #ct-header:not(.h-fixed){ background-color:#152e4d !important; }
+      #ct-header-wrap.ct-header-layout1 #ct-header:not(.h-fixed) .ct-header-navigation-bg{ background-color:#152e4d !important; }
+    }
+    .ct-main-menu .sub-menu{ background-color:#0a0a0a !important; }
+    .ct-main-menu .sub-menu li a{ color:#fff !important; }
+    .repositorio-badge{
+      display:inline-block; margin-left:8px;
+      background:#2ECC71; color:#fff;
+      font-size:9px; font-weight:700; letter-spacing:.5px;
+      padding:2px 6px; border-radius:8px; vertical-align:middle;
+    }
+    .repositorio-cta{
+      background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%) !important;
+      color:#fff !important; font-weight:700;
+    }
+    .repositorio-cta:hover{ color:#fff; }
+    /* Banner de aviso: estamos en el mirror local */
+    .local-banner{
+      position:fixed; bottom:0; left:0; right:0; z-index:9999;
+      background:linear-gradient(90deg,#152e4d 0%,#1B3A5C 100%);
+      color:#fff; padding:8px 16px; text-align:center;
+      font-size:12px; font-weight:500; letter-spacing:.3px;
+      box-shadow:0 -2px 12px rgba(0,0,0,.2);
+    }
+    .local-banner a{ color:#2ECC71; font-weight:700; }
+    .local-banner .close-btn{
+      background:none; border:none; color:#fff; font-size:16px;
+      cursor:pointer; float:right; line-height:1; padding:0 4px;
+    }
+  </style>
+</head>
+
+<body class="home page-template-default wp-theme-consultio site-h2 body-default-font heading-default-font">
+
+  <!-- Banner local -->
+  <div class="local-banner" id="local-banner">
+    <button class="close-btn" onclick="document.getElementById('local-banner').style.display='none'" aria-label="Cerrar">×</button>
+    🛠️ Mirror local de desarrollo (no es reciclame.org real) · <a href="/service/repositorio/login">Ir al Repositorio →</a>
+  </div>
+
+  <!-- ═══════════════ HEADER (idéntico a reciclar.org) ═══════════════ -->
+  <header id="ct-masthead">
+    <div id="ct-header-wrap" class="ct-header-layout2 header-trans is-sticky">
+      <div id="ct-header" class="ct-header-main">
+        <div class="container">
+          <div class="row">
+            <div class="ct-header-branding">
+              <div class="ct-header-branding-inner">
+                <a class="logo-dark" th:href="@{/inicio}" href="/inicio" title="Recíclame Perú" rel="home">
+                  <img src="/assets/images/reciclame/Logo-azul-Reciclame-.png" alt="Recíclame Perú" />
+                </a>
+                <a class="logo-light" th:href="@{/inicio}" href="/inicio" title="Recíclame Perú" rel="home">
+                  <img src="/assets/images/reciclame/logo-blanco-Reciclame.png" alt="Recíclame Perú" />
+                </a>
+              </div>
+            </div>
+            <div class="ct-header-navigation">
+              <nav class="ct-main-navigation">
+                <div class="ct-main-navigation-inner">
+                  <ul id="menu-menuoficial" class="ct-main-menu sub-hover children-plus clearfix">
+                    <li class="menu-item current_page_item">
+                      <a th:href="@{/inicio}" href="/inicio"><span>Inicio</span></a>
+                    </li>
+
+                    <!-- ► Ejes de Gestión + ◄ -->
+                    <li class="menu-item menu-item-has-children">
+                      <a href="#"><span>Ejes de Gestión</span></a>
+                      <ul class="sub-menu">
+                        <li><a href="/inicio#ejes"><span>Gestión del conocimiento</span></a></li>
+                        <li><a href="/inicio#ejes"><span>Educación técnica</span></a></li>
+                        <li><a href="/inicio#ejes"><span>Programa REP</span></a></li>
+                        <li><a href="/inicio#ejes"><span>Políticas Públicas</span></a></li>
+                        <li><a href="/inicio#ejes"><span>Comunicaciones</span></a></li>
+                        <li class="menu-item-repositorio" style="border-top:1px solid rgba(255,255,255,.1); margin-top:6px; padding-top:6px;">
+                          <a class="repositorio-cta" th:href="@{/service/repositorio/login}" href="/service/repositorio/login">
+                            <i class="fas fa-folder-open" style="margin-right:6px;"></i>
+                            <span>Repositorio</span><span class="repositorio-badge">NUEVO</span>
+                          </a>
+                        </li>
+                      </ul>
+                    </li>
+
+                    <li class="menu-item"><a href="/inicio#proyectos"><span>Proyectos</span></a></li>
+                    <li class="menu-item"><a href="/inicio#servicios"><span>Servicios</span></a></li>
+                    <li class="menu-item"><a href="/inicio#nosotros"><span>Nosotros</span></a></li>
+                    <li class="menu-item"><a href="/inicio#blog"><span>Blog</span></a></li>
+                    <li class="menu-item"><a href="/inicio#contacto"><span>Contacto</span></a></li>
+
+                    <!-- CTA directo al repositorio (visible siempre) -->
+                    <li class="menu-item menu-item-cta" style="margin-left:14px;">
+                      <a class="repositorio-cta" style="background:linear-gradient(135deg,#26b0cf,#55b579); padding:8px 16px; border-radius:4px;"
+                         th:href="@{/service/repositorio/login}" href="/service/repositorio/login">
+                        <i class="fas fa-sign-in-alt"></i> Repositorio
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ HERO / SLIDER ═══════════════ -->
+  <section id="ct-slider" style="position:relative; min-height:560px; overflow:hidden; background:#152e4d;">
+    <div style="position:absolute; inset:0;
+                background:url('/assets/images/reciclame/1-Poryecto-reciclaje.jpg') center/cover no-repeat;
+                filter:saturate(1.05);"></div>
+    <div style="position:absolute; inset:0;
+                background:linear-gradient(135deg,rgba(13,43,26,.75) 0%, rgba(21,46,77,.65) 100%);"></div>
+    <div style="position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:120px 24px; color:#fff;">
+      <h1 style="font-size:52px; font-weight:700; line-height:1.1; max-width:780px; margin:0 0 24px;">
+        Conectamos empresas, gobierno y ciudadanía<br/>
+        para convertir el reciclaje en acción.
+      </h1>
+      <p style="font-size:18px; line-height:1.6; color:rgba(255,255,255,.9); max-width:680px; margin:0 0 18px;">
+        Desde la acción colectiva, impulsamos políticas públicas de reciclaje y
+        economía circular con data real.
+      </p>
+      <p style="font-size:18px; line-height:1.6; color:rgba(255,255,255,.9); max-width:680px; margin:0 0 32px;">
+        Estrategia, comunicación y educación para que la economía circular funcione.
+      </p>
+      <div style="display:flex; gap:14px; flex-wrap:wrap;">
+        <a class="repositorio-cta" style="padding:14px 28px; border-radius:6px; font-weight:700; font-size:15px;"
+           th:href="@{/service/repositorio/login}" href="/service/repositorio/login">
+          <i class="fas fa-folder-open"></i> Ingresar al Repositorio
+        </a>
+        <a href="#nosotros" style="background:transparent; border:1.5px solid rgba(255,255,255,.5); color:#fff;
+                                    padding:14px 28px; border-radius:6px; font-weight:700; font-size:15px;">
+          Conoce más
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EJES DE GESTIÓN ═══════════════ -->
+  <section id="ejes" style="padding:80px 0; background:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Ejes de Gestión</h2>
+      <div class="row">
+        <!-- Card Gestión del conocimiento -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
+                      box-shadow:0 4px 20px rgba(0,0,0,.05); transition:all .25s;">
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Gestión del conocimiento</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Investigación y difusión de información sobre economía circular.</p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:.3px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <!-- Card Educación técnica -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
+                      box-shadow:0 4px 20px rgba(0,0,0,.05);">
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Educación técnica</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Capacitación de recicladores y profesionales del sector.</p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <!-- Card Programa REP -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
+                      box-shadow:0 4px 20px rgba(0,0,0,.05);">
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-recycle"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Programa REP</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Implementación de la Responsabilidad Extendida del Productor en el Perú.</p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <!-- Card Políticas Públicas -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
+                      box-shadow:0 4px 20px rgba(0,0,0,.05);">
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-landmark"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Políticas Públicas</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Incidencia en normativa ambiental y marcos regulatorios.</p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <!-- Card Comunicaciones -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
+                      box-shadow:0 4px 20px rgba(0,0,0,.05);">
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf 0%,#55b579 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-bullhorn"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Comunicaciones</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Estrategia de comunicación para promover la cultura del reciclaje.</p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <!-- ►►► Card destacado REPOSITORIO ◄◄◄ -->
+        <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:linear-gradient(135deg,#fff 0%, #F0FDF4 100%);
+                      border:2px solid #2ECC71; border-radius:10px; padding:30px 24px;
+                      text-align:center; height:100%;
+                      box-shadow:0 8px 30px rgba(46,204,113,.15); position:relative;">
+            <span style="position:absolute; top:-10px; right:14px;
+                         background:#2ECC71; color:#fff; font-size:9px; font-weight:700;
+                         padding:4px 10px; border-radius:10px; letter-spacing:.5px;">NUEVO</span>
+            <div style="width:70px; height:70px; margin:0 auto 20px; border-radius:50%;
+                        background:linear-gradient(135deg,#1B3A5C 0%,#2ECC71 100%);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:26px;">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Repositorio Circular</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.6; margin:0 0 18px;">Centro de normativas, estudios y documentos especializados.</p>
+            <a th:href="@{/service/repositorio/login}" href="/service/repositorio/login"
+               style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:.3px;">
+              Ingresar <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ PROYECTOS ESPECÍFICOS ═══════════════ -->
+  <section id="proyectos" style="padding:80px 0; background:#F4F6F8;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Proyectos Específicos</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:24px; align-items:start;">
+        <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.06);">
+          <div style="height:200px; background:url('/assets/images/reciclame/reciclame-simposio-6to-01-600x373.jpg') center/cover;"></div>
+          <div style="padding:24px;">
+            <h3 style="font-size:20px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">ReSÍclamos</h3>
+            <p style="color:#6B7280; font-size:14px; line-height:1.65; margin:0 0 16px;">
+              Proyecto de Tetra Pak articulado por Recíclame, con Alicorp como aliado estratégico.
+              Permite gestionar de manera directa el acopio de UBC y fortalecer la relación comercial
+              con los principales actores del reciclaje en el Perú.
+            </p>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div style="background:#fff; border-radius:10px; padding:32px 28px; box-shadow:0 4px 20px rgba(0,0,0,.06);">
+          <h3 style="font-size:22px; font-weight:700; color:#1B3A5C; margin:0 0 20px;">Objetivos</h3>
+          <ul style="list-style:none; padding:0; margin:0;">
+            <li style="padding:8px 0; color:#1F2937; font-size:14px; line-height:1.6;"><i class="fas fa-check-circle" style="color:#2ECC71; margin-right:10px;"></i>Aumentar el acopio formal y trazable de UBC.</li>
+            <li style="padding:8px 0; color:#1F2937; font-size:14px; line-height:1.6;"><i class="fas fa-check-circle" style="color:#2ECC71; margin-right:10px;"></i>Fortalecer las capacidades de recicladores y acopiadores.</li>
+            <li style="padding:8px 0; color:#1F2937; font-size:14px; line-height:1.6;"><i class="fas fa-check-circle" style="color:#2ECC71; margin-right:10px;"></i>Desarrollar vínculos comerciales estables y de largo plazo.</li>
+            <li style="padding:8px 0; color:#1F2937; font-size:14px; line-height:1.6;"><i class="fas fa-check-circle" style="color:#2ECC71; margin-right:10px;"></i>Reducir brechas en la valorización del material.</li>
+            <li style="padding:8px 0; color:#1F2937; font-size:14px; line-height:1.6;"><i class="fas fa-check-circle" style="color:#2ECC71; margin-right:10px;"></i>Impulsar un sistema más eficiente y competitivo para la industria.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ¿QUIÉNES SOMOS? ═══════════════ -->
+  <section id="nosotros" style="padding:80px 0; background:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <div class="row" style="display:flex; flex-wrap:wrap; align-items:center; gap:40px;">
+        <div style="flex:1 1 460px; min-width:280px;">
+          <h2 style="font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 24px;">¿Quiénes somos?</h2>
+          <p style="color:#1F2937; font-size:16px; line-height:1.75; margin:0 0 20px;">
+            Somos una organización sin fines de lucro que impulsa la economía circular en el Perú,
+            articulando al sector público, privado, academia y sociedad civil para acelerar la
+            transición hacia modelos sostenibles.
+          </p>
+          <p style="color:#1F2937; font-size:16px; line-height:1.75; margin:0 0 28px;">
+            Contamos con un equipo técnico especializado que desarrolla estudios, proyectos e
+            iniciativas innovadoras orientadas a fortalecer la gestión de residuos y la
+            corresponsabilidad en el país.
+          </p>
+          <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:14px;">Ver más <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div style="flex:1 1 460px; min-width:280px;">
+          <img src="/assets/images/reciclame/Somos-Reciclame.png" alt="Somos Recíclame" style="width:100%; border-radius:10px; box-shadow:0 10px 40px rgba(0,0,0,.15);" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EMPRESAS ALIADAS ═══════════════ -->
+  <section style="padding:60px 0; background:#F4F6F8;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:28px; font-weight:700; color:#1B3A5C; margin:0 0 40px;">Empresas líderes que nos conforman</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:32px; align-items:center; justify-items:center;">
+        <img src="/assets/images/reciclame/ALICORP-LOGO-A-COLOR-1.png" alt="Alicorp" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/ARCA-CONTINENTAL-LOGO-A-COLOR.png" alt="Arca Continental" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/COCA-COLA-LOGO-A-COLOR.png" alt="Coca-Cola" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/INDUSTRIAS-DEL-ENVASE-LOGO-A-COLOR.png" alt="Industrias del Envase" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/Logo-OI-sin-fondo-10.png" alt="OI" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/QROMA-LOGO-A-COLOR.png" alt="Qroma" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/SMI-LOGO-A-COLOR.png" alt="SMI" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+        <img src="/assets/images/reciclame/TETRA-PAK-LOGO-A-COLOR.png" alt="Tetra Pak" style="max-height:60px; max-width:140px; filter:grayscale(.1); opacity:.9;" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SERVICIOS ═══════════════ -->
+  <section id="servicios" style="padding:80px 0; background:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Nuestros Servicios</h2>
+      <div class="row">
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;">
+            <div style="width:60px; height:60px; margin:0 auto 18px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf,#55b579);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px;">
+              <i class="fas fa-id-badge"></i>
+            </div>
+            <h3 style="font-size:16px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Membresía Recíclame</h3>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;">
+            <div style="width:60px; height:60px; margin:0 auto 18px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf,#55b579);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px;">
+              <i class="fas fa-briefcase"></i>
+            </div>
+            <h3 style="font-size:16px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Consultorías</h3>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;">
+            <div style="width:60px; height:60px; margin:0 auto 18px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf,#55b579);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px;">
+              <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h3 style="font-size:16px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Masterclass y Capacitaciones</h3>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;">
+            <div style="width:60px; height:60px; margin:0 auto 18px; border-radius:50%;
+                        background:linear-gradient(135deg,#26b0cf,#55b579);
+                        display:flex; align-items:center; justify-content:center; color:#fff; font-size:22px;">
+              <i class="fas fa-hands-helping"></i>
+            </div>
+            <h3 style="font-size:16px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Asesoría en REP</h3>
+            <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ BLOG ═══════════════ -->
+  <section id="blog" style="padding:80px 0; background:#F4F6F8;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Blog | Novedades</h2>
+      <p style="text-align:center; color:#6B7280; font-size:15px; margin:0 0 48px;">Lo más reciente de nuestro trabajo</p>
+      <div class="row">
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <a href="#" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.06); transition:all .25s; height:100%;">
+              <div style="height:180px; background:url('/assets/images/reciclame/blog-programa-reciclame-peru-04-01-600x373.jpg') center/cover;"></div>
+              <div style="padding:20px;">
+                <h3 style="font-size:14px; font-weight:700; color:#1B3A5C; margin:0 0 10px; line-height:1.4;">Recíclame en Perú Mucho Gusto – Lima 2025.</h3>
+                <small style="color:#9CA3AF; font-size:12px;">diciembre 29, 2025</small>
+                <p style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:12px; margin:10px 0 0;">Leer artículo <i class="fas fa-arrow-right"></i></p>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <a href="#" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.06); height:100%;">
+              <div style="height:180px; background:url('/assets/images/reciclame/reciclame-simposio-6to-01-600x373.jpg') center/cover;"></div>
+              <div style="padding:20px;">
+                <h3 style="font-size:14px; font-weight:700; color:#1B3A5C; margin:0 0 10px; line-height:1.4;">Programa de Desarrollo Profesional para Recicladores.</h3>
+                <small style="color:#9CA3AF; font-size:12px;">diciembre 29, 2025</small>
+                <p style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:12px; margin:10px 0 0;">Leer artículo <i class="fas fa-arrow-right"></i></p>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <a href="#" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.06); height:100%;">
+              <div style="height:180px; background:url('/assets/images/reciclame/blog-reciclame-01-resiclamos-600x373.jpg') center/cover;"></div>
+              <div style="padding:20px;">
+                <h3 style="font-size:14px; font-weight:700; color:#1B3A5C; margin:0 0 10px; line-height:1.4;">ReciFest Lima: Colegios en acción por el reciclaje.</h3>
+                <small style="color:#9CA3AF; font-size:12px;">diciembre 29, 2025</small>
+                <p style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:12px; margin:10px 0 0;">Leer artículo <i class="fas fa-arrow-right"></i></p>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div class="col-md-3 col-sm-6" style="margin-bottom:30px;">
+          <a href="#" style="text-decoration:none; color:inherit; display:block;">
+            <div style="background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.06); height:100%;">
+              <div style="height:180px; background:url('/assets/images/reciclame/Comunicacion-de-cambio-reciclame-01-600x373.jpg') center/cover;"></div>
+              <div style="padding:20px;">
+                <h3 style="font-size:14px; font-weight:700; color:#1B3A5C; margin:0 0 10px; line-height:1.4;">VI Simposio Internacional de Reciclaje y Economía Circular</h3>
+                <small style="color:#9CA3AF; font-size:12px;">diciembre 29, 2025</small>
+                <p style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:12px; margin:10px 0 0;">Leer artículo <i class="fas fa-arrow-right"></i></p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ EQUIPO ═══════════════ -->
+  <section style="padding:80px 0; background:#fff;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <h2 style="text-align:center; font-size:32px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Nuestro Equipo</h2>
+      <div class="row" style="display:flex; flex-wrap:wrap; justify-content:center; gap:24px;">
+        <div style="flex:0 1 220px; text-align:center;">
+          <div style="width:200px; height:200px; margin:0 auto 16px; border-radius:50%; overflow:hidden;
+                      background:url('/assets/images/reciclame/Fanny-Reyes-300x300.jpg') center/cover;
+                      box-shadow:0 6px 20px rgba(0,0,0,.12);"></div>
+          <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0;">Fanny Reyes</h3>
+        </div>
+        <div style="flex:0 1 220px; text-align:center;">
+          <div style="width:200px; height:200px; margin:0 auto 16px; border-radius:50%; overflow:hidden;
+                      background:url('/assets/images/reciclame/Andrea-Cornejo.jpg') center/cover;
+                      box-shadow:0 6px 20px rgba(0,0,0,.12);"></div>
+          <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0;">Andrea Cornejo</h3>
+        </div>
+        <div style="flex:0 1 220px; text-align:center;">
+          <div style="width:200px; height:200px; margin:0 auto 16px; border-radius:50%; overflow:hidden;
+                      background:url('/assets/images/reciclame/Angelica-Rivera-300x300.jpg') center/cover;
+                      box-shadow:0 6px 20px rgba(0,0,0,.12);"></div>
+          <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0;">Angélica Rivera</h3>
+        </div>
+        <div style="flex:0 1 220px; text-align:center;">
+          <div style="width:200px; height:200px; margin:0 auto 16px; border-radius:50%; overflow:hidden;
+                      background:url('/assets/images/reciclame/Alberto-Mendoza-300x300.jpg') center/cover;
+                      box-shadow:0 6px 20px rgba(0,0,0,.12);"></div>
+          <h3 style="font-size:18px; font-weight:700; color:#1B3A5C; margin:0;">Alberto Mendoza</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ FOOTER ═══════════════ -->
+  <footer id="contacto" style="background:#0a0a0a; color:rgba(255,255,255,.7); padding:60px 0 30px;">
+    <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
+      <div class="row" style="display:flex; flex-wrap:wrap; gap:40px;">
+        <div style="flex:1 1 280px; min-width:240px;">
+          <img src="/assets/images/reciclame/logo-blanco-Reciclame.png" alt="Recíclame" style="height:42px; margin-bottom:18px;" />
+          <p style="font-size:14px; line-height:1.6; margin:0 0 16px;">© 2020 All Rights Reserved</p>
+        </div>
+        <div style="flex:1 1 200px; min-width:200px;">
+          <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 16px;">Horario de atención</h3>
+          <p style="font-size:14px; line-height:1.7; margin:0;">De Lunes a Viernes.</p>
+          <p style="font-size:14px; line-height:1.7; margin:0;">De 08:30 a.m. a 05:30 p.m.</p>
+        </div>
+        <div style="flex:1 1 200px; min-width:200px;">
+          <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 16px;">Menú</h3>
+          <ul style="list-style:none; padding:0; margin:0; font-size:14px; line-height:2;">
+            <li><a th:href="@{/inicio}" href="/inicio" style="color:rgba(255,255,255,.7);">Inicio</a></li>
+            <li><a href="/inicio#ejes" style="color:rgba(255,255,255,.7);">Ejes de Gestión</a></li>
+            <li><a href="/inicio#proyectos" style="color:rgba(255,255,255,.7);">Proyectos</a></li>
+            <li><a href="/inicio#servicios" style="color:rgba(255,255,255,.7);">Servicios</a></li>
+            <li><a href="/inicio#nosotros" style="color:rgba(255,255,255,.7);">Nosotros</a></li>
+            <li><a href="/inicio#blog" style="color:rgba(255,255,255,.7);">Blog</a></li>
+            <li><a th:href="@{/service/repositorio/login}" href="/service/repositorio/login" style="color:#2ECC71; font-weight:700;">Repositorio →</a></li>
+          </ul>
+        </div>
+        <div style="flex:1 1 200px; min-width:200px;">
+          <h3 style="color:#fff; font-size:16px; font-weight:700; margin:0 0 16px;">Síguenos</h3>
+          <div style="display:flex; flex-wrap:wrap; gap:10px;">
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-instagram"></i></a>
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-youtube"></i></a>
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-tiktok"></i></a>
+            <a href="#" style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); color:#fff; display:inline-flex; align-items:center; justify-content:center;"><i class="fab fa-whatsapp"></i></a>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center; padding-top:30px; margin-top:40px; border-top:1px solid rgba(255,255,255,.1); font-size:13px;">
+        © 2026 Recíclame Perú — Mirror local de desarrollo
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/assets/js/jquery.min.js"></script>
+  <script src="/assets/js/bootstrap.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/wow.min.js"></script>
+  <script>
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const id = a.getAttribute('href');
+        if (id && id.length > 1) {
+          const t = document.querySelector(id);
+          if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth', block:'start'}); }
+        }
+      });
+    });
+  </script>
+</body>
+</html>

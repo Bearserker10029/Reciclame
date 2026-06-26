@@ -23,8 +23,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Map;
 
 @RestController
@@ -32,6 +35,8 @@ import java.util.Map;
 public class DocumentoViewController {
 
     private static final int EXPIRY_MINUTOS = 15;
+    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
+    private static final int STREAM_BUFFER_BYTES = 256 * 1024;
     private static final Logger log = LoggerFactory.getLogger(DocumentoViewController.class);
 
     private final MinioStorageService minioStorageService;
@@ -40,19 +45,22 @@ public class DocumentoViewController {
     private final UsuarioService usuarioService;
     private final NormativaService normativaService;
     private final EstudioService estudioService;
+    private final HttpClient httpClient;
 
     public DocumentoViewController(MinioStorageService minioStorageService,
                                    DocumentPreviewService documentPreviewService,
                                    AuditoriaService auditoriaService,
                                    UsuarioService usuarioService,
                                    NormativaService normativaService,
-                                   EstudioService estudioService) {
+                                   EstudioService estudioService,
+                                   HttpClient httpClient) {
         this.minioStorageService = minioStorageService;
         this.documentPreviewService = documentPreviewService;
         this.auditoriaService = auditoriaService;
         this.usuarioService = usuarioService;
         this.normativaService = normativaService;
         this.estudioService = estudioService;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -84,7 +92,7 @@ public class DocumentoViewController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/inline")
     public void verDocumentoInline(@RequestParam("url") String url,
-                                   HttpServletResponse response) throws IOException {
+                                   HttpServletResponse response) throws IOException, InterruptedException {
         final String firmadaInterna;
         try {
             firmadaInterna = minioStorageService.generarUrlFirmadaInterna(url, EXPIRY_MINUTOS);
@@ -100,34 +108,48 @@ public class DocumentoViewController {
             return;
         }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(firmadaInterna).openConnection();
-        conn.setInstanceFollowRedirects(true);
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(300_000);
-        conn.setRequestMethod("GET");
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(firmadaInterna))
+                .timeout(Duration.ofMinutes(5))
+                .GET()
+                .build();
 
-        int status = conn.getResponseCode();
-        if (status != HttpURLConnection.HTTP_OK) {
-            response.setStatus(status);
-            conn.disconnect();
+        HttpResponse<InputStream> upstream;
+        try {
+            upstream = httpClient.send(req, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
             return;
         }
 
-        String contentType = conn.getContentType();
+        int status = upstream.statusCode();
+        if (status != HttpServletResponse.SC_OK) {
+            response.setStatus(status);
+            upstream.body().close();
+            return;
+        }
+
+        String contentType = upstream.headers().firstValue("content-type").orElse(null);
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline");
         if (contentType != null && !contentType.isBlank()) {
             response.setContentType(contentType);
         }
-        long contentLength = conn.getContentLengthLong();
+        long contentLength = upstream.headers().firstValueAsLong("content-length").orElse(-1L);
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
+        // Cache corto: el navegador puede reusar si el usuario navega atrás/adelante sin re-stripear MinIO.
+        response.setHeader("Cache-Control", "private, max-age=300");
 
-        try (InputStream is = conn.getInputStream()) {
-            is.transferTo(response.getOutputStream());
-        } finally {
-            conn.disconnect();
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 
@@ -164,7 +186,7 @@ public class DocumentoViewController {
             @RequestParam(name = "docId", required = false) Long docId,
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+            HttpServletResponse response) throws IOException, InterruptedException {
 
         String ipAddress = obtenerIp(request);
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
@@ -200,18 +222,26 @@ public class DocumentoViewController {
             return;
         }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(firmadaInterna).openConnection();
-        conn.setInstanceFollowRedirects(true);
-        conn.setConnectTimeout(30_000);
-        conn.setReadTimeout(300_000);
-        conn.setRequestMethod("GET");
+        HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(firmadaInterna))
+                .timeout(Duration.ofMinutes(5))
+                .GET()
+                .build();
 
-        int status = conn.getResponseCode();
-        if (status != HttpURLConnection.HTTP_OK) {
+        HttpResponse<InputStream> upstream;
+        try {
+            upstream = httpClient.send(req, HttpResponse.BodyHandlers.ofInputStream());
+        } catch (IOException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_GATEWAY);
+            return;
+        }
+
+        int status = upstream.statusCode();
+        if (status != HttpServletResponse.SC_OK) {
             auditoriaService.registrarAccionFallida(usuarioId, usuarioNombre,
                     AuditoriaService.ACCION_DESCARGAR_DOCUMENTO, AuditoriaService.MODULO_ESTUDIOS,
                     "MinIO devolvió " + status + " para: \"" + titulo + "\"", null, ipAddress, userAgent);
-            conn.disconnect();
+            upstream.body().close();
             response.setStatus(status);
             return;
         }
@@ -222,11 +252,11 @@ public class DocumentoViewController {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
                 "attachment; filename=\"" + safeFilename + "\"");
-        String contentType = conn.getContentType();
+        String contentType = upstream.headers().firstValue("content-type").orElse(null);
         if (contentType != null && !contentType.isBlank()) {
             response.setContentType(contentType);
         }
-        long contentLength = conn.getContentLengthLong();
+        long contentLength = upstream.headers().firstValueAsLong("content-length").orElse(-1L);
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
@@ -251,10 +281,14 @@ public class DocumentoViewController {
             }
         }
 
-        try (InputStream is = conn.getInputStream()) {
-            is.transferTo(response.getOutputStream());
-        } finally {
-            conn.disconnect();
+        try (InputStream is = upstream.body();
+             java.io.OutputStream out = response.getOutputStream()) {
+            byte[] buffer = new byte[STREAM_BUFFER_BYTES];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+            out.flush();
         }
     }
 

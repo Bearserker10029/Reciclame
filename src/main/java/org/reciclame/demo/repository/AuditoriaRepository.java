@@ -57,6 +57,66 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
            "ORDER BY a.fechaAccion DESC LIMIT 100")
     List<Auditoria> findTop100ByOrderByFechaAccionDesc();
 
+    /**
+     * Lista auditorías (no impersonación ni impersonación-salida) excluyendo
+     * además las acciones ejecutadas por usuarios cuyo {@code usuarioId}
+     * pertenece a un usuario con rol SUPERADMIN.
+     *
+     <p>Se usa en el contexto del rol ADMIN para que su reporte de auditoría
+     * nunca muestre lo que hizo un superadmin, sin depender de carga LAZY de
+     * la entidad {@code Usuario} ni de lookups en memoria.</p>
+     */
+    @Query("""
+            SELECT a FROM Auditoria a
+            WHERE a.estadoActivo = true
+              AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION')
+              AND (
+                    a.usuarioId IS NULL
+                    OR NOT EXISTS (
+                          SELECT 1 FROM Usuario u
+                          WHERE u.id = a.usuarioId
+                            AND u.rol IS NOT NULL
+                            AND UPPER(u.rol.nombre) = 'SUPERADMIN'
+                    )
+              )
+            ORDER BY a.fechaAccion DESC
+            """)
+    Page<Auditoria> findAllExcluyendoAccionesDeSuperadmin(Pageable pageable);
+
+    /**
+     * Variante limitada para los exports PDF/XLSX/CSV.
+     */
+    @Query(value = """
+            SELECT a FROM Auditoria a
+            WHERE a.estadoActivo = true
+              AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION')
+              AND (
+                    a.usuarioId IS NULL
+                    OR NOT EXISTS (
+                          SELECT 1 FROM Usuario u
+                          WHERE u.id = a.usuarioId
+                            AND u.rol IS NOT NULL
+                            AND UPPER(u.rol.nombre) = 'SUPERADMIN'
+                    )
+              )
+            ORDER BY a.fechaAccion DESC
+            """,
+           countQuery = """
+            SELECT COUNT(a) FROM Auditoria a
+            WHERE a.estadoActivo = true
+              AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION')
+              AND (
+                    a.usuarioId IS NULL
+                    OR NOT EXISTS (
+                          SELECT 1 FROM Usuario u
+                          WHERE u.id = a.usuarioId
+                            AND u.rol IS NOT NULL
+                            AND UPPER(u.rol.nombre) = 'SUPERADMIN'
+                    )
+              )
+            """)
+    Page<Auditoria> findAllExcluyendoAccionesDeSuperadminP(Pageable pageable);
+
     @Query("SELECT a FROM Auditoria a WHERE (a.modulo = 'SEGURIDAD' OR a.estado = 'FALLIDO' " +
            "OR a.accion IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'BLOQUEAR_USUARIO', " +
            "'ELIMINAR_USUARIO', 'CAMBIAR_PASSWORD', 'LOGIN', 'LOGOUT')) " +
