@@ -97,12 +97,21 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler(accessDeniedHandler)
-                        // Solicitudes no autenticadas a endpoints de documentos → 401 en vez de redirect al login.
-                        // Incluye kk-view/** para que las imágenes de diapositivas (cargadas por <img> tags)
-                        // reciban 401 y no una redirección HTML al login que el browser no puede renderizar.
+                        // Solicitudes no autenticadas a cualquier endpoint REST → 401 con body JSON
+                        // (no redirect al login). Esto evita que fetch().json() truene con
+                        // "Unexpected end of JSON input" cuando la sesión se cae durante una
+                        // subida de archivo, o cuando el rol no alcanza.
                         .defaultAuthenticationEntryPointFor(
-                                new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
-                                req -> req.getRequestURI().startsWith("/api/documentos/")
+                                (request, response, authException) -> {
+                                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                                    response.setContentType("application/json;charset=UTF-8");
+                                    String body = "{\"mensaje\":\"Sesión expirada o no autenticado. Vuelve a iniciar sesión.\","
+                                                + "\"tipo\":\"UNAUTHORIZED\","
+                                                + "\"path\":\"" + request.getRequestURI() + "\"}";
+                                    response.getWriter().write(body);
+                                    response.getWriter().flush();
+                                },
+                                req -> req.getRequestURI().startsWith("/api/")
                         )
                 )
                 .headers(headers -> headers

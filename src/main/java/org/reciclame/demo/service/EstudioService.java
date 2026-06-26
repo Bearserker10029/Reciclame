@@ -132,7 +132,7 @@ public class EstudioService {
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
         Usuario subidaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
-                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado: " + correoAutor));
 
         Estudio e = new Estudio();
         mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
@@ -428,12 +428,15 @@ public class EstudioService {
             dto.setNormativaRelacionadaTitulo(e.getNormativaRelacionada().getTitulo());
         }
 
-        // Etiquetas
+        // Etiquetas (defensivo: el repo puede devolver null o filas sin etiqueta)
         List<EstudiosEtiqueta> relaciones = estudiosEtiquetaRepository.findByEstudioId(e.getId());
+        if (relaciones == null) relaciones = Collections.emptyList();
         dto.setEtiquetasIds(relaciones.stream()
+                .filter(r -> r != null && r.getEtiqueta() != null && r.getEtiqueta().getId() != null)
                 .map(r -> r.getEtiqueta().getId())
                 .collect(Collectors.toList()));
         dto.setEtiquetasNombres(relaciones.stream()
+                .filter(r -> r != null && r.getEtiqueta() != null && r.getEtiqueta().getNombre() != null)
                 .map(r -> r.getEtiqueta().getNombre())
                 .collect(Collectors.toList()));
 

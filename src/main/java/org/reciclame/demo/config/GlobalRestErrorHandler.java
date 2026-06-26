@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -85,6 +86,41 @@ public class GlobalRestErrorHandler {
                         "mensaje", ex.getMessage(),
                         "tipo", "VIRUS_TOTAL_" + ex.getReason().name(),
                         "reason", ex.getReason().name()
+                ));
+    }
+
+    /**
+     * Captura cualquier {@link IOException} que escape de los servicios
+     * (ej. fallo de I/O leyendo el multipart, MinIO inalcanzable, etc.).
+     * Sin este handler, Spring Boot redirige a /error → el filtro de Spring
+     * Security puede responder 401 → el frontend recibe HTML de login y
+     * {@code fetch().json()} truena con "Unexpected end of JSON input".
+     */
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<?> handleIOException(IOException ex) {
+        log.error("Error de I/O en endpoint REST: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "mensaje", "Error de E/S procesando la solicitud: " +
+                                   (ex.getMessage() != null ? ex.getMessage() : "sin detalle"),
+                        "tipo", "IO_ERROR"
+                ));
+    }
+
+    /**
+     * Catch-all para cualquier excepción no contemplada arriba.
+     * Garantiza que NUNCA se devuelva HTML al frontend desde un endpoint REST,
+     * incluso si el response ya empezó a escribirse (en cuyo caso Spring igual
+     * loguea pero la respuesta queda completa con este body).
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handleAny(Exception ex) {
+        log.error("Excepción no controlada en endpoint REST", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "mensaje", "Error interno del servidor: " +
+                                   (ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName()),
+                        "tipo", "INTERNAL_ERROR"
                 ));
     }
 }
