@@ -63,6 +63,6 @@ public class VirusTotalVerdict {
 
     /** Helper: ¿se permite subir el archivo a MinIO? */
     public boolean isAllowed() {
-        return verdict == Verdict.CLEAN;
+        return verdict == Verdict.CLEAN || verdict == Verdict.UNDETECTED || verdict == Verdict.SKIPPED;
     }
 }
