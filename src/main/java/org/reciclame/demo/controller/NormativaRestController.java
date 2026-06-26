@@ -80,8 +80,8 @@ public class NormativaRestController {
                             "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
                             "tipo", "VIRUS_DETECTADO",
                             "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines(),
-                            "suspicious", vtVerdict.getSuspiciousEngines()
+                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
+                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
                     ));
                 }
                 // 2) Limpio (o skipped por fail-open): recién ahora subimos a MinIO.
@@ -123,8 +123,8 @@ public class NormativaRestController {
                             "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
                             "tipo", "VIRUS_DETECTADO",
                             "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines(),
-                            "suspicious", vtVerdict.getSuspiciousEngines()
+                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
+                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
                     ));
                 }
                 archivoUrl      = simularSubida(archivo);
