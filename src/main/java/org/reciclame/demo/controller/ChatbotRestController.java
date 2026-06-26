@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -81,10 +82,12 @@ public class ChatbotRestController {
     @GetMapping("/estadisticas")
     public ResponseEntity<ChatbotEstadisticasDTO> estadisticas(
             @RequestParam(value = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
-            @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+            @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            Authentication auth) {
         Instant desdeI = desde != null ? desde.atStartOfDay(ZoneId.of("America/Lima")).toInstant() : null;
         Instant hastaI = hasta != null ? hasta.plusDays(1).atStartOfDay(ZoneId.of("America/Lima")).toInstant().minusMillis(1) : null;
-        return ResponseEntity.ok(chatbotService.calcularEstadisticas(desdeI, hastaI));
+        boolean excluirSuperadmin = esAdministrador(auth);
+        return ResponseEntity.ok(chatbotService.calcularEstadisticas(desdeI, hastaI, excluirSuperadmin));
     }
 
     // ----------------------------------------------------------------
@@ -98,13 +101,15 @@ public class ChatbotRestController {
             @RequestParam(value = "hasta",     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(value = "q",         required = false) String q,
             @RequestParam(value = "page",      defaultValue = "0") int page,
-            @RequestParam(value = "size",      defaultValue = "20") int size) {
+            @RequestParam(value = "size",      defaultValue = "20") int size,
+            Authentication auth) {
 
         Instant desdeI = desde != null ? desde.atStartOfDay(ZoneId.of("America/Lima")).toInstant() : null;
         Instant hastaI = hasta != null ? hasta.plusDays(1).atStartOfDay(ZoneId.of("America/Lima")).toInstant().minusMillis(1) : null;
         Pageable pageable = PageRequest.of(page, Math.min(size, 200));
+        boolean excluirSuperadmin = esAdministrador(auth);
         Page<ChatbotConsultaFilaDTO> result = chatbotService.listarConversacionesFiltrado(
-                usuarioId, rolId, desdeI, hastaI, pageable);
+                usuarioId, rolId, desdeI, hastaI, pageable, excluirSuperadmin);
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("content", result.getContent());
@@ -113,6 +118,19 @@ public class ChatbotRestController {
         resp.put("totalElements", result.getTotalElements());
         resp.put("totalPages", result.getTotalPages());
         return ResponseEntity.ok(resp);
+    }
+
+    /**
+     * Devuelve true si el solicitante NO es superadmin (es decir, es admin/socio/visualizador,
+     * o no hay auth). La política es: solo SUPERADMIN ve TODO; el resto oculta lo del superadmin.
+     */
+    private boolean esAdministrador(Authentication auth) {
+        if (auth == null || auth.getAuthorities() == null) return true;
+        for (GrantedAuthority ga : auth.getAuthorities()) {
+            String a = ga.getAuthority();
+            if (a != null && a.toUpperCase().contains("SUPERADMIN")) return false;
+        }
+        return true;
     }
 
     // ----------------------------------------------------------------
