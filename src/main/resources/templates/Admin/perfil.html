@@ -603,6 +603,7 @@
                     contraseña</button>
                 </div>
               </form>
+              <th:block th:replace="~{components/password-validator :: password-validator}"></th:block>
             </div>
 
             <div class="form-card" style="animation-delay:.15s">
@@ -769,17 +770,32 @@
               } catch (e) { console.error('Error animando stat-bar:', e); }
             }, 500);
 
-            try {
-              if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
-                new QRCode(document.getElementById('qr-code'), {
-                  text: 'RECICLAME-' + qrUserId + '-' + qrUserDni,
+            // QR de login: pide un token al backend y lo pinta como URL escaneable.
+            // Auto-renovación cada 4 min porque el token expira a los 5 min.
+            cargarQrLogin();
+            setInterval(cargarQrLogin, 4 * 60 * 1000);
+          });
+
+          function cargarQrLogin() {
+            var qrEl = document.getElementById('qr-code');
+            if (!qrEl || typeof QRCode === 'undefined') return;
+            fetch('/api/perfil/qr-token', { credentials: 'same-origin' })
+              .then(function (r) { return r.ok ? r.json() : null; })
+              .then(function (data) {
+                if (!data || !data.url) {
+                  qrEl.innerHTML = '<div style="font-size:11px;color:#9CA3AF;">QR no disponible</div>';
+                  return;
+                }
+                qrEl.innerHTML = '';
+                new QRCode(qrEl, {
+                  text: data.url,
                   width: 152, height: 152,
                   colorDark: '#1B3A5C', colorLight: '#ffffff',
                   correctLevel: QRCode.CorrectLevel.M
                 });
-              }
-            } catch (e) { console.error('Error generando QR:', e); }
-          });
+              })
+              .catch(function (e) { console.error('Error generando QR:', e); });
+          }
 
           function clearPasswordFields() {
             var pwd = document.getElementById('currentPassword');

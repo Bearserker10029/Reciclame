@@ -29,9 +29,27 @@ services:
       - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
       - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
+      # Heap ajustado para t3.medium con 2-3 instancias activas (cada una ~900 MB)
+      - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
@@ -67,9 +85,26 @@ services:
       - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
       - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
+      - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
@@ -105,9 +140,26 @@ services:
       - APP_KK_ACCESSIBLE_URL=${APP_KK_ACCESSIBLE_URL}
       - SPRING_REDIS_HOST=${SPRING_REDIS_HOST}
       - SPRING_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_REDIS_PASSWORD=${SPRING_REDIS_PASSWORD}
       - APP_BACKUP_PATH=${APP_BACKUP_PATH}
       - VERIFICA_API_KEY=${VERIFICA_API_KEY}
       - ATENEA_API_KEY=${ATENEA_API_KEY}
+      - CENTRIFUGO_API_URL=${CENTRIFUGO_API_URL}
+      - CENTRIFUGO_API_KEY=${CENTRIFUGO_API_KEY}
+      - CENTRIFUGO_SECRET=${CENTRIFUGO_SECRET}
+      - CENTRIFUGO_WS_URL=${CENTRIFUGO_WS_URL}
+      - SPRING_MAIL_HOST=${SPRING_MAIL_HOST}
+      - SPRING_MAIL_PORT=${SPRING_MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${SPRING_MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
+      # ── VirusTotal (escaneo de archivos subidos) ──────────────────────────
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - VIRUSTOTAL_FAIL_OPEN=${VIRUSTOTAL_FAIL_OPEN}
+      - VIRUSTOTAL_CACHE_TTL_HOURS=${VIRUSTOTAL_CACHE_TTL_HOURS}
+      - VIRUSTOTAL_POLL_MAX_ATTEMPTS=${VIRUSTOTAL_POLL_MAX_ATTEMPTS}
+      - VIRUSTOTAL_POLL_INTERVAL_MS=${VIRUSTOTAL_POLL_INTERVAL_MS}
+      - VIRUSTOTAL_TIMEOUT_MS=${VIRUSTOTAL_TIMEOUT_MS}
+      - JAVA_OPTS=-Xms384m -Xmx768m -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:+UseStringDeduplication -XX:+UseContainerSupport -Djava.awt.headless=true -Duser.timezone=America/Lima -Dfile.encoding=UTF-8
     volumes:
       - backup_data:/backups
     networks:
@@ -117,7 +169,8 @@ services:
     image: redis:7.4-alpine
     container_name: reciclame-redis
     restart: unless-stopped
-    command: [ "redis-server", "--appendonly", "yes" ]
+    # maxmemory + LRU evita que Redis crezca sin límite y mate el host
+    command: [ "redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru" ]
     volumes:
       - redis_data:/data
     healthcheck:
@@ -168,10 +221,36 @@ services:
     environment:
       - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
       - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      # Heap Node.js acotado para no comerse la RAM disponible
+      - NODE_OPTIONS=--max-old-space-size=1024
     volumes:
       - n8n_data:/home/node/.n8n
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - reciclame-net
+
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: reciclame-centrifugo
+    restart: unless-stopped
+    # NO se expone al host: el browser llega via nginx-proxy-manager (wss://...)
+    # Solo accesible internamente desde la red reciclame-net.
+    expose:
+      - "8000"
+    environment:
+      CENTRIFUGO_TOKEN_HMAC_SECRET_KEY: ${CENTRIFUGO_SECRET}
+      CENTRIFUGO_API_KEY: ${CENTRIFUGO_API_KEY}
+      CENTRIFUGO_ALLOWED_ORIGINS: ${CENTRIFUGO_ALLOWED_ORIGINS}
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_CLIENT: "true"
+      CENTRIFUGO_ALLOW_SUBSCRIBE_FOR_ANONYMOUS: "false"
+    # log_level warn baja el ruido y consumo de I/O
+    command: centrifugo --health --log_level=warn
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8000/health" ]
+      interval: 15s
+      timeout: 3s
+      retries: 5
     networks:
       - reciclame-net
 
@@ -189,7 +268,7 @@ services:
     command: server /data --console-address ":9001"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 15s
+      interval: 30s
       timeout: 10s
       retries: 5
     networks:
@@ -210,15 +289,36 @@ services:
   kkfileview:
     image: keking/kkfileview:latest
     container_name: reciclame-kkfileview
-    ports:
-      - "8012:8012"
+    expose:
+      - "8012"
     depends_on:
       - minio-init
     environment:
       - KK_HTTP_PREVIEW=${KK_HTTP_PREVIEW}
       - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${SPRING_FREEMARKER_TEMPLATE_LOADER_PATH}
+      - KK_CACHE_ENABLED=true
+      # Redis cache compartido: evita reconvertir el mismo doc en cada acceso
+      - KK_CACHE_TYPE=redis
+      - KK_SPRING_REDISSON_ADDRESS=redis:6379
+      - KK_OFFICE_PREVIEW_SWITCH_ROW=true
+      - KK_OFFICE_PREVIEW_SWITCH_PPT=true
+      - KK_OFFICE_PREVIEW_SWITCH_PDF=true
+      - KK_OFFICE_PREVIEW_SWITCH_XLS=true
+      - KK_MAX_FILE_SIZE=200MB
+      - KK_OFFICE_TASK_TIMEOUT=15m
+      # Heap ajustado: LibreOffice corre como proceso aparte (no en el heap JVM)
+      - JAVA_OPTS=-Xms384m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
+      - kkfileview_cache:/opt/kkFileView/file
+      - kkfileview_cache_index:/opt/kkFileView/index
+    healthcheck:
+      # kkfileview responde en / con HTML, pero /index es estable.
+      test: [ "CMD-SHELL", "wget -qO- http://localhost:8012/ >/dev/null 2>&1 || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -235,3 +335,5 @@ volumes:
   npm_letsencrypt:
   redis_data:
   backup_data:
+  kkfileview_cache:
+  kkfileview_cache_index:

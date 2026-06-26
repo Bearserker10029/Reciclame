@@ -312,7 +312,7 @@
                     th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
                   <td>
                     <div style="font-size:12px;font-weight:600;color:#1B3A5C;white-space:nowrap;"
-                         th:text="${a.fechaAccion != null ? a.fechaAccion.toString().replace('T',' ').substring(0,19) : '—'}">—</div>
+                         th:text="${a.fechaAccion != null ? #temporals.format(a.fechaAccion, 'yyyy-MM-dd HH:mm:ss') : '—'}">—</div>
                   </td>
                   <td>
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -486,9 +486,10 @@
                 && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
               if (ok && (fechaDesde || fechaHasta)) {
                 var fechaCelda = row.querySelector('td:first-child div:first-child')?.textContent || '';
-                var fechaParts = fechaCelda.substring(0, 10).split('/');
+                // La celda viene en formato "yyyy-MM-dd HH:mm:ss" (render Thymeleaf).
+                var fechaParts = fechaCelda.substring(0, 10).split('-');
                 if (fechaParts.length === 3) {
-                  var fechaRow = fechaParts[2] + '-' + fechaParts[1] + '-' + fechaParts[0];
+                  var fechaRow = fechaParts[0] + '-' + fechaParts[1] + '-' + fechaParts[2];
                   if (fechaDesde && fechaRow < fechaDesde) ok = false;
                   if (fechaHasta && fechaRow > fechaHasta) ok = false;
                 }
@@ -554,6 +555,7 @@
             if (elFallidos) elFallidos.textContent = fallidos || '0';
           });
         </script>
+      <th:block th:replace="~{navbar/dock :: dock}"></th:block>
       <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>

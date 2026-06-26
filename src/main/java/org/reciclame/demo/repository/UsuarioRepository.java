@@ -22,6 +22,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     boolean existsByDni(String dni);
 
+    boolean existsByCorreoCorporativoAndEstadoActivoTrue(String correoCorporativo);
+
+    boolean existsByDniAndEstadoActivoTrue(String dni);
+
     List<Usuario> findTop100ByOrderByCreatedAtDesc();
 
     @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.estadoActivo = true")

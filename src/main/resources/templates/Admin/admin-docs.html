@@ -281,6 +281,17 @@
     }
     .btn-guardar:hover { box-shadow: 0 8px 22px rgba(27,58,92,.4); transform: translateY(-1px); }
     .btn-guardar:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      /* Stats grid 4→2 cols */
+      div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      /* Tabla docs: ocultar Descripción(2) y Formato(4) */
+      .table th:nth-child(2), .table td:nth-child(2),
+      .table th:nth-child(4), .table td:nth-child(4) { display: none !important; }
+      .table { min-width: unset !important; font-size: 12px !important; }
+      /* Modal form: 2 cols → 1 */
+      .field-group2 { grid-template-columns: 1fr !important; }
+    }
   </style>
 </head>
 

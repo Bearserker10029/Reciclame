@@ -24,6 +24,20 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      .grid-container { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      div[style*="grid-template-columns:1fr 280px"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:1fr 280px"] > aside { display: none !important; }
+      .filter-row { flex-wrap: wrap !important; gap: 8px !important; }
+      .filter-row > * { flex: 1 1 calc(50% - 4px) !important; min-width: 120px; }
+      #tabla-estudios { min-width: unset !important; width: 100%; }
+      #tabla-estudios th:nth-child(2), #tabla-estudios td:nth-child(2),
+      #tabla-estudios th:nth-child(5), #tabla-estudios td:nth-child(5) { display: none !important; }
+      #tabla-estudios .file-icon { display: none !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -1413,6 +1427,7 @@
           })();
         </script>
 
+        <th:block th:replace="~{navbar/dock :: dock}"></th:block>
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>

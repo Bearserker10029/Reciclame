@@ -4,6 +4,50 @@
 <body>
   <th:block th:fragment="perfil-content">
     <style>
+      @media (max-width: 767px) {
+        /* Layout principal perfil: 1 columna */
+        div[style*="grid-template-columns:1fr 340px"] { grid-template-columns: 1fr !important; }
+        /* Ocultar tarjeta credencial en mobile (queda al fondo y ocupa mucho) */
+        div[style*="grid-template-columns:1fr 340px"] > div:last-child { display: none; }
+        /* Form fields: 1 columna en mobile */
+        div[style*="grid-template-columns:1fr 1fr"][style*="gap:14px"] { grid-template-columns: 1fr !important; }
+        main { padding-bottom: 80px !important; }
+      }
+
+      /* Card "Cerrar sesión" para mobile: solo aparece cuando el sidebar
+         está oculto. En desktop queda oculta porque el botón ya está
+         en el sidebar. */
+      .logout-card-mobile { display: none; }
+      @media (max-width: 767px) {
+        .logout-card-mobile { display: block; }
+      }
+      .btn-logout {
+        width: 100%;
+        padding: 12px 20px;
+        border-radius: 12px;
+        border: 1.5px solid rgba(231, 76, 60, .25);
+        background: rgba(231, 76, 60, .08);
+        color: #E74C3C;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all .2s ease;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .btn-logout:hover {
+        background: rgba(231, 76, 60, .14);
+        border-color: rgba(231, 76, 60, .45);
+        transform: translateY(-1px);
+      }
+      .btn-logout:active {
+        transform: translateY(0) scale(.98);
+      }
+
       @keyframes fadeUp {
         from {
           opacity: 0;
@@ -532,6 +576,7 @@
                 contrasenia</button>
             </div>
           </form>
+          <th:block th:replace="~{components/password-validator :: password-validator}"></th:block>
         </div>
 
       </div>
@@ -583,6 +628,18 @@
       </div>
     </div>
 
+    <!-- Cerrar sesión (solo mobile): el sidebar está oculto en ≤767px,
+         así que el botón de logout no es accesible desde la UI mobile.
+         Esta card lo expone directamente en la página de perfil. -->
+    <div class="form-card anim-1 logout-card-mobile" style="animation-delay:.15s;margin-top:20px;">
+      <h2 style="font-size:15px;font-weight:700;color:#1B3A5C;margin-bottom:14px;">
+        <i class="fas fa-sign-out-alt" style="color:#E74C3C;margin-right:8px;"></i>Sesión
+      </h2>
+      <button type="button" class="btn-logout" onclick="window.location.href='/logout'">
+        <i class="fas fa-sign-out-alt"></i>Cerrar sesión
+      </button>
+    </div>
+
     <script th:inline="javascript">
       var qrUserId = /*[[${usuario != null ? usuario.id : 'USER'}]]*/ 'USER';
       var qrUserDni = /*[[${usuario != null ? usuario.dni : '00000000'}]]*/ '00000000';
@@ -605,16 +662,28 @@
           } catch (e) { console.error('Error animando stat-bar:', e); }
         }, 500);
 
-        try {
-          if (document.getElementById('qr-code') && typeof QRCode !== 'undefined') {
-            new QRCode(document.getElementById('qr-code'), {
-              text: 'RECICLAME-' + qrUserId + '-' + qrUserDni,
-              width: 152, height: 152,
-              colorDark: '#1B3A5C', colorLight: '#ffffff',
-              correctLevel: QRCode.CorrectLevel.M
-            });
-          }
-        } catch (e) { console.error('Error generando QR:', e); }
+        cargarQrLogin();
+        setInterval(cargarQrLogin, 4 * 60 * 1000);
+        function cargarQrLogin() {
+          var qrEl = document.getElementById('qr-code');
+          if (!qrEl || typeof QRCode === 'undefined') return;
+          fetch('/api/perfil/qr-token', { credentials: 'same-origin' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (data) {
+              if (!data || !data.url) {
+                qrEl.innerHTML = '<div style="font-size:11px;color:#9CA3AF;">QR no disponible</div>';
+                return;
+              }
+              qrEl.innerHTML = '';
+              new QRCode(qrEl, {
+                text: data.url,
+                width: 152, height: 152,
+                colorDark: '#1B3A5C', colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+              });
+            })
+            .catch(function (e) { console.error('Error generando QR:', e); });
+        }
       });
 
       function clearPasswordFields() {

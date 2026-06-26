@@ -520,6 +520,20 @@
       animation: rowHighlight 2.8s ease-out forwards;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; padding-bottom: 80px !important; }
+      /* Tabla usuarios: scroll horizontal, ocultar columnas secundarias */
+      .table-responsive { overflow-x: auto; }
+      table { min-width: unset !important; font-size: 12px !important; }
+      table th:nth-child(3), table td:nth-child(3),
+      table th:nth-child(5), table td:nth-child(5) { display: none !important; }
+      /* Filtros */
+      .filter-row, div[style*="display:flex"][style*="gap"][style*="flex-wrap"] { flex-wrap: wrap !important; }
+      /* Stats 2 col */
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr 1fr !important; }
+    }
+
     /* ── Entry animations ───────────────────────────────── */
     @keyframes fadeUp {
       from {
@@ -752,7 +766,7 @@
                 <div class="lbl">Activos</div>
               </div>
               <div class="stat-chip" style="animation-delay:.2s">
-                <div class="val" th:text="${usuariosPendientes != null ? usuariosPendientes.size() : 0}">0</div>
+                <div class="val" th:text="${solicitudesPendientes != null ? solicitudesPendientes.size() : 0}">0</div>
                 <div class="lbl">Pendientes</div>
               </div>
               <div class="stat-chip" style="animation-delay:.3s">
@@ -771,7 +785,7 @@
           </button>
           <button id="tab-usuarios-pendientes" class="norm-tab" onclick="switchUsuarioTab('pendientes')">
             <i class="fas fa-user-clock"></i> Solicitudes pendientes
-            <span class="count-badge" th:text="${#lists.size(usuariosPendientes)}">0</span>
+            <span class="count-badge" th:text="${#lists.size(solicitudesPendientes)}">0</span>
           </button>
           <button id="tab-usuarios-historial" class="norm-tab" onclick="switchUsuarioTab('historial')">
             <i class="fas fa-history"></i> Historial
@@ -918,50 +932,47 @@
         <!-- ═══ TAB: PENDIENTES ═══ -->
         <div id="utab-pendientes" style="display:none;">
           <div style="display:flex;flex-direction:column;gap:12px;">
-            <div th:each="usuario : ${usuariosPendientes}"
+            <div th:each="sol : ${solicitudesPendientes}"
               style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:20px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
               <!-- Avatar -->
-              <div
-                style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;"
-                th:text="${usuario.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(usuario.nombreCompleto, 0, #strings.length(usuario.nombreCompleto) > 1 ? 2 : 1)) : '??'}">
-                ??</div>
+              <div style="width:46px;height:46px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;"
+                th:text="${sol.nombreCompleto != null ? #strings.toUpperCase(#strings.substring(sol.nombreCompleto, 0, #strings.length(sol.nombreCompleto) > 1 ? 2 : 1)) : '??'}">??</div>
               <!-- Info -->
               <div style="flex:1;min-width:180px;">
-                <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;"
-                  th:text="${usuario.nombreCompleto}">Nombre</div>
-                <div style="font-size:12px;color:#9CA3AF;margin-bottom:6px;">
-                  <span th:text="${usuario.correoCorporativo}">correo</span> ·
-                  DNI: <span th:text="${usuario.dni}">00000000</span>
+                <div style="font-weight:700;color:#1B3A5C;font-size:14px;margin-bottom:2px;" th:text="${sol.nombreCompleto}">Nombre</div>
+                <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">
+                  <span th:text="${sol.correoCorporativo}">correo</span> ·
+                  DNI: <span th:text="${sol.dni}">00000000</span>
                 </div>
-                <div
-                  style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:6px 10px;border-radius:6px;border-left:3px solid #F39C12;"
-                  th:text="'Solicitado el ' + ${usuario.createdAt != null ? #temporals.format(usuario.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">
-                  Fecha</div>
+                <div style="font-size:11px;color:#6B7280;margin-bottom:2px;">
+                  Empresa: <span th:text="${sol.empresaNombre}">—</span>
+                </div>
+                <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:5px 10px;border-radius:6px;border-left:3px solid #F39C12;display:inline-block;"
+                  th:text="'Solicitado el ' + ${sol.createdAt != null ? #temporals.format(sol.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">Fecha</div>
               </div>
               <!-- Acciones -->
               <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-                <select th:id="|rol-sel-${usuario.id}|"
+                <select th:id="|rol-sel-${sol.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
                   <option value="">Asignar rol...</option>
-                  <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}"
-                    th:text="${r.nombre}">Rol</option>
+                  <option th:each="r : ${roles}" th:if="${r.nombre.toLowerCase() != 'superadmin'}" th:value="${r.id}" th:text="${r.nombre}">Rol</option>
                 </select>
-                <select th:id="|emp-sel-${usuario.id}|"
+                <select th:id="|emp-sel-${sol.id}|"
                   style="padding:7px 10px;border:1px solid #E5E7EB;border-radius:6px;font-size:12px;font-family:inherit;">
                   <option value="">Sin empresa</option>
                   <option th:each="emp : ${empresas}" th:value="${emp.id}" th:text="${emp.razonSocial}">Empresa</option>
                 </select>
-                <button th:onclick="|aprobarUsuario(${usuario.id})|"
+                <button th:onclick="|aprobarSolicitud(${sol.id})|"
                   style="padding:7px 14px;border-radius:6px;border:none;background:#2ECC71;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">
                   <i class="fas fa-check"></i> Aprobar
                 </button>
-                <button th:onclick="|rechazarUsuario(${usuario.id})|"
+                <button th:onclick="|rechazarSolicitud(${sol.id})|"
                   style="padding:7px 12px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;color:#E74C3C;font-size:12px;cursor:pointer;font-family:inherit;">
                   <i class="fas fa-times"></i> Rechazar
                 </button>
               </div>
             </div>
-            <div th:if="${#lists.isEmpty(usuariosPendientes)}"
+            <div th:if="${solicitudesPendientes == null or #lists.isEmpty(solicitudesPendientes)}"
               style="background:#fff;border-radius:12px;padding:40px;text-align:center;color:#9CA3AF;">
               <i class="fas fa-check-circle" style="font-size:32px;color:#2ECC71;margin-bottom:12px;display:block;"></i>
               No hay solicitudes pendientes.
@@ -1228,9 +1239,12 @@
             document.getElementById('crear-cargo').value = '';
             document.getElementById('crear-correo').value = '';
             document.getElementById('crear-password').value = '';
+            document.getElementById('crear-password2').value = '';
             document.getElementById('crear-rol').value = '';
             document.getElementById('crear-empresa').value = '';
             document.getElementById('crear-error').style.display = 'none';
+            document.getElementById('crear-pw-bar').style.display = 'none';
+            document.getElementById('crear-match-msg').style.display = 'none';
             document.getElementById('modal-crear').style.display = 'flex';
           }
 
@@ -1238,23 +1252,85 @@
             document.getElementById('modal-crear').style.display = 'none';
           }
 
+          function crearPwStrength(v) {
+            var s = 0;
+            if (v.length >= 8)  s += 25;
+            if (v.length >= 12) s += 15;
+            if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s += 25;
+            if (/[0-9]/.test(v)) s += 20;
+            if (/[^A-Za-z0-9]/.test(v)) s += 15;
+            return Math.min(s, 100);
+          }
+
+          function crearCheckPw() {
+            var v = document.getElementById('crear-password').value;
+            var bar = document.getElementById('crear-pw-bar');
+            var fill = document.getElementById('crear-pw-fill');
+            var label = document.getElementById('crear-pw-label');
+            if (!v) { bar.style.display = 'none'; return; }
+            bar.style.display = 'block';
+            var s = crearPwStrength(v);
+            fill.style.width = s + '%';
+            if (s < 40)       { fill.style.background = '#ef4444'; label.textContent = 'Muy débil';  label.style.color = '#ef4444'; }
+            else if (s < 65)  { fill.style.background = '#f97316'; label.textContent = 'Débil';      label.style.color = '#f97316'; }
+            else if (s < 85)  { fill.style.background = '#eab308'; label.textContent = 'Aceptable';  label.style.color = '#eab308'; }
+            else              { fill.style.background = '#22c55e'; label.textContent = 'Fuerte';     label.style.color = '#22c55e'; }
+            crearCheckMatch();
+          }
+
+          function crearCheckMatch() {
+            var p1 = document.getElementById('crear-password').value;
+            var p2 = document.getElementById('crear-password2').value;
+            var msg = document.getElementById('crear-match-msg');
+            if (!p2) { msg.style.display = 'none'; return; }
+            msg.style.display = 'block';
+            if (p1 === p2) { msg.textContent = '✓ Las contraseñas coinciden'; msg.style.color = '#22c55e'; }
+            else           { msg.textContent = '✗ Las contraseñas no coinciden'; msg.style.color = '#ef4444'; }
+          }
+
           function guardarNuevoUsuario() {
             var nombre = document.getElementById('crear-nombre').value.trim();
             var dni = document.getElementById('crear-dni').value.trim();
             var correo = document.getElementById('crear-correo').value.trim();
             var password = document.getElementById('crear-password').value;
+            var password2 = document.getElementById('crear-password2').value;
             var rolId = document.getElementById('crear-rol').value;
             var empresaId = document.getElementById('crear-empresa').value;
             var cargo = document.getElementById('crear-cargo').value.trim();
             var errorEl = document.getElementById('crear-error');
 
-            if (!nombre || !dni || !correo || !password || !rolId) {
+            if (!nombre || !dni || !correo || !password || !password2 || !rolId) {
               errorEl.textContent = 'Completa los campos obligatorios (*)';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+              errorEl.textContent = 'El nombre solo debe contener letras y espacios';
               errorEl.style.display = 'block';
               return;
             }
             if (dni.length !== 8 || !/^\d+$/.test(dni)) {
               errorEl.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+              errorEl.textContent = 'El correo electrónico no tiene un formato válido';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (password.length < 8) {
+              errorEl.textContent = 'La contraseña debe tener al menos 8 caracteres';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (crearPwStrength(password) < 40) {
+              errorEl.textContent = 'La contraseña es muy débil. Agrega números o mayúsculas';
+              errorEl.style.display = 'block';
+              return;
+            }
+            if (password !== password2) {
+              errorEl.textContent = 'Las contraseñas no coinciden';
               errorEl.style.display = 'block';
               return;
             }
@@ -1405,33 +1481,41 @@
             _bloqueoAccion = null;
           }
 
-          // ─── Aprobar solicitud pendiente ──────────────────────────
-          function aprobarUsuario(id) {
-            var rolId = document.getElementById('rol-sel-' + id).value;
-            var empId = document.getElementById('emp-sel-' + id).value;
-            if (!rolId) {
-              alert('Debes asignar un rol antes de aprobar');
-              return;
-            }
-            var url = '/api/usuarios/' + id + '/aprobar?rolId=' + rolId;
-            if (empId) url += '&empresaId=' + empId;
-            fetch(url, { method: 'POST' })
-              .then(function (r) {
-                if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
-                else { alert('Error al aprobar la solicitud'); }
-              })
-              .catch(function () { alert('Error de conexión'); });
+          // ─── Modal de error genérico ──────────────────────────────
+          function mostrarErrorModal(msg) {
+            document.getElementById('modal-error-msg').textContent = msg;
+            document.getElementById('modal-error').style.display = 'flex';
+          }
+          function cerrarModalError() {
+            document.getElementById('modal-error').style.display = 'none';
           }
 
-          // ─── Rechazar solicitud pendiente ─────────────────────────
-          function rechazarUsuario(id) {
-            if (!confirm('¿Confirmas rechazar esta solicitud?')) return;
-            fetch('/api/usuarios/' + id + '/rechazar', { method: 'POST' })
-              .then(function (r) {
-                if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
-                else { alert('Error al rechazar la solicitud'); }
-              })
-              .catch(function () { alert('Error de conexión'); });
+          // ─── Aprobar solicitud de registro ────────────────────────
+          var _aprobarId = null;
+          function aprobarSolicitud(id) {
+            var rolId = document.getElementById('rol-sel-' + id).value;
+            if (!rolId) {
+              mostrarErrorModal('Debes asignar un rol antes de aprobar la solicitud.');
+              return;
+            }
+            _aprobarId = id;
+            document.getElementById('modal-aprobar').style.display = 'flex';
+          }
+          function cerrarModalAprobar() {
+            document.getElementById('modal-aprobar').style.display = 'none';
+            _aprobarId = null;
+          }
+
+          // ─── Rechazar solicitud de registro ───────────────────────
+          var _rechazarId = null;
+          function rechazarSolicitud(id) {
+            _rechazarId = id;
+            document.getElementById('rechazar-motivo').value = '';
+            document.getElementById('modal-rechazar').style.display = 'flex';
+          }
+          function cerrarModalRechazar() {
+            document.getElementById('modal-rechazar').style.display = 'none';
+            _rechazarId = null;
           }
 
           // ─── Variables modales ────────────────────────────────────
@@ -1482,12 +1566,12 @@
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
                     document.getElementById('modal-exito').style.display = 'flex';
                   } else if (r.status === 403) {
-                    alert('Sin permisos: solo el SuperAdmin puede eliminar usuarios.');
+                    mostrarErrorModal('Sin permisos: solo el SuperAdmin puede eliminar usuarios.');
                   } else {
-                    alert('Error al eliminar el usuario (código: ' + r.status + ')');
+                    mostrarErrorModal('Error al eliminar el usuario (código: ' + r.status + ')');
                   }
                 })
-                .catch(function () { alert('Error de conexión'); });
+                .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
             document.getElementById('btn-confirmar-reactivar').onclick = function () {
               if (!idUsuarioReactivar) return;
@@ -1498,9 +1582,9 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else { alert('Error al reactivar el usuario'); }
+                  } else { mostrarErrorModal('Error al reactivar el usuario.'); }
                 })
-                .catch(function () { alert('Error de conexión'); });
+                .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
             document.getElementById('btn-confirmar-desbloquear').onclick = function () {
               if (!idUsuarioDesbloquear) return;
@@ -1511,9 +1595,39 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Desbloqueado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido desbloqueado correctamente.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else { alert('Error al desbloquear el usuario'); }
+                  } else { mostrarErrorModal('Error al desbloquear el usuario.'); }
                 })
-                .catch(function () { alert('Error de conexión'); });
+                .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
+            };
+            document.getElementById('modal-aprobar').addEventListener('click', function(e){ if(e.target===this) cerrarModalAprobar(); });
+            document.getElementById('modal-rechazar').addEventListener('click', function(e){ if(e.target===this) cerrarModalRechazar(); });
+            document.getElementById('modal-error').addEventListener('click', function(e){ if(e.target===this) cerrarModalError(); });
+            document.getElementById('btn-confirmar-aprobar').onclick = function() {
+              if (!_aprobarId) return;
+              var rolId = document.getElementById('rol-sel-' + _aprobarId).value;
+              var empId = document.getElementById('emp-sel-' + _aprobarId).value;
+              var url = '/api/solicitudes/' + _aprobarId + '/aprobar?rolId=' + rolId;
+              if (empId) url += '&empresaId=' + empId;
+              fetch(url, { method: 'POST' })
+                .then(function(r) {
+                  cerrarModalAprobar();
+                  if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
+                  else { r.text().then(function(t){ mostrarErrorModal('Error al aprobar: ' + t); }); }
+                })
+                .catch(function() { cerrarModalAprobar(); mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
+            };
+            document.getElementById('btn-confirmar-rechazar').onclick = function() {
+              if (!_rechazarId) return;
+              var motivo = document.getElementById('rechazar-motivo').value.trim();
+              var url = '/api/solicitudes/' + _rechazarId + '/rechazar';
+              if (motivo) url += '?motivo=' + encodeURIComponent(motivo);
+              fetch(url, { method: 'POST' })
+                .then(function(r) {
+                  cerrarModalRechazar();
+                  if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
+                  else { mostrarErrorModal('Error al rechazar la solicitud.'); }
+                })
+                .catch(function() { cerrarModalRechazar(); mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
             document.getElementById('modal-eliminar').addEventListener('click', function (e) { if (e.target === this) cerrarModalEliminar(); });
             document.getElementById('modal-reactivar').addEventListener('click', function (e) { if (e.target === this) cerrarModalReactivar(); });
@@ -1528,9 +1642,9 @@
                 .then(function (r) {
                   cerrarModalBloqueo();
                   if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
-                  else { alert('Error al ' + (_bloqueoAccion || 'actualizar') + ' el usuario'); }
+                  else { mostrarErrorModal('Error al ' + (_bloqueoAccion || 'actualizar') + ' el usuario.'); }
                 })
-                .catch(function () { alert('Error de conexión'); });
+                .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
 
             document.querySelectorAll('#tbody-activos tr[data-nombre]').forEach(function (tr) {
@@ -1621,14 +1735,30 @@
           <div class="modal-section">
             <div class="modal-section-label"><i class="fas fa-lock" style="font-size:9px;"></i> Acceso al sistema</div>
             <div class="field-group">
-              <div class="field-wrap full">
+              <div class="field-wrap">
                 <label>Contraseña inicial <span class="req">*</span></label>
                 <div class="input-icon-wrap"><i class="fas fa-lock inp-icon"></i>
-                  <input id="crear-password" type="password" class="form-control" placeholder="Mínimo 6 caracteres"
-                    required style="padding-right:36px!important;" />
+                  <input id="crear-password" type="password" class="form-control" placeholder="Mínimo 8 caracteres"
+                    required style="padding-right:36px!important;" oninput="crearCheckPw()" />
                   <button type="button" class="pw-toggle" onclick="togglePw('crear-password',this)"><i
                       class="fas fa-eye"></i></button>
                 </div>
+                <div id="crear-pw-bar" style="margin-top:6px;display:none;">
+                  <div style="height:4px;border-radius:4px;background:#e5e7eb;overflow:hidden;">
+                    <div id="crear-pw-fill" style="height:100%;width:0%;border-radius:4px;transition:width .3s,background .3s;"></div>
+                  </div>
+                  <span id="crear-pw-label" style="font-size:11px;color:#6b7280;margin-top:3px;display:block;"></span>
+                </div>
+              </div>
+              <div class="field-wrap">
+                <label>Confirmar contraseña <span class="req">*</span></label>
+                <div class="input-icon-wrap"><i class="fas fa-lock inp-icon"></i>
+                  <input id="crear-password2" type="password" class="form-control" placeholder="Repite la contraseña"
+                    required style="padding-right:36px!important;" oninput="crearCheckMatch()" />
+                  <button type="button" class="pw-toggle" onclick="togglePw('crear-password2',this)"><i
+                      class="fas fa-eye"></i></button>
+                </div>
+                <span id="crear-match-msg" style="font-size:11px;margin-top:3px;display:none;"></span>
               </div>
               <div class="field-wrap">
                 <label>Rol <span class="req">*</span></label>
@@ -1866,6 +1996,56 @@
           <button id="btn-confirmar-eliminar"
             style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;">Eliminar</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Aprobar Solicitud -->
+    <div id="modal-aprobar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-check" style="color:#27AE60;font-size:28px;"></i>
+          </div>
+          <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Aprobar solicitud</h3>
+          <p style="margin:8px 0 0 0;font-size:14px;color:#6B7280;">¿Confirmas aprobar esta solicitud de registro? Se creará la cuenta y se notificará al usuario por correo.</p>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button onclick="cerrarModalAprobar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
+          <button id="btn-confirmar-aprobar" style="padding:12px 24px;border:none;border-radius:8px;background:#2ECC71;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;"><i class="fas fa-check"></i> Aprobar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Rechazar Solicitud -->
+    <div id="modal-rechazar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-times" style="color:#E74C3C;font-size:28px;"></i>
+          </div>
+          <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Rechazar solicitud</h3>
+          <p style="margin:8px 0 12px 0;font-size:14px;color:#6B7280;">¿Confirmas rechazar esta solicitud? Puedes indicar un motivo (opcional).</p>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:12px;font-weight:600;color:#4B5563;display:block;margin-bottom:6px;">Motivo del rechazo <span style="color:#9CA3AF;font-weight:400;">(opcional)</span></label>
+          <textarea id="rechazar-motivo" rows="3" placeholder="Ej: Documentación incompleta..." style="width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;color:#374151;resize:vertical;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='#E74C3C'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;">
+          <button onclick="cerrarModalRechazar()" style="padding:12px 24px;border:1px solid #E5E7EB;border-radius:8px;background:#fff;color:#374151;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Cancelar</button>
+          <button id="btn-confirmar-rechazar" style="padding:12px 24px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;"><i class="fas fa-times"></i> Rechazar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Error Genérico -->
+    <div id="modal-error" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
+        <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <i class="fas fa-exclamation-circle" style="color:#E74C3C;font-size:28px;"></i>
+        </div>
+        <h3 style="margin:0;font-size:18px;font-weight:800;color:#1B3A5C;">Ocurrió un error</h3>
+        <p style="margin:8px 0 20px 0;font-size:14px;color:#6B7280;" id="modal-error-msg"></p>
+        <button onclick="cerrarModalError()" style="padding:12px 32px;border:none;border-radius:8px;background:#E74C3C;color:#fff;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Aceptar</button>
       </div>
     </div>
 

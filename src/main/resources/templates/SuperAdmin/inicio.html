@@ -22,6 +22,15 @@
       background: #F5F6FA;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 16px !important; padding-bottom: 80px !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+      .tr-grid { grid-template-columns: 1fr !important; }
+      .tr-cards { grid-template-columns: 1fr 1fr !important; }
+    }
+
     @keyframes waterWave {
       0% {
         background-position: 0% 50%;
@@ -224,7 +233,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
 
           <!-- Banner Estudios -->
-          <div onclick="navTo('estudios')"
+          <div id="tour-estudios" onclick="navTo('estudios')"
             style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
@@ -271,7 +280,7 @@
           </div>
 
           <!-- Banner Normativo -->
-          <div onclick="navTo('normativo')"
+          <div id="tour-normativo" onclick="navTo('normativo')"
             style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
@@ -343,11 +352,11 @@
                 <i class="fas fa-user-clock" style="color:#F39C12;font-size:18px;"></i>
               </div>
               <span class="pill" style="background:rgba(243,156,18,.12);color:#D68910;"
-                th:if="${usuariosPendientes != null and usuariosPendientes.size() > 0}"
-                th:text="${usuariosPendientes.size()}">0</span>
+                th:if="${solicitudesPendientes != null and solicitudesPendientes.size() > 0}"
+                th:text="${solicitudesPendientes.size()}">0</span>
             </div>
             <div style="font-size:30px;font-weight:800;color:#1B3A5C;margin-bottom:4px;"
-              th:text="${usuariosPendientes != null ? usuariosPendientes.size() : 0}">0</div>
+              th:text="${solicitudesPendientes != null ? solicitudesPendientes.size() : 0}">0</div>
             <div style="font-size:12px;color:#6B7280;">Solicitudes nuevas</div>
           </div>
 
@@ -478,15 +487,15 @@
               </div>
               <span
                 style="background:#E74C3C;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:999px;"
-                th:text="${usuariosPendientes != null ? usuariosPendientes.size() + ' nuevas' : '0 nuevas'}">0
+                th:text="${solicitudesPendientes != null ? solicitudesPendientes.size() + ' nuevas' : '0 nuevas'}">0
                 nuevas</span>
             </div>
             <div style="display:flex;flex-direction:column;gap:12px;"
-              th:if="${usuariosPendientes != null and !usuariosPendientes.isEmpty()}">
+              th:if="${solicitudesPendientes != null and !solicitudesPendientes.isEmpty()}">
               <div
                 style="padding:12px;background:#D1E8DC;border-radius:8px;border-left:4px solid #F39C12;display:flex;align-items:center;gap:10px;transition:background .15s;"
                 onmouseover="this.style.background='#E8F5E9'" onmouseout="this.style.background='#D1E8DC'"
-                th:each="u, iStat : ${usuariosPendientes}">
+                th:each="u, iStat : ${solicitudesPendientes}">
                 <div
                   style="width:36px;height:36px;border-radius:50%;background:#F39C12;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;"
                   th:text="${u.nombreCompleto != null and #strings.length(u.nombreCompleto) > 0 ? #strings.toUpperCase(#strings.substring(u.nombreCompleto, 0, 1)) : 'U'}">
@@ -507,7 +516,7 @@
               </div>
             </div>
             <div style="display:flex;flex-direction:column;gap:12px;"
-              th:unless="${usuariosPendientes != null and !usuariosPendientes.isEmpty()}">
+              th:unless="${solicitudesPendientes != null and !solicitudesPendientes.isEmpty()}">
               <div style="text-align:center;padding:20px;color:#9CA3AF;font-size:13px;">
                 <i class="fas fa-check-circle"
                   style="font-size:28px;color:#2ECC71;display:block;margin-bottom:8px;"></i>
@@ -522,6 +531,7 @@
 
         </div><!-- /two-col -->
 
+        <th:block th:replace="~{navbar/dock :: dock}"></th:block>
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
@@ -534,7 +544,7 @@
       var map = { 'admin-docs': 'documentos' };
       window.location.href = '/superadmin/' + (map[page] || page);
     }
-    function goLogin() { window.location.href = '/login'; }
+    function goLogin() { window.location.href = '/service/repositorio/login'; }
 
     document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('donut-admin');
@@ -613,6 +623,80 @@
   </script>
 
   <div th:replace="~{components/notif-toast :: notif-toast}"></div>
+
+  <!-- ── Onboarding Tour (Intro.js) ───────────────────────── -->
+  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"/>
+  <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+  <style>
+    .introjs-tooltip { font-family:'Inter',sans-serif!important;border-radius:14px!important;box-shadow:0 12px 40px rgba(0,0,0,.18)!important;min-width:280px!important;max-width:320px!important; }
+    .introjs-tooltiptext { font-size:13px!important;color:#374151!important;line-height:1.55!important; }
+    .introjs-tooltip-title { font-size:14px!important;font-weight:700!important;color:#1B3A5C!important; }
+    .introjs-button { font-family:'Inter',sans-serif!important;font-size:12px!important;font-weight:600!important;border-radius:8px!important;padding:7px 16px!important;text-shadow:none!important; }
+    .introjs-nextbutton { background:#1B3A5C!important;color:#fff!important;border-color:#1B3A5C!important; }
+    .introjs-nextbutton:hover { background:#15314d!important; }
+    .introjs-prevbutton { color:#6B7280!important;border-color:#E5E7EB!important;background:#fff!important; }
+    .introjs-skipbutton { color:#9CA3AF!important;font-size:18px!important; }
+    .introjs-helperLayer { border-radius:12px!important;box-shadow:rgba(0,0,0,.5) 0 0 0 9999px!important; }
+    .introjs-progress { background:#E5E7EB!important;border-radius:4px!important; }
+    .introjs-progressbar { background:#2ECC71!important;border-radius:4px!important; }
+  </style>
+  <script>
+  (function () {
+    var TOUR_KEY = 'reciclame:tour:superadmin:v1';
+    if (localStorage.getItem(TOUR_KEY)) return;
+
+    var pasos = [
+      {
+        element: document.getElementById('topbar-search'),
+        title: '🔍 Buscador global',
+        intro: 'Busca normativas, estudios y usuarios en tiempo real. Como SuperAdmin tienes acceso a todos los registros del sistema.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('notif-btn'),
+        title: '🔔 Notificaciones',
+        intro: 'Centro de alertas del sistema. Recibirás notificaciones de nuevas solicitudes, publicaciones y eventos importantes.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('tour-normativo'),
+        title: '⚖️ Gestión Normativa',
+        intro: 'Control total del repositorio normativo: crear, editar, validar y controlar la visibilidad de todas las normativas.',
+        position: 'top'
+      },
+      {
+        element: document.getElementById('tour-estudios'),
+        title: '📂 Gestión de Estudios',
+        intro: 'Administra todos los estudios y reportes. Como SuperAdmin puedes validar y publicar contenido de cualquier administrador.',
+        position: 'top'
+      }
+    ].filter(function(p) { return p.element != null; });
+
+    if (pasos.length === 0) return;
+
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        introJs()
+          .setOptions({
+            steps: pasos,
+            nextLabel: 'Siguiente →',
+            prevLabel: '← Anterior',
+            doneLabel: '¡Entendido! 🎉',
+            skipLabel: '✕',
+            showProgress: true,
+            showBullets: false,
+            scrollToElement: true,
+            scrollPadding: 80,
+            exitOnOverlayClick: false,
+            disableInteraction: false
+          })
+          .oncomplete(function () { localStorage.setItem(TOUR_KEY, '1'); })
+          .onexit(function ()     { localStorage.setItem(TOUR_KEY, '1'); })
+          .start();
+      }, 800);
+    });
+  })();
+  </script>
 
 </body>
 

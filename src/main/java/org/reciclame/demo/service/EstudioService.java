@@ -2,6 +2,7 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
+import org.reciclame.demo.dto.VirusTotalVerdict;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
 import org.springframework.stereotype.Service;
@@ -47,8 +48,10 @@ public class EstudioService {
         this.notificacionService        = notificacionService;
         this.auditoriaService           = auditoriaService;
         this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -69,6 +72,17 @@ public class EstudioService {
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public List<EstudioResponseDTO> listarEstudiosLimit(int limite) {
+        var stream = estudioRepository.findAll().stream()
+                .sorted((a, b) -> {
+                    if (a.getCreatedAt() == null) return 1;
+                    if (b.getCreatedAt() == null) return -1;
+                    return b.getCreatedAt().compareTo(a.getCreatedAt());
+                });
+        if (limite > 0) stream = stream.limit(limite);
+        return stream.map(this::toResponseDTO).collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> agregarPorTematica() {
@@ -102,14 +116,29 @@ public class EstudioService {
                                            String auditorUsuarioNombre,
                                            String ipAddress,
                                            String userAgent) {
+        return crearEstudio(dto, archivoUrl, archivoTipoMime, null,
+                correoAutor, auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public EstudioResponseDTO crearEstudio(EstudioRequestDTO dto,
+                                           String archivoUrl,
+                                           String archivoTipoMime,
+                                           VirusTotalVerdict vtVerdict,
+                                           String correoAutor,
+                                           Long auditorUsuarioId,
+                                           String auditorUsuarioNombre,
+                                           String ipAddress,
+                                           String userAgent) {
         Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
         Usuario subidaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
-                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado: " + correoAutor));
 
         Estudio e = new Estudio();
         mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        applyVerdict(e, vtVerdict);
         e.setSubidaPor(subidaPor);
         e.setEstadoActivo(true);
         e.setVisualizacionesCount(0);
@@ -157,8 +186,35 @@ public class EstudioService {
                                                 String auditorUsuarioNombre,
                                                 String ipAddress,
                                                 String userAgent) {
+        return actualizarEstudio(id, dto, archivoUrl, archivoTipoMime, null,
+                auditorUsuarioId, auditorUsuarioNombre, ipAddress, userAgent);
+    }
+
+    @Transactional
+    public EstudioResponseDTO actualizarEstudio(Long id,
+                                                EstudioRequestDTO dto,
+                                                String archivoUrl,
+                                                String archivoTipoMime,
+                                                VirusTotalVerdict vtVerdict,
+                                                Long auditorUsuarioId,
+                                                String auditorUsuarioNombre,
+                                                String ipAddress,
+                                                String userAgent) {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
+
+        // Si llega un archivo nuevo y es distinto al actual, eliminar el viejo de MinIO
+        // para evitar archivos huérfanos y (en combinación con el nonce del visor) forzar
+        // que kkFileView sirva el archivo nuevo, no uno cacheado por fullfilename.
+        if (archivoUrl != null && e.getArchivoUrl() != null
+                && !archivoUrl.equals(e.getArchivoUrl())
+                && !e.getArchivoUrl().isBlank()) {
+            try {
+                minioStorageService.eliminarArchivo(e.getArchivoUrl());
+            } catch (Exception ex) {
+                System.err.println("Advertencia: no se pudo eliminar archivo anterior de MinIO: " + ex.getMessage());
+            }
+        }
 
         String datosAnteriores = null;
         try {
@@ -171,6 +227,9 @@ public class EstudioService {
                 .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
 
         mapDtoToEntity(dto, e, tematica, archivoUrl, archivoTipoMime);
+        if (vtVerdict != null) {
+            applyVerdict(e, vtVerdict);
+        }
         e.setUpdatedAt(Instant.now());
 
         Estudio saved = estudioRepository.save(e);
@@ -306,6 +365,17 @@ public class EstudioService {
         }
     }
 
+    private void applyVerdict(Estudio e, VirusTotalVerdict v) {
+        if (v == null) return;
+        e.setVtSha256(v.getSha256());
+        e.setVtVerdict(v.getVerdict() != null ? v.getVerdict().name() : null);
+        e.setVtMaliciousEngines(v.getMaliciousEngines());
+        e.setVtSuspiciousEngines(v.getSuspiciousEngines());
+        e.setVtTotalEngines(v.getTotalEngines());
+        e.setVtSkipped(Boolean.TRUE.equals(v.isSkipped()));
+        e.setVtScannedAt(v.getScannedAt());
+    }
+
     private void guardarEtiquetas(Estudio estudio, List<Long> etiquetasIds) {
         if (etiquetasIds == null || etiquetasIds.isEmpty()) return;
         for (Long etiquetaId : etiquetasIds) {
@@ -334,6 +404,15 @@ public class EstudioService {
         dto.setAnio(e.getAnio());
         dto.setArchivoUrl(e.getArchivoUrl());
         dto.setArchivoTipoMime(e.getArchivoTipoMime());
+
+        dto.setVtSha256(e.getVtSha256());
+        dto.setVtVerdict(e.getVtVerdict());
+        dto.setVtMaliciousEngines(e.getVtMaliciousEngines());
+        dto.setVtSuspiciousEngines(e.getVtSuspiciousEngines());
+        dto.setVtTotalEngines(e.getVtTotalEngines());
+        dto.setVtSkipped(e.getVtSkipped());
+        dto.setVtScannedAt(e.getVtScannedAt());
+
         dto.setEsPublico(e.getEsPublico());
         dto.setVisualizacionesCount(e.getVisualizacionesCount());
         dto.setDescargasCount(e.getDescargasCount());
@@ -351,12 +430,15 @@ public class EstudioService {
             dto.setNormativaRelacionadaTitulo(e.getNormativaRelacionada().getTitulo());
         }
 
-        // Etiquetas
+        // Etiquetas (defensivo: el repo puede devolver null o filas sin etiqueta)
         List<EstudiosEtiqueta> relaciones = estudiosEtiquetaRepository.findByEstudioId(e.getId());
+        if (relaciones == null) relaciones = Collections.emptyList();
         dto.setEtiquetasIds(relaciones.stream()
+                .filter(r -> r != null && r.getEtiqueta() != null && r.getEtiqueta().getId() != null)
                 .map(r -> r.getEtiqueta().getId())
                 .collect(Collectors.toList()));
         dto.setEtiquetasNombres(relaciones.stream()
+                .filter(r -> r != null && r.getEtiqueta() != null && r.getEtiqueta().getNombre() != null)
                 .map(r -> r.getEtiqueta().getNombre())
                 .collect(Collectors.toList()));
 

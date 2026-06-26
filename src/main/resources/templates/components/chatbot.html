@@ -4,15 +4,15 @@
 </head>
 <body>
 
-<th:block th:fragment="chatbot">
+<th:block th:fragment="chatbot" th:if="${chatbotHabilitado}">
 
   <!-- ── Floating bubble ── -->
   <button id="chatbot-bubble"
           onclick="toggleChatbot()"
           style="display:none;"
           aria-label="Abrir asistente La Buena Cajita">
-    <img th:src="@{/assets/images/mascota.png}"
-         src="/assets/images/mascota.png"
+    <img th:src="@{/assets/images/mascota.webp}"
+         src="/assets/images/mascota.webp"
          alt="La Buena Cajita" />
   </button>
 
@@ -21,8 +21,8 @@
 
     <div class="chat-header">
       <div style="display:flex;align-items:center;gap:10px;">
-        <img th:src="@{/assets/images/mascota.png}"
-             src="/assets/images/mascota.png"
+        <img th:src="@{/assets/images/mascota.webp}"
+             src="/assets/images/mascota.webp"
              alt="La Buena Cajita" />
         <div>
           <div class="chat-title">La Buena Cajita</div>
@@ -100,10 +100,41 @@
       } catch (e) { /* silencioso */ }
     }
 
-    // Mostrar el bubble al cargar
+    // ── Persistencia de la sesión (sessionStorage, por usuario) ──
+    var SS_MSGS  = 'chatbot:msgs:' + (window.USUARIO_ID || '0');
+    var SS_OPEN  = 'chatbot:open:' + (window.USUARIO_ID || '0');
+
+    function guardarMensajes() {
+      try {
+        var msgs = document.getElementById('chat-messages');
+        if (msgs) sessionStorage.setItem(SS_MSGS, msgs.innerHTML);
+      } catch (e) { /* silencioso */ }
+    }
+    function restaurarMensajes() {
+      try {
+        var saved = sessionStorage.getItem(SS_MSGS);
+        var msgs = document.getElementById('chat-messages');
+        if (saved && msgs) {
+          msgs.innerHTML = saved;
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      } catch (e) { /* silencioso */ }
+    }
+
+    // Mostrar el bubble al cargar + restaurar mensajes y estado del panel
     function initChatbot() {
       var bubble = document.getElementById('chatbot-bubble');
-      if (bubble) {
+      var panel  = document.getElementById('chatbot-panel');
+      if (!bubble || !panel) return;
+
+      restaurarMensajes();
+      var estabaAbierto = sessionStorage.getItem(SS_OPEN) === '1';
+      if (estabaAbierto) {
+        panel.style.display  = 'flex';
+        bubble.style.display = 'none';
+        var msgs = document.getElementById('chat-messages');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
+      } else {
         bubble.style.display = 'flex';
       }
     }
@@ -118,6 +149,7 @@
         var isOpen = panel.style.display === 'flex';
         panel.style.display  = isOpen ? 'none' : 'flex';
         bubble.style.display = isOpen ? 'flex' : 'none';
+        try { sessionStorage.setItem(SS_OPEN, isOpen ? '0' : '1'); } catch (e) {}
       };
     }
 
@@ -137,6 +169,7 @@
         msgs.innerHTML += userMsgHtml;
         input.value = '';
         msgs.scrollTop = msgs.scrollHeight;
+        guardarMensajes();
 
         var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
         var errorFlag = false;
@@ -163,6 +196,7 @@
           var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' + content + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
+          guardarMensajes();
 
           var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
           var duracionMs = Math.max(0, Math.round(t1 - t0));
@@ -187,6 +221,7 @@
                            'Lo siento, el asistente no está disponible.' + '</div></div>';
           msgs.innerHTML += botMsgHtml;
           msgs.scrollTop = msgs.scrollHeight;
+          guardarMensajes();
           var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
           var duracionMs = Math.max(0, Math.round(t1 - t0));
           enviarCallbackRegistro({

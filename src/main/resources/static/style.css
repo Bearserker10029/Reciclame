@@ -463,3 +463,524 @@ select.form-control {
   transition: background .15s;
 }
 .btn-mark-read:hover { background: #F3F4F6; }
+
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile (≤760px) estilo Facebook-app
+   Mantiene colores del proyecto: navy #1B3A5C + verde #2ECC71
+   ════════════════════════════════════════════════════════════════ */
+
+/* Botón hamburguesa en topbar (oculto en desktop, no se inyecta en SuperAdmin) */
+.topbar-burger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, .08);
+  color: #fff;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.topbar-burger:hover { background: rgba(255, 255, 255, .16); }
+.topbar-burger:active { background: rgba(255, 255, 255, .24); }
+
+/* Variante "Más": ítem destacado del dock (abre drawer completo) */
+.dock-item--more {
+  background: rgba(27, 58, 92, .04);
+  color: #1B3A5C;
+}
+.dock-item--more i {
+  background: linear-gradient(135deg, #1B3A5C, #2c5282);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(27, 58, 92, .25);
+}
+.dock-item--more:hover {
+  background: rgba(27, 58, 92, .08);
+  color: #1B3A5C;
+}
+.dock-item--more:hover i { transform: scale(1.06); }
+
+/* Scrim para drawer del sidebar en mobile */
+#sidebar-scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 998;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+#sidebar-scrim.open { opacity: 1; }
+
+/* ── DOCK inferior estilo Apple (solo mobile) ─────────────── */
+#app-dock {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 9990;
+  background: #1B3A5C;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, .2);
+  padding: 0;
+  height: 60px;
+  justify-content: stretch;
+  align-items: stretch;
+  gap: 0;
+}
+.dock-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 2px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, .55);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  position: relative;
+  transition: color .15s ease, background .15s ease;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.dock-item i { font-size: 18px; line-height: 1; }
+.dock-item span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+.dock-item:hover { color: #2ECC71; background: transparent; }
+.dock-item:active { transform: scale(.95); }
+.dock-item.active { color: #2ECC71; }
+.dock-item.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: #2ECC71;
+  border-radius: 0 0 3px 3px;
+}
+.dock-item--more { color: rgba(255, 255, 255, .55) !important; background: transparent !important; }
+.dock-item--more i {
+  background: none !important;
+  color: rgba(255, 255, 255, .7) !important;
+  width: auto !important; height: auto !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 18px !important;
+  display: inline !important;
+  filter: none !important;
+}
+.dock-item--more:hover { color: #2ECC71 !important; background: transparent !important; }
+.dock-item--more:hover i { transform: none !important; color: #2ECC71 !important; }
+.dock-item .dock-badge {
+  position: absolute;
+  top: 5px;
+  right: calc(50% - 18px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: #E74C3C;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid #1B3A5C;
+}
+
+/* (FAB eliminado: el drawer se abre desde el ítem "Más" del dock) */
+
+/* ── Media query: activar layout mobile ───────────────────── */
+@media (max-width: 767px) {
+  /* Topbar más compacto */
+  #navbar {
+    height: 56px !important;
+    padding: 0 10px !important;
+    gap: 6px;
+  }
+  #navbar > div:first-child { gap: 6px !important; }
+  #navbar img[alt="Recíclame"] { height: 28px !important; }
+  .topbar-burger { display: inline-flex; }
+  #navbar #role-badge,
+  #navbar #topbar-tagline { display: none !important; }
+
+  /* Search más compacto y truncado */
+  #navbar #topbar-search {
+    width: auto !important;
+    max-width: 140px !important;
+    flex: 0 0 auto !important;
+    height: 32px !important;
+    margin-left: auto !important;
+    margin-right: 8px !important;
+    padding: 0 8px !important;
+  }
+  #navbar #topbar-search input { font-size: 12px !important; min-width: 0 !important; }
+  #navbar #topbar-search input::placeholder {
+    font-size: 11px !important;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #navbar #search-dropdown { width: calc(100vw - 24px) !important; left: 12px !important; }
+
+  /* Avatar del topbar → sólo el círculo (oculta nombre/rol) */
+  #navbar #user-name,
+  #navbar #user-role { display: none !important; }
+  #navbar > div:last-child { gap: 8px !important; padding: 4px !important; background: transparent !important; }
+  #navbar #avatar-circle { width: 30px !important; height: 30px !important; font-size: 11px !important; }
+
+  /* Notif dropdown se ensancha */
+  #navbar #notif-dropdown {
+    position: fixed !important;
+    top: 50px !important;
+    right: 8px !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Sidebar → drawer off-canvas */
+  .sidebar-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    z-index: 999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform .28s cubic-bezier(.4, 0, .2, 1) !important;
+    box-shadow: 6px 0 24px rgba(0, 0, 0, .25) !important;
+    padding-top: 16px !important;
+  }
+  .sidebar-nav.open { transform: translateX(0) !important; }
+  .sidebar-nav .nav-item { font-size: 14px !important; padding: 12px 16px !important; }
+  .sidebar-nav .nav-subitem { font-size: 13px !important; padding: 9px 12px !important; }
+  /* Hide scroll masks on mobile (no mouse scroll) */
+  .scroll-mask { display: none !important; }
+
+  /* Mascarilla del sidebar */
+  #sidebar-scrim { display: block; pointer-events: none; }
+  #sidebar-scrim.open { pointer-events: auto; }
+
+  /* Main: ocupa todo el ancho, padding inferior para dock */
+  html, body { overflow-x: hidden; }
+  body { width: 100% !important; max-width: 100vw !important; }
+  main.water-bg,
+  main[style*="background: url"],
+  main[style*="flex:1"] {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 14px !important;
+    padding-bottom: 96px !important; /* espacio para dock */
+    background-attachment: scroll !important; /* fixed bg cuesta en mobile */
+    min-height: calc(100vh - 56px) !important;
+    flex: 1 1 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Contenedor flex padre: en mobile, como el sidebar ya es fixed, lo convertimos en block
+     para que el main fluya al 100% del ancho sin reservar 240px para el sidebar. */
+  body > div > div[style*="display:flex"][style*="flex:1"][style*="min-height:calc"]:not(.sidebar-nav) {
+    width: 100% !important;
+    max-width: 100vw !important;
+    display: block !important;
+  }
+
+  /* Cualquier tarjeta (hero, stat, glass, etc.) dentro del main no debe overflow */
+  main.water-bg > * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ── Tabs y barras de tabs en mobile: ancho completo, cada tab flex:1 ── */
+  .norm-tab-bar,
+  .tab-bar,
+  [class*="-tab-bar"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .norm-tab-bar::-webkit-scrollbar { display: none; }
+  .norm-tab,
+  .report-tab {
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+    padding: 9px 8px !important;
+    font-size: 12px !important;
+    min-width: 0 !important;
+  }
+  .norm-tab .count-badge,
+  .report-tab .tab-badge {
+    flex-shrink: 0 !important;
+  }
+
+  /* Hero banners apilados */
+  main.water-bg > div[style*="grid-template-columns:1fr 1fr"],
+  main.water-bg > div[style*="grid-template-columns:1fr 1fr"]:first-of-type,
+  .sa-two-col {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  /* Padding interno de los banners azules/verdes del inicio */
+  main.water-bg > div[style*="grid-template-columns:1fr 1fr"] > div[id] {
+    padding: 18px !important;
+  }
+  main.water-bg > div[style*="grid-template-columns:1fr 1fr"] > div[id] > div[style*="font-size:22px"] {
+    font-size: 17px !important;
+  }
+
+  /* Legend items del donut: que se vean limpios */
+  main.water-bg .legend-item {
+    padding: 10px 12px !important;
+    gap: 10px !important;
+  }
+  main.water-bg .legend-item > div:first-child {
+    flex-shrink: 0 !important;
+  }
+  main.water-bg .legend-item > div:last-child {
+    min-width: 0 !important;
+    flex: 1 !important;
+    word-wrap: break-word !important;
+  }
+  /* Títulos y métricas del legend item */
+  main.water-bg .legend-item > div:last-child > div:first-child {
+    font-size: 12px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Stats de 4 columnas → 2 columnas */
+  main.water-bg > div[style*="repeat(4,1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  /* Grids de donut + leyenda — selectores profundos para cualquier nivel */
+  main.water-bg div[style*="display:flex"][style*="align-items:center"][style*="gap:32px"] {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 18px !important;
+  }
+  /* Cualquier grid 2col dentro de main pasa a 1 col */
+  main.water-bg div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Donut chart: centrado y un poco más grande en mobile */
+  main.water-bg #donut-admin,
+  main.water-bg canvas[id="donut-admin"] {
+    width: 180px !important;
+    height: 180px !important;
+    max-width: 60vw !important;
+  }
+  main.water-bg > div[style*="display:flex"][style*="align-items:center"][style*="gap:32px"] > div[style*="width:150px"] {
+    width: 180px !important;
+    height: 180px !important;
+  }
+
+  /* Formularios a 1 columna */
+  .form-card > form > div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tipografía más pequeña en heroes */
+  main.water-bg h1 { font-size: 19px !important; }
+  main.water-bg h1[style*="font-size:24px"] { font-size: 19px !important; }
+
+  /* Hero panels con padding reducido */
+  .estudios-hero,
+  .perfil-hero,
+  .reportes-hero,
+  .usuarios-hero,
+  .normativo-hero,
+  .dashboard-hero,
+  .parametros-hero,
+  .auditoria-hero,
+  .backups-hero,
+  .empresas-hero,
+  .impersonar-hero,
+  .trazabilidad-hero,
+  .diccionarios-hero,
+  .documentos-hero,
+  .configuracion-hero,
+  .notificaciones-hero {
+    padding: 18px !important;
+    margin-bottom: 18px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Perfil: layout 2 columnas → 1 */
+  main.water-bg > div[style*="grid-template-columns:1fr 340px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tablas: scrollear horizontal en card */
+  .table-card { border-radius: 12px !important; }
+  .table-card table { font-size: 12px !important; }
+
+  /* Filter rows wrap */
+  .filter-row {
+    flex-wrap: wrap !important;
+    padding: 12px !important;
+  }
+  .filter-row > * { min-width: 0 !important; flex: 1 1 100%; }
+  .filter-row input,
+  .filter-row select { width: 100% !important; }
+
+  /* Footer más compacto */
+  .sa-footer { padding: 16px 18px !important; }
+  .sa-footer-content { gap: 10px !important; }
+  .sa-footer-links { gap: 12px !important; }
+  .sa-footer-links a { font-size: 11px !important; }
+  .sa-footer-social { gap: 8px !important; }
+
+  /* Botones de acción principales: ancho completo */
+  main.water-bg > div > a[style*="linear-gradient"][style*="#2ECC71"] {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Modales fullscreen casi total */
+  .modal-dialog { margin: 8px !important; max-width: calc(100vw - 16px) !important; }
+  .modal-content { border-radius: 14px !important; }
+  .modal-header-custom { padding: 18px !important; }
+  .modal-body-custom { padding: 16px !important; }
+
+  /* Chatbot: reposicionado para no chocar con el dock */
+  #chatbot-bubble {
+    bottom: 96px !important;
+    right: 12px !important;
+    width: 56px !important;
+    height: 56px !important;
+  }
+  #chatbot-bubble img { width: 56px !important; height: 56px !important; }
+  #chatbot-panel {
+    bottom: 160px !important;
+    right: 12px !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: 60vh !important;
+  }
+
+  /* Toast de notif no tapa el dock */
+  #notif-toast-container,
+  div[style*="position:fixed"][style*="bottom:80px"] {
+    bottom: 100px !important;
+    right: 12px !important;
+    left: 12px !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+
+  /* Toast genérico slideInRight del topbar */
+  div[style*="bottom:80px"][style*="right:24px"] {
+    bottom: 100px !important;
+    right: 12px !important;
+    left: 12px !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+
+  /* Visores iframe fullscreen → ajustar alto y ocultar dock */
+  iframe[style*="min-height:calc(100vh - 130px)"] {
+    min-height: calc(100vh - 56px) !important; /* compensar topbar compacto */
+  }
+
+  /* Activar dock */
+  #app-dock { display: flex; }
+}
+
+/* Visores iframe: ocultar dock (esos modos son fullscreen) */
+@media (max-width: 767px) {
+  body.iframe-fullscreen #app-dock,
+  body.iframe-fullscreen .topbar-burger { display: none !important; }
+  body.iframe-fullscreen main { padding-bottom: 16px !important; }
+}
+
+/* iPhone SE / pantallas muy angostas */
+@media (max-width: 380px) {
+  .dock-item { font-size: 9px; padding: 6px 1px 4px; }
+  .dock-item i { font-size: 16px; }
+  .dock-item--more i { width: 24px; height: 24px; font-size: 11px; }
+  #navbar #topbar-search { max-width: 100px !important; }
+  #navbar #topbar-search input::placeholder { font-size: 10px !important; }
+  #navbar img[alt="Recíclame"] { height: 26px !important; }
+}
+
+/* Ocultar íconos en tabs cuando la pantalla es muy angosta (≤480px) */
+@media (max-width: 480px) {
+  .norm-tab i,
+  .report-tab i { display: none !important; }
+  .norm-tab,
+  .report-tab { gap: 4px !important; padding: 9px 6px !important; }
+}
+
+/* Safe area iOS (notch/home indicator) — solo aplica cuando el notch REAL existe
+   (no en cualquier navegador que soporte env() por defecto). Usamos constant() fallback
+   y envolvemos en :where para no forzar márgenes cuando inset vale 0. */
+@supports (padding: max(0px)) {
+  @media (max-width: 767px) {
+    /* El dock ocupa TODO el ancho: left/right/bottom en 0.
+       Solo respetamos safe-area-inset-bottom para el home indicator de iOS. */
+    #app-dock {
+      left: 0;
+      right: 0;
+      bottom: max(0px, env(safe-area-inset-bottom));
+      width: 100%;
+    }
+  }
+}
+
+/* ── Responsive mobile: chatbot sobre el dock ── */
+@media (max-width: 767px) {
+  #chatbot-bubble {
+    bottom: 72px !important;
+    right: 14px !important;
+    width: 56px !important;
+    height: 56px !important;
+  }
+  #chatbot-bubble img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  #chatbot-panel {
+    bottom: 136px !important;
+    right: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-height: 60vh !important;
+  }
+}

@@ -55,6 +55,28 @@ public class Estudio {
     @Column(name = "archivo_tipo_mime", length = 50)
     private String archivoTipoMime;
 
+    // ── Auditoría VirusTotal ───────────────────────────────────
+    @Column(name = "vt_sha256", length = 64)
+    private String vtSha256;
+
+    @Column(name = "vt_verdict", length = 20)
+    private String vtVerdict;
+
+    @Column(name = "vt_malicious_engines")
+    private Integer vtMaliciousEngines;
+
+    @Column(name = "vt_suspicious_engines")
+    private Integer vtSuspiciousEngines;
+
+    @Column(name = "vt_total_engines")
+    private Integer vtTotalEngines;
+
+    @Column(name = "vt_skipped")
+    private Boolean vtSkipped;
+
+    @Column(name = "vt_scanned_at")
+    private Instant vtScannedAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "normativa_relacionada_id")

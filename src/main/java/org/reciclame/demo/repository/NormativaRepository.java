@@ -22,6 +22,8 @@ public interface NormativaRepository extends JpaRepository<Normativa, Long> {
 
     List<Normativa> findTop100ByOrderByCreatedAtDesc();
 
+    List<Normativa> findTop5ByEstadoActivoTrueAndEsPublicaTrueOrderByVisualizacionesCountDesc();
+
     /**
      * Búsqueda global en normativas activas y públicas.
      * Busca en título y descripción breve con LIKE case-insensitive.

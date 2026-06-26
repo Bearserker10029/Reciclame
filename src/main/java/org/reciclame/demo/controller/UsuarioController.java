@@ -110,12 +110,14 @@ public class UsuarioController {
     // POST /api/usuarios/{id}/rechazar
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/rechazar")
-    public ResponseEntity<UsuarioResponseDTO> rechazarUsuario(@PathVariable Long id, HttpServletRequest request,
+    public ResponseEntity<UsuarioResponseDTO> rechazarUsuario(@PathVariable Long id,
+            @RequestParam(required = false) String motivo,
+            HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         String ipAddress = obtenerIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
-        return ResponseEntity.ok(usuarioService.rechazarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
+        return ResponseEntity.ok(usuarioService.rechazarUsuario(id, motivo, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
     // BLOQUEAR / DESBLOQUEAR usuario activo

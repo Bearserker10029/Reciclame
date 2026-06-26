@@ -11,7 +11,7 @@ public class MantenimientoController {
 
     @GetMapping("/mantenimiento")
     public String mantenimiento(Model model, Authentication auth) {
-        String homeUrl = "/login";
+        String homeUrl = "/service/repositorio/login";
         if (auth != null && auth.isAuthenticated()) {
             for (GrantedAuthority ga : auth.getAuthorities()) {
                 switch (ga.getAuthority()) {

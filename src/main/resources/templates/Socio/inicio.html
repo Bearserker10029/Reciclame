@@ -24,6 +24,16 @@
       background: #F0F4F8;
     }
 
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
+      main { padding: 16px !important; padding-bottom: 80px !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
+      .glass-card > div[style*="display:flex;align-items:center;gap:32px"] { flex-direction: column !important; align-items: flex-start !important; }
+      .tr-grid { grid-template-columns: 1fr !important; }
+      .tr-cards { grid-template-columns: 1fr 1fr !important; }
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -254,7 +264,7 @@
 
         <!-- HERO BANNERS -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
-          <div onclick="navTo('estudios')"
+          <div id="tour-estudios" onclick="navTo('estudios')"
             style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(27,58,92,.2)'">
@@ -289,7 +299,7 @@
             </div>
           </div>
 
-          <div onclick="navTo('normativo')"
+          <div id="tour-normativo" onclick="navTo('normativo')"
             style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
             onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 18px rgba(13,92,46,.2)'">
@@ -431,6 +441,11 @@
           </div>
         </div>
 
+        <!-- TOP NORMATIVAS + RECIENTES -->
+        <div id="tour-top-recientes">
+          <th:block th:replace="~{components/top-recientes :: top-recientes('socio')}"></th:block>
+        </div>
+
         <!-- ULTIMAS NOTIFICACIONES -->
         <div class="glass-card" style="padding:24px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
@@ -475,7 +490,7 @@
       var prefix = window.location.pathname.startsWith('/visualizador') ? '/visualizador' : '/socio';
       window.location.href = prefix + '/' + (map[page] || page);
     }
-    function goLogin() { window.location.href = '/login'; }
+    function goLogin() { window.location.href = '/service/repositorio/login'; }
 
     document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('donut-admin');
@@ -554,6 +569,107 @@
   </script>
 
   <div th:replace="~{components/notif-toast :: notif-toast}"></div>
+
+  <!-- ── Onboarding Tour (Intro.js) ───────────────────────── -->
+  <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"/>
+  <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
+  <style>
+    .introjs-tooltip {
+      font-family: 'Inter', sans-serif !important;
+      border-radius: 14px !important;
+      box-shadow: 0 12px 40px rgba(0,0,0,.18) !important;
+      min-width: 280px !important;
+      max-width: 320px !important;
+    }
+    .introjs-tooltiptext { font-size: 13px !important; color: #374151 !important; line-height: 1.55 !important; }
+    .introjs-tooltip-title { font-size: 14px !important; font-weight: 700 !important; color: #1B3A5C !important; }
+    .introjs-button {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important; font-weight: 600 !important;
+      border-radius: 8px !important; padding: 7px 16px !important;
+      text-shadow: none !important;
+    }
+    .introjs-nextbutton {
+      background: #1B3A5C !important; color: #fff !important;
+      border-color: #1B3A5C !important;
+    }
+    .introjs-nextbutton:hover { background: #15314d !important; }
+    .introjs-prevbutton { color: #6B7280 !important; border-color: #E5E7EB !important; background: #fff !important; }
+    .introjs-skipbutton { color: #9CA3AF !important; font-size: 18px !important; }
+    .introjs-helperLayer { border-radius: 12px !important; box-shadow: rgba(0,0,0,.5) 0 0 0 9999px !important; }
+    .introjs-progress { background: #E5E7EB !important; border-radius: 4px !important; }
+    .introjs-progressbar { background: #2ECC71 !important; border-radius: 4px !important; }
+    .introjs-bullets a.active { background: #1B3A5C !important; }
+  </style>
+  <script th:inline="javascript">
+  (function () {
+    var TOUR_KEY = 'reciclame:tour:socio:v1';
+    if (localStorage.getItem(TOUR_KEY)) return;
+
+    var pasos = [
+      {
+        element: document.getElementById('topbar-search'),
+        title: '🔍 Buscador global',
+        intro: 'Busca normativas y estudios en tiempo real mientras escribes. También puedes presionar <b>/</b> desde cualquier parte de la página para activarlo.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('notif-btn'),
+        title: '🔔 Notificaciones',
+        intro: 'Recibe alertas <b>en tiempo real</b> cuando se publiquen nuevas normativas o estudios. El número rojo indica cuántas no has leído.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('chat-side-btn'),
+        title: '💬 Chat interno',
+        intro: 'Comunícate directamente con los administradores de Recíclame. Los mensajes llegan en tiempo real sin necesidad de recargar la página.',
+        position: 'bottom'
+      },
+      {
+        element: document.getElementById('tour-normativo'),
+        title: '⚖️ Repositorio Normativo',
+        intro: 'Accede a toda la base de datos legal de economía circular: leyes, decretos y resoluciones nacionales e internacionales.',
+        position: 'top'
+      },
+      {
+        element: document.getElementById('tour-estudios'),
+        title: '📂 Estudios Recíclame',
+        intro: 'Explora reportes, infografías y ayudas memoria elaboradas por el equipo técnico de Recíclame.',
+        position: 'top'
+      },
+      {
+        element: document.getElementById('tour-top-recientes'),
+        title: '📊 Actividad del repositorio',
+        intro: 'Aquí ves las <b>normativas más consultadas</b> por todos los usuarios y los <b>documentos que tú visitaste recientemente</b>. Se actualizan automáticamente.',
+        position: 'top'
+      }
+    ].filter(function(p) { return p.element != null; });
+
+    if (pasos.length === 0) return;
+
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        introJs()
+          .setOptions({
+            steps: pasos,
+            nextLabel: 'Siguiente →',
+            prevLabel: '← Anterior',
+            doneLabel: '¡Entendido! 🎉',
+            skipLabel: '✕',
+            showProgress: true,
+            showBullets: false,
+            scrollToElement: true,
+            scrollPadding: 80,
+            exitOnOverlayClick: false,
+            disableInteraction: false
+          })
+          .oncomplete(function () { localStorage.setItem(TOUR_KEY, '1'); })
+          .onexit(function ()     { localStorage.setItem(TOUR_KEY, '1'); })
+          .start();
+      }, 800);
+    });
+  })();
+  </script>
 
 </body>
 
