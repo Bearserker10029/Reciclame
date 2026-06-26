@@ -869,7 +869,13 @@
               var method = IS_EDIT ? 'PUT' : 'POST';
 
               var res = await fetch(url, { method: method, body: formData });
-              var data = await res.json();
+
+              // Parsear JSON de forma segura: si el server devuelve 401 con HTML o body vacío,
+              // evitamos el "Unexpected end of JSON input" y mostramos un mensaje claro.
+              var data = {};
+              try { data = await res.json(); } catch (_) {
+                data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
+              }
 
               if (!res.ok) {
                 if (data.tipo === 'VALIDACION' && data.errores) {
