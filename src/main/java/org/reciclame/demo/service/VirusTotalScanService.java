@@ -78,6 +78,7 @@ public class VirusTotalScanService {
     public VirusTotalScanService(VirusTotalScanCacheService cache) {
         this.cache = cache;
         this.objectMapper = new ObjectMapper();
+        this.objectMapper.findAndRegisterModules(); // para serializar Instant en logs/errores
     }
 
     @PostConstruct
@@ -117,6 +118,8 @@ public class VirusTotalScanService {
         String sha256;
         try {
             sha256 = sha256(archivo);
+            log.info("VT scan: archivo='{}' size={}B sha256={}",
+                archivo.getOriginalFilename(), archivo.getSize(), sha256);
         } catch (IOException e) {
             log.error("No se pudo calcular SHA-256 del archivo: {}", e.getMessage());
             return failOpenVerdict("No se pudo calcular SHA-256: " + e.getMessage());
@@ -125,17 +128,30 @@ public class VirusTotalScanService {
         // 1) cache
         var cached = cache.get(sha256);
         if (cached.isPresent()) {
-            log.debug("VirusTotal cache HIT sha={} verdict={}", sha256, cached.get().getVerdict());
-            return cached.get();
+            VirusTotalVerdict v = cached.get();
+            // NO confiar en cache de fallos transitorios (cuota, red, key inválida).
+            // Si el veredicto guardado es SKIPPED por motivos recuperables,
+            // dejamos que VT lo intente de nuevo.
+            if (v.getVerdict() == Verdict.SKIPPED && isRecoverableSkipMessage(v.getMessage())) {
+                log.warn("VirusTotal cache SKIP recuperable sha={}, reintentando contra VT", sha256);
+                cache.evict(sha256);
+            } else {
+                log.debug("VirusTotal cache HIT sha={} verdict={}", sha256, v.getVerdict());
+                return v;
+            }
         }
 
         // 2) consulta VT por hash
         try {
             VirusTotalVerdict fromHash = lookupByHash(sha256);
             if (fromHash != null) {
+                log.info("VT lookup HIT sha={} verdict={} malicious={} suspicious={} total={}",
+                    sha256, fromHash.getVerdict(), fromHash.getMaliciousEngines(),
+                    fromHash.getSuspiciousEngines(), fromHash.getTotalEngines());
                 cache.put(fromHash);
                 return fromHash;
             }
+            log.info("VT lookup MISS sha={} (no conocido por VT), subiendo archivo", sha256);
         } catch (VirusTotalException e) {
             if (e.getReason() == Reason.VT_QUOTA_EXCEEDED) {
                 return failOpenVerdict("Cuota de VirusTotal agotada: " + e.getMessage());
@@ -172,6 +188,20 @@ public class VirusTotalScanService {
     }
 
     // ── Helpers ──────────────────────────────────────────────
+
+    /**
+     * Determina si un veredicto SKIPPED cacheado debe reintentarse.
+     * SKIPs por archivo vacío, key no configurada o archivo inválido NO se reintentan.
+     * SKIPs por cuota, red, 5xx o key inválida SÍ se reintentan (transitorios).
+     */
+    private boolean isRecoverableSkipMessage(String msg) {
+        if (msg == null) return true; // sin mensaje = probablemente skip técnico → reintentar
+        String m = msg.toLowerCase();
+        return m.contains("cuota") || m.contains("429")
+            || m.contains("no respondió") || m.contains("error i/o")
+            || m.contains("error consultando") || m.contains("error subiendo")
+            || m.contains("vt_unavailable") || m.contains("http 5");
+    }
 
     private VirusTotalVerdict failOpenVerdict(String message) {
         if (!failOpen) {
@@ -210,6 +240,12 @@ public class VirusTotalScanService {
             if (res.code() == 404) {
                 log.debug("VirusTotal no tiene el archivo sha={}, se subirá", sha256);
                 return null;
+            }
+            if (res.code() == 401) {
+                // API key inválida o no autorizada. Es recuperable (puede rotarse la key),
+                // NO guardamos cache y devolvemos fail-open.
+                throw new VirusTotalException(Reason.VT_UNAVAILABLE_FAIL_CLOSED,
+                        "VT 401 Unauthorized — API key inválida o sin permisos");
             }
             if (res.code() == 429) {
                 throw new VirusTotalException(Reason.VT_QUOTA_EXCEEDED,

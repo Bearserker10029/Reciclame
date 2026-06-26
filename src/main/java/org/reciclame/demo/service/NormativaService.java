@@ -58,8 +58,10 @@ public class NormativaService {
         this.auditoriaService             = auditoriaService;
         this.minioStorageService          = minioStorageService;
         this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+        this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     }
 
     // ── READ ALL ──────────────────────────────────────────────

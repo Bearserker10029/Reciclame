@@ -64,4 +64,17 @@ public class VirusTotalScanCacheService {
             log.warn("VirusTotal cache Redis error (sha={}): {}", verdict.getSha256(), e.getMessage());
         }
     }
+
+    /**
+     * Elimina un veredicto del cache (usado cuando el cache tiene un SKIP
+     * recuperable que queremos reintentar contra VT).
+     */
+    public void evict(String sha256) {
+        if (sha256 == null) return;
+        try {
+            redis.delete(KEY_PREFIX + sha256);
+        } catch (Exception e) {
+            log.warn("VirusTotal cache evict falló (sha={}): {}", sha256, e.getMessage());
+        }
+    }
 }
