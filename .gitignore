@@ -34,6 +34,9 @@ build/
 # Guia de comandos (archivo local con IPs sensitive)
 guia-comandos-ec2.md
 
+# Configuración de producción AWS (credenciales reales, no subir al repo)
+.env.aws
+
 # Archivos de sistema y temporales
 *.log
 *.tmp
