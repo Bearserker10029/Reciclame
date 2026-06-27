@@ -61,6 +61,15 @@ public abstract class BaseReportesController {
         return true; // default seguro: ADMIN
     }
 
+    /**
+     * Indica si los reportes/analytics del chatbot deben ocultar las conversaciones
+     * y mensajes de usuarios con rol SUPERADMIN. Mismo patrón que
+     * {@link #excluirSuperadminEnUsuarios()}: oculto en ADMIN, visible en SUPERADMIN.
+     */
+    protected boolean excluirSuperadminEnChatbot() {
+        return true; // default seguro: ADMIN
+    }
+
     protected List<UsuarioResponseDTO> usuariosFiltradosParaReporte(int limite) {
         var base = (limite > 0)
                 ? usuarioService().listarUsuariosLimit(limite)
@@ -656,9 +665,10 @@ public abstract class BaseReportesController {
             @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta)
             throws IOException {
         Instant[] rango = parseRango(desde, hasta);
-        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1]);
+        boolean excluirSa = excluirSuperadminEnChatbot();
+        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1], excluirSa);
         Page<ChatbotConsultaFilaDTO> page = chatbotService().listarConversacionesFiltrado(
-                null, null, rango[0], rango[1], PageRequest.of(0, 500));
+                null, null, rango[0], rango[1], PageRequest.of(0, 500), excluirSa);
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
         List<Map<String, Object>> datos = new ArrayList<>();
@@ -707,9 +717,10 @@ public abstract class BaseReportesController {
             @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta)
             throws IOException {
         Instant[] rango = parseRango(desde, hasta);
-        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1]);
+        boolean excluirSa = excluirSuperadminEnChatbot();
+        var stats = chatbotService().calcularEstadisticas(rango[0], rango[1], excluirSa);
         Page<ChatbotConsultaFilaDTO> page = chatbotService().listarConversacionesFiltrado(
-                null, null, rango[0], rango[1], PageRequest.of(0, 1000));
+                null, null, rango[0], rango[1], PageRequest.of(0, 1000), excluirSa);
 
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
         List<Map<String, Object>> datos = new ArrayList<>();
@@ -830,9 +841,10 @@ public abstract class BaseReportesController {
         String accion = req.accion != null ? req.accion.toLowerCase() : "download";
 
         int pageSize = limite > 0 ? limite : 5000;
-        var stats = chatbotService().calcularEstadisticas(null, null);
+        boolean excluirSa = excluirSuperadminEnChatbot();
+        var stats = chatbotService().calcularEstadisticas(null, null, excluirSa);
         Page<ChatbotConsultaFilaDTO> page = chatbotService().listarConversacionesFiltrado(
-                null, null, null, null, PageRequest.of(0, pageSize));
+                null, null, null, null, PageRequest.of(0, pageSize), excluirSa);
 
         byte[] archivo;
         String nombreArchivo;

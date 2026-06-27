@@ -386,7 +386,7 @@ public class AdminController extends BaseReportesController {
         // Envuelto en try/catch para que un fallo en el modulo del chatbot NO tumbe la pagina de reportes.
         try {
             Instant hace30dChat = Instant.now().minus(30, ChronoUnit.DAYS);
-            var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now());
+            var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now(), excluirSuperadminEnChatbot());
             model.addAttribute("chatStats", chatStats);
         } catch (Exception ex) {
             System.err.println("[reportes] Error cargando chatStats (chatbot): " + ex.getMessage());
