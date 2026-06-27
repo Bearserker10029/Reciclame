@@ -21,9 +21,35 @@ public interface ChatbotFeedbackRepository extends JpaRepository<ChatbotFeedback
 
     @Query("""
             SELECT COUNT(f) FROM ChatbotFeedback f
+            WHERE f.calificacion = 1
+              AND (:desde IS NULL OR f.createdAt >= :desde)
+              AND (:hasta IS NULL OR f.createdAt <= :hasta)
+              AND (
+                    f.usuario IS NULL
+                    OR f.usuario.rol IS NULL
+                    OR UPPER(f.usuario.rol.nombre) <> 'SUPERADMIN'
+              )
+            """)
+    long countPositivoExcluyendoSuperadmin(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    @Query("""
+            SELECT COUNT(f) FROM ChatbotFeedback f
             WHERE f.calificacion = -1
               AND (:desde IS NULL OR f.createdAt >= :desde)
               AND (:hasta IS NULL OR f.createdAt <= :hasta)
             """)
     long countNegativo(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
+
+    @Query("""
+            SELECT COUNT(f) FROM ChatbotFeedback f
+            WHERE f.calificacion = -1
+              AND (:desde IS NULL OR f.createdAt >= :desde)
+              AND (:hasta IS NULL OR f.createdAt <= :hasta)
+              AND (
+                    f.usuario IS NULL
+                    OR f.usuario.rol IS NULL
+                    OR UPPER(f.usuario.rol.nombre) <> 'SUPERADMIN'
+              )
+            """)
+    long countNegativoExcluyendoSuperadmin(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
 }

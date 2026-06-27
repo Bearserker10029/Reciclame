@@ -1020,4 +1020,11 @@ return "redirect:/superadmin/notificaciones";
     protected boolean excluirSuperadminEnAuditoria() {
         return false;
     }
+
+    // El SuperAdmin también ve las conversaciones/mensajes del chatbot de cualquier usuario,
+    // incluidos los superadmin (al hacer pruebas o revisión de calidad).
+    @Override
+    protected boolean excluirSuperadminEnChatbot() {
+        return false;
+    }
 }

@@ -1,142 +1,144 @@
 package org.reciclame.demo.controller;
 
-import org.reciclame.demo.model.ChatConversacion;
-import org.reciclame.demo.model.ChatMensaje;
-import org.reciclame.demo.model.Usuario;
-import org.reciclame.demo.repository.UsuarioRepository;
-import org.reciclame.demo.service.CentrifugoService;
-import org.reciclame.demo.service.ChatService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.reciclame.demo.dto.ChatbotConsultaFilaDTO;
+import org.reciclame.demo.dto.ChatbotEstadisticasDTO;
+import org.reciclame.demo.dto.ChatbotRegistroRequestDTO;
+import org.reciclame.demo.dto.ChatbotRegistroResponseDTO;
+import org.reciclame.demo.service.ChatbotService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Endpoints REST para el chatbot Reciclame.
+ * <p>
+ * - POST /api/chatbot/registrar     -> callback que el frontend hace al recibir la respuesta del webhook n8n.
+ *                                      Guardado en conversaciones_chatbot + mensajes_chatbot.
+ *                                      Requiere sesion del usuario (la consulta la esta haciendo el propio usuario).
+ * - GET  /api/chatbot/estadisticas  -> KPIs y series para el dashboard Admin/SuperAdmin.
+ * - GET  /api/chatbot/conversaciones -> listado paginado y filtrable para el dashboard.
+ * - GET  /api/chatbot/conversaciones/{id}/mensajes -> detalle de una conversacion.
+ */
 @RestController
-@RequestMapping("/api/chat")
+@RequestMapping("/api/chatbot")
 public class ChatRestController {
 
-    private final ChatService chatService;
-    private final UsuarioRepository usuarioRepo;
-    private final CentrifugoService centrifugo;
+    private static final Logger log = LoggerFactory.getLogger(ChatRestController.class);
 
-    public ChatRestController(ChatService chatService,
-                              UsuarioRepository usuarioRepo,
-                              CentrifugoService centrifugo) {
-        this.chatService = chatService;
-        this.usuarioRepo = usuarioRepo;
-        this.centrifugo = centrifugo;
+    private final ChatbotService chatbotService;
+
+    public ChatRestController(ChatbotService chatbotService) {
+        this.chatbotService = chatbotService;
     }
 
-    @GetMapping("/token")
-    public ResponseEntity<Map<String, String>> token(@AuthenticationPrincipal UserDetails ud) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(Map.of(
-                "token", centrifugo.generarTokenConexion(actual.getId()),
-                "canal", "chat#" + actual.getId(),
-                "usuarioId", String.valueOf(actual.getId())
-        ));
-    }
-
-    @GetMapping("/contactos")
-    public ResponseEntity<List<Map<String, Object>>> contactos(@AuthenticationPrincipal UserDetails ud) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(chatService.contactosDisponibles(actual).stream()
-                .map(this::toUsuarioMin).toList());
-    }
-
-    @GetMapping("/conversaciones")
-    public ResponseEntity<List<Map<String, Object>>> conversaciones(@AuthenticationPrincipal UserDetails ud) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        return ResponseEntity.ok(chatService.misConversaciones(actual.getId()).stream()
-                .map(c -> {
-                    Usuario otro = chatService.otroParticipante(c, actual.getId());
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("id", c.getId());
-                    m.put("otro", toUsuarioMin(otro));
-                    m.put("noLeidos", chatService.noLeidosEnConversacion(c.getId(), actual.getId()));
-                    m.put("ultimoMensaje", c.getUltimoMensaje());
-                    m.put("ultimoMensajeAt", c.getUltimoMensajeAt() != null ? c.getUltimoMensajeAt().toString() : null);
-                    return m;
-                }).toList());
-    }
-
-    @PostMapping("/iniciar")
-    public ResponseEntity<Map<String, Object>> iniciar(@AuthenticationPrincipal UserDetails ud,
-                                                       @RequestParam Long otroId) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        ChatConversacion c = chatService.obtenerOCrear(actual, otroId);
-        Usuario otro = chatService.otroParticipante(c, actual.getId());
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", c.getId());
-        m.put("otro", toUsuarioMin(otro));
-        return ResponseEntity.ok(m);
-    }
-
-    @GetMapping("/{id}/mensajes")
-    public ResponseEntity<List<Map<String, Object>>> historial(@AuthenticationPrincipal UserDetails ud,
-                                                               @PathVariable Long id) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        chatService.marcarLeidos(id, actual.getId());
-        return ResponseEntity.ok(chatService.historial(id, actual.getId()).stream()
-                .map(m -> {
-                    Map<String, Object> x = new HashMap<>();
-                    x.put("id", m.getId());
-                    x.put("remitenteId", m.getRemitente().getId());
-                    x.put("contenido", m.getContenido());
-                    x.put("leido", Boolean.TRUE.equals(m.getLeido()));
-                    x.put("createdAt", m.getCreatedAt() != null ? m.getCreatedAt().toString() : null);
-                    return x;
-                }).toList());
-    }
-
-    @PostMapping("/{id}/mensajes")
-    public ResponseEntity<Map<String, Object>> enviar(@AuthenticationPrincipal UserDetails ud,
-                                                      @PathVariable Long id,
-                                                      @RequestBody Map<String, String> body) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
+    // ----------------------------------------------------------------
+    // 1) Callback del frontend (registro de pregunta + respuesta)
+    // ----------------------------------------------------------------
+    @PostMapping("/registrar")
+    public ResponseEntity<?> registrar(@Valid @RequestBody ChatbotRegistroRequestDTO body,
+                                       HttpServletRequest req,
+                                       Authentication auth) {
+        // Si el usuario autenticado es distinto al del body, usamos el del body
+        // (el chatbot puede ser llamado desde un visor como el Admin revisando un chat)
+        // pero solo permitimos que un usuario con rol registrable (no anonimo) lo envie.
         try {
-            ChatMensaje msg = chatService.enviarMensaje(actual, id, body.get("contenido"));
-            Map<String, Object> resp = new HashMap<>();
-            resp.put("id", msg.getId());
-            resp.put("createdAt", msg.getCreatedAt() != null ? msg.getCreatedAt().toString() : null);
-            return ResponseEntity.ok(resp);
+            ChatbotRegistroResponseDTO out = chatbotService.registrarConversacion(body, req);
+            return ResponseEntity.ok(out);
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
+            log.warn("Chatbot callback rechazo: {}", ex.getMessage());
+            Map<String, Object> err = new HashMap<>();
+            err.put("ok", false);
+            err.put("error", ex.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
+        } catch (Exception ex) {
+            log.error("Error registrando conversacion chatbot", ex);
+            Map<String, Object> err = new HashMap<>();
+            err.put("ok", false);
+            err.put("error", "No se pudo registrar la conversacion: " + ex.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
         }
     }
 
-    @PostMapping("/{id}/leer")
-    public ResponseEntity<Void> marcarLeidos(@AuthenticationPrincipal UserDetails ud,
-                                             @PathVariable Long id) {
-        Usuario actual = usuarioActual(ud);
-        if (actual == null) return ResponseEntity.status(401).build();
-        chatService.marcarLeidos(id, actual.getId());
-        return ResponseEntity.noContent().build();
+    // ----------------------------------------------------------------
+    // 2) KPIs / charts para Admin y SuperAdmin
+    // ----------------------------------------------------------------
+    @GetMapping("/estadisticas")
+    public ResponseEntity<ChatbotEstadisticasDTO> estadisticas(
+            @RequestParam(value = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(value = "hasta", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            Authentication auth) {
+        Instant desdeI = desde != null ? desde.atStartOfDay(ZoneId.of("America/Lima")).toInstant() : null;
+        Instant hastaI = hasta != null ? hasta.plusDays(1).atStartOfDay(ZoneId.of("America/Lima")).toInstant().minusMillis(1) : null;
+        boolean excluirSuperadmin = esAdministrador(auth);
+        return ResponseEntity.ok(chatbotService.calcularEstadisticas(desdeI, hastaI, excluirSuperadmin));
     }
 
-    private Usuario usuarioActual(UserDetails ud) {
-        if (ud == null) return null;
-        return usuarioRepo.findByCorreoCorporativo(ud.getUsername()).orElse(null);
+    // ----------------------------------------------------------------
+    // 3) Listado paginado y filtrado
+    // ----------------------------------------------------------------
+    @GetMapping("/conversaciones")
+    public ResponseEntity<Map<String, Object>> listarConversaciones(
+            @RequestParam(value = "usuarioId", required = false) Long usuarioId,
+            @RequestParam(value = "rolId",     required = false) Long rolId,
+            @RequestParam(value = "desde",     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(value = "hasta",     required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(value = "q",         required = false) String q,
+            @RequestParam(value = "page",      defaultValue = "0") int page,
+            @RequestParam(value = "size",      defaultValue = "20") int size,
+            Authentication auth) {
+
+        Instant desdeI = desde != null ? desde.atStartOfDay(ZoneId.of("America/Lima")).toInstant() : null;
+        Instant hastaI = hasta != null ? hasta.plusDays(1).atStartOfDay(ZoneId.of("America/Lima")).toInstant().minusMillis(1) : null;
+        Pageable pageable = PageRequest.of(page, Math.min(size, 200));
+        boolean excluirSuperadmin = esAdministrador(auth);
+        Page<ChatbotConsultaFilaDTO> result = chatbotService.listarConversacionesFiltrado(
+                usuarioId, rolId, desdeI, hastaI, pageable, excluirSuperadmin);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("content", result.getContent());
+        resp.put("page", result.getNumber());
+        resp.put("size", result.getSize());
+        resp.put("totalElements", result.getTotalElements());
+        resp.put("totalPages", result.getTotalPages());
+        return ResponseEntity.ok(resp);
     }
 
-    private Map<String, Object> toUsuarioMin(Usuario u) {
-        Map<String, Object> m = new HashMap<>();
-        m.put("id", u.getId());
-        m.put("nombreCompleto", u.getNombreCompleto());
-        m.put("correo", u.getCorreoCorporativo());
-        m.put("rol", u.getRol() != null ? u.getRol().getNombre() : null);
-        m.put("empresa", u.getEmpresa() != null ? u.getEmpresa().getRazonSocial() : null);
-        m.put("fotoUrl", u.getFotoUrl());
-        return m;
+    /**
+     * Devuelve true si el solicitante NO es superadmin (es decir, es admin/socio/visualizador,
+     * o no hay auth). La política es: solo SUPERADMIN ve TODO; el resto oculta lo del superadmin.
+     */
+    private boolean esAdministrador(Authentication auth) {
+        if (auth == null || auth.getAuthorities() == null) return true;
+        for (GrantedAuthority ga : auth.getAuthorities()) {
+            String a = ga.getAuthority();
+            if (a != null && a.toUpperCase().contains("SUPERADMIN")) return false;
+        }
+        return true;
+    }
+
+    // ----------------------------------------------------------------
+    // 4) Detalle de mensajes por conversacion
+    // ----------------------------------------------------------------
+    @GetMapping("/conversaciones/{id}/mensajes")
+    public ResponseEntity<List<ChatbotConsultaFilaDTO.MensajeDetalleDTO>> mensajes(
+            @PathVariable("id") Long conversacionId) {
+        return ResponseEntity.ok(chatbotService.obtenerDetalleConversacion(conversacionId));
     }
 }
