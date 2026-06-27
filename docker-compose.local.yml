@@ -11,7 +11,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./src/main/resources/db/reciclame_db.sql:/docker-entrypoint-initdb.d/01-reciclame_db.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]     
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -46,11 +46,8 @@ services:
       N8N_WEBHOOK_URL: http://n8n:5678/webhook/send-email
       N8N_CHATBOT_WEBHOOK_URL: /webhook/chatbot-reciclame
 
-
       VERIFICA_API_KEY: sk-7rgyH2OPhCiqpTxyOP9kf9XGOYcQ+xyzt7lDpenaW6Q==
       ATENEA_API_KEY: jJetKioI4tPL81xfcTHFqeLxNG+zKbfunQYoVbWb1zI=
-
-
 
       APP_BASE_URL: http://localhost:8080
       APP_KK_ACCESSIBLE_URL: http://reciclame-app:8080
@@ -130,7 +127,7 @@ services:
       - reciclame-local
 
   kkfileview:
-    image: keking/kkfileview:latest
+    image: kent10029/kkfileview:5.0.0
     container_name: reciclame-kkfileview
     ports:
       - "8012:8012"
@@ -139,6 +136,7 @@ services:
         condition: service_completed_successfully
     environment:
       KK_HTTP_PREVIEW: "true"
+      KK_TRUST_HOST: "*"
       SPRING_FREEMARKER_TEMPLATE_LOADER_PATH: file:/opt/kkFileView/templates/web/,classpath:/web/
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
