@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Gatherers;
 
 @Service
 public class NormativaService {
@@ -106,15 +107,20 @@ public class NormativaService {
     }
 
     public Map<String, Long> contarPorTematica() {
-        Map<String, Long> conteo = new HashMap<>();
-        List<Normativa> activas = normativaRepository.findByEstadoActivoTrue();
-        for (Normativa n : activas) {
-            String codigo = n.getTematica() != null && n.getTematica().getCodigo() != null 
-                ? n.getTematica().getCodigo() 
-                : "Otro";
-            conteo.put(codigo, conteo.getOrDefault(codigo, 0L) + 1);
-        }
-        return conteo;
+        // JDK 22+ Stream Gatherers: fold mantiene un acumulador HashMap y lo
+        // emite al cerrar el stream. Reemplaza el patrón manual getOrDefault.
+        return normativaRepository.findByEstadoActivoTrue().stream()
+                .gather(Gatherers.fold(
+                        HashMap<String, Long>::new,
+                        (acc, n) -> {
+                            String codigo = n.getTematica() != null && n.getTematica().getCodigo() != null
+                                    ? n.getTematica().getCodigo()
+                                    : "Otro";
+                            acc.merge(codigo, 1L, Long::sum);
+                            return acc;
+                        }))
+                .findFirst()
+                .orElseGet(HashMap::new);
     }
 
     public List<Map<String, Object>> agregarPorTematica() {
