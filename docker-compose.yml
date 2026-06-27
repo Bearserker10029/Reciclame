@@ -287,17 +287,18 @@ services:
       /bin/sh -c " mc alias set local http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && mc mb --ignore-existing local/${MINIO_BUCKET} && mc anonymous set none local/${MINIO_BUCKET} && echo 'Bucket ${MINIO_BUCKET} listo (acceso privado, URLs firmadas via Spring).' && exit 0 "
 
   kkfileview:
-    image: keking/kkfileview:latest
+    image: kent10029/kkfileview:5.0.0
     container_name: reciclame-kkfileview
     expose:
       - "8012"
     depends_on:
-      - minio-init
+      minio-init:
+        condition: service_completed_successfully
     environment:
       - KK_HTTP_PREVIEW=${KK_HTTP_PREVIEW}
       - SPRING_FREEMARKER_TEMPLATE_LOADER_PATH=${SPRING_FREEMARKER_TEMPLATE_LOADER_PATH}
       - KK_CACHE_ENABLED=true
-      # Redis cache compartido: evita reconvertir el mismo doc en cada acceso
+      - KK_TRUST_HOST=${KK_TRUST_HOST}
       - KK_CACHE_TYPE=redis
       - KK_SPRING_REDISSON_ADDRESS=redis:6379
       - KK_OFFICE_PREVIEW_SWITCH_ROW=true
@@ -306,7 +307,6 @@ services:
       - KK_OFFICE_PREVIEW_SWITCH_XLS=true
       - KK_MAX_FILE_SIZE=200MB
       - KK_OFFICE_TASK_TIMEOUT=15m
-      # Heap ajustado: LibreOffice corre como proceso aparte (no en el heap JVM)
       - JAVA_OPTS=-Xms384m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+UseStringDeduplication -XX:+UseContainerSupport
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web
