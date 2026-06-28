@@ -168,8 +168,8 @@ public interface MensajesChatbotRepository extends JpaRepository<MensajesChatbot
             SELECT DATE(m.created_at) AS fecha, m.rol, COUNT(*) AS total
             FROM mensajes_chatbot m
               JOIN conversaciones_chatbot c ON c.id = m.conversacion_id
-              JOIN usuario u                ON u.id = c.usuario_id
-              LEFT JOIN rol r               ON r.id = u.rol_id
+              JOIN usuarios u               ON u.id = c.usuario_id
+              LEFT JOIN roles r             ON r.id = u.rol_id
             WHERE (:desde IS NULL OR m.created_at >= :desde)
               AND (:hasta IS NULL OR m.created_at <= :hasta)
               AND UPPER(COALESCE(r.nombre, '')) <> 'SUPERADMIN'

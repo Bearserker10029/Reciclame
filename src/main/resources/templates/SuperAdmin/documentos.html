@@ -587,7 +587,8 @@
                 <td th:text="${e.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="badge-pdf">PDF</span>
+                    <span th:if="${e.archivoTipoMime != null and (e.archivoTipoMime.contains('pptx') or e.archivoTipoMime.contains('presentati') or e.archivoTipoMime.contains('ppt'))}" class="badge-pptx">PPTX</span>
+                    <span th:unless="${e.archivoTipoMime != null and (e.archivoTipoMime.contains('pptx') or e.archivoTipoMime.contains('presentati') or e.archivoTipoMime.contains('ppt'))}" class="badge-pdf">PDF</span>
                   </div>
                 </td>
                 <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
@@ -614,7 +615,8 @@
                 <td th:text="${n.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="badge-pdf">PDF</span>
+                    <span th:if="${n.archivoTipoMime != null and (n.archivoTipoMime.contains('pptx') or n.archivoTipoMime.contains('presentati') or n.archivoTipoMime.contains('ppt'))}" class="badge-pptx">PPTX</span>
+                    <span th:unless="${n.archivoTipoMime != null and (n.archivoTipoMime.contains('pptx') or n.archivoTipoMime.contains('presentati') or n.archivoTipoMime.contains('ppt'))}" class="badge-pdf">PDF</span>
                   </div>
                 </td>
                 <td><span class="badge-publico"><i class="fas fa-globe" style="font-size:8px;"></i> Público</span></td>
