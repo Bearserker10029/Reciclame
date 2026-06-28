@@ -309,6 +309,8 @@ public class NormativaService {
             guardarEtiquetas(saved, dto.getEtiquetasIds());
         }
 
+        try { notificacionService.notificarNormativaActualizada(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
+
         String datosNuevos = null;
         try {
             datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));
