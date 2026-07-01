@@ -6,6 +6,7 @@ import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -188,7 +189,7 @@ public class DocumentoViewController {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, InterruptedException {
 
-        String ipAddress = obtenerIp(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
 
         Long usuarioId = null;
@@ -318,14 +319,6 @@ public class DocumentoViewController {
             return ResponseEntity.internalServerError()
                     .body(Map.of("mensaje", "No se pudo generar la vista previa."));
         }
-    }
-
-    private String obtenerIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private String extractExtension(String url) {

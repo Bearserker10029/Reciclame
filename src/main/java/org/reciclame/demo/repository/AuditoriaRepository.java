@@ -84,6 +84,30 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
     Page<Auditoria> findAllExcluyendoAccionesDeSuperadmin(Pageable pageable);
 
     /**
+     * Trazabilidad para ADMIN: muestra todo lo que ve superadmin excepto
+     *  - módulo SEGURIDAD
+     *  - acciones IMPERSONAR_USUARIO, SALIR_IMPERSONACION, ELIMINAR_USUARIO
+     *  - acciones ejecutadas por usuarios con rol SUPERADMIN
+     */
+    @Query("""
+            SELECT a FROM Auditoria a
+            WHERE a.estadoActivo = true
+              AND a.modulo != 'SEGURIDAD'
+              AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO')
+              AND (
+                    a.usuarioId IS NULL
+                    OR NOT EXISTS (
+                          SELECT 1 FROM Usuario u
+                          WHERE u.id = a.usuarioId
+                            AND u.rol IS NOT NULL
+                            AND UPPER(u.rol.nombre) = 'SUPERADMIN'
+                    )
+              )
+            ORDER BY a.fechaAccion DESC
+            """)
+    Page<Auditoria> findAllExcludingSeguridadYAccionesDeSuperadmin(Pageable pageable);
+
+    /**
      * Variante limitada para los exports PDF/XLSX/CSV.
      */
     @Query(value = """
