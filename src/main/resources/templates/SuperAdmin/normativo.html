@@ -1064,19 +1064,19 @@
 
                       <!-- Antivirus (VirusTotal) -->
                       <td class="text-center">
-                        <span th:if="${n.vtVerdict == 'CLEAN'}" class="badge-vt-clean"
-                          th:title="|VirusTotal: 0/${n.vtTotalEngines != null ? n.vtTotalEngines : 0} engines detectaron amenaza|">
+                        <span th:if="${n.vtVerdict == 'CLEAN' or n.vtVerdict == 'UNDETECTED' or n.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
+                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: 0/' + n.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
                           <i class="fas fa-shield-virus"></i> Limpio
                         </span>
                         <span th:if="${n.vtVerdict == 'MALICIOUS'}" class="badge-vt-malicious"
-                          th:title="|VirusTotal: ${n.vtMaliciousEngines != null ? n.vtMaliciousEngines : 0}/${n.vtTotalEngines != null ? n.vtTotalEngines : 0} engines marcaron como amenaza|">
+                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtMaliciousEngines != null ? n.vtMaliciousEngines : 0) + '/' + n.vtTotalEngines + ' engines marcaron como amenaza' : 'VirusTotal: archivo no escaneado'}">
                           <i class="fas fa-virus"></i> Peligroso
                         </span>
                         <span th:if="${n.vtVerdict == 'SUSPICIOUS'}" class="badge-vt-suspicious"
-                          th:title="|VirusTotal: ${n.vtSuspiciousEngines != null ? n.vtSuspiciousEngines : 0} engines sospechosos de ${n.vtTotalEngines != null ? n.vtTotalEngines : 0}|">
+                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtSuspiciousEngines != null ? n.vtSuspiciousEngines : 0) + ' engines sospechosos de ' + n.vtTotalEngines : 'VirusTotal: archivo no escaneado'}">
                           <i class="fas fa-triangle-exclamation"></i> Sospechoso
                         </span>
-                        <span th:if="${n.vtVerdict != null and n.vtVerdict != 'CLEAN' and n.vtVerdict != 'MALICIOUS' and n.vtVerdict != 'SUSPICIOUS'}"
+                        <span th:if="${n.vtVerdict != null and n.vtVerdict != 'CLEAN' and n.vtVerdict != 'UNDETECTED' and n.vtVerdict != 'HARMLESS' and n.vtVerdict != 'MALICIOUS' and n.vtVerdict != 'SUSPICIOUS'}"
                           class="badge-vt-unscanned"
                           th:title="|Veredicto: ${n.vtVerdict}|">
                           <i class="fas fa-shield-virus"></i> <span th:text="${n.vtVerdict}">—</span>
