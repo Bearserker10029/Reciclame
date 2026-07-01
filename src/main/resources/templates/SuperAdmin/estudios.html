@@ -394,6 +394,71 @@
       font-weight: 600;
     }
 
+    /* ── Badges VirusTotal ── */
+    .badge-vt-clean {
+      background: rgba(46, 204, 113, .12);
+      color: #1E8449;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-malicious {
+      background: rgba(231, 76, 60, .14);
+      color: #922B21;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-suspicious {
+      background: rgba(243, 156, 18, .14);
+      color: #9A7D0A;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-unscanned {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-vt-skipped {
+      background: rgba(52, 152, 219, .12);
+      color: #1F618D;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
     .btn-ver {
       display: inline-flex;
       align-items: center;
@@ -846,10 +911,11 @@
             <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
               <thead>
                 <tr>
-                  <th style="width:34%;">Documento</th>
+                  <th style="width:30%;">Documento</th>
                   <th>Objetivo</th>
                   <th>Año</th>
                   <th>Formato</th>
+                  <th>Antivirus</th>
                   <th>Acceso</th>
                   <th class="text-center">Ver</th>
                   <th class="text-center">Gestión</th>
@@ -863,7 +929,11 @@
                                 (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                   th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
                   th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
-                  th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                  th:data-url="${e.archivoUrl}"
+                  th:data-vt-verdict="${e.vtVerdict}" th:data-vt-sha256="${e.vtSha256}"
+                  th:data-vt-malicious="${e.vtMaliciousEngines}" th:data-vt-suspicious="${e.vtSuspiciousEngines}"
+                  th:data-vt-total="${e.vtTotalEngines}" th:data-vt-skipped="${e.vtSkipped}"
+                  th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                   <td>
                     <div style="display:flex;align-items:center;gap:10px;">
                       <th:block th:switch="${tipo}">
@@ -903,6 +973,33 @@
                           style="font-size:9px;margin-right:3px;"></i>Otro</span>
                     </th:block>
                   </td>
+                  <td class="text-center">
+                    <span th:if="${e.vtVerdict == 'CLEAN'}" class="badge-vt-clean"
+                      th:title="|VirusTotal: 0/${e.vtTotalEngines != null ? e.vtTotalEngines : 0} engines detectaron amenaza|">
+                      <i class="fas fa-shield-virus"></i> Limpio
+                    </span>
+                    <span th:if="${e.vtVerdict == 'MALICIOUS'}" class="badge-vt-malicious"
+                      th:title="|VirusTotal: ${e.vtMaliciousEngines != null ? e.vtMaliciousEngines : 0}/${e.vtTotalEngines != null ? e.vtTotalEngines : 0} engines marcaron como amenaza|">
+                      <i class="fas fa-virus"></i> Peligroso
+                    </span>
+                    <span th:if="${e.vtVerdict == 'SUSPICIOUS'}" class="badge-vt-suspicious"
+                      th:title="|VirusTotal: ${e.vtSuspiciousEngines != null ? e.vtSuspiciousEngines : 0} engines sospechosos de ${e.vtTotalEngines != null ? e.vtTotalEngines : 0}|">
+                      <i class="fas fa-triangle-exclamation"></i> Sospechoso
+                    </span>
+                    <span th:if="${e.vtVerdict != null and e.vtVerdict != 'CLEAN' and e.vtVerdict != 'MALICIOUS' and e.vtVerdict != 'SUSPICIOUS'}"
+                      class="badge-vt-unscanned"
+                      th:title="|Veredicto: ${e.vtVerdict}|">
+                      <i class="fas fa-shield-virus"></i> <span th:text="${e.vtVerdict}">—</span>
+                    </span>
+                    <span th:if="${e.vtVerdict == null and e.vtSkipped == true}" class="badge-vt-skipped"
+                      title="VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)">
+                      <i class="fas fa-forward"></i> Omitido
+                    </span>
+                    <span th:if="${e.vtVerdict == null and e.vtSkipped != true}" class="badge-vt-unscanned"
+                      title="Archivo sin escanear por VirusTotal">
+                      <i class="fas fa-shield-virus"></i> Sin escanear
+                    </span>
+                  </td>
                   <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
                       lectura</span></td>
                   <td class="text-center">
@@ -929,7 +1026,7 @@
                   </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(estudios)}">
-                  <td colspan="7">
+                  <td colspan="8">
                     <div class="empty-state">
                       <i class="fas fa-folder-open"></i>
                       <p>No hay estudios registrados aún.</p>
@@ -1015,6 +1112,39 @@
                     <iframe id="modal-visor-iframe" src="" width="100%" height="100%" frameborder="0" loading="lazy"
                       style="display:block;">
                     </iframe>
+                  </div>
+                </div>
+
+                <!-- Bloque VirusTotal (rellenado por JS al abrir modal) -->
+                <div id="modal-vt-block"
+                  style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.18);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <i class="fas fa-shield-virus" style="color:#27AE60;font-size:14px;"></i>
+                      <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#1E8449;">Antivirus (VirusTotal)</span>
+                    </div>
+                    <a id="modal-vt-link" href="#" target="_blank"
+                      style="display:none;font-size:11px;color:#2471A3;font-weight:700;text-decoration:none;">
+                      <i class="fas fa-external-link-alt"></i> Ver reporte completo
+                    </a>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Veredicto</div>
+                      <div id="modal-vt-verdict" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Motores maliciosos</div>
+                      <div id="modal-vt-malicious" style="font-weight:800;color:#C0392B;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Total motores</div>
+                      <div id="modal-vt-total" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                  </div>
+                  <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:#fff;">
+                    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">SHA-256</div>
+                    <code id="modal-vt-sha256" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151;word-break:break-all;">—</code>
                   </div>
                 </div>
               </div>
@@ -1170,7 +1300,14 @@
               row.dataset.descripcion || '—',
               row.dataset.anio || '—',
               row.dataset.mime || '',
-              row.dataset.url || '#'
+              row.dataset.url || '#',
+              {
+                verdict: row.dataset.vtVerdict || null,
+                sha256: row.dataset.vtSha256 || null,
+                malicious: row.dataset.vtMalicious || null,
+                total: row.dataset.vtTotal || null,
+                skipped: row.dataset.vtSkipped || null
+              }
             );
           }
 
@@ -1183,7 +1320,7 @@
             return 'otro';
           }
 
-          async function openModal(id, titulo, descripcion, anio, mime, url) {
+          async function openModal(id, titulo, descripcion, anio, mime, url, vt) {
             var tipo = tipoArchivo(mime);
             var formatoMap = {
               pdf: 'PDF — Infografía / Reporte',
@@ -1208,6 +1345,32 @@
             var iconI = document.getElementById('modal-icon-i');
             icon.style.background = iconMap[tipo].bg;
             iconI.className = iconMap[tipo].cls;
+
+            // Renderizar bloque VirusTotal
+            var vtBlock = document.getElementById('modal-vt-block');
+            if (vtBlock && vt) {
+              var hasVt = vt.verdict || vt.sha256;
+              if (hasVt) {
+                vtBlock.style.display = 'block';
+                document.getElementById('modal-vt-verdict').textContent = vt.verdict || '—';
+                document.getElementById('modal-vt-malicious').textContent = vt.malicious || '0';
+                document.getElementById('modal-vt-total').textContent = vt.total || '—';
+                document.getElementById('modal-vt-sha256').textContent = vt.sha256 || '—';
+                var vtLink = document.getElementById('modal-vt-link');
+                if (vtLink && vt.sha256) {
+                  vtLink.href = 'https://www.virustotal.com/gui/file/' + vt.sha256;
+                  vtLink.style.display = 'inline-flex';
+                  vtLink.style.alignItems = 'center';
+                  vtLink.style.gap = '4px';
+                } else if (vtLink) {
+                  vtLink.style.display = 'none';
+                }
+              } else {
+                vtBlock.style.display = 'none';
+              }
+            } else if (vtBlock) {
+              vtBlock.style.display = 'none';
+            }
 
             // Vista previa kkfileview
             var previewSection = document.getElementById('modal-visor-preview');

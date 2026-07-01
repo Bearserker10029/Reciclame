@@ -790,6 +790,10 @@
           <button id="tab-usuarios-historial" class="norm-tab" onclick="switchUsuarioTab('historial')">
             <i class="fas fa-history"></i> Historial
           </button>
+          <button id="tab-usuarios-resueltas" class="norm-tab" onclick="switchUsuarioTab('resueltas')">
+            <i class="fas fa-clipboard-check"></i> Solicitudes resueltas
+            <span class="count-badge" th:text="${#lists.size(solicitudesResueltas)}">0</span>
+          </button>
         </div>
 
         <!-- ═══ TAB: ACTIVOS ═══ -->
@@ -1039,6 +1043,107 @@
           </div>
         </div>
 
+        <!-- ═══ TAB: Solicitudes resueltas (APROBADA / RECHAZADA) ═══ -->
+        <div id="utab-resueltas" style="display:none;">
+          <div class="norm-table-card" style="margin-top:14px;">
+            <div style="overflow-x:auto;">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Correo</th>
+                    <th>Empresa</th>
+                    <th>Estado</th>
+                    <th>Solicitado</th>
+                    <th>Resuelto</th>
+                    <th class="text-center">Motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="sr : ${solicitudesResueltas}">
+                    <td style="font-weight:700;color:#1B3A5C;font-size:12px;" th:text="${sr.nombreCompleto}">—</td>
+                    <td style="font-size:12px;color:#374151;" th:text="${sr.dni}">—</td>
+                    <td style="font-size:12px;color:#374151;" th:text="${sr.correoCorporativo}">—</td>
+                    <td style="font-size:12px;color:#6B7280;" th:text="${sr.empresaNombre}">—</td>
+                    <td>
+                      <span th:if="${sr.estado.name() == 'APROBADA'}" class="badge-vigente"
+                        style="background:rgba(46,204,113,.1);color:#1E8449;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-check"></i> Aprobada
+                      </span>
+                      <span th:if="${sr.estado.name() == 'RECHAZADA'}" class="badge-derogada"
+                        style="background:rgba(231,76,60,.1);color:#922B21;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-times"></i> Rechazada
+                      </span>
+                    </td>
+                    <td style="font-size:11px;color:#6B7280;"
+                      th:text="${#temporals.format(sr.createdAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                    <td style="font-size:11px;color:#6B7280;"
+                      th:text="${sr.fechaResolucion != null ? #temporals.format(sr.fechaResolucion, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+                    <td class="text-center">
+                      <button th:if="${sr.estado.name() == 'RECHAZADA'}"
+                        th:onclick="|verMotivoRechazo(${sr.id})|"
+                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.06);color:#C0392B;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;"
+                        onmouseover="this.style.background='#E74C3C';this.style.color='#fff'"
+                        onmouseout="this.style.background='rgba(231,76,60,.06)';this.style.color='#C0392B'"
+                        title="Ver motivo de rechazo">
+                        <i class="fas fa-eye"></i> Ver motivo
+                      </button>
+                      <span th:unless="${sr.estado.name() == 'RECHAZADA'}" style="color:#9CA3AF;font-size:11px;">—</span>
+                    </td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(solicitudesResueltas)}">
+                    <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;font-size:13px;">
+                      <i class="fas fa-clipboard" style="margin-right:6px;"></i>
+                      No hay solicitudes resueltas todavía.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Modal: Ver motivo de rechazo ═══ -->
+        <div id="modal-ver-motivo" class="modal-rechazo" style="display:none;">
+          <div style="background:#fff;border-radius:16px;padding:28px;max-width:540px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-comment-dots" style="color:#C0392B;font-size:18px;"></i>
+                </div>
+                <div>
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;letter-spacing:.06em;margin-bottom:2px;">Solicitud rechazada</div>
+                  <h3 id="modal-ver-motivo-nombre" style="margin:0;font-size:16px;font-weight:800;color:#1B3A5C;">—</h3>
+                </div>
+              </div>
+              <button onclick="cerrarVerMotivoRechazo()" style="border:none;background:transparent;font-size:18px;color:#6B7280;cursor:pointer;padding:4px;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="padding:10px 12px;border-radius:10px;background:#F9FAFB;">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">DNI</div>
+                <div id="modal-ver-motivo-dni" style="font-weight:700;color:#1B3A5C;font-size:13px;">—</div>
+              </div>
+              <div style="padding:10px 12px;border-radius:10px;background:#F9FAFB;">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">Correo</div>
+                <div id="modal-ver-motivo-correo" style="font-weight:600;color:#1B3A5C;font-size:12px;word-break:break-all;">—</div>
+              </div>
+            </div>
+            <div style="padding:14px;border-radius:12px;background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.18);margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#922B21;letter-spacing:.06em;margin-bottom:8px;">
+                <i class="fas fa-quote-left" style="margin-right:4px;"></i> Motivo del rechazo
+              </div>
+              <div id="modal-ver-motivo-texto" style="font-size:13px;color:#374151;line-height:1.6;white-space:pre-wrap;min-height:36px;">—</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#6B7280;">
+              <span><i class="fas fa-user-shield" style="margin-right:4px;"></i>Revisada por <strong id="modal-ver-motivo-revisor">—</strong></span>
+              <span><i class="fas fa-clock" style="margin-right:4px;"></i><span id="modal-ver-motivo-fecha">—</span></span>
+            </div>
+          </div>
+        </div>
+
         <!-- ═══ SCRIPTS (dentro del fragment para que funcionen en SPA) ═══ -->
         <script>
           // ─── URL base (admin o superadmin) ───────────────────────
@@ -1050,7 +1155,7 @@
 
           // ─── Cambiar pestaña usuarios ─────────────────────────────
           function switchUsuarioTab(tab) {
-            var tabs = ['activos', 'pendientes', 'historial'];
+            var tabs = ['activos', 'pendientes', 'historial', 'resueltas'];
             tabs.forEach(function (t) {
               var btn = document.getElementById('tab-usuarios-' + t);
               var panel = document.getElementById('utab-' + t);
@@ -1062,6 +1167,51 @@
                 if (panel) panel.style.display = 'none';
               }
             });
+          }
+
+          // ─── Ver motivo de rechazo ───────────────────────────────
+          function verMotivoRechazo(id) {
+            fetch('/api/solicitudes/' + id, { credentials: 'same-origin' })
+              .then(function (r) { if (!r.ok) throw new Error('No se pudo cargar'); return r.json(); })
+              .then(function (s) {
+                document.getElementById('modal-ver-motivo-nombre').textContent = s.nombreCompleto || '—';
+                document.getElementById('modal-ver-motivo-dni').textContent = s.dni || '—';
+                document.getElementById('modal-ver-motivo-correo').textContent = s.correoCorporativo || '—';
+                document.getElementById('modal-ver-motivo-texto').textContent = s.motivoRechazo || '(Sin motivo registrado)';
+                document.getElementById('modal-ver-motivo-revisor').textContent = s.revisadaPorNombre || '—';
+                if (s.fechaResolucion) {
+                  var d = new Date(s.fechaResolucion);
+                  var pad = function (n) { return n < 10 ? '0' + n : n; };
+                  document.getElementById('modal-ver-motivo-fecha').textContent =
+                    pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
+                    pad(d.getHours()) + ':' + pad(d.getMinutes());
+                } else {
+                  document.getElementById('modal-ver-motivo-fecha').textContent = '—';
+                }
+                var modal = document.getElementById('modal-ver-motivo');
+                if (modal) {
+                  modal.style.display = 'flex';
+                  modal.style.position = 'fixed';
+                  modal.style.inset = '0';
+                  modal.style.background = 'rgba(0,0,0,0.5)';
+                  modal.style.zIndex = '99999';
+                  modal.style.alignItems = 'center';
+                  modal.style.justifyContent = 'center';
+                }
+              })
+              .catch(function (err) {
+                console.error('verMotivoRechazo error:', err);
+                if (typeof showToast === 'function') {
+                  showToast('No se pudo cargar el motivo de rechazo.', 'error');
+                } else {
+                  alert('No se pudo cargar el motivo de rechazo.');
+                }
+              });
+          }
+
+          function cerrarVerMotivoRechazo() {
+            var modal = document.getElementById('modal-ver-motivo');
+            if (modal) modal.style.display = 'none';
           }
 
           // ─── Configuración paginación ─────────────────────────────

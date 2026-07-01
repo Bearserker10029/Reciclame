@@ -1,5 +1,6 @@
 package org.reciclame.demo.config;
 
+import org.reciclame.demo.service.AuthFailureHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
@@ -22,13 +24,16 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationSuccessHandler successHandler;
+    private final AuthenticationFailureHandler failureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
                           AuthenticationSuccessHandler successHandler,
+                          AuthFailureHandler authFailureHandler,
                           AccessDeniedHandler accessDeniedHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
+        this.failureHandler = authFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
     }
 
@@ -84,7 +89,7 @@ public class SecurityConfig {
                         .loginPage("/service/repositorio/login")
                         .loginProcessingUrl("/service/repositorio/login")
                         .successHandler(successHandler)
-                        .failureUrl("/service/repositorio/login?error=true")
+                        .failureHandler(failureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout

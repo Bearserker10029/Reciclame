@@ -188,6 +188,7 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
+        model.addAttribute("solicitudesResueltas", solicitudesRepo.findByEstadoNotOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuarios());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());
