@@ -2,6 +2,8 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.UsuarioRequestDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.model.Auditoria;
+import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -20,9 +24,11 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final AuditoriaService auditoriaService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, AuditoriaService auditoriaService) {
         this.usuarioService = usuarioService;
+        this.auditoriaService = auditoriaService;
     }
 
     // CREATE
@@ -142,6 +148,29 @@ public class UsuarioController {
         String ipAddress = obtenerIpAddress(request);
         String userAgent = request.getHeader("User-Agent");
         return ResponseEntity.ok(usuarioService.reactivarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
+    }
+
+    // HISTORIAL DE ACTIVIDAD POR USUARIO
+    // GET /api/usuarios/{id}/historial
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<Map<String, Object>>> historialUsuario(@PathVariable Long id) {
+        List<Auditoria> auditorias = auditoriaService.listarAuditoriasPorUsuario(id);
+        List<Map<String, Object>> result = auditorias.stream()
+                .filter(a -> a.getEstadoActivo() == null || a.getEstadoActivo())
+                .map(a -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", a.getId());
+                    m.put("accion", a.getAccion());
+                    m.put("modulo", a.getModulo());
+                    m.put("descripcion", a.getDescripcion());
+                    m.put("estado", a.getEstado());
+                    m.put("ipAddress", a.getIpAddress());
+                    m.put("fechaAccion", a.getFechaAccion() != null ? a.getFechaAccion().toString() : null);
+                    return m;
+                })
+                .toList();
+        return ResponseEntity.ok(result);
     }
 
     // EXPORTAR CSV

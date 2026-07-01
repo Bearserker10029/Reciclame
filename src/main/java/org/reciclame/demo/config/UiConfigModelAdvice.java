@@ -1,6 +1,7 @@
 package org.reciclame.demo.config;
 
 import org.reciclame.demo.service.ConfiguracionUiRolService;
+import org.reciclame.demo.service.ParametrosSistemaService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,17 +20,23 @@ import java.util.Collections;
 public class UiConfigModelAdvice {
 
     private final ConfiguracionUiRolService service;
+    private final ParametrosSistemaService parametrosService;
 
     @Value("${chatbot.enabled:true}")
-    private boolean chatbotEnabled;
+    private boolean chatbotEnabledDefault;
 
-    public UiConfigModelAdvice(ConfiguracionUiRolService service) {
+    public UiConfigModelAdvice(ConfiguracionUiRolService service, ParametrosSistemaService parametrosService) {
         this.service = service;
+        this.parametrosService = parametrosService;
     }
 
     @ModelAttribute
     public void addUiConfig(Model model) {
-        model.addAttribute("chatbotHabilitado", chatbotEnabled);
+        // parametros_sistema.chatbot_habilitado (editable por SuperAdmin) manda sobre
+        // el valor de application.properties, que queda como fallback.
+        Boolean chatbotHabilitado = parametrosService.getBoolean("chatbot_habilitado");
+        model.addAttribute("chatbotHabilitado",
+                chatbotHabilitado != null ? chatbotHabilitado : chatbotEnabledDefault);
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth == null || !auth.isAuthenticated()) return;

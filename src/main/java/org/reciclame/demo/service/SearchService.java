@@ -54,13 +54,16 @@ public class SearchService {
     private final NormativaRepository normativaRepository;
     private final EstudioRepository estudioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final ParametrosSistemaService parametrosService;
 
     public SearchService(NormativaRepository normativaRepository,
                          EstudioRepository estudioRepository,
-                         UsuarioRepository usuarioRepository) {
+                         UsuarioRepository usuarioRepository,
+                         ParametrosSistemaService parametrosService) {
         this.normativaRepository = normativaRepository;
         this.estudioRepository = estudioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.parametrosService = parametrosService;
     }
 
     public SearchResponseDTO buscar(String queryRaw, String rolEfectivo) {
@@ -147,6 +150,16 @@ public class SearchService {
         List<Estudio> lista = esSoloPublico(rol)
                 ? estudioRepository.buscarPublico(q, limit)
                 : estudioRepository.buscarTodos(q, limit);
+
+        // Rango máximo de años hacia atrás configurado en parametros_sistema.filtro_max_anios_estudio.
+        // 0 o ausente = sin límite.
+        int maxAnios = parametrosService.getIntegerOrDefault("filtro_max_anios_estudio", 0);
+        if (maxAnios > 0) {
+            int anioMinimo = java.time.Year.now().getValue() - maxAnios;
+            lista = lista.stream()
+                    .filter(e -> e.getAnio() == null || e.getAnio() >= anioMinimo)
+                    .toList();
+        }
 
         String urlPrefix = urlEstudioParaRol(rol);
 

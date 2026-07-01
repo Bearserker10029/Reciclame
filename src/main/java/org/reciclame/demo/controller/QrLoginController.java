@@ -71,7 +71,7 @@ public class QrLoginController {
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "url", qrUrl,
-                "expiraEnSegundos", 300
+                "expiraEnSegundos", qrLoginService.obtenerMinutosExpiracion() * 60
         ));
     }
 
