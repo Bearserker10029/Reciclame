@@ -5,6 +5,7 @@ import org.reciclame.demo.dto.UsuarioResponseDTO;
 import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,7 +38,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request, @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String auditorUsuarioNombre = userDetails != null ? userDetails.getUsername() : "Sistema";
         UsuarioResponseDTO auditor = auditorUsuarioNombre != null ?
@@ -74,7 +75,7 @@ public class UsuarioController {
             @RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -86,7 +87,7 @@ public class UsuarioController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         usuarioService.eliminarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent);
@@ -106,7 +107,7 @@ public class UsuarioController {
         if (rolId == null) {
             return ResponseEntity.badRequest().build();
         }
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.aprobarUsuario(id, rolId, empresaId, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -120,7 +121,7 @@ public class UsuarioController {
             @RequestParam(required = false) String motivo,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.rechazarUsuario(id, motivo, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -132,7 +133,7 @@ public class UsuarioController {
     @PostMapping("/{id}/bloquear")
     public ResponseEntity<UsuarioResponseDTO> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.toggleBloquear(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -145,7 +146,7 @@ public class UsuarioController {
     public ResponseEntity<?> reaccionarUsuario(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request) {
         String[] auditor = resolverAuditor(userDetails);
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         return ResponseEntity.ok(usuarioService.reactivarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
@@ -192,17 +193,6 @@ public class UsuarioController {
         UsuarioResponseDTO dto = usuarioService.findByCorreo(userDetails.getUsername()).orElse(null);
         if (dto == null) return new String[]{null, userDetails.getUsername()};
         return new String[]{String.valueOf(dto.getId()), dto.getNombreCompleto()};
-    }
-
-    private String obtenerIpAddress(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
     }
 
     // ── MANEJO DE ERRORES ─────────────────────────────────────

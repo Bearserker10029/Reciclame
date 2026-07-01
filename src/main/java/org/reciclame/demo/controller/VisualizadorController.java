@@ -8,6 +8,7 @@ import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.UsuarioService;
 import org.reciclame.demo.dto.NotificacionResponseDTO;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -188,7 +190,8 @@ public class VisualizadorController {
             @RequestParam String correoCorporativo,
             @AuthenticationPrincipal UserDetails user,
             RedirectAttributes ra,
-            HttpSession session) {
+            HttpSession session,
+            HttpServletRequest request) {
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
             return "redirect:/visualizador/perfil";
@@ -206,7 +209,12 @@ public class VisualizadorController {
                 var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
                 dto.setNombreCompleto(nombreCompleto);
                 dto.setCorreoCorporativo(correoCorporativo);
-                var updated = usuarioService.actualizarUsuario(id, dto);
+                var updated = usuarioService.actualizarUsuario(
+                        id, dto,
+                        u.getId(),
+                        u.getNombreCompleto(),
+                        HttpClientIpResolver.resolve(request),
+                        request.getHeader("User-Agent"));
                 session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
                         updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
                         updated.getRolNombre(), null, null));

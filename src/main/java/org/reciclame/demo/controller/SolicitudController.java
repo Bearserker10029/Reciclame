@@ -15,6 +15,7 @@ import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -133,7 +134,7 @@ public class SolicitudController {
                 "Aprobar solicitud de registro: " + solicitud.getNombreCompleto() +
                 " (" + solicitud.getCorreoCorporativo() + ")",
                 null, null, "EXITOSO", null,
-                obtenerIp(request), request.getHeader("User-Agent"));
+                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
         // Notificación in-app
         try { notificacionService.notificarAprobacion(guardado.getId()); } catch (Exception ex) { /* no rollback */ }
@@ -183,7 +184,7 @@ public class SolicitudController {
                 "Rechazar solicitud de registro: " + solicitud.getNombreCompleto() +
                 " (" + solicitud.getCorreoCorporativo() + ")",
                 null, null, "EXITOSO", null,
-                obtenerIp(request), request.getHeader("User-Agent"));
+                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
         try {
             emailService.enviarRechazo(
@@ -234,14 +235,5 @@ public class SolicitudController {
         var dto = usuarioService.findByCorreo(userDetails.getUsername()).orElse(null);
         if (dto == null) return new String[]{null, userDetails.getUsername()};
         return new String[]{String.valueOf(dto.getId()), dto.getNombreCompleto()};
-    }
-
-    private String obtenerIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getHeader("X-Real-IP");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getRemoteAddr();
-        return ip;
     }
 }

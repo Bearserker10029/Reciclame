@@ -1,10 +1,12 @@
 package org.reciclame.demo.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.repository.SolicitudesRegistroRepository;
 import org.reciclame.demo.service.*;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -432,11 +434,9 @@ public class AdminController extends BaseReportesController {
     @GetMapping("/admin/trazabilidad")
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        var adminOpt = usuarioService.findByCorreo(user.getUsername());
-        var auditoriasPage = adminOpt.map(u -> auditoriaService.listarAuditoriasPorUsuarioId(0, 100, u.getId()))
-                .orElse(null);
-        model.addAttribute("auditorias", auditoriasPage != null ? auditoriasPage.getContent() : java.util.Collections.emptyList());
-        model.addAttribute("totalElements", auditoriasPage != null ? auditoriasPage.getTotalElements() : 0);
+        var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidadAdmin(0, 100);
+        model.addAttribute("auditorias", auditoriasPage.getContent());
+        model.addAttribute("totalElements", auditoriasPage.getTotalElements());
 
         if (auditoriasPage != null && !auditoriasPage.isEmpty()) {
             var conteoPorModulo = auditoriasPage.getContent().stream()
@@ -561,7 +561,8 @@ public class AdminController extends BaseReportesController {
             @RequestParam String correoCorporativo,
             @AuthenticationPrincipal UserDetails user,
             RedirectAttributes ra,
-            HttpSession session) {
+            HttpSession session,
+            HttpServletRequest request) {
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
             return "redirect:/admin/perfil";
@@ -579,7 +580,12 @@ public class AdminController extends BaseReportesController {
                 var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
                 dto.setNombreCompleto(nombreCompleto);
                 dto.setCorreoCorporativo(correoCorporativo);
-                var updated = usuarioService.actualizarUsuario(id, dto);
+                var updated = usuarioService.actualizarUsuario(
+                        id, dto,
+                        u.getId(),
+                        u.getNombreCompleto(),
+                        HttpClientIpResolver.resolve(request),
+                        request.getHeader("User-Agent"));
                 session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
                         updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
                         updated.getRolNombre(), null, null));

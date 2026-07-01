@@ -97,6 +97,11 @@ public class AuditoriaService {
         return auditoriaRepository.findAllExcludingSeguridad(pageable);
     }
 
+    public Page<Auditoria> listarAuditoriasParaTrazabilidadAdmin(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return auditoriaRepository.findAllExcludingSeguridadYAccionesDeSuperadmin(pageable);
+    }
+
     public List<Auditoria> listarAuditoriasLimit(int limite) {
         var stream = auditoriaRepository.findAll().stream()
                 .sorted((a, b) -> {

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
@@ -63,7 +64,7 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
                                 "Cuenta bloqueada automáticamente tras " + intentos +
                                         " intentos fallidos de login (max_intentos_login=" + maxIntentos + ").",
                                 null, null, "EXITOSO", null,
-                                clienteIp(request), request.getHeader("User-Agent"));
+                                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
                     } catch (Exception ignore) { /* auditoría no debe tumbar el login */ }
                 }
             }
@@ -72,14 +73,5 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
         StringBuilder url = new StringBuilder("/service/repositorio/login?error=true");
         if (locked) url.append("&locked=true");
         response.sendRedirect(url.toString());
-    }
-
-    private String clienteIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getHeader("X-Real-IP");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getRemoteAddr();
-        return ip;
     }
 }

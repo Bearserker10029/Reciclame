@@ -38,13 +38,13 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/chatbot")
-public class ChatRestController {
+public class ChatbotEstadisticasRestController {
 
-    private static final Logger log = LoggerFactory.getLogger(ChatRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(ChatbotEstadisticasRestController.class);
 
     private final ChatbotService chatbotService;
 
-    public ChatRestController(ChatbotService chatbotService) {
+    public ChatbotEstadisticasRestController(ChatbotService chatbotService) {
         this.chatbotService = chatbotService;
     }
 

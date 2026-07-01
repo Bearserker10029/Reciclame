@@ -12,6 +12,7 @@ import org.reciclame.demo.repository.ChatbotFeedbackRepository;
 import org.reciclame.demo.repository.ConversacionesChatbotRepository;
 import org.reciclame.demo.repository.MensajesChatbotRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -87,7 +88,7 @@ public class ChatbotService {
         conv.setTotalMensajes(0);
         conv.setDuracionTotalMs(0L);
         conv.setUltimoMensajeAt(Instant.now());
-        conv.setIpAddress(firstNonBlank(req.getIpAddress(), clientIp(httpReq)));
+        conv.setIpAddress(firstNonBlank(req.getIpAddress(), HttpClientIpResolver.resolve(httpReq)));
         conv.setUserAgent(truncar(req.getUserAgent(), 500));
         conv.setCerradaPorUsuario(false);
         conv.setEstadoActivo(true);
@@ -379,10 +380,4 @@ public class ChatbotService {
         return null;
     }
 
-    private static String clientIp(HttpServletRequest req) {
-        if (req == null) return null;
-        String h = req.getHeader("X-Forwarded-For");
-        if (h != null && !h.isBlank()) return h.split(",")[0].trim();
-        return req.getRemoteAddr();
-    }
 }
