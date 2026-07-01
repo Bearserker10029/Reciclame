@@ -39,9 +39,14 @@ public class DocumentPreviewService {
 
     public String buildViewerUrl(String archivoUrl, String titulo, String archivoTipoMime) {
         if (archivoUrl == null || archivoUrl.isBlank()) return "";
-        if (isPdf(archivoUrl, archivoTipoMime)) {
-            return "/api/documentos/inline?url=" + URLEncoder.encode(archivoUrl, StandardCharsets.UTF_8);
-        }
+        // Reciclame: ANTES los PDFs nativos se servian via /api/documentos/inline, que
+        // entrega el PDF crudo al browser. Chrome (o la extension "Visor de PDF")
+        // entonces embebia el archivo y mostraba su propio toolbar con print/save/find,
+        // sin posibilidad de control por servidor.
+        //
+        // Ahora TODOS los archivos pasan por kkfileview (que usa pdf.js), para que
+        // el proxy reverso pueda interceptar el HTML del viewer y ocultar botones
+        // por rol (Visualizador sin print/save, Admin/Socio sin restricciones).
         return buildKkPreviewUrl(archivoUrl, titulo);
     }
 
