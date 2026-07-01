@@ -1489,6 +1489,7 @@ CREATE TABLE `usuarios` (
     `empresa_id` bigint DEFAULT NULL,
     `intentos_fallidos` tinyint NOT NULL DEFAULT '0',
     `cuenta_bloqueada` tinyint(1) NOT NULL DEFAULT '0',
+    `fecha_bloqueo` timestamp NULL DEFAULT NULL,
     `ip_bloqueada` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `tfa_activo` tinyint(1) NOT NULL DEFAULT '0',
     `tfa_secret` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

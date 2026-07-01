@@ -50,18 +50,21 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     /**
      * Marca la cuenta como bloqueada y deja intentosFallidos en 0
      * para que el siguiente flujo de "desbloqueo por Admin" arranque limpio.
+     * Registra fechaBloqueo para permitir el auto-desbloqueo temporal
+     * (parametros_sistema.tiempo_bloqueo_minutos).
      */
     @Modifying
-    @Query("UPDATE Usuario u SET u.cuentaBloqueada = true, u.estadoCuenta = 'BLOQUEADO', u.intentosFallidos = 0 WHERE u.id = :id")
+    @Query("UPDATE Usuario u SET u.cuentaBloqueada = true, u.estadoCuenta = 'BLOQUEADO', u.intentosFallidos = 0, u.fechaBloqueo = CURRENT_TIMESTAMP WHERE u.id = :id")
     int bloquearCuenta(@Param("id") Long id);
 
     /**
      * Resetea intentosFallidos y desbloquea la cuenta. Se ejecuta al
      * detectar un login exitoso de un usuario que previamente tuvo
-     * intentos fallidos o estaba bloqueado.
+     * intentos fallidos o estaba bloqueado, o al vencer el tiempo de
+     * bloqueo automático.
      */
     @Modifying
-    @Query("UPDATE Usuario u SET u.intentosFallidos = 0, u.cuentaBloqueada = false WHERE u.id = :id")
+    @Query("UPDATE Usuario u SET u.intentosFallidos = 0, u.cuentaBloqueada = false, u.estadoCuenta = 'ACTIVO', u.fechaBloqueo = null WHERE u.id = :id")
     int resetearIntentosYDesbloquear(@Param("id") Long id);
 
     /**

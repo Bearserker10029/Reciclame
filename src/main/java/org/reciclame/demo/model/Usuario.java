@@ -68,6 +68,9 @@ public class Usuario {
     @Column(name = "cuenta_bloqueada", nullable = false)
     private Boolean cuentaBloqueada;
 
+    @Column(name = "fecha_bloqueo")
+    private Instant fechaBloqueo;
+
     @Column(name = "ip_bloqueada", length = 45)
     private String ipBloqueada;
 

@@ -905,6 +905,12 @@
                           <i th:class="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'fas fa-unlock' : 'fas fa-ban'}"
                             th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
                         </button>
+                        <!-- Historial -->
+                        <button th:onclick="|abrirHistorialUsuario(${usuario.id}, '${usuario.nombreCompleto}')|"
+                          title="Ver historial de actividad"
+                          style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
+                          <i class="fas fa-history" style="color:#8B5CF6;"></i>
+                        </button>
                         <!-- Eliminar (solo SUPERADMIN) -->
                         <button sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
                           title="Eliminar usuario"
@@ -2202,6 +2208,133 @@
     <!-- ── Chatbot (fuera del main para position:fixed) ── -->
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL HISTORIAL DE USUARIO
+  ══════════════════════════════════════════════ -->
+  <div id="modal-historial" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;width:min(780px,95vw);max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
+      <!-- Header -->
+      <div style="padding:20px 24px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1B3A5C,#0f2540);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(139,92,246,.25);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-history" style="color:#C4B5FD;font-size:15px;"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#fff;">Historial de actividad</div>
+            <div id="historial-nombre-usuario" style="font-size:12px;color:rgba(255,255,255,.65);margin-top:1px;">—</div>
+          </div>
+        </div>
+        <button onclick="cerrarHistorialUsuario()" style="width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">&times;</button>
+      </div>
+      <!-- KPIs -->
+      <div id="historial-kpis" style="padding:16px 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;border-bottom:1px solid #F3F4F6;"></div>
+      <!-- Tabla -->
+      <div style="flex:1;overflow-y:auto;padding:0 24px 20px;">
+        <div id="historial-loading" style="text-align:center;padding:40px;color:#9CA3AF;font-size:13px;">
+          <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i>Cargando historial...
+        </div>
+        <table id="historial-table" style="display:none;width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#F9FAFB;border-bottom:1px solid #E5E7EB;">
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">Acción</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">Módulo</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">Descripción</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">Estado</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">IP</th>
+              <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;">Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="historial-tbody"></tbody>
+        </table>
+        <div id="historial-empty" style="display:none;text-align:center;padding:40px;color:#9CA3AF;font-size:13px;">
+          <i class="fas fa-inbox" style="font-size:28px;display:block;margin-bottom:10px;"></i>
+          Sin actividad registrada para este usuario.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var _historialColores = {
+      'CREAR_ESTUDIO':'#2ECC71','EDITAR_ESTUDIO':'#3498DB','ELIMINAR_ESTUDIO':'#E74C3C',
+      'CREAR_NORMATIVA':'#27AE60','EDITAR_NORMATIVA':'#2980B9','ELIMINAR_NORMATIVA':'#C0392B',
+      'LOGIN':'#8B5CF6','LOGOUT':'#6B7280','DESCARGAR_DOCUMENTO':'#F39C12',
+      'CREAR_USUARIO':'#1ABC9C','EDITAR_USUARIO':'#16A085','ELIMINAR_USUARIO':'#E74C3C',
+      'BLOQUEAR_USUARIO':'#E67E22','DESBLOQUEAR_USUARIO':'#2ECC71',
+      'APROBAR_USUARIO':'#27AE60','RECHAZAR_USUARIO':'#E74C3C',
+      'CAMBIAR_PASSWORD':'#9B59B6'
+    };
+
+    function abrirHistorialUsuario(id, nombre) {
+      var modal = document.getElementById('modal-historial');
+      modal.style.display = 'flex';
+      document.getElementById('historial-nombre-usuario').textContent = nombre;
+      document.getElementById('historial-loading').style.display = 'block';
+      document.getElementById('historial-table').style.display = 'none';
+      document.getElementById('historial-empty').style.display = 'none';
+      document.getElementById('historial-kpis').innerHTML = '';
+      document.getElementById('historial-tbody').innerHTML = '';
+
+      fetch('/api/usuarios/' + id + '/historial', { credentials: 'same-origin' })
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          document.getElementById('historial-loading').style.display = 'none';
+          if (!data || data.length === 0) {
+            document.getElementById('historial-empty').style.display = 'block';
+            return;
+          }
+
+          // KPIs
+          var descargas = data.filter(function(a){ return a.accion === 'DESCARGAR_DOCUMENTO'; }).length;
+          var logins    = data.filter(function(a){ return a.accion === 'LOGIN'; }).length;
+          var ediciones = data.filter(function(a){ return a.accion && (a.accion.startsWith('EDITAR') || a.accion.startsWith('CREAR')); }).length;
+          var kpisHtml = [
+            { icon:'fa-list', label:'Total acciones', val:data.length, color:'#8B5CF6' },
+            { icon:'fa-sign-in-alt', label:'Inicios de sesión', val:logins, color:'#3498DB' },
+            { icon:'fa-download', label:'Descargas', val:descargas, color:'#F39C12' },
+            { icon:'fa-edit', label:'Creaciones/ediciones', val:ediciones, color:'#2ECC71' }
+          ].map(function(k){
+            return '<div style="background:#F9FAFB;border-radius:10px;padding:12px 14px;border:1px solid #E5E7EB;">'
+              + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">'
+              + '<i class="fas ' + k.icon + '" style="color:' + k.color + ';font-size:13px;"></i>'
+              + '<span style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;">' + k.label + '</span></div>'
+              + '<div style="font-size:22px;font-weight:800;color:#1B3A5C;">' + k.val + '</div></div>';
+          }).join('');
+          document.getElementById('historial-kpis').innerHTML = kpisHtml;
+
+          // Filas
+          var tbody = document.getElementById('historial-tbody');
+          data.forEach(function(a) {
+            var color = _historialColores[a.accion] || '#6B7280';
+            var fecha = a.fechaAccion ? a.fechaAccion.substring(0,16).replace('T',' ') : '—';
+            var tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #F3F4F6';
+            tr.innerHTML = '<td style="padding:9px 12px;">'
+              + '<span style="background:' + color + '20;color:' + color + ';padding:3px 8px;border-radius:6px;font-weight:700;font-size:10px;">' + (a.accion || '—') + '</span></td>'
+              + '<td style="padding:9px 12px;color:#6B7280;">' + (a.modulo || '—') + '</td>'
+              + '<td style="padding:9px 12px;color:#374151;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + (a.descripcion || '') + '">' + (a.descripcion || '—') + '</td>'
+              + '<td style="padding:9px 12px;"><span style="color:' + (a.estado === 'EXITOSO' ? '#27AE60' : '#E74C3C') + ';font-weight:600;">' + (a.estado || '—') + '</span></td>'
+              + '<td style="padding:9px 12px;color:#9CA3AF;font-size:11px;">' + (a.ipAddress || '—') + '</td>'
+              + '<td style="padding:9px 12px;color:#9CA3AF;font-size:11px;white-space:nowrap;">' + fecha + '</td>';
+            tbody.appendChild(tr);
+          });
+
+          document.getElementById('historial-table').style.display = 'table';
+        })
+        .catch(function() {
+          document.getElementById('historial-loading').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#E74C3C;margin-right:8px;"></i>Error al cargar el historial.';
+        });
+    }
+
+    function cerrarHistorialUsuario() {
+      document.getElementById('modal-historial').style.display = 'none';
+    }
+
+    document.getElementById('modal-historial').addEventListener('click', function(e) {
+      if (e.target === this) cerrarHistorialUsuario();
+    });
+  </script>
 
 </body>
 
