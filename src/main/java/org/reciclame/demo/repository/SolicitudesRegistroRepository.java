@@ -17,4 +17,5 @@ public interface SolicitudesRegistroRepository extends JpaRepository<Solicitudes
     boolean existsByDniAndEstadoIn(String dni, java.util.List<EstadoSolicitud> estados);
     Optional<SolicitudesRegistro> findByCorreoCorporativo(String correoCorporativo);
     List<SolicitudesRegistro> findByEstadoOrderByCreatedAtDesc(EstadoSolicitud estado);
+    List<SolicitudesRegistro> findByEstadoNotOrderByCreatedAtDesc(EstadoSolicitud estado);
 }

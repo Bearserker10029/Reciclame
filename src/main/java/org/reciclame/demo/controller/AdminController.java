@@ -213,6 +213,7 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
+        model.addAttribute("solicitudesResueltas", solicitudesRepo.findByEstadoNotOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         model.addAttribute("empresas", empresaService.listarEmpresas());
         model.addAttribute("roles", rolService.listarRoles());

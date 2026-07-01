@@ -43,6 +43,37 @@ public class ParametrosSistemaService {
         parametrosRepo.save(param);
     }
 
+    public Integer getInteger(String clave) {
+        return parametrosRepo.findByClave(clave)
+                .map(ParametrosSistema::getValor)
+                .map(String::trim)
+                .flatMap(v -> {
+                    try { return java.util.Optional.of(Integer.parseInt(v)); }
+                    catch (NumberFormatException e) { return java.util.Optional.empty(); }
+                })
+                .orElse(null);
+    }
+
+    public Integer getIntegerOrDefault(String clave, Integer defaultValue) {
+        Integer v = getInteger(clave);
+        return v != null ? v : defaultValue;
+    }
+
+    public Boolean getBoolean(String clave) {
+        return parametrosRepo.findByClave(clave)
+                .map(ParametrosSistema::getValor)
+                .map(String::trim)
+                .map(String::toLowerCase)
+                .map(v -> v.equals("true") || v.equals("1") || v.equals("si") || v.equals("sí"))
+                .orElse(null);
+    }
+
+    public String getString(String clave) {
+        return parametrosRepo.findByClave(clave)
+                .map(ParametrosSistema::getValor)
+                .orElse(null);
+    }
+
     private ParametrosSistemaResponseDTO toResponseDTO(ParametrosSistema p) {
         ParametrosSistemaResponseDTO dto = new ParametrosSistemaResponseDTO();
         dto.setId(p.getId());

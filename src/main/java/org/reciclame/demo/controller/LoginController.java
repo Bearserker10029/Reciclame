@@ -79,6 +79,15 @@ public class LoginController {
                         u.setUltimoLogin(Instant.now());
                         usuarioRepository.save(u);
 
+                        // Si el usuario tenía intentos fallidos o estaba bloqueado,
+                        // resetearlos al iniciar sesión correctamente.
+                        if ((u.getIntentosFallidos() != null && u.getIntentosFallidos() != 0)
+                                || Boolean.TRUE.equals(u.getCuentaBloqueada())) {
+                            usuarioRepository.resetearIntentosYDesbloquear(u.getId());
+                            u.setIntentosFallidos((byte) 0);
+                            u.setCuentaBloqueada(false);
+                        }
+
                         session.setAttribute("usuarioSesion", new UsuarioSesion(
                                 u.getId(),
                                 u.getNombreCompleto(),

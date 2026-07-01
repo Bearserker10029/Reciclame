@@ -893,8 +893,11 @@
                   class="fas fa-eye"></i></button>
             </div>
           </div>
-          <div id="login-error" class="field-error" th:classappend="${param.error} ? 'show'" style="margin-bottom:10px;">
+          <div id="login-error" class="field-error" th:classappend="${param.error != null and (param.locked == null or param.locked[0] == null)} ? 'show'" style="margin-bottom:10px;">
             <i class="fas fa-exclamation-circle"></i> Correo o contraseña incorrectos
+          </div>
+          <div id="login-locked" class="field-error" th:classappend="${param.locked != null and param.locked[0] != null} ? 'show'" style="background:rgba(231,76,60,.14);border:1px solid rgba(231,76,60,.35);color:#F5B7B1;margin-bottom:10px;">
+            <i class="fas fa-lock"></i> Cuenta bloqueada por demasiados intentos. Contacta al administrador para restablecer el acceso.
           </div>
           <div th:if="${param.logout}" style="display:flex;align-items:center;gap:8px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;min-height:44px;box-sizing:border-box;">
             <i class="fas fa-check-circle" style="color:var(--green);font-size:14px;flex-shrink:0;"></i>
@@ -1149,10 +1152,12 @@
       const emailInput = document.getElementById('login-email');
       const passInput = document.getElementById('login-pass');
       const errorDiv = document.getElementById('login-error');
+      const lockedDiv = document.getElementById('login-locked');
 
       emailInput.classList.remove('input-error');
       passInput.classList.remove('input-error');
-      errorDiv.classList.remove('show');
+      if (errorDiv) errorDiv.classList.remove('show');
+      if (lockedDiv) { lockedDiv.classList.remove('show'); lockedDiv.style.display = 'none'; }
     }
     function handleLogin(e) {
       e.preventDefault();

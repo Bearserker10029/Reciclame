@@ -1,6 +1,7 @@
 package org.reciclame.demo.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.reciclame.demo.dto.SolicitudRegistroDTO;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.model.SolicitudesRegistro;
 import org.reciclame.demo.model.Empresa;
@@ -192,6 +193,31 @@ public class SolicitudController {
         } catch (Exception ex) { /* no rollback */ }
 
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    // GET /api/solicitudes/{id}
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitudRegistroDTO> obtener(@PathVariable Long id) {
+        return solicitudRepo.findById(id)
+                .map(this::toDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private SolicitudRegistroDTO toDTO(SolicitudesRegistro s) {
+        SolicitudRegistroDTO dto = new SolicitudRegistroDTO();
+        dto.setId(s.getId());
+        dto.setNombreCompleto(s.getNombreCompleto());
+        dto.setDni(s.getDni());
+        dto.setCorreoCorporativo(s.getCorreoCorporativo());
+        dto.setEmpresaNombre(s.getEmpresaNombre());
+        dto.setEstado(s.getEstado() != null ? s.getEstado().name() : null);
+        dto.setMotivoRechazo(s.getMotivoRechazo());
+        dto.setFechaResolucion(s.getFechaResolucion());
+        dto.setRevisadaPorNombre(s.getRevisadaPor() != null ? s.getRevisadaPor().getNombreCompleto() : null);
+        dto.setCreatedAt(s.getCreatedAt());
+        return dto;
     }
 
     // ── helpers ─────────────────────────────────────────────────

@@ -246,6 +246,12 @@ public class ChatbotService {
             dto.setIntentDetectado(m.getIntentDetectado());
             dto.setDuracionMs(m.getDuracionMs());
             dto.setTokensEstimados(m.getTokensEstimados());
+            dto.setModelo(m.getModelo());
+            dto.setMensajeError(m.getMensajeError());
+            dto.setSqlEjecutado(m.getSqlEjecutado());
+            dto.setFilasDevueltas(m.getFilasDevueltas());
+            dto.setMetadata(m.getMetadata());
+            dto.setIpAddress(m.getIpAddress());
             dto.setEsError(m.getEsError());
             dto.setCreatedAt(m.getCreatedAt());
             out.add(dto);
@@ -260,8 +266,10 @@ public class ChatbotService {
     private ChatbotConsultaFilaDTO toFila(ConversacionesChatbot c) {
         ChatbotConsultaFilaDTO dto = new ChatbotConsultaFilaDTO();
         dto.setConversacionId(c.getId());
+        dto.setTitulo(c.getTitulo());
         dto.setFechaInicio(c.getCreatedAt());
         dto.setFechaUltimoMensaje(c.getUltimoMensajeAt() != null ? c.getUltimoMensajeAt() : c.getCreatedAt());
+        dto.setIpOrigen(c.getIpAddress());
         if (c.getUsuario() != null) {
             dto.setUsuarioId(c.getUsuario().getId());
             dto.setUsuarioNombre(c.getUsuario().getNombreCompleto());
