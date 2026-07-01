@@ -240,6 +240,8 @@ public class EstudioService {
             guardarEtiquetas(saved, dto.getEtiquetasIds());
         }
 
+        try { notificacionService.notificarEstudioActualizado(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
+
         String datosNuevos = null;
         try {
             datosNuevos = objectMapper.writeValueAsString(toResponseDTO(saved));

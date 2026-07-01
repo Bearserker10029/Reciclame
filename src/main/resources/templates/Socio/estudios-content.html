@@ -379,15 +379,16 @@ if (!window.__reciclameDriveScrollClose) {
   }, true);
 }
 window.driveShareEstudio = function (titulo) {
-  var text = window.location.origin + '/socio/estudios — ' + titulo;
+  var url = window.location.origin + '/socio/estudios';
+  var text = url + '\n' + titulo;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function () {
-      alert('Copiado al portapapeles. Puedes pegarlo donde quieras compartir.');
+      alert('Enlace copiado al portapapeles:\n' + url);
     }).catch(function () {
-      window.prompt('Copia manualmente:', text);
+      window.prompt('Copia manualmente:', url);
     });
   } else {
-    window.prompt('Copia manualmente:', text);
+    window.prompt('Copia manualmente:', url);
   }
 };
 let estudiosKpiChart = null;

@@ -175,6 +175,38 @@ public class NotificacionService {
     }
 
     @Transactional
+    public void notificarEstudioActualizado(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevosEstudios()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVO_ESTUDIO",
+                    "Estudio actualizado",
+                    "Se ha actualizado el estudio: " + titulo,
+                    "/admin/estudios");
+            notificacionRepository.save(n);
+            pushNotif(u.getId(), "Estudio actualizado", "Se actualizó: " + titulo, "NUEVO_ESTUDIO", "/socio/estudios");
+        });
+    }
+
+    @Transactional
+    public void notificarNormativaActualizada(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevasNormativas()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVA_NORMATIVA",
+                    "Normativa actualizada",
+                    "Se ha actualizado en el repositorio: " + titulo,
+                    "/admin/normativo");
+            notificacionRepository.save(n);
+            pushNotif(u.getId(), "Normativa actualizada", "Se actualizó: " + titulo, "NUEVA_NORMATIVA", "/socio/normativo");
+        });
+    }
+
+    @Transactional
     public void notificarAprobacion(Long usuarioId) {
         usuarioRepository.findById(usuarioId).ifPresent(u -> {
             Notificacione n = buildNotif(u, "APROBACION",
