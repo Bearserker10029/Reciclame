@@ -6,6 +6,37 @@
 
 <th:block th:fragment="chatbot" th:if="${chatbotHabilitado}">
 
+  <style>
+    .chat-msg.bot .bubble.bot-markdown p { margin: 0 0 6px 0; }
+    .chat-msg.bot .bubble.bot-markdown p:last-child { margin-bottom: 0; }
+    .chat-msg.bot .bubble.bot-markdown ul,
+    .chat-msg.bot .bubble.bot-markdown ol { margin: 4px 0 4px 18px; padding: 0; }
+    .chat-msg.bot .bubble.bot-markdown li { margin-bottom: 2px; }
+    .chat-msg.bot .bubble.bot-markdown strong { font-weight: 700; }
+    .chat-msg.bot .bubble.bot-markdown em { font-style: italic; }
+    .chat-msg.bot .bubble.bot-markdown code {
+      background: rgba(0,0,0,.08); padding: 1px 5px; border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    }
+    .chat-msg.bot .bubble.bot-markdown pre {
+      background: rgba(0,0,0,.12); padding: 8px 10px; border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      overflow-x: auto; margin: 4px 0;
+    }
+    .chat-msg.bot .bubble.bot-markdown a {
+      color: #27AE60; text-decoration: underline; word-break: break-all;
+    }
+    .chat-msg.bot .bubble.bot-markdown h1,
+    .chat-msg.bot .bubble.bot-markdown h2,
+    .chat-msg.bot .bubble.bot-markdown h3 {
+      font-size: 13px; margin: 6px 0 4px; font-weight: 700; color: #fff;
+    }
+    .chat-msg.bot .bubble.bot-markdown blockquote {
+      border-left: 3px solid rgba(255,255,255,.3);
+      padding-left: 8px; margin: 4px 0; color: rgba(255,255,255,.75);
+    }
+  </style>
+
   <!-- ── Floating bubble ── -->
   <button id="chatbot-bubble"
           onclick="toggleChatbot()"
@@ -78,6 +109,60 @@
   <script>
   (function () {
     'use strict';
+
+    // ── Cargar marked y DOMPurify dinámicamente ──
+    // El fragment no tiene <head> propio, así que los <script> no se cargan
+    // por Thymeleaf al hacer th:replace. Los inyectamos manualmente en
+    // <head> y esperamos a que estén listos antes de procesar respuestas.
+    function ensureScriptLoaded(src) {
+      return new Promise(function (resolve) {
+        if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
+        var s = document.createElement('script');
+        s.src = src;
+        s.async = false;
+        s.onload = function () { resolve(); };
+        s.onerror = function () { resolve(); };
+        document.head.appendChild(s);
+      });
+    }
+    // Cola de promesas para esperar a que las libs estén listas
+    window.__chatbotLibsReady = window.__chatbotLibsReady || (function () {
+      var pending = [];
+      if (typeof DOMPurify === 'undefined') {
+        pending.push(ensureScriptLoaded('https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js'));
+      }
+      if (typeof marked === 'undefined') {
+        pending.push(ensureScriptLoaded('https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js'));
+      }
+      return pending.length ? Promise.all(pending) : Promise.resolve();
+    })();
+
+    // ── Render markdown del bot a HTML seguro ──
+    // marked convierte markdown → HTML; DOMPurify elimina XSS antes de inyectar.
+    function renderBotMarkdown(text) {
+      if (!text) return '';
+      try {
+        if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+          return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        var html = marked.parse(String(text), { breaks: true, gfm: true });
+        return DOMPurify.sanitize(html, {
+          ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'code', 'pre', 'ul', 'ol', 'li',
+                         'p', 'br', 'h1', 'h2', 'h3', 'h4', 'blockquote', 'hr', 'br'],
+          ALLOWED_ATTR: ['href', 'title', 'target', 'rel'],
+          ALLOW_DATA_ATTR: false
+        });
+      } catch (e) {
+        return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+    }
+    // Versión async de renderBotMarkdown que espera a que las libs estén listas
+    function renderBotMarkdownAsync(text) {
+      if (window.__chatbotLibsReady && typeof window.__chatbotLibsReady.then === 'function') {
+        return window.__chatbotLibsReady.then(function () { return renderBotMarkdown(text); });
+      }
+      return Promise.resolve(renderBotMarkdown(text));
+    }
 
     // Callback al backend para registrar la conversacion (fire-and-forget).
     // Se ejecuta despues de cada respuesta del bot. Si falla, no rompe el chat.
@@ -193,10 +278,13 @@
                      ? json.choices[0].message.content
                      : (json.response || content);
           } catch (e) {}
-          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' + content + '</div></div>';
-          msgs.innerHTML += botMsgHtml;
-          msgs.scrollTop = msgs.scrollHeight;
-          guardarMensajes();
+          // Esperar a que las libs de markdown estén cargadas antes de renderizar
+          renderBotMarkdownAsync(content).then(function (rendered) {
+            var botMsgHtml = '<div class="chat-msg bot"><div class="bubble bot-markdown">' + rendered + '</div></div>';
+            msgs.innerHTML += botMsgHtml;
+            msgs.scrollTop = msgs.scrollHeight;
+            guardarMensajes();
+          });
 
           var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
           var duracionMs = Math.max(0, Math.round(t1 - t0));
@@ -217,11 +305,12 @@
         .catch(function(err) {
           errorFlag = true;
           errorMsg = (err && err.message) ? err.message : 'Error desconocido';
-          var botMsgHtml = '<div class="chat-msg bot"><div class="bubble">' +
-                           'Lo siento, el asistente no está disponible.' + '</div></div>';
-          msgs.innerHTML += botMsgHtml;
-          msgs.scrollTop = msgs.scrollHeight;
-          guardarMensajes();
+          renderBotMarkdownAsync('Lo siento, el asistente no está disponible.').then(function (rendered) {
+            var botMsgHtml = '<div class="chat-msg bot"><div class="bubble bot-markdown">' + rendered + '</div></div>';
+            msgs.innerHTML += botMsgHtml;
+            msgs.scrollTop = msgs.scrollHeight;
+            guardarMensajes();
+          });
           var t1 = (window.performance && performance.now) ? performance.now() : Date.now();
           var duracionMs = Math.max(0, Math.round(t1 - t0));
           enviarCallbackRegistro({
