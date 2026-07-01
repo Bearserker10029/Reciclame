@@ -800,7 +800,7 @@
                 </div>
                 <div>
                   <div style="font-size:24px;font-weight:800;color:#2ECC71;line-height:1;">
-                    <span th:text="${chatStats.feedbackPositivo}">0</span>
+                    <span id="kpi-pos" th:text="${chatStats.feedbackPositivo}">0</span>
                     <i class="fas fa-thumbs-up" style="font-size:12px;margin-left:2px;"></i>
                   </div>
                   <div style="font-size:10px;color:#9CA3AF;">positivos</div>
@@ -1073,6 +1073,7 @@
                   document.getElementById('kpi-lat').innerHTML     = fmtNumber(Math.round(data.latenciaPromedioMs)) + '<span style="font-size:14px;color:#6B7280;"> ms</span>';
                   document.getElementById('kpi-err').textContent   = fmtNumber(data.totalErrores);
                   document.getElementById('kpi-sop').textContent   = fmtNumber(data.totalDerivadosSoporte);
+                  var posEl = document.getElementById('kpi-pos'); if (posEl) posEl.textContent = fmtNumber(data.feedbackPositivo);
                   renderChartMensajes(data.mensajesPorDia || []);
                   renderChartRoles(data.conversacionesPorRol || []);
                   renderTopIntents(data.topIntents || []);
@@ -1196,12 +1197,13 @@
               }
               var max1 = rows[0].total || 1;
               var hi = '';
+              var intentPalette = ['linear-gradient(90deg,#F39C12,#D68910)','linear-gradient(90deg,#E74C3C,#C0392B)','linear-gradient(90deg,#8B5CF6,#7C3AED)','linear-gradient(90deg,#3498DB,#2980B9)','linear-gradient(90deg,#2ECC71,#27AE60)'];
               rows.forEach(function (r, i) {
                 var pct = Math.round(r.total * 100 / max1);
                 hi += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(243,156,18,.1);color:#F39C12;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#374151;font-weight:500;">' + escapeHtml(r.intent) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%;background:' + (intentPalette[i % intentPalette.length]) + '"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
@@ -1216,13 +1218,14 @@
                 return;
               }
               var max2 = rows[0].total || 1;
+              var userPalette = ['linear-gradient(90deg,#3498DB,#2980B9)','linear-gradient(90deg,#2ECC71,#27AE60)','linear-gradient(90deg,#8B5CF6,#7C3AED)','linear-gradient(90deg,#F39C12,#D68910)','linear-gradient(90deg,#E74C3C,#C0392B)'];
               var hu = '';
               rows.forEach(function (r, i) {
                 var pct = Math.round(r.total * 100 / max2);
                 hu += '<div class="rank-item">' +
                   '<div class="rank-badge badge-other" style="background:rgba(52,152,219,.1);color:#3498DB;">' + (i + 1) + '</div>' +
                   '<span style="flex:1;font-size:13px;color:#1B3A5C;font-weight:600;">' + escapeHtml(r.nombre) + '</span>' +
-                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%"></div></div>' +
+                  '<div class="rank-bar-wrap"><div class="rank-bar" style="width:' + pct + '%;background:' + (userPalette[i % userPalette.length]) + '"></div></div>' +
                   '<span style="font-size:13px;font-weight:700;color:#1B3A5C;min-width:28px;text-align:right;">' + fmtNumber(r.total) + '</span>' +
                 '</div>';
               });
