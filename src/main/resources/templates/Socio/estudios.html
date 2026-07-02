@@ -1592,82 +1592,73 @@
     <th:block th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
   </div>
 
-<!-- ═══ Modal Compartir Documento (tipo correo) ═══ -->
+<!-- ═══ Modal Compartir Documento (estilo Google Drive) ═══ -->
 <div id="modalCompartir" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:16px;width:95%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:modalCompIn .25s ease;">
-    <div style="background:linear-gradient(135deg,#0F2236,#1B3A5C);padding:20px 28px;display:flex;align-items:center;gap:12px;">
-      <div style="background:rgba(52,152,219,.2);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
-        <i class="fas fa-envelope" style="color:#3498DB;font-size:18px;"></i>
-      </div>
-      <div style="flex:1;">
-        <h3 style="margin:0;color:#fff;font-size:16px;font-weight:700;">Enviar documento por correo</h3>
-      </div>
-      <button onclick="closeModalCompartir()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;" title="Cerrar">
+  <div style="background:#fff;border-radius:16px;width:95%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:modalCompIn .25s ease;">
+    <div style="padding:24px 28px 4px;display:flex;align-items:flex-start;gap:12px;">
+      <h3 style="margin:0;color:#1B3A5C;font-size:19px;font-weight:700;flex:1;">Compartir "<span id="compartirTitulo"></span>"</h3>
+      <button onclick="closeModalCompartir()" style="background:none;border:none;color:#9CA3AF;font-size:18px;cursor:pointer;padding:4px;" title="Cerrar">
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div style="padding:24px 28px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <label style="font-size:13px;font-weight:600;color:#718096;min-width:50px;">De:</label>
-        <input id="compartirDe" type="text" readonly
-          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;background:#F7FAFC;color:#4A5568;outline:none;"
-          th:value="${#authentication.name}" />
+    <div style="padding:16px 28px 8px;">
+      <div style="display:flex;gap:8px;">
+        <input id="compartirCorreoInput" type="email" placeholder="Añadir personas por correo..."
+          style="flex:1;padding:11px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;outline:none;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();agregarPersonaCompartir();}" />
+        <button id="btnAgregarPersona" onclick="agregarPersonaCompartir()"
+          style="padding:0 18px;border:none;border-radius:10px;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+          Agregar
+        </button>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">Para: <span style="color:#E53E3E;">*</span></label>
-        <input id="compartirPara" type="email" placeholder="correo@ejemplo.com" required
-          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
-          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">CC:</label>
-        <input id="compartirCc" type="text" placeholder="correo1@ejemplo.com, correo2@ejemplo.com"
-          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
-          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">Asunto:</label>
-        <input id="compartirAsunto" type="text" placeholder="Asunto del correo"
-          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
-          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">
-          <i class="fas fa-paperclip"></i>
-        </label>
-        <div style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;background:#F0FFF4;color:#276749;display:flex;align-items:center;gap:8px;">
-          <i class="fas fa-file-alt" style="color:#2ECC71;"></i>
-          <span id="compartirAdjuntoNombre" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
-        </div>
-      </div>
-      <div style="margin-bottom:0;">
-        <label style="display:block;font-size:13px;font-weight:600;color:#4A5568;margin-bottom:6px;">Descripción (opcional)</label>
-        <textarea id="compartirDescripcion" rows="3" placeholder="Escribe un mensaje para acompañar el documento..."
-          style="width:100%;padding:10px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;resize:vertical;transition:border .2s;"
-          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      <div id="compartirError" style="display:none;margin-top:8px;padding:8px 12px;background:#FFF5F5;border-left:3px solid #E53E3E;border-radius:0 8px 8px 0;color:#C53030;font-size:12px;font-weight:600;"></div>
+    </div>
+    <div style="padding:8px 28px;">
+      <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.4px;">Personas con acceso</p>
+      <div id="compartirListaPersonas" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+        <div style="padding:14px 0;text-align:center;color:#9CA3AF;font-size:12px;">Cargando...</div>
       </div>
     </div>
-    <div style="padding:0 28px 24px;display:flex;gap:10px;justify-content:flex-end;">
-      <button onclick="closeModalCompartir()" style="padding:10px 22px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;color:#4A5568;font-size:13px;font-weight:600;cursor:pointer;">
-        Cancelar
+    <div style="padding:12px 28px 20px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#F9FAFB;border-radius:10px;border:1px solid #F3F4F6;">
+        <i class="fas fa-lock" style="color:#6B7280;font-size:15px;"></i>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#374151;">Restringido</div>
+          <div style="font-size:11px;color:#9CA3AF;">Solo los usuarios con acceso pueden abrir el enlace</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 28px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <button id="btnCopiarEnlace" onclick="copiarEnlaceCompartir()"
+        style="padding:10px 16px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-link"></i> Copiar enlace
       </button>
-      <button id="btnEnviarCompartir" onclick="enviarCompartir()" style="padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#3498DB,#2980B9);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(52,152,219,.3);">
-        <i class="fas fa-paper-plane"></i> Enviar correo
+      <button onclick="closeModalCompartir()"
+        style="padding:10px 26px;border:none;border-radius:10px;background:linear-gradient(135deg,#1B3A5C,#0F2236);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+        Hecho
       </button>
     </div>
   </div>
 </div>
 <style>
   @keyframes modalCompIn { from { opacity:0; transform:scale(.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  .drive-share-person { display:flex; align-items:center; gap:10px; padding:8px 0; }
+  .drive-share-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#3498DB,#2980B9); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .drive-share-avatar.owner { background:linear-gradient(135deg,#2ECC71,#27AE60); }
+  .drive-share-person-name { font-size:13px; font-weight:600; color:#1B3A5C; line-height:1.3; }
+  .drive-share-person-email { font-size:11px; color:#9CA3AF; line-height:1.3; }
+  .drive-share-person-role { font-size:12px; color:#6B7280; margin-left:auto; white-space:nowrap; }
+  .drive-share-remove { background:none; border:none; color:#9CA3AF; cursor:pointer; padding:4px 6px; font-size:12px; }
+  .drive-share-remove:hover { color:#E53E3E; }
 </style>
 <script>
   function openModalCompartir(titulo) {
-    document.getElementById('compartirPara').value = '';
-    document.getElementById('compartirCc').value = '';
-    document.getElementById('compartirAsunto').value = titulo + ' — Recíclame';
-    document.getElementById('compartirDescripcion').value = '';
-    document.getElementById('compartirAdjuntoNombre').textContent = titulo;
+    document.getElementById('compartirTitulo').textContent = titulo;
+    document.getElementById('compartirCorreoInput').value = '';
+    document.getElementById('compartirError').style.display = 'none';
     document.getElementById('modalCompartir').style.display = 'flex';
+    cargarPersonasCompartir();
   }
   function closeModalCompartir() {
     document.getElementById('modalCompartir').style.display = 'none';
@@ -1675,49 +1666,95 @@
   document.getElementById('modalCompartir').addEventListener('click', function(e) {
     if (e.target === this) closeModalCompartir();
   });
-  function enviarCompartir() {
-    var para = document.getElementById('compartirPara').value.trim();
-    if (!para) {
-      alert('El campo "Para" es obligatorio.');
-      document.getElementById('compartirPara').focus();
-      return;
-    }
-    var btn = document.getElementById('btnEnviarCompartir');
+
+  function iniciales(nombre) {
+    var partes = (nombre || '?').trim().split(/\s+/);
+    return (partes[0] ? partes[0][0] : '') + (partes[1] ? partes[1][0] : '');
+  }
+
+  function personaRowHtml(nombre, correo, rolTexto, usuarioId, esOwner) {
+    var avatarClass = esOwner ? 'drive-share-avatar owner' : 'drive-share-avatar';
+    var quitarBtn = usuarioId
+      ? '<button class="drive-share-remove" title="Quitar acceso" onclick="quitarPersonaCompartir(' + usuarioId + ')"><i class="fas fa-times"></i></button>'
+      : '';
+    return '<div class="drive-share-person">' +
+      '<div class="' + avatarClass + '">' + iniciales(nombre).toUpperCase() + '</div>' +
+      '<div><div class="drive-share-person-name">' + nombre + (esOwner ? ' (tú lo compartes desde aquí)' : '') + '</div>' +
+      '<div class="drive-share-person-email">' + (correo || '') + '</div></div>' +
+      '<span class="drive-share-person-role">' + rolTexto + '</span>' + quitarBtn +
+      '</div>';
+  }
+
+  function cargarPersonasCompartir() {
+    var tipo = window.__compartirDocTipo, id = window.__compartirDocId;
+    window.__compartirEnlace = window.location.origin +
+      (tipo === 'ESTUDIO' ? '/socio/estudios/' : '/socio/normativo/') + id + '/ver';
+    fetch('/socio/compartir/' + tipo.toLowerCase() + '/' + id + '/personas', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var cont = document.getElementById('compartirListaPersonas');
+        var html = personaRowHtml(data.propietarioNombre, data.propietarioCorreo, 'Propietario', null, true);
+        (data.personas || []).forEach(function (p) {
+          html += personaRowHtml(p.nombreCompleto, p.correo, 'Puede ver', p.usuarioId, false);
+        });
+        cont.innerHTML = html;
+      })
+      .catch(function () {
+        document.getElementById('compartirListaPersonas').innerHTML =
+          '<div style="padding:14px 0;text-align:center;color:#E53E3E;font-size:12px;">No se pudo cargar la lista</div>';
+      });
+  }
+
+  function agregarPersonaCompartir() {
+    var input = document.getElementById('compartirCorreoInput');
+    var correo = input.value.trim();
+    var errDiv = document.getElementById('compartirError');
+    errDiv.style.display = 'none';
+    if (!correo) return;
+    var btn = document.getElementById('btnAgregarPersona');
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-    fetch('/socio/compartir/enviar', {
+    fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        para: para,
-        cc: document.getElementById('compartirCc').value,
-        asunto: document.getElementById('compartirAsunto').value,
-        descripcion: document.getElementById('compartirDescripcion').value,
-        titulo: window.__compartirDocTitulo || '',
-        tipo: window.__compartirDocTipo || 'ESTUDIO',
-        documentoId: window.__compartirDocId || null
+      body: JSON.stringify({ correo: correo, enlace: window.__compartirEnlace })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) {
+          errDiv.textContent = res.data.error || 'No se pudo compartir el documento';
+          errDiv.style.display = 'block';
+          return;
+        }
+        input.value = '';
+        cargarPersonasCompartir();
       })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar correo';
-      if (data.enviado) {
-        closeModalCompartir();
-        var toast = document.createElement('div');
-        toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#2ECC71,#27AE60);color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:10000;box-shadow:0 8px 24px rgba(46,204,113,.35);display:flex;align-items:center;gap:8px;animation:modalCompIn .3s ease;';
-        toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.mensaje;
-        document.body.appendChild(toast);
-        setTimeout(function() { toast.remove(); }, 4000);
-      } else {
-        alert(data.error || 'No se pudo enviar. Intenta de nuevo.');
-      }
-    })
-    .catch(function() {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar correo';
-      alert('Error al enviar. Intenta de nuevo.');
-    });
+      .catch(function () {
+        btn.disabled = false;
+        errDiv.textContent = 'Error de conexión, intenta de nuevo';
+        errDiv.style.display = 'block';
+      });
+  }
+
+  function quitarPersonaCompartir(usuarioId) {
+    fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas/' + usuarioId,
+      { method: 'DELETE', credentials: 'same-origin' })
+      .then(function () { cargarPersonasCompartir(); });
+  }
+
+  function copiarEnlaceCompartir() {
+    var url = window.__compartirEnlace;
+    var btn = document.getElementById('btnCopiarEnlace');
+    var original = btn.innerHTML;
+    var marcarCopiado = function () {
+      btn.innerHTML = '<i class="fas fa-check" style="color:#2ECC71;"></i> Copiado';
+      setTimeout(function () { btn.innerHTML = original; }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(marcarCopiado).catch(function () { window.prompt('Copia manualmente:', url); });
+    } else {
+      window.prompt('Copia manualmente:', url);
+    }
   }
 </script>
 </body>

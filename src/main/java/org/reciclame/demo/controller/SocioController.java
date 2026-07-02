@@ -56,6 +56,7 @@ public class SocioController {
     private final EmailNotificationService emailNotificationService;
     private final org.reciclame.demo.service.MinioStorageService minioStorageService;
     private final java.net.http.HttpClient httpClient;
+    private final org.reciclame.demo.service.CompartirService compartirService;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
@@ -69,7 +70,8 @@ public class SocioController {
                           ReporteService reporteService,
                           EmailNotificationService emailNotificationService,
                           org.reciclame.demo.service.MinioStorageService minioStorageService,
-                          java.net.http.HttpClient httpClient) {
+                          java.net.http.HttpClient httpClient,
+                          org.reciclame.demo.service.CompartirService compartirService) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
@@ -83,6 +85,7 @@ public class SocioController {
         this.emailNotificationService = emailNotificationService;
         this.minioStorageService = minioStorageService;
         this.httpClient = httpClient;
+        this.compartirService = compartirService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -446,6 +449,55 @@ public class SocioController {
             if (dot > slash && dot > 0) return path.substring(dot).toLowerCase();
         } catch (Exception ignored) {}
         return "";
+    }
+
+    // ─── Compartir documento con personas (estilo Google Drive) ─────────
+
+    @GetMapping("/socio/compartir/{tipo}/{id}/personas")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> listarPersonasCompartido(@PathVariable String tipo, @PathVariable Long id) {
+        try {
+            Map<String, Object> info = compartirService.obtenerInfoDocumento(tipo, id);
+            info.put("personas", compartirService.listarPersonas(tipo, id));
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    public static class AgregarPersonaRequest {
+        public String correo;
+        public String enlace;
+    }
+
+    @PostMapping("/socio/compartir/{tipo}/{id}/personas")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> agregarPersonaCompartido(
+            @PathVariable String tipo, @PathVariable Long id,
+            @RequestBody AgregarPersonaRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty()) return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+        try {
+            var persona = compartirService.agregarPersona(tipo, id, req.correo, uOpt.get().getId(), req.enlace);
+            return ResponseEntity.ok(persona);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "No se pudo compartir el documento"));
+        }
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/socio/compartir/{tipo}/{id}/personas/{usuarioId}")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> quitarPersonaCompartido(
+            @PathVariable String tipo, @PathVariable Long id, @PathVariable Long usuarioId) {
+        try {
+            compartirService.quitarPersona(tipo, id, usuarioId);
+            return ResponseEntity.ok(Map.of("eliminado", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/socio/notificaciones/marcar/{id}")

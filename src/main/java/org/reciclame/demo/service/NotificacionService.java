@@ -207,6 +207,18 @@ public class NotificacionService {
     }
 
     @Transactional
+    public void notificarDocumentoCompartido(Usuario destinatario, String compartidoPorNombre,
+                                             String titulo, String enlace) {
+        Notificacione n = buildNotif(destinatario, "DOCUMENTO_COMPARTIDO",
+                "Te compartieron un documento",
+                compartidoPorNombre + " te dio acceso a: " + titulo,
+                enlace);
+        notificacionRepository.save(n);
+        pushNotif(destinatario.getId(), "Te compartieron un documento",
+                compartidoPorNombre + " te dio acceso a: " + titulo, "DOCUMENTO_COMPARTIDO", enlace);
+    }
+
+    @Transactional
     public void notificarAprobacion(Long usuarioId) {
         usuarioRepository.findById(usuarioId).ifPresent(u -> {
             Notificacione n = buildNotif(u, "APROBACION",
