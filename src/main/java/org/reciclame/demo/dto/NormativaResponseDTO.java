@@ -1,7 +1,9 @@
 package org.reciclame.demo.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
+import org.reciclame.demo.helper.EstadoValidacion;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -55,4 +57,13 @@ public class NormativaResponseDTO {
 
     private List<Long> etiquetasIds;
     private List<String> etiquetasNombres;
+
+    /**
+     * Estado de validación del archivo adjunto, derivado de {@code archivo_url} y
+     * {@code vt_verdict}. No se persiste: lo calcula {@code EstadoValidacionHelper}.
+     * Valores: {@code PENDIENTE}, {@code APROBADO}, {@code RECHAZADO} o {@code null}
+     * si el registro no tiene archivo.
+     */
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    private EstadoValidacion estadoValidacion;
 }

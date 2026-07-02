@@ -459,6 +459,42 @@
       cursor: help;
     }
 
+    .badge-vt-pending {
+      background: rgba(241, 196, 15, .18);
+      color: #9C6B00;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+      border: 1px solid rgba(241, 196, 15, .55);
+      animation: badgePulse 1.6s ease-in-out infinite;
+    }
+    .badge-vt-pending i { animation: badgeBlink 1.2s linear infinite; }
+    @keyframes badgePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, .0); }
+      50% { box-shadow: 0 0 0 4px rgba(241, 196, 15, .25); }
+    }
+    @keyframes badgeBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .35; }
+    }
+    .badge-vt-rejected {
+      background: rgba(192, 57, 43, .22);
+      color: #922B21;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
     .btn-ver {
       display: inline-flex;
       align-items: center;
@@ -954,6 +990,15 @@
                     </th:block>
                   </td>
                   <td class="text-center">
+                    <!-- PENDIENTE — staging://… detectado por el helper, se actualiza vía polling -->
+                    <span th:if="${e.estadoValidacion != null and e.estadoValidacion.name() == 'PENDIENTE'}"
+                          class="badge-vt-pending"
+                          title="Archivo recién subido a staging. La validación VirusTotal está en curso."
+                          th:attr="data-staging-taskid=${#strings.replace(e.archivoUrl, 'staging://', '')},
+                                   data-tipo=ESTUDIO,
+                                   data-poll-url=@{/api/uploads/ESTUDIO/{tid}(tid=${#strings.replace(e.archivoUrl, 'staging://', '')})}">
+                      <i class="fas fa-shield-alt"></i> Pendiente
+                    </span>
                     <span th:if="${e.vtVerdict == 'CLEAN' or e.vtVerdict == 'UNDETECTED' or e.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
                       th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: 0/' + e.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
                       <i class="fas fa-shield-virus"></i> Limpio
@@ -1626,6 +1671,68 @@
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
+
+  <!-- ── Polling de archivos pendientes de validación VirusTotal ── -->
+  <script>
+  (function () {
+    function findPendingBadges() {
+      return Array.from(document.querySelectorAll('.badge-vt-pending[data-staging-taskid]'));
+    }
+    var badges = findPendingBadges();
+    if (!badges.length) return;
+
+    function finalizeBadge(el, estado, message) {
+      var rejected = estado === 'RECHAZADO';
+      var nuevo = document.createElement('span');
+      if (rejected) {
+        nuevo.className = 'badge-vt-rejected';
+        nuevo.innerHTML = '<i class="fas fa-shield-virus"></i> Rechazado';
+      } else if (estado === 'APROBADO') {
+        nuevo.className = 'badge-vt-clean';
+        nuevo.innerHTML = '<i class="fas fa-shield-check"></i> Seguro';
+      } else {
+        nuevo.className = 'badge-vt-unscanned';
+        nuevo.innerHTML = '<i class="fas fa-shield-alt"></i> ' + (estado || '—');
+      }
+      nuevo.title = message || '';
+      if (el.parentNode) el.parentNode.replaceChild(nuevo, el);
+      if (typeof showToast === 'function') {
+        showToast(rejected ? 'Archivo rechazado por antivirus.' : 'Archivo validado correctamente.',
+                  rejected ? 'error' : 'success', { duration: 4500 });
+      }
+    }
+
+    function tick() {
+      if (!badges.length) return;
+      var i = 0;
+      function next() {
+        if (i >= badges.length) {
+          setTimeout(function () {
+            badges = findPendingBadges();
+            tick();
+          }, 5000);
+          return;
+        }
+        var el = badges[i++];
+        if (!el || !el.isConnected) { setTimeout(next, 0); return; }
+        var url = el.dataset.pollUrl;
+        if (!url) { setTimeout(next, 0); return; }
+        fetch(url, { credentials: 'same-origin' })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function (s) {
+            if (s.estado && s.estado !== 'PENDIENTE') {
+              finalizeBadge(el, s.estado, s.message || s.vtVerdict || '');
+            } else {
+              setTimeout(next, 2000);
+            }
+          })
+          .catch(function () { setTimeout(next, 4000); });
+      }
+      next();
+    }
+    tick();
+  })();
+  </script>
 
   <script th:inline="javascript">
   </script>
