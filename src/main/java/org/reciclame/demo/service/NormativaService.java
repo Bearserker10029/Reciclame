@@ -3,6 +3,7 @@ package org.reciclame.demo.service;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
 import org.reciclame.demo.dto.VirusTotalVerdict;
+import org.reciclame.demo.helper.EstadoValidacion;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -239,6 +240,114 @@ public class NormativaService {
         return toResponseDTO(saved);
     }
 
+    /**
+     * Crea una Normativa en estado PENDIENTE de validación VirusTotal. Se usa como
+     * paso 1 del flujo de subida asíncrona: el archivo YA está en el bucket staging
+     * de MinIO, y el worker {@code UploadStagingScanner} terminará el trabajo (scan +
+     * promote) en background.
+     * <p>
+     * Diferencias con {@link #crearNormativa}:
+     * <ul>
+     *   <li>No dispara notificaciones (se hace al aprobar).</li>
+     *   <li>Auditoría usa acción dedicada para distinguir "subida pendiente".</li>
+     *   <li>{@code archivoUrl} debe ser el marker de staging ({@code staging://<uuid>}).
+     *       El worker lo actualizará a la URL definitiva (o lo dejará en staging si VT rechaza).</li>
+     * </ul>
+     */
+    @Transactional
+    public NormativaResponseDTO crearNormativaPendiente(NormativaRequestDTO dto,
+                                                        String archivoStagingUrl,
+                                                        String archivoTipoMime,
+                                                        String correoAutor,
+                                                        Long auditorUsuarioId,
+                                                        String auditorUsuarioNombre,
+                                                        String ipAddress,
+                                                        String userAgent) {
+        if (archivoStagingUrl == null || !archivoStagingUrl.startsWith("staging://")) {
+            throw new RuntimeException("crearNormativaPendiente requiere archivoStagingUrl con marker staging://");
+        }
+        Usuario creadaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+
+        Normativa n = new Normativa();
+        mapDtoToEntity(dto, n, archivoStagingUrl, archivoTipoMime);
+        n.setCreadaPor(creadaPor);
+        n.setEstadoActivo(true);
+        n.setVisualizacionesCount(0);
+        n.setDescargasCount(0);
+        n.setCreatedAt(Instant.now());
+        n.setUpdatedAt(Instant.now());
+
+        Normativa saved = normativaRepository.save(n);
+        guardarEtiquetas(saved, dto.getEtiquetasIds());
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+                "Subida de normativa pendiente de validación: " + saved.getTitulo() + " (staging=" + archivoStagingUrl + ")",
+                null, null, "PENDIENTE", null, ipAddress, userAgent);
+
+        return toResponseDTO(saved);
+    }
+
+    /**
+     * Actualiza el registro tras finalizar el escaneo VirusTotal.
+     * Llamado por {@code UploadStagingScanner} en background.
+     *
+     * @param id               ID de la Normativa.
+     * @param vtVerdict        Veredicto final (puede ser null si hubo error técnico).
+     * @param archivoUrlFinal  URL definitiva del archivo en MinIO docs
+     *                         (o el mismo {@code staging://<uuid>} si VT rechazó / error).
+     * @param auditorUsuarioId/...  Datos de auditoría.
+     */
+    @Transactional
+    public void actualizarEstadoValidacion(Long id,
+                                           VirusTotalVerdict vtVerdict,
+                                           String archivoUrlFinal,
+                                           Long auditorUsuarioId,
+                                           String auditorUsuarioNombre,
+                                           String ipAddress,
+                                           String userAgent) {
+        Normativa n = normativaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
+        applyVerdict(n, vtVerdict);
+        if (archivoUrlFinal != null) {
+            n.setArchivoUrl(archivoUrlFinal);
+            n.setArchivoTipoMime(archivoUrlFinal.startsWith("staging://")
+                    ? n.getArchivoTipoMime()
+                    : n.getArchivoTipoMime());
+        }
+        n.setUpdatedAt(Instant.now());
+        normativaRepository.save(n);
+
+        String accion;
+        String resultado;
+        if (vtVerdict == null || vtVerdict.getVerdict() == org.reciclame.demo.dto.VirusTotalVerdict.Verdict.SKIPPED) {
+            accion = "Validación de archivo finalizada (SKIPPED)";
+            resultado = "EXITOSO";
+        } else if (vtVerdict.getVerdict() == org.reciclame.demo.dto.VirusTotalVerdict.Verdict.MALICIOUS) {
+            accion = "Archivo rechazado por antivirus";
+            resultado = "RECHAZADO";
+            // DESACTIVAR el registro para que no sea visible (archivo bloqueado).
+            n.setEstadoActivo(false);
+            normativaRepository.save(n);
+        } else {
+            accion = "Validación de archivo finalizada (" + vtVerdict.getVerdict() + ")";
+            resultado = "EXITOSO";
+        }
+        String detalle = vtVerdict != null ? vtVerdict.getMessage() : null;
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
+                accion + " — " + n.getTitulo() + " (ID " + n.getId() + ")",
+                null, null, resultado, detalle, ipAddress, userAgent);
+
+        // Notificar al admin/socios SOLO si el archivo se promovió exitosamente.
+        if (resultado.equals("EXITOSO")
+                && vtVerdict != null
+                && vtVerdict.getVerdict() != org.reciclame.demo.dto.VirusTotalVerdict.Verdict.SKIPPED) {
+            try { notificacionService.notificarNuevaNormativa(n.getTitulo()); } catch (Exception ignored) {}
+        }
+    }
+
     // ── CREATE (overload sin auditoría para compatibilidad) ────────────────
     @Transactional
     public NormativaResponseDTO crearNormativa(NormativaRequestDTO dto,
@@ -467,6 +576,8 @@ public class NormativaService {
         dto.setEtiquetasNombres(relaciones.stream()
                 .map(r -> r.getEtiqueta().getNombre())
                 .collect(Collectors.toList()));
+
+        dto.setEstadoValidacion(EstadoValidacion.inferir(n.getArchivoUrl(), n.getVtVerdict()));
 
         return dto;
     }

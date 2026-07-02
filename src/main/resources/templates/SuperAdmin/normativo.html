@@ -744,6 +744,43 @@
       color: #6B7280;
     }
 
+    /* ── Badges VirusTotal (upload asíncrono) ── */
+    .badge-vt-clean {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(46, 204, 113, .12); color: #1E8449;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+    .badge-vt-malicious {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(231, 76, 60, .14); color: #922B21;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+    .badge-vt-rejected {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(192, 57, 43, .22); color: #922B21;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+    }
+    .badge-vt-pending {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: rgba(241, 196, 15, .18); color: #9C6B00;
+      padding: 3px 9px; border-radius: 999px;
+      font-size: 10px; font-weight: 700;
+      border: 1px solid rgba(241, 196, 15, .55);
+      animation: vtPulseSa 1.6s ease-in-out infinite;
+    }
+    .badge-vt-pending i { animation: vtBlinkSa 1.2s linear infinite; }
+    @keyframes vtPulseSa {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+      50% { box-shadow: 0 0 0 4px rgba(241, 196, 15, .25); }
+    }
+    @keyframes vtBlinkSa {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .35; }
+    }
+
     .grid-card-actions {
       position: absolute;
       top: 8px;
@@ -956,11 +993,12 @@
                 <table class="table mb-0" id="norm-table" style="min-width:820px;">
                   <thead>
                     <tr>
-                      <th style="width:28%;">Título</th>
+                      <th style="width:26%;">Título</th>
                       <th>Año</th>
                       <th>Tipo</th>
                       <th>Clasif.</th>
                       <th>Estado</th>
+                      <th class="text-center">Validación VT</th>
                       <th>Temática</th>
                       <th class="text-center">Acceso</th>
                       <th class="text-center">Gestión</th>
@@ -1003,6 +1041,34 @@
                         <span th:if="${n.estadoNormativaNombre != null}" class="badge-vigente"
                           th:text="${n.estadoNormativaNombre}">—</span>
                         <span th:unless="${n.estadoNormativaNombre != null}" class="badge-derogada">—</span>
+                      </td>
+
+                      <!-- Validación VT -->
+                      <td class="text-center">
+                        <span th:if="${n.estadoValidacion != null and n.estadoValidacion.name() == 'PENDIENTE'}"
+                              class="badge-vt-pending"
+                              title="Archivo recién subido a staging. La validación VirusTotal está en curso."
+                              th:attr="data-staging-taskid=${#strings.replace(n.archivoUrl, 'staging://', '')},
+                                       data-tipo=NORMATIVA,
+                                       data-poll-url=@{/api/uploads/NORMATIVA/{tid}(tid=${#strings.replace(n.archivoUrl, 'staging://', '')})}">
+                          <i class="fas fa-shield-alt"></i> Pendiente
+                        </span>
+                        <span th:if="${n.estadoValidacion != null and n.estadoValidacion.name() == 'APROBADO'}"
+                              class="badge-vt-clean" th:title="${n.vtVerdict != null ? 'Veredicto VT: ' + n.vtVerdict : 'Validado'}">
+                          <i class="fas fa-shield-check"></i> Seguro
+                        </span>
+                        <span th:if="${n.estadoValidacion != null and n.estadoValidacion.name() == 'RECHAZADO'}"
+                              class="badge-vt-rejected" title="Archivo bloqueado por antivirus">
+                          <i class="fas fa-shield-virus"></i> Rechazado
+                        </span>
+                        <span th:if="${n.archivoUrl != null and !#strings.isEmpty(n.archivoUrl) and n.estadoValidacion == null and n.vtVerdict != null and n.vtVerdict != 'MALICIOUS'}"
+                              class="badge-vt-clean" th:title="'Veredicto: ' + ${n.vtVerdict}">
+                          <i class="fas fa-shield-check"></i> Limpio
+                        </span>
+                        <span th:if="${n.archivoUrl != null and !#strings.isEmpty(n.archivoUrl) and n.vtVerdict == 'MALICIOUS'}"
+                              class="badge-vt-malicious" title="Malicioso">
+                          <i class="fas fa-shield-virus"></i> Malicioso
+                        </span>
                       </td>
 
                       <!-- Temática -->
@@ -1735,6 +1801,62 @@
             try { v = sessionStorage.getItem('reciclameNormativoVista'); } catch (e) { }
             if (v === 'grid' || v === 'timeline') setNormVista(v);
           })();
+        </script>
+
+        <!-- Polling de archivos pendientes de validación VT -->
+        <script>
+        (function () {
+          function findPending() {
+            return Array.from(document.querySelectorAll('.badge-vt-pending[data-staging-taskid]'));
+          }
+          var badges = findPending();
+          if (!badges.length) return;
+
+          function finalize(el, estado, message) {
+            var rejected = estado === 'RECHAZADO';
+            var nuevo = document.createElement('span');
+            if (rejected) {
+              nuevo.className = 'badge-vt-rejected';
+              nuevo.innerHTML = '<i class="fas fa-shield-virus"></i> Rechazado';
+            } else {
+              nuevo.className = 'badge-vt-clean';
+              nuevo.innerHTML = '<i class="fas fa-shield-check"></i> Seguro';
+            }
+            nuevo.title = message || '';
+            if (el.parentNode) el.parentNode.replaceChild(nuevo, el);
+            if (typeof showToast === 'function') {
+              showToast(rejected ? 'Archivo rechazado por antivirus.' : 'Archivo validado correctamente.',
+                        rejected ? 'error' : 'success', { duration: 4500 });
+            }
+          }
+
+          function tick() {
+            if (!badges.length) return;
+            var i = 0;
+            function next() {
+              if (i >= badges.length) {
+                setTimeout(function () { badges = findPending(); tick(); }, 5000);
+                return;
+              }
+              var el = badges[i++];
+              if (!el || !el.isConnected) { setTimeout(next, 0); return; }
+              var url = el.dataset.pollUrl;
+              if (!url) { setTimeout(next, 0); return; }
+              fetch(url, { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+                .then(function (s) {
+                  if (s.estado && s.estado !== 'PENDIENTE') {
+                    finalize(el, s.estado, s.message || s.vtVerdict || '');
+                  } else {
+                    setTimeout(next, 2000);
+                  }
+                })
+                .catch(function () { setTimeout(next, 4000); });
+            }
+            next();
+          }
+          tick();
+        })();
         </script>
 
         <th:block th:replace="~{navbar/dock :: dock}"></th:block>

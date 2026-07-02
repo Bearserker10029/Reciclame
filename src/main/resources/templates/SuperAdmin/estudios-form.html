@@ -910,7 +910,7 @@
         : '<i class="fas fa-plus-circle"></i> Crear estudio';
 
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-shield-alt fa-spin"></i> Escaneando con VirusTotal…';
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Subiendo…';
 
       try {
         var url = IS_EDIT ? '/api/estudios/' + ESTUDIO_ID : '/api/estudios';
@@ -925,13 +925,29 @@
           data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
         }
 
+        // ── 202 Accepted: flujo NUEVO con staging asíncrono ──
+        if (res.status === 202) {
+          exito = true;
+          try {
+            if (data.taskId) {
+              var pending = JSON.parse(sessionStorage.getItem('pendingUploads') || '[]');
+              pending.push({ taskId: data.taskId, tipo: 'ESTUDIO', refId: data.refId, ts: Date.now() });
+              sessionStorage.setItem('pendingUploads', JSON.stringify(pending));
+            }
+          } catch (e) { /* ignore */ }
+          showToast(data.mensaje || 'Subida en validación. Te avisamos al terminar.',
+                    'info', { duration: 2200 });
+          window.location.href = '/superadmin/estudios';
+          return;
+        }
+
         if (!res.ok) {
           // ── El backend devolvió 400 ──────────────────────────────
           if (data.tipo === 'VALIDACION' && data.errores) {
             // Errores campo por campo del @Valid
             mostrarErroresBackend(data.errores);
             showToast('Revisa los campos marcados.', 'error');
-          } else if (data.tipo === 'VIRUS_DETECTADO') {
+          } else if (data.tipo === 'VIRUS_DETECTADO' || (data.mensaje && /antivirus|virus|malicioso/i.test(data.mensaje))) {
             var detalle = '';
             if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
             if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';

@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -105,6 +107,62 @@ public class MinioStorageService {
             }
         }
         throw new RuntimeException("Error al subir archivo a MinIO tras 3 intentos: "
+                + (lastError != null ? lastError.getMessage() : "unknown"), lastError);
+    }
+
+    /**
+     * Overload para promover un archivo ya bajado a disco (File) al bucket docs.
+     * Usado por {@link UploadStagingScanner} tras validar el archivo contra VT.
+     * <p>
+     * El objectName debe ser el nombre final deseado. Se reusa el mismo loop de 3
+     * reintentos con backoff que {@link #subirArchivo(MultipartFile)}.
+     * </p>
+     */
+    public String subirArchivo(File archivo, String objectName, String contentType) throws IOException {
+        if (archivo == null || !archivo.exists()) {
+            throw new IOException("Archivo no existe: " + (archivo != null ? archivo.getAbsolutePath() : "null"));
+        }
+        long size = archivo.length();
+        MinioClient client = buildInternalClient();
+        PutObjectArgs args = PutObjectArgs.builder()
+                .bucket(bucket)
+                .object(objectName)
+                .stream(Files.newInputStream(archivo.toPath()), size, -1)
+                .contentType(contentType)
+                .build();
+        Exception lastError = null;
+        for (int intento = 1; intento <= 3; intento++) {
+            try {
+                client.putObject(args);
+                if (intento > 1) {
+                    log.info("Upload a MinIO desde File exitoso en el intento {} ({})", intento, objectName);
+                }
+                return buildPublicObjectUrl(objectName);
+            } catch (Exception e) {
+                lastError = e;
+                log.warn("Upload a MinIO desde File falló en intento {}/3 ({}): {}",
+                        intento, objectName, e.getMessage());
+                if (intento < 3) {
+                    try {
+                        Thread.sleep(1000L * intento);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                    try {
+                        args = PutObjectArgs.builder()
+                                .bucket(bucket)
+                                .object(objectName)
+                                .stream(Files.newInputStream(archivo.toPath()), size, -1)
+                                .contentType(contentType)
+                                .build();
+                    } catch (IOException ioe) {
+                        throw new RuntimeException("No se pudo reabrir stream del File para reintento: " + ioe.getMessage(), ioe);
+                    }
+                }
+            }
+        }
+        throw new RuntimeException("Error al subir archivo desde File a MinIO tras 3 intentos: "
                 + (lastError != null ? lastError.getMessage() : "unknown"), lastError);
     }
 

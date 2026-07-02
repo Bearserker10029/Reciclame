@@ -904,7 +904,7 @@
               : '<i class="fas fa-save" style="margin-right:6px;"></i> Crear normativa';
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin" style="margin-right:6px;"></i> Escaneando con VirusTotal…';
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin" style="margin-right:6px;"></i> Subiendo…';
 
             try {
               var url = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
@@ -919,18 +919,36 @@
                 data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
               }
 
+              // ── 202 Accepted: flujo NUEVO con staging asíncrono ──
+              if (res.status === 202) {
+                exito = true;
+                // Persistir taskId en sessionStorage para que el polling de la lista
+                // lo recoja aunque el navegador refresque o se navegue de vuelta.
+                try {
+                  if (data.taskId) {
+                    var pending = JSON.parse(sessionStorage.getItem('pendingUploads') || '[]');
+                    pending.push({ taskId: data.taskId, tipo: 'NORMATIVA', refId: data.refId, ts: Date.now() });
+                    sessionStorage.setItem('pendingUploads', JSON.stringify(pending));
+                  }
+                } catch (e) { /* ignore quota errors */ }
+                showToast(data.mensaje || 'Subida en validación. Te avisamos al terminar.',
+                          'info', { duration: 2200 });
+                // Redirigir inmediatamente a la lista (badge PENDIENTE aparece solo).
+                window.location.href = '/admin/normativo';
+                return;
+              }
+
               if (!res.ok) {
                 if (data.tipo === 'VALIDACION' && data.errores) {
                   mostrarErroresBackend(data.errores);
                   showToast('Revisa los campos marcados.', 'error');
-                } else if (data.tipo === 'VIRUS_DETECTADO') {
-                  // Banner rojo de VirusTotal: muestra detalle de motores que marcaron el archivo.
+                } else if (data.tipo === 'VIRUS_DETECTADO' || (data.mensaje && /antivirus|virus|malicioso/i.test(data.mensaje))) {
                   var detalle = '';
                   if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
                   if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';
                   errBanner.innerHTML =
                     '<i class="fas fa-shield-virus" style="color:#dc3545;margin-right:8px;"></i>' +
-                    '<strong>Archivo rechazado por VirusTotal.</strong> ' +
+                    '<strong>Archivo rechazado por antivirus.</strong> ' +
                     (data.mensaje || '') +
                     (detalle ? '<br><small>' + detalle + '</small>' : '');
                   errBanner.style.display = 'block';
