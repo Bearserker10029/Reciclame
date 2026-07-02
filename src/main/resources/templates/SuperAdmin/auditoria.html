@@ -145,47 +145,6 @@
     .audit-row:hover { background: #FFF5F5; }
     .audit-row td { padding: 12px 16px; vertical-align: middle; }
     .audit-row:last-child { border-bottom: none; }
-
-    /* ── Hash Chain / Integridad ────────────────────────────────────── */
-    .hash-card {
-      background: #fff; border-radius: 12px; padding: 18px 22px;
-      margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.06);
-      animation: fadeUp .5s .2s ease both;
-      border: 1px solid #E5E7EB;
-    }
-    .hash-card .hash-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 14px; flex-wrap: wrap; margin-bottom: 12px;
-    }
-    .hash-card .hash-title {
-      display: flex; align-items: center; gap: 10px;
-      font-size: 14px; font-weight: 700; color: #1B3A5C;
-    }
-    .hash-card .hash-title i { color: #2ECC71; font-size: 16px; }
-    .hash-card .hash-desc {
-      font-size: 12px; color: #6B7280; max-width: 540px;
-    }
-    .btn-verify {
-      background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
-      color: #fff; border: none; border-radius: 10px;
-      padding: 10px 20px; font-size: 12px; font-weight: 700;
-      letter-spacing: .04em; text-transform: uppercase;
-      cursor: pointer; transition: all .2s;
-      display: inline-flex; align-items: center; gap: 8px;
-      box-shadow: 0 4px 14px rgba(46,204,113,.35);
-    }
-    .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,113,.5); }
-    .btn-verify:disabled { opacity: .6; cursor: wait; transform: none; }
-    .hash-result {
-      margin-top: 14px; padding: 14px 18px; border-radius: 10px;
-      font-size: 13px; line-height: 1.55; display: none;
-    }
-    .hash-result.show { display: block; animation: slideDown .3s ease both; }
-    .hash-result.ok    { background: rgba(46,204,113,.08); border: 1px solid rgba(46,204,113,.3); color: #1E8449; }
-    .hash-result.bad   { background: rgba(231,76,60,.08);  border: 1px solid rgba(231,76,60,.3);  color: #C0392B; }
-    .hash-result .hash-line { font-family: monospace; font-size: 11px; word-break: break-all; opacity: .8; margin-top: 6px; }
-    .hash-result .hash-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; }
-    .hash-result .hash-stats span { background: rgba(0,0,0,.04); padding: 3px 10px; border-radius: 6px; font-weight: 600; }
   </style>
 </head>
 
@@ -254,30 +213,6 @@
             <div class="alert-title">Sin alertas activas</div>
             <div class="alert-desc">No se detectaron patrones sospechosos en las últimas 24 horas</div>
           </div>
-        </div>
-
-        <!-- ── Hash Chain / Integridad ────────────────────────────────────── -->
-        <div class="hash-card" id="hash-card">
-          <div class="hash-head">
-            <div>
-              <div class="hash-title">
-                <i class="fas fa-link"></i>
-                Cadena de Integridad (Hash Chain)
-              </div>
-              <div class="hash-desc">
-                Cada evento nuevo se firma contra el anterior con SHA-256.
-                Si alguien edita o borra un registro, la verificación
-                detecta la alteración e indica el ID exacto del bloque
-                manipulado. Los registros existentes al despliegue del
-                feature quedan intactos y no cuentan para la cadena.
-              </div>
-            </div>
-            <button id="btn-verify-integridad" class="btn-verify" type="button">
-              <i class="fas fa-shield-alt"></i>
-              Verificar integridad
-            </button>
-          </div>
-          <div id="hash-result" class="hash-result"></div>
         </div>
 
         <div class="patterns-grid">
@@ -505,80 +440,6 @@
       inicializarPaginacion();
       mostrarPagina(1);
     });
-
-    // ── Verificación de integridad (Hash Chain) ───────────────────────
-    (function() {
-      var btn = document.getElementById('btn-verify-integridad');
-      var out = document.getElementById('hash-result');
-      if (!btn || !out) return;
-
-      btn.addEventListener('click', function() {
-        btn.disabled = true;
-        var originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando…';
-        out.className = 'hash-result show';
-        out.innerHTML = 'Recorriendo la cadena y recalculando los hashes…';
-
-        fetch('/api/auditoria/verificar-integridad', { method: 'GET' })
-          .then(function(r) { return r.json(); })
-          .then(function(data) {
-            renderResultado(data, out);
-          })
-          .catch(function(err) {
-            out.className = 'hash-result show bad';
-            out.innerHTML = '<strong>Error de red:</strong> ' +
-              (err && err.message ? err.message : 'no se pudo conectar al endpoint.');
-          })
-          .finally(function() {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-          });
-      });
-
-      function renderResultado(data, container) {
-        var ok = data.integro === true;
-        var sinFirma = data.registrosSinFirma || 0;
-        var verificados = data.registrosVerificados || 0;
-        var total = data.totalRegistros || 0;
-
-        container.className = 'hash-result show ' + (ok ? 'ok' : 'bad');
-        var icon = ok ? 'fa-check-circle' : 'fa-exclamation-triangle';
-        var titulo = ok
-          ? 'Cadena íntegra — sin alteraciones detectadas.'
-          : '¡Alteración detectada en la cadena de auditoría!';
-
-        var stats =
-          '<div class="hash-stats">' +
-            '<span>Total: ' + total + '</span>' +
-            '<span>Verificados: ' + verificados + '</span>' +
-            (sinFirma > 0 ? '<span>Sin firma (previos al despliegue): ' + sinFirma + '</span>' : '') +
-          '</div>';
-
-        var detalle = '';
-        if (!ok) {
-          detalle =
-            '<div style="margin-top:10px;"><strong>Primer registro alterado: id=' +
-            (data.idFalla != null ? data.idFalla : '?') + '</strong></div>' +
-            (data.hashEsperado
-              ? '<div class="hash-line">hash esperado (recalculado): ' + data.hashEsperado + '</div>'
-              : '') +
-            (data.hashActualEncontrado
-              ? '<div class="hash-line">hash actual encontrado: ' + data.hashActualEncontrado + '</div>'
-              : '') +
-            (data.hashAnteriorEncontrado
-              ? '<div class="hash-line">hash anterior encontrado: ' + data.hashAnteriorEncontrado + '</div>'
-              : '');
-        }
-
-        container.innerHTML =
-          '<div style="display:flex;align-items:center;gap:10px;">' +
-            '<i class="fas ' + icon + '" style="font-size:18px;"></i>' +
-            '<strong>' + titulo + '</strong>' +
-          '</div>' +
-          '<div style="margin-top:6px;">' + (data.mensaje || '') + '</div>' +
-          stats + detalle;
-      }
-    })();
   </script>
 
 </body>

@@ -939,7 +939,7 @@
                       —
                     </td>
                     <td>
-                      <div style="display:flex;gap:6px;">
+                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}" style="display:flex;gap:6px;">
                         <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
                           th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
                           th:data-correo="${usuario.correoCorporativo}"
@@ -963,6 +963,11 @@
                           <i class="fas fa-trash" style="color:#E74C3C;"></i>
                         </button>
                       </div>
+                      <span th:unless="${usuario.estadoActivo != null and usuario.estadoActivo}"
+                            style="font-size:11px;color:#9CA3AF;font-style:italic;"
+                            title="Para editar, bloquear o desbloquear un usuario inactivo, primero reactivarlo desde la pestaña 'Historial / Inactivos'.">
+                        <i class="fas fa-lock" style="margin-right:4px;"></i>Inactivo
+                      </span>
                     </td>
                   </tr>
                   <tr id="fila-sin-usuarios" th:if="${#lists.isEmpty(usuariosActivos)}">

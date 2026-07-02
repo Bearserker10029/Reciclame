@@ -646,9 +646,25 @@ return "redirect:/superadmin/notificaciones";
     @PostMapping("/superadmin/impersonar/{id}")
     public String impersonarUsuario(@PathVariable Long id, HttpServletRequest request,
             HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttributes) {
-        String superAdminUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        // Para auditoría necesitamos el nombre REAL del SuperAdmin que
+        // está ejecutando la acción. NO usar SecurityContextHolder.getName()
+        // porque durante una impersonación anidada (o si el flow recarga
+        // el contexto) ese getter devuelve el correo del usuario
+        // impersonado. Usamos los atributos inmutables fijados al login.
+        Long superAdminId = (Long) session.getAttribute("SUPERADMIN_ORIGINAL_ID");
+        String superAdminNombre = (String) session.getAttribute("SUPERADMIN_ORIGINAL_NOMBRE");
+        String superAdminCorreo = (String) session.getAttribute("SUPERADMIN_ORIGINAL_CORREO");
+        if (superAdminId == null || superAdminNombre == null) {
+            // Sesión rota: no debería pasar (solo SUPERADMIN llega aquí), pero
+            // caemos al SecurityContext por defensa.
+            String fallback = SecurityContextHolder.getContext().getAuthentication().getName();
+            superAdminNombre = fallback;
+            superAdminCorreo = fallback;
+        }
 
-        session.setAttribute("ORIGINAL_USER", superAdminUsername);
+        // ORIGINAL_USER se mantiene con el correo por compatibilidad con
+        // el flujo de salirImpersonacion que ya lo usa como lookup key.
+        session.setAttribute("ORIGINAL_USER", superAdminCorreo);
 
         Usuario usuarioTarget = usuarioService.obtenerUsuarioEntityPorId(id);
 
@@ -696,11 +712,14 @@ return "redirect:/superadmin/notificaciones";
         new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
                 .saveContext(SecurityContextHolder.getContext(), request, response);
 
-        auditoriaService.registrarAccion(null, superAdminUsername,
+        // Auditoría con la IP real del cliente (no null como antes).
+        String ipAddress = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
+        String userAgent = request.getHeader("User-Agent");
+        auditoriaService.registrarAccion(superAdminId, superAdminNombre,
                 AuditoriaService.ACCION_IMPERSONAR, AuditoriaService.MODULO_USUARIOS,
                 "Impersonar usuario: " + usuarioTarget.getNombreCompleto() + " (" + usuarioTarget.getCorreoCorporativo()
                         + ")",
-                null, null, "EXITOSO", null, null, null);
+                null, null, "EXITOSO", null, ipAddress, userAgent);
 
         String redirectUrl = switch (rolNombre) {
             case "ADMINISTRADOR" -> "/admin/inicio";
@@ -715,14 +734,31 @@ return "redirect:/superadmin/notificaciones";
     @PostMapping("/superadmin/impersonar/salir")
     public String salirImpersonacion(HttpSession session, RedirectAttributes redirectAttributes,
                                      HttpServletRequest request, HttpServletResponse response) {
+        // Misma idea que en impersonarUsuario: leer el SuperAdmin real desde
+        // los atributos inmutables de sesión, no desde el SecurityContext
+        // (que ahora contiene la auth del usuario impersonado).
+        Long superAdminId = (Long) session.getAttribute("SUPERADMIN_ORIGINAL_ID");
+        String superAdminNombre = (String) session.getAttribute("SUPERADMIN_ORIGINAL_NOMBRE");
+        String superAdminCorreo = (String) session.getAttribute("SUPERADMIN_ORIGINAL_CORREO");
         String originalUser = (String) session.getAttribute("ORIGINAL_USER");
         String impersonatedUser = (String) session.getAttribute("IMPERSONATED_USER");
 
-        if (originalUser != null) {
-            org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.findByCorreo(originalUser)
-                    .map(u -> usuarioService.obtenerUsuarioEntityPorId(u.getId()))
-                    .orElse(null);
+        if (superAdminId == null || superAdminNombre == null) {
+            // Defensa: caer al lookup antiguo.
+            if (originalUser != null) {
+                org.reciclame.demo.model.Usuario u = usuarioService.findByCorreo(originalUser)
+                        .map(x -> usuarioService.obtenerUsuarioEntityPorId(x.getId()))
+                        .orElse(null);
+                if (u != null) {
+                    superAdminId = u.getId();
+                    superAdminNombre = u.getNombreCompleto();
+                }
+            }
+        }
 
+        // Restaurar el auth del SuperAdmin original en el SecurityContext.
+        if (superAdminId != null) {
+            org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.obtenerUsuarioEntityPorId(superAdminId);
             if (usuarioOriginal != null) {
                 String rolNombre = usuarioOriginal.getRol() != null ? usuarioOriginal.getRol().getNombre()
                         : "SUPERADMIN";
@@ -739,12 +775,17 @@ return "redirect:/superadmin/notificaciones";
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
                         .saveContext(SecurityContextHolder.getContext(), request, response);
-
-                auditoriaService.registrarAccion(null, originalUser,
-                        AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
-                        "Salir de impersonación. Usuario impersonado: " + impersonatedUser,
-                        null, null, "EXITOSO", null, null, null);
             }
+        }
+
+        // Auditoría con IP real y nombre real del SuperAdmin.
+        String ipAddress = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
+        String userAgent = request.getHeader("User-Agent");
+        if (superAdminId != null && superAdminNombre != null) {
+            auditoriaService.registrarAccion(superAdminId, superAdminNombre,
+                    AuditoriaService.ACCION_SALIR_IMPERSONACION, AuditoriaService.MODULO_USUARIOS,
+                    "Salir de impersonación. Usuario impersonado: " + impersonatedUser,
+                    null, null, "EXITOSO", null, ipAddress, userAgent);
         }
 
         session.removeAttribute("ORIGINAL_USER");

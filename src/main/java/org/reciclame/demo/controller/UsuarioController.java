@@ -70,11 +70,20 @@ public class UsuarioController {
     // PUT /api/usuarios/{id}
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+    public ResponseEntity<?> actualizarUsuario(
             @PathVariable Long id,
             @RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+        // Guarda: no se puede editar un usuario inactivo. Primero hay
+        // que reactivarlo desde el tab "Historial / Inactivos".
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "No se puede editar un usuario inactivo. Reactivarlo primero.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
         String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
@@ -85,8 +94,18 @@ public class UsuarioController {
     // DELETE /api/usuarios/{id}
     @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
+    public ResponseEntity<?> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+        // Guarda: tampoco se puede eliminar (lógicamente) un usuario
+        // ya inactivo — está implícito en su estado. Devolvemos 409 para
+        // que la UI no muestre error genérico.
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "El usuario ya está inactivo. No es necesario eliminarlo.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
         String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
@@ -131,8 +150,18 @@ public class UsuarioController {
     // POST /api/usuarios/{id}/bloquear
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/bloquear")
-    public ResponseEntity<UsuarioResponseDTO> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
+    public ResponseEntity<?> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
+        // Guarda: bloquear/desbloquear solo aplica a usuarios activos.
+        // Un usuario inactivo no entra ni sale de bloqueo — primero se
+        // lo reactiva.
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "No se puede bloquear/desbloquear un usuario inactivo. Reactivarlo primero.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
         String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
