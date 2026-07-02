@@ -32,7 +32,7 @@ public class SolicitudesRegistro {
     @Column(name = "correo_corporativo", nullable = false, length = 200)
     private String correoCorporativo;
 
-    @Column(name = "empresa_nombre", nullable = false, length = 200)
+    @Column(name = "empresa_nombre", length = 200)
     private String empresaNombre;
 
     @Enumerated(EnumType.STRING)

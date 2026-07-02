@@ -162,6 +162,17 @@
       <form method="post" th:action="@{/registro}" novalidate>
 
         <div class="field-wrap">
+          <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
+          <div style="position:relative;">
+            <i class="fas fa-id-card field-icon"></i>
+            <input id="inp-dni" class="glass-input form-control" type="text" name="dni"
+                   th:value="${dni}" placeholder="74521836" maxlength="8" pattern="\d{8}"
+                   inputmode="numeric" oninput="onDniInput()" required />
+          </div>
+          <span id="dni-status" style="display:none;font-size:11px;margin-top:4px;"></span>
+        </div>
+
+        <div class="field-wrap">
           <label class="field-label">Nombre completo</label>
           <div style="position:relative;">
             <i class="fas fa-user field-icon"></i>
@@ -170,16 +181,7 @@
           </div>
         </div>
 
-        <div class="field-wrap">
-          <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
-          <div style="position:relative;">
-            <i class="fas fa-id-card field-icon"></i>
-            <input id="inp-dni" class="glass-input form-control" type="text" name="dni"
-                   th:value="${dni}" placeholder="74521836" maxlength="8" pattern="\d{8}" required />
-          </div>
-        </div>
-
-        <div class="field-wrap">
+        <div class="field-wrap" style="margin-bottom:20px;">
           <label class="field-label">Correo corporativo</label>
           <div style="position:relative;">
             <i class="fas fa-envelope field-icon"></i>
@@ -192,15 +194,6 @@
             <span id="err-correo-msg"></span>
           </div>
           <p class="domain-hint"><i class="fas fa-info-circle"></i>Ingresa tu correo electrónico</p>
-        </div>
-
-        <div class="field-wrap" style="margin-bottom:20px;">
-          <label class="field-label">Empresa / Organización</label>
-          <div style="position:relative;">
-            <i class="fas fa-building field-icon"></i>
-            <input class="glass-input form-control" type="text" name="empresa"
-                   th:value="${empresa}" placeholder="Ej: Tetra Pak Perú S.A.C." required />
-          </div>
         </div>
 
         <div style="margin-bottom:18px;">
@@ -303,6 +296,44 @@
   window.addEventListener('resize', setGlowEffectRx);
 
   var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+
+  var dniTimer = null;
+  function onDniInput() {
+    var input  = document.getElementById('inp-dni');
+    var status = document.getElementById('dni-status');
+    input.value = input.value.replace(/\D/g, '').slice(0, 8);
+
+    if (dniTimer) clearTimeout(dniTimer);
+    if (input.value.length !== 8) {
+      status.style.display = 'none';
+      return;
+    }
+    dniTimer = setTimeout(function () { consultarDni(input.value); }, 400);
+  }
+
+  function consultarDni(dni) {
+    var status = document.getElementById('dni-status');
+    var nombreInput = document.getElementById('inp-nombre');
+    status.style.display = 'block';
+    status.style.color = 'rgba(255,255,255,.5)';
+    status.textContent = 'Buscando...';
+
+    fetch('/registro/consulta-dni/' + dni, { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.encontrado && data.nombreCompleto) {
+          nombreInput.value = data.nombreCompleto;
+          status.style.color = '#2ECC71';
+          status.textContent = '✓ Nombre encontrado';
+        } else {
+          status.style.color = 'rgba(255,255,255,.4)';
+          status.textContent = 'No se encontró el DNI, ingresa tu nombre manualmente';
+        }
+      })
+      .catch(function () {
+        status.style.display = 'none';
+      });
+  }
 
   function validateCorreo() {
     var input  = document.getElementById('inp-correo');

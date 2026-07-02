@@ -1183,7 +1183,7 @@ CREATE TABLE `solicitudes_registro` (
     `nombre_completo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
     `dni` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
     `correo_corporativo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-    `empresa_nombre` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `empresa_nombre` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `estado` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, APROBADA, RECHAZADA',
     `revisada_por_id` bigint DEFAULT NULL,
     `motivo_rechazo` text COLLATE utf8mb4_unicode_ci,
