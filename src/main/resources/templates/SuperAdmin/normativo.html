@@ -1097,21 +1097,23 @@
                       <!-- Gestión -->
                       <td class="text-center">
                         <div style="display:inline-flex;gap:6px;">
-                          <a th:href="@{/superadmin/normativo/editar/{id}(id=${n.id})}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
-                                border-radius:7px;border:1.5px solid #3498DB;background:rgba(52,152,219,.07);
-                                color:#2471A3;font-size:11px;font-weight:700;text-decoration:none;
-                                transition:all .2s;"
+                          <a th:href="@{/superadmin/normativo/editar/{id}(id=${n.id})}" title="Editar"
+                            style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
+                                   border-radius:7px;border:1.5px solid #3498DB;background:rgba(52,152,219,.07);
+                                   color:#2471A3;font-size:13px;text-decoration:none;
+                                   transition:all .2s;min-width:30px;"
                             onmouseover="this.style.background='#3498DB';this.style.color='#fff'"
                             onmouseout="this.style.background='rgba(52,152,219,.07)';this.style.color='#2471A3'">
-                            <i class="fas fa-pen"></i> Editar
+                            <i class="fas fa-pen"></i>
                           </a>
-                          <button th:data-id="${n.id}" onclick="eliminarNormativa(this.dataset.id)" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
-                                     border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.07);
-                                     color:#C0392B;font-size:11px;font-weight:700;cursor:pointer;
-                                     font-family:inherit;transition:all .2s;"
+                          <button th:data-id="${n.id}" onclick="eliminarNormativa(this.dataset.id)" title="Eliminar"
+                            style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
+                                   border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.07);
+                                   color:#C0392B;font-size:13px;cursor:pointer;
+                                   font-family:inherit;transition:all .2s;min-width:30px;"
                             onmouseover="this.style.background='#E74C3C';this.style.color='#fff'"
                             onmouseout="this.style.background='rgba(231,76,60,.07)';this.style.color='#C0392B'">
-                            <i class="fas fa-trash"></i> Eliminar
+                            <i class="fas fa-trash"></i>
                           </button>
                         </div>
                       </td>
