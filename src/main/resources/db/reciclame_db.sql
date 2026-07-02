@@ -2054,3 +2054,25 @@ SET @sql := IF(
     'CREATE INDEX idx_estudios_vt_sha256 ON estudios (vt_sha256)',
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ─────────────────────────────────────────────────────────────
+-- Migración: tabla de "compartir con personas" (estilo Google Drive)
+-- para estudios y normativas. Registra qué usuario compartió qué
+-- documento con qué otro usuario. No reemplaza la visibilidad por
+-- rol ya existente; sirve para notificar y llevar un registro
+-- explícito de a quién se le señaló un documento en particular.
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `documentos_compartidos` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `tipo_documento` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ESTUDIO o NORMATIVA',
+    `documento_id` bigint NOT NULL,
+    `usuario_id` bigint NOT NULL COMMENT 'Usuario con quien se compartió',
+    `compartido_por_id` bigint NOT NULL COMMENT 'Usuario que compartió',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_doc_compartido` (`tipo_documento`, `documento_id`, `usuario_id`),
+    KEY `idx_doc_compartido_usuario` (`usuario_id`),
+    KEY `idx_doc_compartido_doc` (`tipo_documento`, `documento_id`),
+    CONSTRAINT `fk_doc_compartido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_doc_compartido_compartidopor` FOREIGN KEY (`compartido_por_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Personas con acceso senalado a un documento (tipo Google Drive)';

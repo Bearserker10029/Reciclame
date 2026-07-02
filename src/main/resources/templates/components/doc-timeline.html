@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="docTimeline">
+
+  <div id="doc-timeline-wrap" style="display:none;">
+    <div style="margin-bottom:16px;">
+      <h3 id="doc-timeline-heading" style="margin:0 0 4px;font-size:16px;font-weight:800;color:#1B3A5C;">Línea de tiempo</h3>
+      <p id="doc-timeline-subtitle" style="margin:0;font-size:12px;color:#9CA3AF;"></p>
+    </div>
+    <div id="doc-timeline-content" style="position:relative;padding-left:2px;"></div>
+    <div id="doc-timeline-empty" style="display:none;padding:40px 0;text-align:center;color:#9CA3AF;">
+      <i class="fas fa-stream" style="font-size:26px;margin-bottom:10px;display:block;"></i>
+      No hay documentos para mostrar en la línea de tiempo.
+    </div>
+  </div>
+
+  <style>
+    .doc-timeline-year {
+      display:flex; align-items:center; gap:10px; margin:22px 0 10px;
+    }
+    .doc-timeline-year:first-child { margin-top:0; }
+    .doc-timeline-year-badge {
+      background:#1B3A5C; color:#fff; font-size:13px; font-weight:800;
+      padding:4px 14px; border-radius:999px;
+    }
+    .doc-timeline-year-count { font-size:11px; color:#9CA3AF; font-weight:600; }
+    .doc-timeline-year-line { flex:1; height:1px; background:#E5E7EB; }
+
+    .doc-timeline-item {
+      position:relative; padding:10px 14px 10px 22px; margin-left:6px;
+      border-left:2px solid #E5E7EB; cursor:pointer; transition:background .15s;
+      border-radius:0 8px 8px 0;
+    }
+    .doc-timeline-item:hover { background:#F9FAFB; }
+    .doc-timeline-item::before {
+      content:''; position:absolute; left:-7px; top:16px; width:12px; height:12px;
+      border-radius:50%; background:#2ECC71; border:2px solid #fff; box-shadow:0 0 0 1px #E5E7EB;
+    }
+    .doc-timeline-item-title { font-size:13px; font-weight:700; color:#1B3A5C; margin-bottom:2px; }
+    .doc-timeline-item-meta { display:flex; align-items:center; gap:8px; font-size:11px; color:#9CA3AF; }
+    .doc-timeline-item-status {
+      display:inline-block; padding:2px 9px; border-radius:999px; font-size:10px;
+      font-weight:700; background:rgba(52,152,219,.1); color:#2980B9;
+    }
+  </style>
+
+  <script>
+    (function () {
+      function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s == null ? '' : String(s);
+        return d.innerHTML;
+      }
+
+      window.ReciclameTimeline = {
+        render: function (opts) {
+          opts = opts || {};
+          var rows = opts.rows || [];
+          var read = opts.read || function (r) { return r; };
+          var clickBase = opts.clickBase || '#';
+
+          var headingEl = document.getElementById('doc-timeline-heading');
+          var subtitleEl = document.getElementById('doc-timeline-subtitle');
+          var contentEl = document.getElementById('doc-timeline-content');
+          var emptyEl = document.getElementById('doc-timeline-empty');
+          if (!contentEl) return;
+
+          if (headingEl && opts.heading) headingEl.textContent = opts.heading;
+          if (subtitleEl) subtitleEl.textContent = opts.subtitle || '';
+
+          var items = rows.map(read).filter(function (it) { return it && it.id; });
+
+          if (items.length === 0) {
+            contentEl.innerHTML = '';
+            if (emptyEl) emptyEl.style.display = 'block';
+            return;
+          }
+          if (emptyEl) emptyEl.style.display = 'none';
+
+          // Agrupar por año, descendente
+          var porAnio = {};
+          items.forEach(function (it) {
+            var y = it.year || 'Sin año';
+            (porAnio[y] = porAnio[y] || []).push(it);
+          });
+          var anios = Object.keys(porAnio).sort(function (a, b) {
+            if (a === 'Sin año') return 1;
+            if (b === 'Sin año') return -1;
+            return b.localeCompare(a, undefined, { numeric: true });
+          });
+
+          var html = '';
+          anios.forEach(function (anio) {
+            var lista = porAnio[anio].slice().sort(function (a, b) {
+              return (b.date || '').localeCompare(a.date || '');
+            });
+            html += '<div class="doc-timeline-year">' +
+              '<span class="doc-timeline-year-badge">' + esc(anio) + '</span>' +
+              '<span class="doc-timeline-year-count">' + lista.length + ' ' + esc(opts.countLabel || '') + '</span>' +
+              '<span class="doc-timeline-year-line"></span></div>';
+
+            lista.forEach(function (it) {
+              var color = it.color || '#3498DB';
+              html += '<div class="doc-timeline-item" style="border-left-color:' + esc(color) + ';" ' +
+                'onclick="window.location.href=\'' + esc(clickBase) + esc(it.id) + '/ver\'">' +
+                '<div class="doc-timeline-item-title">' + esc(it.title) + '</div>' +
+                '<div class="doc-timeline-item-meta">' +
+                (it.groupName ? '<span>' + esc(it.groupName) + '</span>' : '') +
+                (it.date ? '<span>· ' + esc(it.date) + '</span>' : '') +
+                (it.status ? '<span class="doc-timeline-item-status">' + esc(it.status) + '</span>' : '') +
+                '</div></div>';
+            });
+          });
+
+          contentEl.innerHTML = html;
+        }
+      };
+    })();
+  </script>
+
+</th:block>
+</body>
+</html>
