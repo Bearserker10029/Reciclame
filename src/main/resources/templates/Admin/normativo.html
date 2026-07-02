@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; var base = window.location.pathname.startsWith('/superadmin') ? '/superadmin' : '/admin'; window.location.href = base + '/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -307,6 +309,22 @@
       box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
     }
 
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
+    }
+
     /* ── Main layout ── */
     .norm-layout {
       display: grid;
@@ -412,71 +430,6 @@
       border-radius: 999px;
       font-size: 10px;
       font-weight: 700;
-    }
-
-    /* ── Badges VirusTotal ── */
-    .badge-vt-clean {
-      background: rgba(46, 204, 113, .12);
-      color: #1E8449;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: help;
-    }
-
-    .badge-vt-malicious {
-      background: rgba(231, 76, 60, .14);
-      color: #922B21;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: help;
-    }
-
-    .badge-vt-suspicious {
-      background: rgba(243, 156, 18, .14);
-      color: #9A7D0A;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: help;
-    }
-
-    .badge-vt-unscanned {
-      background: rgba(156, 163, 175, .12);
-      color: #6B7280;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .badge-vt-skipped {
-      background: rgba(52, 152, 219, .12);
-      color: #1F618D;
-      padding: 3px 9px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      cursor: help;
     }
 
     /* ── Tema badge ── */
@@ -938,7 +891,7 @@
 
         <!-- ══ FILTER ROW ══ -->
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:200px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
             <input id="norm-search" placeholder="Buscar por título..." oninput="applyNormFilter()" />
@@ -972,6 +925,9 @@
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
             </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setNormVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
+            </button>
           </div>
           <button onclick="clearNormFilters()"
             style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
@@ -991,13 +947,12 @@
                 <table class="table mb-0" id="norm-table" style="min-width:820px;">
                   <thead>
                     <tr>
-                      <th style="width:24%;">Título</th>
+                      <th style="width:28%;">Título</th>
                       <th>Año</th>
                       <th>Tipo</th>
                       <th>Clasif.</th>
                       <th>Estado</th>
                       <th>Temática</th>
-                      <th class="text-center">Antivirus</th>
                       <th class="text-center">Acceso</th>
                       <th class="text-center">Gestión</th>
                     </tr>
@@ -1007,10 +962,10 @@
                     <tr th:each="n, iStat : ${normativas}" class="norm-row" th:data-id="${n.id}"
                       th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}" th:data-anio="${n.anio}"
                       th:data-clasificacion="${n.clasificacion}" th:data-estado="${n.estadoNormativaNombre}"
-                      th:data-tema="${n.tematicaCodigo}" th:data-url="${n.archivoUrl}"
-                      th:data-vt-verdict="${n.vtVerdict}" th:data-vt-sha256="${n.vtSha256}"
-                      th:data-vt-malicious="${n.vtMaliciousEngines}" th:data-vt-suspicious="${n.vtSuspiciousEngines}"
-                      th:data-vt-total="${n.vtTotalEngines}" th:data-vt-skipped="${n.vtSkipped}"
+                      th:data-tema="${n.tematicaCodigo}" th:data-tema-nombre="${n.tematicaNombre}"
+                      th:data-tema-color="${n.tematicaColor}"
+                      th:data-fecha="${n.fechaPromulgacion != null ? n.fechaPromulgacion : ''}"
+                      th:data-url="${n.archivoUrl}"
                       th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
 
                       <!-- Título -->
@@ -1052,35 +1007,6 @@
                         </span>
                       </td>
 
-                      <!-- Antivirus (VirusTotal) -->
-                      <td class="text-center">
-                        <span th:if="${n.vtVerdict == 'CLEAN' or n.vtVerdict == 'UNDETECTED' or n.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
-                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: 0/' + n.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
-                          <i class="fas fa-shield-virus"></i> Limpio
-                        </span>
-                        <span th:if="${n.vtVerdict == 'MALICIOUS'}" class="badge-vt-malicious"
-                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtMaliciousEngines != null ? n.vtMaliciousEngines : 0) + '/' + n.vtTotalEngines + ' engines marcaron como amenaza' : 'VirusTotal: archivo no escaneado'}">
-                          <i class="fas fa-virus"></i> Peligroso
-                        </span>
-                        <span th:if="${n.vtVerdict == 'SUSPICIOUS'}" class="badge-vt-suspicious"
-                          th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtSuspiciousEngines != null ? n.vtSuspiciousEngines : 0) + ' engines sospechosos de ' + n.vtTotalEngines : 'VirusTotal: archivo no escaneado'}">
-                          <i class="fas fa-triangle-exclamation"></i> Sospechoso
-                        </span>
-                        <span th:if="${n.vtVerdict != null and n.vtVerdict != 'CLEAN' and n.vtVerdict != 'UNDETECTED' and n.vtVerdict != 'HARMLESS' and n.vtVerdict != 'MALICIOUS' and n.vtVerdict != 'SUSPICIOUS'}"
-                          class="badge-vt-unscanned"
-                          th:title="|Veredicto: ${n.vtVerdict}|">
-                          <i class="fas fa-shield-virus"></i> <span th:text="${n.vtVerdict}">—</span>
-                        </span>
-                        <span th:if="${n.vtVerdict == null and n.vtSkipped == true}" class="badge-vt-skipped"
-                          title="VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)">
-                          <i class="fas fa-forward"></i> Omitido
-                        </span>
-                        <span th:if="${n.vtVerdict == null and n.vtSkipped != true}" class="badge-vt-unscanned"
-                          title="Archivo sin escanear por VirusTotal">
-                          <i class="fas fa-shield-virus"></i> Sin escanear
-                        </span>
-                      </td>
-
                       <!-- Acceso -->
                       <td class="text-center">
                         <a th:if="${n.archivoUrl != null and n.archivoUrl != ''}"
@@ -1118,7 +1044,7 @@
 
                     <!-- Empty state -->
                     <tr th:if="${#lists.isEmpty(normativas)}">
-                      <td colspan="9">
+                      <td colspan="8">
                         <div class="empty-norm">
                           <i class="fas fa-balance-scale"></i>
                           <p>No hay normativas registradas aún.
@@ -1145,6 +1071,8 @@
               </div>
             </div>
             <div id="normativas-grid" class="grid-container" style="display:none;"></div>
+
+            <th:block th:replace="~{components/doc-timeline :: docTimeline}"></th:block>
           </div>
 
           <!-- ── Sidebar ── -->
@@ -1432,6 +1360,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (normVistaActual === 'grid') renderNormGrid();
+            if (normVistaActual === 'timeline') renderNormTimelineFragment();
           }
 
           function clearNormFilters() {
@@ -1468,14 +1397,7 @@
                 row.dataset.id || '—',
                 row.dataset.titulo || '—',
                 row.dataset.anio || '—',
-                row.dataset.url || '#',
-                {
-                  verdict: row.dataset.vtVerdict || null,
-                  sha256: row.dataset.vtSha256 || null,
-                  malicious: row.dataset.vtMalicious || null,
-                  total: row.dataset.vtTotal || null,
-                  skipped: row.dataset.vtSkipped || null
-                }
+                row.dataset.url || '#'
               );
             } catch (e) {
               console.error('openNormVisorFromRow error:', e);
@@ -1483,7 +1405,7 @@
             }
           }
 
-          function openNormVisor(id, titulo, anio, url, vt) {
+          function openNormVisor(id, titulo, anio, url) {
             try {
               document.getElementById('mnorm-titulo').textContent = titulo || '—';
               document.getElementById('mnorm-codigo').textContent = id || '—';
@@ -1502,32 +1424,6 @@
                   link.style.pointerEvents = 'none';
                   link.style.opacity = '0.4';
                 }
-              }
-
-              // Renderizar bloque VirusTotal
-              var vtBlock = document.getElementById('mnorm-vt-block');
-              if (vtBlock && vt) {
-                var hasVt = vt.verdict || vt.sha256;
-                if (hasVt) {
-                  vtBlock.style.display = 'block';
-                  document.getElementById('mnorm-vt-verdict').textContent = vt.verdict || '—';
-                  document.getElementById('mnorm-vt-malicious').textContent = vt.malicious || '0';
-                  document.getElementById('mnorm-vt-total').textContent = vt.total || '—';
-                  document.getElementById('mnorm-vt-sha256').textContent = vt.sha256 || '—';
-                  var vtLink = document.getElementById('mnorm-vt-link');
-                  if (vtLink && vt.sha256) {
-                    vtLink.href = 'https://www.virustotal.com/gui/file/' + vt.sha256;
-                    vtLink.style.display = 'inline-flex';
-                    vtLink.style.alignItems = 'center';
-                    vtLink.style.gap = '4px';
-                  } else if (vtLink) {
-                    vtLink.style.display = 'none';
-                  }
-                } else {
-                  vtBlock.style.display = 'none';
-                }
-              } else if (vtBlock) {
-                vtBlock.style.display = 'none';
               }
 
               var el = document.getElementById('modal-norma');
@@ -1557,25 +1453,61 @@
           // ════════════════════════════════════════════════════════
           var normVistaActual = 'lista';
 
+          function renderNormTimelineFragment() {
+            if (!window.ReciclameTimeline) return;
+            ReciclameTimeline.render({
+              rows: getFilasActivas(),
+              clickBase: '/admin/normativo/',
+              heading: 'Línea de tiempo normativa',
+              subtitle: 'Evolución del marco legal por temática y año',
+              countLabel: 'normativas',
+              read: function (row) {
+                return {
+                  id: row.dataset.id,
+                  title: row.dataset.titulo || '',
+                  year: row.dataset.anio || '',
+                  date: (row.dataset.fecha || '').trim(),
+                  group: (row.dataset.tema || 'OTRO'),
+                  groupName: row.dataset.temaNombre || '',
+                  color: row.dataset.temaColor || '',
+                  status: row.dataset.estado || ''
+                };
+              }
+            });
+          }
+
           function setNormVista(vista) {
             var tableCard = document.querySelector('.norm-table-card');
             var gridDiv = document.getElementById('normativas-grid');
+            var timelineWrap = document.getElementById('doc-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
 
             normVistaActual = vista;
+            try { sessionStorage.setItem('reciclameNormativoVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               tableCard.style.display = 'none';
               gridDiv.style.display = '';
-              btnLista.classList.remove('active');
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnGrid.classList.add('active');
               renderNormGrid();
+            } else if (vista === 'timeline') {
+              tableCard.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderNormTimelineFragment();
             } else {
               tableCard.style.display = '';
               gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }
@@ -1788,6 +1720,12 @@
             document.getElementById('ntab-' + initialTab).classList.add('active');
           }
           applyNormFilter();
+
+          (function restoreNormVista() {
+            var v = null;
+            try { v = sessionStorage.getItem('reciclameNormativoVista'); } catch (e) { }
+            if (v === 'grid' || v === 'timeline') setNormVista(v);
+          })();
         </script>
 
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
@@ -1841,39 +1779,6 @@
               <i class="fas fa-exclamation-triangle" style="color:#E74C3C;font-size:13px;"></i>
               <span style="font-size:12px;color:#7B241C;">Este documento fue almacenado en un sistema anterior y ya no
                 está disponible. Suba el archivo nuevamente al editar la normativa.</span>
-            </div>
-
-            <!-- Bloque VirusTotal (rellenado por JS al abrir modal) -->
-            <div id="mnorm-vt-block"
-              style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.18);">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <i class="fas fa-shield-virus" style="color:#27AE60;font-size:14px;"></i>
-                  <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#1E8449;">Antivirus (VirusTotal)</span>
-                </div>
-                <a id="mnorm-vt-link" href="#" target="_blank"
-                  style="display:none;font-size:11px;color:#2471A3;font-weight:700;text-decoration:none;">
-                  <i class="fas fa-external-link-alt"></i> Ver reporte completo
-                </a>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
-                <div style="padding:8px 12px;border-radius:8px;background:#fff;">
-                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Veredicto</div>
-                  <div id="mnorm-vt-verdict" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
-                </div>
-                <div style="padding:8px 12px;border-radius:8px;background:#fff;">
-                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Motores maliciosos</div>
-                  <div id="mnorm-vt-malicious" style="font-weight:800;color:#C0392B;font-size:13px;margin-top:2px;">—</div>
-                </div>
-                <div style="padding:8px 12px;border-radius:8px;background:#fff;">
-                  <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Total motores</div>
-                  <div id="mnorm-vt-total" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
-                </div>
-              </div>
-              <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:#fff;">
-                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">SHA-256</div>
-                <code id="mnorm-vt-sha256" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151;word-break:break-all;">—</code>
-              </div>
             </div>
           </div>
           <div

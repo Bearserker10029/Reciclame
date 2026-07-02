@@ -558,11 +558,11 @@
                 ondragover="event.preventDefault();this.classList.add('dragover')"
                 ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
                 <i class="fas fa-cloud-upload-alt"></i>
-                <p>Arrastra el PDF / DOC o haz clic para seleccionar</p>
+                <p>Arrastra el archivo o haz clic para seleccionar</p>
                 <p style="font-size:11px;color:#9CA3AF;margin-top:4px;">Máx. 50 MB — PDF, DOC, DOCX</p>
                 <div class="file-name" id="file-name-label" style="display:none;"></div>
               </div>
-              <input type="file" id="f-archivo" style="display:none;" accept=".pdf,.doc,.docx"
+              <input type="file" id="f-archivo" style="display:none;" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onchange="onFileChange(this)" />
 
               <!-- Archivo actual en modo edición -->
@@ -645,13 +645,44 @@
 
           // ── File handling ──────────────────────────────────────────
           var selectedFile = null;
+          var EXT_NORMATIVA_OK = ['.pdf', '.doc', '.docx'];
+
+          function extensionArchivo(name) {
+            var i = (name || '').lastIndexOf('.');
+            return i >= 0 ? name.substring(i).toLowerCase() : '';
+          }
+
+          function archivoNormativaPermitido(file) {
+            if (!file) return true;
+            return EXT_NORMATIVA_OK.indexOf(extensionArchivo(file.name)) !== -1;
+          }
+
+          function rechazarArchivoNoPermitido() {
+            selectedFile = null;
+            var input = document.getElementById('f-archivo');
+            if (input) input.value = '';
+            var label = document.getElementById('file-name-label');
+            if (label) {
+              label.style.display = 'none';
+              label.textContent = '';
+            }
+            showToast('Formato no permitido para normativas. Usa PDF, DOC o DOCX.', 'error');
+          }
+
+          function asignarArchivo(file) {
+            if (!archivoNormativaPermitido(file)) {
+              rechazarArchivoNoPermitido();
+              return;
+            }
+            selectedFile = file;
+            var label = document.getElementById('file-name-label');
+            label.textContent = selectedFile.name;
+            label.style.display = 'block';
+          }
 
           function onFileChange(input) {
             if (input.files && input.files[0]) {
-              selectedFile = input.files[0];
-              var label = document.getElementById('file-name-label');
-              label.textContent = selectedFile.name;
-              label.style.display = 'block';
+              asignarArchivo(input.files[0]);
             }
           }
 
@@ -660,10 +691,7 @@
             document.getElementById('drop-zone').classList.remove('dragover');
             var files = event.dataTransfer.files;
             if (files && files[0]) {
-              selectedFile = files[0];
-              var label = document.getElementById('file-name-label');
-              label.textContent = selectedFile.name;
-              label.style.display = 'block';
+              asignarArchivo(files[0]);
             }
           }
 
@@ -814,6 +842,12 @@
             }
             if (!IS_EDIT && !archivo) {
               errBanner.textContent = 'El archivo PDF/DOC es obligatorio para crear una normativa.';
+              errBanner.style.display = 'block';
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+            if (archivo && !archivoNormativaPermitido(archivo)) {
+              errBanner.textContent = 'Formato no permitido. Las normativas solo aceptan PDF, DOC o DOCX.';
               errBanner.style.display = 'block';
               window.scrollTo({ top: 0, behavior: 'smooth' });
               return;
