@@ -29,6 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class SocioController {
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     private final UsuarioService usuarioService;
     private final EstudioService estudioService;
@@ -50,6 +54,8 @@ public class SocioController {
     private final DocumentosRecientesService documentosRecientesService;
     private final ReporteService reporteService;
     private final EmailNotificationService emailNotificationService;
+    private final org.reciclame.demo.service.MinioStorageService minioStorageService;
+    private final java.net.http.HttpClient httpClient;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
@@ -61,7 +67,9 @@ public class SocioController {
                           MiUnidadService miUnidadService,
                           DocumentosRecientesService documentosRecientesService,
                           ReporteService reporteService,
-                          EmailNotificationService emailNotificationService) {
+                          EmailNotificationService emailNotificationService,
+                          org.reciclame.demo.service.MinioStorageService minioStorageService,
+                          java.net.http.HttpClient httpClient) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
@@ -73,6 +81,8 @@ public class SocioController {
         this.documentosRecientesService = documentosRecientesService;
         this.reporteService = reporteService;
         this.emailNotificationService = emailNotificationService;
+        this.minioStorageService = minioStorageService;
+        this.httpClient = httpClient;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -341,6 +351,101 @@ public class SocioController {
                 .header("X-Registros", String.valueOf(totalRegistros))
                 .header("X-Email-Sent", String.valueOf("both".equals(accion)))
                 .body(archivo);
+    }
+
+    // ─── Compartir documento por correo ─────────────────────────
+
+    public static class CompartirDocumentoRequest {
+        public String para;
+        public String cc;
+        public String asunto;
+        public String descripcion;
+        public String titulo;
+        public String tipo; // NORMATIVA | ESTUDIO
+        public Long documentoId;
+    }
+
+    @PostMapping("/socio/compartir/enviar")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> compartirDocumento(
+            @RequestBody CompartirDocumentoRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+        if (req.para == null || req.para.isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "El campo Para es obligatorio"));
+
+        var remitente = uOpt.get();
+
+        // Obtener archivo desde MinIO
+        byte[] archivoBytes = null;
+        String nombreArchivo = "documento";
+        String archivoMime = "application/octet-stream";
+        try {
+            String archivoUrl = null;
+            String archivoTipoMime = null;
+            if ("NORMATIVA".equalsIgnoreCase(req.tipo) && req.documentoId != null) {
+                var norm = normativaService.obtenerNormativaPorId(req.documentoId);
+                archivoUrl = norm.getArchivoUrl();
+                archivoTipoMime = norm.getArchivoTipoMime();
+            } else if ("ESTUDIO".equalsIgnoreCase(req.tipo) && req.documentoId != null) {
+                var est = estudioService.obtenerEstudioPorId(req.documentoId);
+                archivoUrl = est.getArchivoUrl();
+                archivoTipoMime = est.getArchivoTipoMime();
+            }
+            if (archivoUrl != null) {
+                String firmada = minioStorageService.generarUrlFirmadaInterna(archivoUrl, 5);
+                java.net.http.HttpRequest httpReq = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create(firmada))
+                        .timeout(java.time.Duration.ofSeconds(30))
+                        .GET().build();
+                java.net.http.HttpResponse<byte[]> resp = httpClient.send(httpReq,
+                        java.net.http.HttpResponse.BodyHandlers.ofByteArray());
+                if (resp.statusCode() == 200) {
+                    archivoBytes = resp.body();
+                }
+                if (archivoTipoMime != null) archivoMime = archivoTipoMime;
+                String ext = extractExtension(archivoUrl);
+                nombreArchivo = req.titulo != null
+                        ? req.titulo.replaceAll("[/\\\\:*?\"<>|]", "_") + ext
+                        : "documento" + ext;
+            }
+        } catch (Exception e) {
+            // enviar sin adjunto si falla la descarga
+        }
+
+        // Parsear CC
+        String[] ccArray = null;
+        if (req.cc != null && !req.cc.isBlank()) {
+            ccArray = java.util.Arrays.stream(req.cc.split("[,;]"))
+                    .map(String::trim).filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        }
+
+        try {
+            emailNotificationService.enviarDocumentoCompartido(
+                    req.para.trim(), ccArray, req.asunto,
+                    remitente.getNombreCompleto(), req.titulo,
+                    req.descripcion, archivoBytes, nombreArchivo, archivoMime);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "No se pudo enviar el correo: " + e.getMessage()));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "enviado", true,
+                "mensaje", "Documento enviado a " + req.para));
+    }
+
+    private String extractExtension(String url) {
+        try {
+            String path = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
+            int dot = path.lastIndexOf('.');
+            int slash = path.lastIndexOf('/');
+            if (dot > slash && dot > 0) return path.substring(dot).toLowerCase();
+        } catch (Exception ignored) {}
+        return "";
     }
 
     @PostMapping("/socio/notificaciones/marcar/{id}")

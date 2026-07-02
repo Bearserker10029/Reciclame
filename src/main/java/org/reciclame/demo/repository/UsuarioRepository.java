@@ -37,6 +37,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByRolNombre(String nombre);
 
+    @Query("""
+            SELECT u FROM Usuario u
+            WHERE u.empresa.id = :empresaId
+              AND u.id <> :excludeId
+              AND u.estadoActivo = true
+              AND u.estadoCuenta = 'ACTIVO'
+            ORDER BY u.nombreCompleto ASC
+            """)
+    List<Usuario> findCompanerosEmpresa(@Param("empresaId") Long empresaId,
+                                        @Param("excludeId") Long excludeId);
+
     /**
      * Incrementa el contador de intentos fallidos en 1 sin tocar el resto
      * del usuario. Usado por el AuthenticationFailureHandler para
