@@ -129,6 +129,7 @@ services:
   kkfileview:
     image: kent10029/kkfileview:5.0.0
     container_name: reciclame-kkfileview
+    platform: linux/amd64
     ports:
       - "8012:8012"
     depends_on:
