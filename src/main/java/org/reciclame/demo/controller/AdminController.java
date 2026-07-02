@@ -3,6 +3,7 @@ package org.reciclame.demo.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.reciclame.demo.dto.AuditoriaTrazabilidadAdminDTO;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.repository.SolicitudesRegistroRepository;
 import org.reciclame.demo.service.*;
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class AdminController extends BaseReportesController {
@@ -416,18 +418,20 @@ public class AdminController extends BaseReportesController {
         var auditorias = excluirSuperadminEnAuditoria()
                 ? auditoriaService.listarAuditoriasUltimas100ExcluyendoSuperadmin()
                 : auditoriaService.listarAuditoriasUltimas100();
+        // Para el ADMIN se omite la columna IP (dato sensible: solo el
+        // SUPERADMIN la ve en su exportación). Mismo principio que en la
+        // vista HTML de trazabilidad: mínimo privilegio.
         var pw = response.getWriter();
-        pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
+        pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado");
         for (var a : auditorias) {
-            pw.printf("%s,%s,%s,%s,%s,\"%s\",%s,%s%n",
+            pw.printf("%s,%s,%s,%s,%s,\"%s\",%s%n",
                 a.getId(),
                 a.getFechaAccion() != null ? a.getFechaAccion().toString().substring(0, 19).replace('T', ' ') : "",
                 a.getUsuarioNombre() != null ? a.getUsuarioNombre() : "",
                 a.getAccion() != null ? a.getAccion() : "",
                 a.getModulo() != null ? a.getModulo() : "",
                 a.getDescripcion() != null ? a.getDescripcion().replace("\"", "\"\"") : "",
-                a.getEstado() != null ? a.getEstado() : "",
-                a.getIpAddress() != null ? a.getIpAddress() : "");
+                a.getEstado() != null ? a.getEstado() : "");
         }
     }
 
@@ -435,14 +439,24 @@ public class AdminController extends BaseReportesController {
     public String trazabilidad(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
         var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidadAdmin(0, 100);
-        model.addAttribute("auditorias", auditoriasPage.getContent());
+
+        // Mapeamos la entidad Auditoria a un DTO de trazabilidad específico
+        // para ADMIN, que NO expone IP, userAgent, datos anteriores/nuevos,
+        // mensaje de error ni los hashes de la cadena de integridad. Esa
+        // información es exclusiva del SUPERADMIN (trazabilidad de seguridad).
+        List<AuditoriaTrazabilidadAdminDTO> auditoriasDto = auditoriasPage.getContent() == null
+                ? java.util.Collections.emptyList()
+                : auditoriasPage.getContent().stream()
+                        .map(AuditoriaTrazabilidadAdminDTO::from)
+                        .collect(Collectors.toList());
+        model.addAttribute("auditorias", auditoriasDto);
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
 
-        if (auditoriasPage != null && !auditoriasPage.isEmpty()) {
-            var conteoPorModulo = auditoriasPage.getContent().stream()
+        if (!auditoriasDto.isEmpty()) {
+            var conteoPorModulo = auditoriasDto.stream()
                     .filter(a -> a.getModulo() != null)
-                    .collect(java.util.stream.Collectors.groupingBy(
-                            a -> a.getModulo(), java.util.stream.Collectors.counting()))
+                    .collect(Collectors.groupingBy(
+                            AuditoriaTrazabilidadAdminDTO::getModulo, Collectors.counting()))
                     .entrySet().stream()
                     .map(e -> {
                         var m = new java.util.HashMap<String, Object>();
@@ -450,7 +464,7 @@ public class AdminController extends BaseReportesController {
                         m.put("count", e.getValue());
                         return m;
                     })
-                    .collect(java.util.stream.Collectors.toList());
+                    .collect(Collectors.toList());
             model.addAttribute("conteoPorModulo", conteoPorModulo);
         } else {
             model.addAttribute("conteoPorModulo", java.util.Collections.emptyList());
