@@ -98,6 +98,20 @@ public class LoginController {
                                 u.getCargo(),
                                 u.getFotoUrl()
                         ));
+
+                        // Si el usuario que se loguea es SuperAdmin, persistir
+                        // su id en un atributo inmutable de sesión. Esto es
+                        // crítico para que los registros de auditoría de
+                        // IMPERSONAR / SALIR_IMPERSONACION siempre muestren
+                        // el nombre real del superadmin raíz y no el correo
+                        // del último usuario impersonado (que es lo que
+                        // devuelve SecurityContextHolder.getName() durante
+                        // una impersonación anidada).
+                        if (u.getRol() != null && "SUPERADMIN".equalsIgnoreCase(u.getRol().getNombre())) {
+                            session.setAttribute("SUPERADMIN_ORIGINAL_ID", u.getId());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_NOMBRE", u.getNombreCompleto());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_CORREO", u.getCorreoCorporativo());
+                        }
                     });
 
             // Si el usuario venía de una URL protegida válida, redirigir allí
