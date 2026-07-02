@@ -4,11 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.NormativaRequestDTO;
 import org.reciclame.demo.dto.NormativaResponseDTO;
-import org.reciclame.demo.dto.VirusTotalVerdict;
-import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
+import org.reciclame.demo.service.SubirNormativaStagingService;
 import org.reciclame.demo.service.UsuarioService;
-import org.reciclame.demo.service.VirusTotalScanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,29 +17,22 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/normativas")
 public class NormativaRestController {
 
-    private static final Set<String> EXTENSIONES_NORMATIVA = Set.of("pdf", "doc", "docx");
-
     private final NormativaService normativaService;
-    private final MinioStorageService minioStorageService;
+    private final SubirNormativaStagingService subirStagingService;
     private final UsuarioService usuarioService;
-    private final VirusTotalScanService virusTotalScanService;
 
     public NormativaRestController(NormativaService normativaService,
-                                   MinioStorageService minioStorageService,
-                                   UsuarioService usuarioService,
-                                   VirusTotalScanService virusTotalScanService) {
+                                   SubirNormativaStagingService subirStagingService,
+                                   UsuarioService usuarioService) {
         this.normativaService = normativaService;
-        this.minioStorageService = minioStorageService;
+        this.subirStagingService = subirStagingService;
         this.usuarioService = usuarioService;
-        this.virusTotalScanService = virusTotalScanService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -64,6 +55,18 @@ public class NormativaRestController {
     }
 
     // ── CREATE ────────────────────────────────────────────────
+    /**
+     * <p>Flujo NUEVO (caché staging + validación async):</p>
+     * <ol>
+     *   <li>Si hay archivo: validar extensión, calcular SHA-256, subir a bucket staging.</li>
+     *   <li>INSERT en BD con archivo_url = staging://<uuid>, estado PENDIENTE.</li>
+     *   <li>Encolar scanner async (VirusTotal).</li>
+     *   <li>Devolver 202 inmediatamente con {taskId, statusUrl} para que el frontend
+     *       navegue a la lista y haga polling.</li>
+     * </ol>
+     * <p>El frontend verá la nueva fila con badge PENDIENTE; cuando el scanner termine,
+     * el polling actualizará el badge a "Seguro" o "Rechazado" sin recargar la página.</p>
+     */
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
@@ -71,35 +74,31 @@ public class NormativaRestController {
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
             HttpServletRequest request) throws java.io.IOException {
+        var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
+        Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
+        String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
+        String ipAddress = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
+
         try {
-            String archivoUrl      = null;
-            String archivoTipoMime = null;
-            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
-                validarArchivoNormativa(archivo);
-                // 1) Escanear contra VirusTotal ANTES de tocar MinIO.
-                //    Si devuelve MALICIOUS, lanza VirusTotalException → 400.
-                vtVerdict = virusTotalScanService.scan(archivo);
-                if (!vtVerdict.isAllowed()) {
-                    return ResponseEntity.badRequest().body(Map.of(
-                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
-                            "tipo", "VIRUS_DETECTADO",
-                            "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
-                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
-                    ));
-                }
-                // 2) Limpio (o skipped por fail-open): recién ahora subimos a MinIO.
-                archivoUrl      = simularSubida(archivo);
-                archivoTipoMime = archivo.getContentType();
+                // Validación de extensión: pdf, doc, docx (igual que antes).
+                subirStagingService.validarExtension(archivo);
+                SubirNormativaStagingService.ResultadoSubida resultado =
+                        subirStagingService.subirYPendientarNormativa(dto, archivo,
+                                user.getUsername(), auditorId, auditorNombre, ipAddress, userAgent);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                        "taskId", resultado.getTaskId(),
+                        "tipo", "NORMATIVA",
+                        "refId", resultado.getRefId(),
+                        "statusUrl", "/api/uploads/NORMATIVA/" + resultado.getTaskId(),
+                        "estado", "PENDIENTE",
+                        "mensaje", "Subida recibida. La validación antivirus está en curso."
+                ));
             }
-            var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
-            Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
-            String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-            String ipAddress = request.getRemoteAddr();
-            String userAgent = request.getHeader("User-Agent");
+            // Sin archivo: INSERT directo (sin VT).
             NormativaResponseDTO resultado = normativaService.crearNormativa(
-                    dto, archivoUrl, archivoTipoMime, vtVerdict,
+                    dto, null, null,
                     user.getUsername(),
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
@@ -117,32 +116,27 @@ public class NormativaRestController {
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
             HttpServletRequest request) throws java.io.IOException {
+        var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
+        Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
+        String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
+        String ipAddress = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
         try {
-            String archivoUrl      = null;
-            String archivoTipoMime = null;
-            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
-                validarArchivoNormativa(archivo);
-                vtVerdict = virusTotalScanService.scan(archivo);
-                if (!vtVerdict.isAllowed()) {
-                    return ResponseEntity.badRequest().body(Map.of(
-                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
-                            "tipo", "VIRUS_DETECTADO",
-                            "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
-                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
-                    ));
-                }
-                archivoUrl      = simularSubida(archivo);
-                archivoTipoMime = archivo.getContentType();
+                SubirNormativaStagingService.ResultadoSubida resultado =
+                        subirStagingService.subirYPendientarNormativaEnUpdate(id, dto, archivo,
+                                user.getUsername(), auditorId, auditorNombre, ipAddress, userAgent);
+                return ResponseEntity.accepted().body(Map.of(
+                        "taskId", resultado.getTaskId(),
+                        "tipo", "NORMATIVA",
+                        "refId", resultado.getRefId(),
+                        "statusUrl", "/api/uploads/NORMATIVA/" + resultado.getTaskId(),
+                        "estado", "PENDIENTE",
+                        "mensaje", "Archivo en validación. Los cambios se aplicarán al aprobarse."
+                ));
             }
-            var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
-            Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
-            String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-            String ipAddress = request.getRemoteAddr();
-            String userAgent = request.getHeader("User-Agent");
             NormativaResponseDTO resultado = normativaService.actualizarNormativa(
-                    id, dto, archivoUrl, archivoTipoMime, vtVerdict,
+                    id, dto, null, null,
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
@@ -166,23 +160,6 @@ public class NormativaRestController {
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
-        }
-    }
-
-    // ── Subida a MinIO ────────────────────────────────────────
-    private String simularSubida(MultipartFile archivo) throws java.io.IOException {
-        return minioStorageService.subirArchivo(archivo);
-    }
-
-    private void validarArchivoNormativa(MultipartFile archivo) {
-        String nombre = archivo.getOriginalFilename();
-        if (nombre == null || !nombre.contains(".")) {
-            throw new IllegalArgumentException("El archivo debe ser PDF, DOC o DOCX.");
-        }
-        String ext = nombre.substring(nombre.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
-        if (!EXTENSIONES_NORMATIVA.contains(ext)) {
-            throw new IllegalArgumentException(
-                    "Formato no permitido para normativas. Solo se aceptan PDF, DOC y DOCX.");
         }
     }
 }
