@@ -4,11 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
-import org.reciclame.demo.dto.VirusTotalVerdict;
 import org.reciclame.demo.service.EstudioService;
-import org.reciclame.demo.service.MinioStorageService;
+import org.reciclame.demo.service.SubirEstudioStagingService;
 import org.reciclame.demo.service.UsuarioService;
-import org.reciclame.demo.service.VirusTotalScanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,18 +24,15 @@ import java.util.Map;
 public class EstudioRestController {
 
     private final EstudioService estudioService;
-    private final MinioStorageService minioStorageService;
+    private final SubirEstudioStagingService subirStagingService;
     private final UsuarioService usuarioService;
-    private final VirusTotalScanService virusTotalScanService;
 
     public EstudioRestController(EstudioService estudioService,
-                                 MinioStorageService minioStorageService,
-                                 UsuarioService usuarioService,
-                                 VirusTotalScanService virusTotalScanService) {
+                                 SubirEstudioStagingService subirStagingService,
+                                 UsuarioService usuarioService) {
         this.estudioService = estudioService;
-        this.minioStorageService = minioStorageService;
+        this.subirStagingService = subirStagingService;
         this.usuarioService = usuarioService;
-        this.virusTotalScanService = virusTotalScanService;
     }
 
     // ── READ ALL ──────────────────────────────────────────────
@@ -67,31 +62,28 @@ public class EstudioRestController {
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
             HttpServletRequest request) throws java.io.IOException {
+        var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
+        Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
+        String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
+        String ipAddress = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
         try {
-            String archivoUrl      = null;
-            String archivoTipoMime = null;
-            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
-                vtVerdict = virusTotalScanService.scan(archivo);
-                if (!vtVerdict.isAllowed()) {
-                    return ResponseEntity.badRequest().body(Map.of(
-                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
-                            "tipo", "VIRUS_DETECTADO",
-                            "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
-                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
-                    ));
-                }
-                archivoUrl      = simularSubida(archivo);
-                archivoTipoMime = archivo.getContentType();
+                SubirEstudioStagingService.ResultadoSubida resultado =
+                        subirStagingService.subirYPendientarEstudio(dto, archivo,
+                                user.getUsername(), auditorId, auditorNombre, ipAddress, userAgent);
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
+                        "taskId", resultado.getTaskId(),
+                        "tipo", "ESTUDIO",
+                        "refId", resultado.getRefId(),
+                        "statusUrl", "/api/uploads/ESTUDIO/" + resultado.getTaskId(),
+                        "estado", "PENDIENTE",
+                        "mensaje", "Subida recibida. La validación antivirus está en curso."
+                ));
             }
-            var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
-            Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
-            String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-            String ipAddress = request.getRemoteAddr();
-            String userAgent = request.getHeader("User-Agent");
             EstudioResponseDTO resultado = estudioService.crearEstudio(
-                    dto, archivoUrl, archivoTipoMime, vtVerdict, user.getUsername(),
+                    dto, null, null,
+                    user.getUsername(),
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.status(HttpStatus.CREATED).body(resultado);
         } catch (RuntimeException e) {
@@ -108,31 +100,27 @@ public class EstudioRestController {
             @RequestPart(value = "archivo", required = false) MultipartFile archivo,
             @AuthenticationPrincipal UserDetails user,
             HttpServletRequest request) throws java.io.IOException {
+        var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
+        Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
+        String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
+        String ipAddress = request.getRemoteAddr();
+        String userAgent = request.getHeader("User-Agent");
         try {
-            String archivoUrl      = null;
-            String archivoTipoMime = null;
-            VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
-                vtVerdict = virusTotalScanService.scan(archivo);
-                if (!vtVerdict.isAllowed()) {
-                    return ResponseEntity.badRequest().body(Map.of(
-                            "mensaje", "Archivo rechazado por antivirus: " + vtVerdict.getMessage(),
-                            "tipo", "VIRUS_DETECTADO",
-                            "verdict", vtVerdict.getVerdict().name(),
-                            "malicious", vtVerdict.getMaliciousEngines() != null ? vtVerdict.getMaliciousEngines() : 0,
-                            "suspicious", vtVerdict.getSuspiciousEngines() != null ? vtVerdict.getSuspiciousEngines() : 0
-                    ));
-                }
-                archivoUrl      = simularSubida(archivo);
-                archivoTipoMime = archivo.getContentType();
+                SubirEstudioStagingService.ResultadoSubida resultado =
+                        subirStagingService.subirYPendientarEstudioEnUpdate(id, dto, archivo,
+                                user.getUsername(), auditorId, auditorNombre, ipAddress, userAgent);
+                return ResponseEntity.accepted().body(Map.of(
+                        "taskId", resultado.getTaskId(),
+                        "tipo", "ESTUDIO",
+                        "refId", resultado.getRefId(),
+                        "statusUrl", "/api/uploads/ESTUDIO/" + resultado.getTaskId(),
+                        "estado", "PENDIENTE",
+                        "mensaje", "Archivo en validación."
+                ));
             }
-            var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
-            Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
-            String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-            String ipAddress = request.getRemoteAddr();
-            String userAgent = request.getHeader("User-Agent");
             EstudioResponseDTO resultado = estudioService.actualizarEstudio(
-                    id, dto, archivoUrl, archivoTipoMime, vtVerdict,
+                    id, dto, null, null,
                     auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
@@ -140,7 +128,7 @@ public class EstudioRestController {
         }
     }
 
-    // ── DELETE lógico ─────────────────────────────────────────
+    // ── DELETE físico ─────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id,
@@ -169,10 +157,5 @@ public class EstudioRestController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         }
-    }
-
-    // ── Subida a MinIO ────────────────────────────────────────
-    private String simularSubida(MultipartFile archivo) throws java.io.IOException {
-        return minioStorageService.subirArchivo(archivo);
     }
 }
