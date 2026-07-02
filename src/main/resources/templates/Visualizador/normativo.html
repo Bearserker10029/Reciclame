@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = {}; window.location.href = '/visualizador/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -315,6 +317,22 @@
       outline: none;
       border-color: #2ECC71;
       box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
     }
 
     /* ── Main layout ── */
@@ -1004,7 +1022,7 @@
 
         <!-- ══ FILTER ROW ══ -->
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:200px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
             <input id="norm-search" placeholder="Buscar por título..." oninput="applyNormFilter()" />
@@ -1038,6 +1056,9 @@
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
             </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setNormVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
+            </button>
           </div>
           <button onclick="clearNormFilters()"
             style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
@@ -1068,7 +1089,10 @@
                     <tr th:each="n, iStat : ${normativas}" class="norm-row" th:data-id="${n.id}"
                       th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}" th:data-anio="${n.anio}"
                       th:data-clasificacion="${n.clasificacion}" th:data-estado="${n.estadoNormativaNombre}"
-                      th:data-tema="${n.tematicaCodigo}" th:data-url="${n.archivoUrl}"
+                      th:data-tema="${n.tematicaCodigo}" th:data-tema-nombre="${n.tematicaNombre}"
+                      th:data-tema-color="${n.tematicaColor}"
+                      th:data-fecha="${n.fechaPromulgacion != null ? n.fechaPromulgacion : ''}"
+                      th:data-url="${n.archivoUrl}"
                       th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
 
                       <td class="fw-bold" style="color:#1B3A5C;font-size:12px;max-width:220px;line-height:1.4;"
@@ -1138,6 +1162,8 @@
             </div>
 
             <div id="normativas-grid" class="grid-container" style="display:none;"></div>
+
+            <th:block th:replace="~{components/doc-timeline :: docTimeline}"></th:block>
           </div>
 
           <!-- ── Sidebar ── -->
@@ -1417,6 +1443,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (normVistaActual === 'grid') renderNormGrid();
+            if (normVistaActual === 'timeline') renderNormTimelineFragment();
           }
 
           function clearNormFilters() {
@@ -1515,25 +1542,61 @@
           // ════════════════════════════════════════════════════════
           var normVistaActual = 'lista';
 
+          function renderNormTimelineFragment() {
+            if (!window.ReciclameTimeline) return;
+            ReciclameTimeline.render({
+              rows: getFilasActivas(),
+              clickBase: '/visualizador/normativo/',
+              heading: 'Línea de tiempo normativa',
+              subtitle: 'Evolución del marco legal por temática y año',
+              countLabel: 'normativas',
+              read: function (row) {
+                return {
+                  id: row.dataset.id,
+                  title: row.dataset.titulo || '',
+                  year: row.dataset.anio || '',
+                  date: (row.dataset.fecha || '').trim(),
+                  group: (row.dataset.tema || 'OTRO'),
+                  groupName: row.dataset.temaNombre || '',
+                  color: row.dataset.temaColor || '',
+                  status: row.dataset.estado || ''
+                };
+              }
+            });
+          }
+
           function setNormVista(vista) {
             var tableCard = document.querySelector('.norm-table-card');
             var gridDiv = document.getElementById('normativas-grid');
+            var timelineWrap = document.getElementById('doc-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
 
             normVistaActual = vista;
+            try { sessionStorage.setItem('reciclameNormativoVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               tableCard.style.display = 'none';
               gridDiv.style.display = '';
-              btnLista.classList.remove('active');
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnGrid.classList.add('active');
               renderNormGrid();
+            } else if (vista === 'timeline') {
+              tableCard.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderNormTimelineFragment();
             } else {
               tableCard.style.display = '';
               gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }
@@ -1660,8 +1723,14 @@
             if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
               showNormativoTab(savedTab);
             }
-            inicializarPaginacion();
-            mostrarPagina(1);
+            var savedVista = null;
+            try { savedVista = sessionStorage.getItem('reciclameNormativoVista'); } catch (e) { }
+            if (savedVista === 'grid' || savedVista === 'timeline') {
+              setNormVista(savedVista);
+            } else {
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
           });
         </script>
 

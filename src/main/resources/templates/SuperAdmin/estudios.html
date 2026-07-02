@@ -9,6 +9,8 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -300,6 +302,22 @@
 
     .filter-row input[type="date"]::-webkit-calendar-picker-indicator:hover {
       opacity: 1;
+    }
+
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
     }
 
     .table-card {
@@ -808,7 +826,7 @@
         </div>
 
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:220px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
             <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
@@ -830,6 +848,9 @@
             </button>
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
             </button>
           </div>
           <button
@@ -862,6 +883,9 @@
                                 (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
                                 (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                   th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                  th:data-tematica="${e.tematicaCodigo}" th:data-tema-nombre="${e.tematicaNombre}"
+                  th:data-tema-color="${e.tematicaColor}"
+                  th:data-fecha="${e.fechaEstudio != null ? e.fechaEstudio : ''}"
                   th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
                   th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                   <td>
@@ -948,6 +972,8 @@
         </div>
 
         <div id="estudios-grid" class="grid-container" style="display:none;"></div>
+
+        <th:block th:replace="~{components/doc-timeline :: docTimeline}"></th:block>
 
         <div class="modal fade" id="modal-estudio" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -1150,6 +1176,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (vistaActual === 'grid') renderGrid();
+            if (vistaActual === 'timeline') renderEstTimelineFragment();
           }
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
@@ -1158,8 +1185,14 @@
             document.querySelectorAll('.estudio-row').forEach(function (tr) {
               tr.dataset.filtrado = '1';
             });
-            inicializarPaginacion();
-            mostrarPagina(1);
+            var savedVista = null;
+            try { savedVista = sessionStorage.getItem('reciclameEstudiosVista'); } catch (e) { }
+            if (savedVista === 'grid' || savedVista === 'timeline') {
+              setVista(savedVista);
+            } else {
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
           });
 
           function openModalFromRow(btn) {
@@ -1274,31 +1307,74 @@
 
           var vistaActual = 'lista';
 
+          var _tipoLabel = { pdf: 'PDF', excel: 'Excel', word: 'Word', ppt: 'PowerPoint', otro: 'Documento' };
+
+          function renderEstTimelineFragment() {
+            if (!window.ReciclameTimeline) return;
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+            ReciclameTimeline.render({
+              rows: filas,
+              clickBase: '/superadmin/estudios/',
+              heading: 'Línea de tiempo de estudios',
+              subtitle: 'Publicaciones por temática y año',
+              countLabel: 'estudios',
+              read: function (row) {
+                return {
+                  id: row.dataset.id,
+                  title: row.dataset.titulo || '',
+                  year: row.dataset.anio || '',
+                  date: (row.dataset.fecha || '').trim(),
+                  group: (row.dataset.tematica || 'OTRO'),
+                  groupName: row.dataset.temaNombre || '',
+                  color: row.dataset.temaColor || '',
+                  status: _tipoLabel[row.dataset.tipo] || ''
+                };
+              }
+            });
+          }
+
           function setVista(vista) {
             var listaDiv = document.getElementById('estudios-lista');
             var gridDiv = document.getElementById('estudios-grid');
+            var timelineWrap = document.getElementById('doc-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
             var paginacion = document.getElementById('paginacion-estudios');
             var conteo = document.getElementById('conteo-estudios');
 
             vistaActual = vista;
+            try { sessionStorage.setItem('reciclameEstudiosVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               listaDiv.style.display = 'none';
               gridDiv.style.display = 'grid';
-              paginacion.style.display = 'none';
-              conteo.style.display = 'none';
-              btnLista.classList.remove('active');
+              if (timelineWrap) timelineWrap.style.display = 'none';
+              if (paginacion) paginacion.style.display = 'none';
+              if (conteo) conteo.style.display = 'none';
               btnGrid.classList.add('active');
               renderGrid();
+            } else if (vista === 'timeline') {
+              listaDiv.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (paginacion) paginacion.style.display = 'none';
+              if (conteo) conteo.style.display = 'none';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderEstTimelineFragment();
             } else {
               listaDiv.style.display = '';
               gridDiv.style.display = 'none';
-              paginacion.style.display = '';
-              conteo.style.display = '';
+              if (timelineWrap) timelineWrap.style.display = 'none';
+              if (paginacion) paginacion.style.display = '';
+              if (conteo) conteo.style.display = '';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }

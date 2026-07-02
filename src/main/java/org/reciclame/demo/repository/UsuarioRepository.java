@@ -36,6 +36,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findByRolNombre(String nombre);
 
+    @Query("""
+            SELECT u FROM Usuario u
+            WHERE u.empresa.id = :empresaId
+              AND u.id <> :excludeId
+              AND u.estadoActivo = true
+              AND u.estadoCuenta = 'ACTIVO'
+            ORDER BY u.nombreCompleto ASC
+            """)
+    List<Usuario> findCompanerosEmpresa(@Param("empresaId") Long empresaId,
+                                        @Param("excludeId") Long excludeId);
+
     /**
      * Búsqueda global de usuarios activos.
      * Filtra por roles permitidos (excluye SUPERADMIN por defecto).

@@ -456,6 +456,11 @@ public class UsuarioService {
     }
 
     // ── HELPERS ───────────────────────────────────────────────
+    public List<UsuarioResponseDTO> listarCompanerosEmpresa(Long empresaId, Long excludeId) {
+        return usuarioRepository.findCompanerosEmpresa(empresaId, excludeId)
+                .stream().map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     private UsuarioResponseDTO toResponseDTO(Usuario u) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(u.getId());

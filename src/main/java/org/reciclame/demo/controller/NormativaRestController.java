@@ -19,11 +19,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/normativas")
 public class NormativaRestController {
+
+    private static final Set<String> EXTENSIONES_NORMATIVA = Set.of("pdf", "doc", "docx");
 
     private final NormativaService normativaService;
     private final MinioStorageService minioStorageService;
@@ -72,6 +76,7 @@ public class NormativaRestController {
             String archivoTipoMime = null;
             VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
+                validarArchivoNormativa(archivo);
                 // 1) Escanear contra VirusTotal ANTES de tocar MinIO.
                 //    Si devuelve MALICIOUS, lanza VirusTotalException → 400.
                 vtVerdict = virusTotalScanService.scan(archivo);
@@ -117,6 +122,7 @@ public class NormativaRestController {
             String archivoTipoMime = null;
             VirusTotalVerdict vtVerdict = null;
             if (archivo != null && !archivo.isEmpty()) {
+                validarArchivoNormativa(archivo);
                 vtVerdict = virusTotalScanService.scan(archivo);
                 if (!vtVerdict.isAllowed()) {
                     return ResponseEntity.badRequest().body(Map.of(
@@ -166,5 +172,17 @@ public class NormativaRestController {
     // ── Subida a MinIO ────────────────────────────────────────
     private String simularSubida(MultipartFile archivo) throws java.io.IOException {
         return minioStorageService.subirArchivo(archivo);
+    }
+
+    private void validarArchivoNormativa(MultipartFile archivo) {
+        String nombre = archivo.getOriginalFilename();
+        if (nombre == null || !nombre.contains(".")) {
+            throw new IllegalArgumentException("El archivo debe ser PDF, DOC o DOCX.");
+        }
+        String ext = nombre.substring(nombre.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+        if (!EXTENSIONES_NORMATIVA.contains(ext)) {
+            throw new IllegalArgumentException(
+                    "Formato no permitido para normativas. Solo se aceptan PDF, DOC y DOCX.");
+        }
     }
 }

@@ -8,8 +8,10 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/socio/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -322,6 +324,22 @@
       outline: none;
       border-color: #2ECC71;
       box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
     }
 
     .norm-layout {
@@ -649,6 +667,305 @@
 
     .vista-toggle-btn+.vista-toggle-btn {
       border-left: 1px solid #E5E7EB;
+    }
+
+    /* ── Timeline normativo ── */
+    .norm-timeline-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(27, 58, 92, .12);
+      overflow: hidden;
+      animation: fadeUp .4s ease both;
+      border: 1px solid #EEF2F7;
+    }
+
+    .norm-timeline-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 18px 22px;
+      background: linear-gradient(135deg, #1B3A5C 0%, #0f2540 55%, #14513a 100%);
+      overflow: hidden;
+    }
+
+    .norm-timeline-header::after {
+      content: '';
+      position: absolute;
+      top: -70px;
+      right: -40px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(46, 204, 113, .28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .norm-timeline-title {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .norm-timeline-title .tl-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: rgba(46, 204, 113, .22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #34E29B;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .norm-timeline-title h3 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: .2px;
+    }
+
+    .norm-timeline-title p {
+      margin: 2px 0 0;
+      font-size: 11px;
+      color: rgba(255, 255, 255, .6);
+    }
+
+    .norm-timeline-count-chip {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid rgba(255, 255, 255, .18);
+      backdrop-filter: blur(6px);
+    }
+
+    .norm-timeline-count-chip b {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .norm-timeline-count-chip span {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: rgba(255, 255, 255, .65);
+    }
+
+    .norm-timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      border-bottom: 1px solid #F1F5F9;
+      background: #FBFDFE;
+    }
+
+    .norm-timeline-legend .lg-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: #B0B8C4;
+      margin-right: 2px;
+    }
+
+    .norm-timeline-legend span.lg-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #475569;
+      padding: 4px 11px 4px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #EAEFF4;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+    }
+
+    .norm-timeline-legend i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, .04);
+    }
+
+    #norm-timeline {
+      height: 440px;
+      border: none;
+      padding: 4px 8px 0;
+      background:
+        linear-gradient(180deg, #FFFFFF 0%, #F7FBFD 100%);
+    }
+
+    /* vis-timeline overrides */
+    #norm-timeline .vis-panel.vis-center,
+    #norm-timeline .vis-panel.vis-left,
+    #norm-timeline .vis-panel.vis-right,
+    #norm-timeline .vis-panel.vis-top,
+    #norm-timeline .vis-panel.vis-bottom {
+      border-color: #EAEFF4;
+    }
+
+    #norm-timeline .vis-time-axis .vis-grid.vis-minor {
+      border-color: #F1F5F9;
+    }
+
+    #norm-timeline .vis-time-axis .vis-grid.vis-major {
+      border-color: #E2E8F0;
+    }
+
+    #norm-timeline .vis-time-axis .vis-text {
+      color: #94A3B8;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    #norm-timeline .vis-time-axis .vis-text.vis-major {
+      color: #1B3A5C;
+      font-weight: 800;
+      font-size: 12px;
+    }
+
+    #norm-timeline .vis-labelset .vis-label {
+      border-color: #EAEFF4;
+      color: #1B3A5C;
+    }
+
+    #norm-timeline .vis-labelset .vis-label .vis-inner {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    #norm-timeline .vis-current-time {
+      background-color: #E74C3C;
+      width: 2px;
+    }
+
+    /* Items como pastillas */
+    #norm-timeline .vis-item {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    #norm-timeline .vis-item.vis-point {
+      border: none;
+    }
+
+    #norm-timeline .vis-item .vis-item-content {
+      padding: 0;
+    }
+
+    #norm-timeline .vis-item.vis-selected {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    #norm-timeline .vis-item.vis-dot {
+      display: none;
+    }
+
+    .ntl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 11px 5px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1.5px solid var(--ntl-color, #1B3A5C);
+      box-shadow: 0 2px 6px rgba(27, 58, 92, .1);
+      font-size: 11px;
+      font-weight: 700;
+      color: #1B3A5C;
+      white-space: nowrap;
+      transition: transform .15s ease, box-shadow .15s ease;
+      max-width: 240px;
+    }
+
+    .ntl-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(27, 58, 92, .2);
+    }
+
+    .ntl-pill .ntl-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ntl-color, #1B3A5C);
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, .06);
+      flex-shrink: 0;
+    }
+
+    .ntl-pill .ntl-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ntl-pill .ntl-year {
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      background: var(--ntl-color, #1B3A5C);
+      padding: 1px 6px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Tooltip */
+    .vis-tooltip {
+      border-radius: 10px !important;
+      border: none !important;
+      background: #0f2540 !important;
+      color: #fff !important;
+      padding: 10px 13px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 12px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .3) !important;
+      max-width: 280px !important;
+    }
+
+    .norm-timeline-hint {
+      margin: 0;
+      padding: 11px 22px 15px;
+      font-size: 11px;
+      color: #94A3B8;
+      border-top: 1px solid #F1F5F9;
+      background: #FBFDFE;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .norm-timeline-hint .hint-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .norm-timeline-empty {
+      text-align: center;
+      padding: 56px 24px;
+      color: #9CA3AF;
+      font-size: 14px;
     }
 
     .grid-container {
@@ -1172,10 +1489,10 @@
         </div>
 
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:200px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;pointer-events:none;"></i>
-            <input id="norm-search" placeholder="Buscar por título..." oninput="applyNormFilter()" />
+            <input id="norm-search" placeholder="Buscar por título u objetivo..." oninput="applyNormFilter()" />
           </div>
           <select id="norm-clasificacion" onchange="applyNormFilter()">
             <option value="">Clasificación: Todas</option>
@@ -1206,6 +1523,9 @@
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setNormVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
             </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setNormVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
+            </button>
           </div>
           <button onclick="clearNormFilters()"
             style="padding:8px 14px;border-radius:9px;border:1.5px solid #E5E7EB;background:#fff;cursor:pointer;font-size:12px;color:#6B7280;font-family:inherit;transition:all .2s;display:flex;align-items:center;gap:6px;"
@@ -1233,9 +1553,13 @@
                   </thead>
                   <tbody id="norm-tbody">
                     <tr th:each="n, iStat : ${normativas}" class="norm-row" th:data-id="${n.id}"
-                      th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}" th:data-anio="${n.anio}"
+                      th:data-ambito="${n.ambito}" th:data-titulo="${n.titulo}"
+                      th:data-descripcion="${n.descripcionBreve}" th:data-anio="${n.anio}"
                       th:data-clasificacion="${n.clasificacion}" th:data-estado="${n.estadoNormativaNombre}"
-                      th:data-tema="${n.tematicaCodigo}" th:data-url="${n.archivoUrl}"
+                      th:data-tema="${n.tematicaCodigo}" th:data-tema-nombre="${n.tematicaNombre}"
+                      th:data-tema-color="${n.tematicaColor}"
+                      th:data-fecha="${n.fechaPromulgacion != null ? n.fechaPromulgacion : ''}"
+                      th:data-url="${n.archivoUrl}"
                       th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
 
                       <td class="fw-bold"
@@ -1315,6 +1639,39 @@
             </div>
 
             <div id="normativas-grid" class="grid-container" style="display:none;"></div>
+
+            <div id="norm-timeline-wrap" class="norm-timeline-card" style="display:none;">
+              <div class="norm-timeline-header">
+                <div class="norm-timeline-title">
+                  <div class="tl-icon"><i class="fas fa-stream"></i></div>
+                  <div>
+                    <h3>Línea de tiempo normativa</h3>
+                    <p>Evolución del marco legal por temática y año</p>
+                  </div>
+                </div>
+                <div class="norm-timeline-count-chip">
+                  <b id="norm-timeline-count">—</b>
+                  <span>normativas</span>
+                </div>
+              </div>
+              <div class="norm-timeline-legend">
+                <span class="lg-label">Temáticas</span>
+                <span class="lg-item"><i style="background:#22C55E;"></i> EC</span>
+                <span class="lg-item"><i style="background:#38BDF8;"></i> GR</span>
+                <span class="lg-item"><i style="background:#F59E0B;"></i> EE</span>
+                <span class="lg-item"><i style="background:#A78BFA;"></i> REP</span>
+              </div>
+              <div id="norm-timeline"></div>
+              <div id="norm-timeline-empty" class="norm-timeline-empty" style="display:none;">
+                <i class="fas fa-search" style="font-size:32px;color:#D1D5DB;display:block;margin-bottom:10px;"></i>
+                No hay normativas para mostrar en la línea de tiempo con los filtros actuales.
+              </div>
+              <p class="norm-timeline-hint">
+                <span class="hint-item"><i class="fas fa-arrows-left-right" style="color:#2ECC71;"></i> Arrastra para navegar</span>
+                <span class="hint-item"><i class="fas fa-magnifying-glass-plus" style="color:#3498DB;"></i> Ctrl + rueda para zoom</span>
+                <span class="hint-item"><i class="fas fa-hand-pointer" style="color:#A78BFA;"></i> Clic en una pastilla para abrir</span>
+              </p>
+            </div>
           </div>
 
           <div>
@@ -1493,10 +1850,10 @@
             var row = document.querySelector('.norm-row[data-id="' + id + '"]');
             if (!row) return;
             var tit = row.dataset.titulo || '';
-            var text = window.location.origin + '/socio/normativo — ' + tit;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(text).then(function () { alert('Copiado al portapapeles.'); }).catch(function () { window.prompt('Copia manualmente:', text); });
-            } else { window.prompt('Copia manualmente:', text); }
+            window.__compartirDocTitulo = tit;
+            window.__compartirDocTipo = 'NORMATIVA';
+            window.__compartirDocId = id;
+            openModalCompartir(tit);
           }
 
           function openModalCarpetaFromData(tipo, id, titulo) {
@@ -1657,6 +2014,7 @@
             document.querySelectorAll('.norm-row').forEach(function (row) {
               var ambito = (row.dataset.ambito || '').toUpperCase();
               var titulo = (row.dataset.titulo || '').toLowerCase();
+              var descripcion = (row.dataset.descripcion || '').toLowerCase();
               var rClasif = (row.dataset.clasificacion || '');
               var rEstado = (row.dataset.estado || '');
               var rTema = (row.dataset.tema || '');
@@ -1664,7 +2022,7 @@
               var matchTab = tab === 'todos'
                 || (tab === 'nacional' && ambito === 'NACIONAL')
                 || (tab === 'internacional' && ambito === 'INTERNACIONAL');
-              var matchQ = !q || titulo.includes(q);
+              var matchQ = !q || titulo.includes(q) || descripcion.includes(q);
               var matchClasif = !clasif || rClasif === clasif;
               var matchEstado = !estado || rEstado.toLowerCase().includes(estado.toLowerCase());
               var matchTema = !tema || rTema === tema;
@@ -1684,6 +2042,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (normVistaActual === 'grid') renderNormGrid();
+            if (normVistaActual === 'timeline') renderNormTimeline();
           }
 
           function clearNormFilters() {
@@ -1773,29 +2132,164 @@
           }
 
           var normVistaActual = 'lista';
+          var normTimeline = null;
+          var NORM_TEMA_COLORS = { EC: '#22C55E', GR: '#38BDF8', EE: '#F59E0B', REP: '#A78BFA' };
 
           function setNormVista(vista) {
             var tableCard = document.querySelector('.norm-table-card');
             var gridDiv = document.getElementById('normativas-grid');
+            var timelineWrap = document.getElementById('norm-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
 
             normVistaActual = vista;
+            try { sessionStorage.setItem('reciclameNormativoVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               tableCard.style.display = 'none';
               gridDiv.style.display = '';
-              btnLista.classList.remove('active');
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnGrid.classList.add('active');
               renderNormGrid();
+            } else if (vista === 'timeline') {
+              tableCard.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderNormTimeline();
             } else {
               tableCard.style.display = '';
               gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = 'none';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }
+          }
+
+          function normTimelineStartDate(row) {
+            var fecha = (row.dataset.fecha || '').trim();
+            if (fecha) return fecha;
+            var anio = row.dataset.anio;
+            if (anio) return anio + '-06-15';
+            return null;
+          }
+
+          function renderNormTimeline() {
+            var container = document.getElementById('norm-timeline');
+            var timelineWrap = document.getElementById('norm-timeline-wrap');
+            var emptyEl = document.getElementById('norm-timeline-empty');
+            var countEl = document.getElementById('norm-timeline-count');
+            if (!container || typeof vis === 'undefined') return;
+
+            var filas = getFilasActivas();
+            if (countEl) countEl.textContent = filas.length;
+
+            if (filas.length === 0) {
+              if (normTimeline) {
+                normTimeline.destroy();
+                normTimeline = null;
+              }
+              container.style.display = 'none';
+              if (emptyEl) emptyEl.style.display = 'block';
+              return;
+            }
+
+            container.style.display = '';
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            var groups = new vis.DataSet();
+            var items = new vis.DataSet();
+            var groupSeen = {};
+            var TEMA_ICON = { EC: 'fa-recycle', GR: 'fa-trash-arrow-up', EE: 'fa-bolt', REP: 'fa-arrows-rotate' };
+
+            filas.forEach(function (row) {
+              var tema = (row.dataset.tema || 'OTRO').toUpperCase();
+              var temaNombre = row.dataset.temaNombre || tema;
+              var temaColor = row.dataset.temaColor || NORM_TEMA_COLORS[tema] || '#1B3A5C';
+              if (!groupSeen[tema]) {
+                groupSeen[tema] = true;
+                var gicon = TEMA_ICON[tema] || 'fa-scale-balanced';
+                groups.add({
+                  id: tema,
+                  content: '<div style="display:flex;align-items:center;gap:8px;">'
+                    + '<span style="width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;background:' + temaColor + '22;color:' + temaColor + ';font-size:11px;flex-shrink:0;"><i class="fas ' + gicon + '"></i></span>'
+                    + '<span><span style="font-weight:800;color:#1B3A5C;display:block;line-height:1.1;">' + tema + '</span>'
+                    + '<span style="color:#9CA3AF;font-weight:500;font-size:10px;">' + escapeHtml(temaNombre) + '</span></span>'
+                    + '</div>'
+                });
+              }
+
+              var start = normTimelineStartDate(row);
+              if (!start) return;
+
+              var titulo = row.dataset.titulo || '';
+              var anio = row.dataset.anio || '';
+              var estado = row.dataset.estado || '';
+              var id = row.dataset.id || '';
+              var shortTitle = titulo.length > 30 ? titulo.substring(0, 30) + '…' : titulo;
+
+              var content = '<span class="ntl-pill" style="--ntl-color:' + temaColor + '">'
+                + '<span class="ntl-dot"></span>'
+                + '<span class="ntl-text">' + escapeHtml(shortTitle) + '</span>'
+                + '<span class="ntl-year">' + escapeHtml(anio) + '</span>'
+                + '</span>';
+
+              var tip = '<strong style="font-size:12px;">' + escapeHtml(titulo) + '</strong>'
+                + '<div style="margin-top:5px;font-size:11px;color:rgba(255,255,255,.75);">'
+                + '<i class="fas fa-calendar-day" style="opacity:.7;"></i> ' + escapeHtml(anio)
+                + ' &nbsp;·&nbsp; <i class="fas fa-tag" style="opacity:.7;"></i> ' + escapeHtml(estado)
+                + '</div>'
+                + '<div style="margin-top:6px;font-size:10px;color:#34E29B;font-weight:700;">Clic para abrir →</div>';
+
+              items.add({
+                id: 'norm-' + id,
+                group: tema,
+                start: start,
+                type: 'point',
+                content: content,
+                title: tip,
+                className: 'norm-tl-item'
+              });
+            });
+
+            var options = {
+              orientation: 'top',
+              stack: true,
+              horizontalScroll: true,
+              zoomKey: 'ctrlKey',
+              margin: { item: { horizontal: 14, vertical: 10 }, axis: 10 },
+              tooltip: { followMouse: true, overflowMethod: 'flip' },
+              zoomMin: 1000 * 60 * 60 * 24 * 30 * 2,
+              zoomMax: 1000 * 60 * 60 * 24 * 365 * 80,
+              showCurrentTime: true,
+              groupHeightMode: 'auto',
+              locale: 'es'
+            };
+
+            if (normTimeline) {
+              normTimeline.setGroups(groups);
+              normTimeline.setItems(items);
+            } else {
+              normTimeline = new vis.Timeline(container, items, groups, options);
+              normTimeline.on('click', function (props) {
+                if (!props.item) return;
+                var normId = String(props.item).replace(/^norm-/, '');
+                if (normId) window.location.href = '/socio/normativo/' + normId + '/ver';
+              });
+            }
+
+            setTimeout(function () {
+              if (normTimeline) {
+                normTimeline.redraw();
+                normTimeline.fit();
+              }
+            }, 60);
           }
 
           function renderNormGrid() {
@@ -1871,8 +2365,14 @@
             if (savedTab && (savedTab === 'nacional' || savedTab === 'internacional')) {
               showNormativoTab(savedTab);
             }
-            inicializarPaginacion();
-            mostrarPagina(1);
+            var savedVista = null;
+            try { savedVista = sessionStorage.getItem('reciclameNormativoVista'); } catch (e) { }
+            if (savedVista === 'grid' || savedVista === 'timeline') {
+              setNormVista(savedVista);
+            } else {
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
           });
         </script>
 
@@ -1892,6 +2392,144 @@
       }).catch(function () { });
     };
   </script>
+
+<!-- ═══ Modal Compartir Documento (tipo correo) ═══ -->
+<div id="modalCompartir" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:95%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:modalCompIn .25s ease;">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0F2236,#1B3A5C);padding:20px 28px;display:flex;align-items:center;gap:12px;">
+      <div style="background:rgba(52,152,219,.2);border-radius:10px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-envelope" style="color:#3498DB;font-size:18px;"></i>
+      </div>
+      <div style="flex:1;">
+        <h3 style="margin:0;color:#fff;font-size:16px;font-weight:700;">Enviar documento por correo</h3>
+      </div>
+      <button onclick="closeModalCompartir()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px;" title="Cerrar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <!-- Body -->
+    <div style="padding:24px 28px;">
+      <!-- De (solo lectura) -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <label style="font-size:13px;font-weight:600;color:#718096;min-width:50px;">De:</label>
+        <input id="compartirDe" type="text" readonly
+          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;background:#F7FAFC;color:#4A5568;outline:none;"
+          th:value="${#authentication.name}" />
+      </div>
+      <!-- Para -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">Para: <span style="color:#E53E3E;">*</span></label>
+        <input id="compartirPara" type="email" placeholder="correo@ejemplo.com" required
+          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
+      </div>
+      <!-- CC -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">CC:</label>
+        <input id="compartirCc" type="text" placeholder="correo1@ejemplo.com, correo2@ejemplo.com"
+          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
+      </div>
+      <!-- Asunto -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">Asunto:</label>
+        <input id="compartirAsunto" type="text" placeholder="Asunto del correo"
+          style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'" />
+      </div>
+      <!-- Archivo adjunto (solo lectura) -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <label style="font-size:13px;font-weight:600;color:#4A5568;min-width:50px;">
+          <i class="fas fa-paperclip"></i>
+        </label>
+        <div id="compartirAdjunto" style="flex:1;padding:9px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;background:#F0FFF4;color:#276749;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-file-alt" style="color:#2ECC71;"></i>
+          <span id="compartirAdjuntoNombre" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+        </div>
+      </div>
+      <!-- Descripción -->
+      <div style="margin-bottom:0;">
+        <label style="display:block;font-size:13px;font-weight:600;color:#4A5568;margin-bottom:6px;">Descripción (opcional)</label>
+        <textarea id="compartirDescripcion" rows="3" placeholder="Escribe un mensaje para acompañar el documento..."
+          style="width:100%;padding:10px 14px;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;outline:none;resize:vertical;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'"></textarea>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:0 28px 24px;display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeModalCompartir()" style="padding:10px 22px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;color:#4A5568;font-size:13px;font-weight:600;cursor:pointer;">
+        Cancelar
+      </button>
+      <button id="btnEnviarCompartir" onclick="enviarCompartir()" style="padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#3498DB,#2980B9);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(52,152,219,.3);">
+        <i class="fas fa-paper-plane"></i> Enviar correo
+      </button>
+    </div>
+  </div>
+</div>
+<style>
+  @keyframes modalCompIn { from { opacity:0; transform:scale(.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+</style>
+<script>
+  function openModalCompartir(titulo) {
+    document.getElementById('compartirPara').value = '';
+    document.getElementById('compartirCc').value = '';
+    document.getElementById('compartirAsunto').value = titulo + ' — Recíclame';
+    document.getElementById('compartirDescripcion').value = '';
+    document.getElementById('compartirAdjuntoNombre').textContent = titulo;
+    document.getElementById('modalCompartir').style.display = 'flex';
+  }
+  function closeModalCompartir() {
+    document.getElementById('modalCompartir').style.display = 'none';
+  }
+  document.getElementById('modalCompartir').addEventListener('click', function(e) {
+    if (e.target === this) closeModalCompartir();
+  });
+  function enviarCompartir() {
+    var para = document.getElementById('compartirPara').value.trim();
+    if (!para) {
+      alert('El campo "Para" es obligatorio.');
+      document.getElementById('compartirPara').focus();
+      return;
+    }
+    var btn = document.getElementById('btnEnviarCompartir');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+    fetch('/socio/compartir/enviar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        para: para,
+        cc: document.getElementById('compartirCc').value,
+        asunto: document.getElementById('compartirAsunto').value,
+        descripcion: document.getElementById('compartirDescripcion').value,
+        titulo: window.__compartirDocTitulo || '',
+        tipo: window.__compartirDocTipo || 'NORMATIVA',
+        documentoId: window.__compartirDocId || null
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar correo';
+      if (data.enviado) {
+        closeModalCompartir();
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#2ECC71,#27AE60);color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:10000;box-shadow:0 8px 24px rgba(46,204,113,.35);display:flex;align-items:center;gap:8px;animation:modalCompIn .3s ease;';
+        toast.innerHTML = '<i class="fas fa-check-circle"></i> ' + data.mensaje;
+        document.body.appendChild(toast);
+        setTimeout(function() { toast.remove(); }, 4000);
+      } else {
+        alert(data.error || 'No se pudo enviar. Intenta de nuevo.');
+      }
+    })
+    .catch(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar correo';
+      alert('Error al enviar. Intenta de nuevo.');
+    });
+  }
+</script>
 </body>
 
 </html>
