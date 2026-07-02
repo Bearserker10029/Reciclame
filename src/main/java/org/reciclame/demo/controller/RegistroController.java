@@ -3,6 +3,7 @@ package org.reciclame.demo.controller;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.model.SolicitudesRegistro;
 import org.reciclame.demo.repository.SolicitudesRegistroRepository;
+import org.reciclame.demo.service.ApiPeruDevService;
 import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.RegistroService;
 import org.springframework.http.MediaType;
@@ -24,13 +25,26 @@ public class RegistroController {
     private final SolicitudesRegistroRepository repository;
     private final RegistroService registroService;
     private final EmailNotificationService emailService;
+    private final ApiPeruDevService apiPeruDevService;
 
     public RegistroController(SolicitudesRegistroRepository repository,
                               RegistroService registroService,
-                              EmailNotificationService emailService) {
+                              EmailNotificationService emailService,
+                              ApiPeruDevService apiPeruDevService) {
         this.repository = repository;
         this.registroService = registroService;
         this.emailService = emailService;
+        this.apiPeruDevService = apiPeruDevService;
+    }
+
+    // ── Consulta de DNI para autocompletar el nombre en /registro ─
+    // Público (bajo /registro/**, permitAll en SecurityConfig).
+    @GetMapping("/registro/consulta-dni/{dni}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> consultarDni(@PathVariable String dni) {
+        return apiPeruDevService.consultarNombrePorDni(dni)
+                .map(nombre -> ResponseEntity.ok(Map.<String, Object>of("encontrado", true, "nombreCompleto", nombre)))
+                .orElseGet(() -> ResponseEntity.ok(Map.of("encontrado", false)));
     }
 
     // ── Dedicated registration page ───────────────────────────
@@ -46,9 +60,10 @@ public class RegistroController {
             @RequestParam(defaultValue = "") String nombre,
             @RequestParam(defaultValue = "") String dni,
             @RequestParam(name = "correo", defaultValue = "") String correo,
-            @RequestParam(defaultValue = "") String empresa,
             @RequestParam(name = "aceptaTerminos", defaultValue = "false") boolean aceptaTerminos,
             Model model) {
+
+        String empresa = "";
 
         if (!aceptaTerminos) {
             return error(model, nombre, dni, correo, empresa, "Debes aceptar los Términos y Condiciones para registrarte");
@@ -63,7 +78,7 @@ public class RegistroController {
                     : "Ingresa un correo electrónico válido";
             return error(model, nombre, dni, correo, empresa, msg);
         }
-        if (nombre.isBlank() || dni.isBlank() || empresa.isBlank()) {
+        if (nombre.isBlank() || dni.isBlank()) {
             return error(model, nombre, dni, correo, empresa, "Todos los campos son requeridos");
         }
 
@@ -139,7 +154,7 @@ public class RegistroController {
         s.setNombreCompleto(nombre);
         s.setDni(dni);
         s.setCorreoCorporativo(correo);
-        s.setEmpresaNombre(empresa);
+        s.setEmpresaNombre(empresa != null && !empresa.isBlank() ? empresa : null);
         s.setEstado(EstadoSolicitud.PENDIENTE);
         s.setEstadoActivo(true);
         s.setCreatedAt(Instant.now());

@@ -46,7 +46,7 @@ services:
       N8N_WEBHOOK_URL: http://n8n:5678/webhook/send-email
       N8N_CHATBOT_WEBHOOK_URL: /webhook/chatbot-reciclame
 
-      VERIFICA_API_KEY: sk-7rgyH2OPhCiqpTxyOP9kf9XGOYcQ+xyzt7lDpenaW6Q==
+      APIPERUDEV_TOKEN: "19233|ouJBj1HMYJ7DPfC045I4rns1QSLgMOM9msnnpPNbc5ee5706"
       ATENEA_API_KEY: jJetKioI4tPL81xfcTHFqeLxNG+zKbfunQYoVbWb1zI=
 
       APP_BASE_URL: http://localhost:8080
