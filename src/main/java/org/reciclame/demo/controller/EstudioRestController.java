@@ -7,6 +7,7 @@ import org.reciclame.demo.dto.EstudioResponseDTO;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.SubirEstudioStagingService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class EstudioRestController {
         var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
         Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
         String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         try {
             if (archivo != null && !archivo.isEmpty()) {
@@ -103,7 +104,7 @@ public class EstudioRestController {
         var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
         Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
         String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         try {
             if (archivo != null && !archivo.isEmpty()) {
@@ -138,7 +139,7 @@ public class EstudioRestController {
             var usuarioOpt = usuarioService.findByCorreo(user.getUsername());
             Long auditorId = usuarioOpt.map(u -> u.getId()).orElse(null);
             String auditorNombre = usuarioOpt.map(u -> u.getNombreCompleto()).orElse(user.getUsername());
-            String ipAddress = request.getRemoteAddr();
+            String ipAddress = HttpClientIpResolver.resolve(request);
             String userAgent = request.getHeader("User-Agent");
             estudioService.eliminarEstudio(id, auditorId, auditorNombre, ipAddress, userAgent);
             return ResponseEntity.noContent().build();

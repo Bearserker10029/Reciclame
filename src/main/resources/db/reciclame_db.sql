@@ -52,12 +52,22 @@ CREATE TABLE `auditoria` (
     `mensaje_error` text COLLATE utf8mb4_unicode_ci,
     `fecha_accion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `estado_activo` tinyint(1) NOT NULL DEFAULT '1',
+    -- Cadena de integridad (tamper-evident hash chain). Filas previas
+    -- al despliegue quedan con NULL: el servicio Java las trata como
+    -- previas al despliegue (no se verifican, no se tocan). A partir
+    -- de la primera insercion posterior al despliegue, cada nuevo
+    -- registro firma contra el anterior con SHA-256.
+    `hash_anterior` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+        COMMENT 'SHA-256 hex del registro firmado anterior. NULL para filas previas al despliegue o para el primer registro firmado (usa el genesis).',
+    `hash_actual` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+        COMMENT 'SHA-256 hex sobre hashAnterior+campos cubiertos. NULL para filas previas al despliegue.',
     PRIMARY KEY (`id`),
     KEY `idx_usuario` (`usuario_id`),
     KEY `idx_accion` (`accion`),
     KEY `idx_modulo` (`modulo`),
     KEY `idx_estado` (`estado`),
-    KEY `idx_fecha` (`fecha_accion`)
+    KEY `idx_fecha` (`fecha_accion`),
+    KEY `idx_hash_actual` (`hash_actual`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 7 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */
 ;
@@ -69,9 +79,7 @@ CREATE TABLE `auditoria` (
 LOCK TABLES `auditoria` WRITE;
 /*!40000 ALTER TABLE `auditoria` DISABLE KEYS */
 ;
-INSERT INTO
-    `auditoria`
-VALUES (
+INSERT INTO `auditoria` (`id`,`usuario_id`,`usuario_nombre`,`accion`,`modulo`,`descripcion`,`datos_anteriores`,`datos_nuevos`,`ip_address`,`user_agent`,`estado`,`mensaje_error`,`fecha_accion`,`estado_activo`,`hash_anterior`,`hash_actual`) VALUES (
         1,
         NULL,
         'Admin',
@@ -85,7 +93,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 04:51:55',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         2,
@@ -101,7 +111,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 04:56:53',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         3,
@@ -117,7 +129,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:02:02',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         4,
@@ -133,7 +147,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:07:35',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         5,
@@ -149,7 +165,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:13:52',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         6,
@@ -165,7 +183,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:21:39',
-        1
+        1,
+        NULL,
+        NULL
     );
 /*!40000 ALTER TABLE `auditoria` ENABLE KEYS */
 ;
@@ -319,9 +339,7 @@ CREATE TABLE `empresas` (
 LOCK TABLES `empresas` WRITE;
 /*!40000 ALTER TABLE `empresas` DISABLE KEYS */
 ;
-INSERT INTO
-    `empresas`
-VALUES (
+INSERT INTO `empresas` (`id`,`razon_social`,`ruc`,`sector`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'ReciclamE S.A.C.',
         '20512345678',
@@ -388,9 +406,7 @@ CREATE TABLE `estados_normativa` (
 LOCK TABLES `estados_normativa` WRITE;
 /*!40000 ALTER TABLE `estados_normativa` DISABLE KEYS */
 ;
-INSERT INTO
-    `estados_normativa`
-VALUES (
+INSERT INTO `estados_normativa` (`id`,`nombre`,`estado_activo`,`created_at`) VALUES (
         1,
         'Vigente',
         1,
@@ -726,9 +742,7 @@ CREATE TABLE `normativas` (
 LOCK TABLES `normativas` WRITE;
 /*!40000 ALTER TABLE `normativas` DISABLE KEYS */
 ;
-INSERT INTO
-    `normativas`
-VALUES (
+INSERT INTO `normativas` (`id`,`titulo`,`descripcion_breve`,`contenido_resumido`,`tematica_id`,`tipo_normativa_id`,`estado_normativa_id`,`ambito`,`clasificacion`,`anio`,`fecha_promulgacion`,`fecha_entrada_vigencia`,`fecha_derogacion`,`archivo_url`,`archivo_tipo_mime`,`vt_sha256`,`vt_verdict`,`vt_malicious_engines`,`vt_suspicious_engines`,`vt_total_engines`,`vt_skipped`,`vt_scanned_at`,`creada_por_id`,`validada_por_id`,`es_publica`,`visualizaciones_count`,`descargas_count`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'estudio_2',
         NULL,
@@ -902,9 +916,7 @@ CREATE TABLE `parametros_sistema` (
 LOCK TABLES `parametros_sistema` WRITE;
 /*!40000 ALTER TABLE `parametros_sistema` DISABLE KEYS */
 ;
-INSERT INTO
-    `parametros_sistema`
-VALUES (
+INSERT INTO `parametros_sistema` (`id`,`clave`,`valor`,`descripcion`,`tipo_dato`,`modificado_por_id`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'max_intentos_login',
         '5',
@@ -1055,9 +1067,7 @@ CREATE TABLE `roles` (
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */
 ;
-INSERT INTO
-    `roles`
-VALUES (
+INSERT INTO `roles` (`id`,`nombre`,`descripcion`,`estado_activo`,`created_at`) VALUES (
         1,
         'SUPERADMIN',
         'Administrador supremo PUCP - auditoria y gestion global',
@@ -1314,9 +1324,7 @@ CREATE TABLE `tematicas` (
 LOCK TABLES `tematicas` WRITE;
 /*!40000 ALTER TABLE `tematicas` DISABLE KEYS */
 ;
-INSERT INTO
-    `tematicas`
-VALUES (
+INSERT INTO `tematicas` (`id`,`codigo`,`nombre`,`color_hex`,`estado_activo`,`created_at`) VALUES (
         1,
         'EC',
         'Economia Circular',
@@ -1387,9 +1395,7 @@ CREATE TABLE `tipos_normativa` (
 LOCK TABLES `tipos_normativa` WRITE;
 /*!40000 ALTER TABLE `tipos_normativa` DISABLE KEYS */
 ;
-INSERT INTO
-    `tipos_normativa`
-VALUES (
+INSERT INTO `tipos_normativa` (`id`,`nombre`,`estado_activo`,`created_at`) VALUES (
         1,
         'Ley',
         1,
@@ -1527,9 +1533,7 @@ LOCK TABLES `usuarios` WRITE;
 -- pendiente@reciclame.com    → password
 -- a20202132 / sergiomeneses893 → 910e0084
 -- sergiomeneses3 / jairo     → 123456
-INSERT INTO
-    `usuarios`
-VALUES (
+INSERT INTO `usuarios` (`id`,`nombre_completo`,`dni`,`correo_corporativo`,`password_hash`,`cargo`,`foto_url`,`rol_id`,`empresa_id`,`intentos_fallidos`,`cuenta_bloqueada`,`fecha_bloqueo`,`ip_bloqueada`,`tfa_activo`,`tfa_secret`,`estado_cuenta`,`estado_activo`,`ultimo_login`,`created_at`,`updated_at`) VALUES (
         1,
         'Ad',
         '71234567',

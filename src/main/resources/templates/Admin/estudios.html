@@ -999,6 +999,9 @@
                                    data-poll-url=@{/api/uploads/ESTUDIO/{tid}(tid=${#strings.replace(e.archivoUrl, 'staging://', '')})}">
                       <i class="fas fa-shield-alt"></i> Pendiente
                     </span>
+                    <!-- Bloque viejo: solo se renderiza cuando NO hay staging pendiente (estadoValidacion=null).
+                         Si estadoValidacion está en PENDIENTE/APROBADO/RECHAZADO, el sistema nuevo toma el control. -->
+                    <th:block th:if="${e.estadoValidacion == null}">
                     <span th:if="${e.vtVerdict == 'CLEAN' or e.vtVerdict == 'UNDETECTED' or e.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
                       th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: 0/' + e.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
                       <i class="fas fa-shield-virus"></i> Limpio
@@ -1024,6 +1027,7 @@
                       title="Archivo sin escanear por VirusTotal">
                       <i class="fas fa-shield-virus"></i> Sin escanear
                     </span>
+                    </th:block>
                   </td>
                   <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
                       lectura</span></td>

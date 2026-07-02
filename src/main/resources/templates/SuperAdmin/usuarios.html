@@ -916,11 +916,20 @@
                     <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"
                         th:text="${usuario.rolNombre}">Rol</span></td>
                     <td>
-                      <span class="pill"
-                        th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(46,204,113,.12);color:#27AE60;'}">
+                      <span th:if="${usuario.estadoActivo == null or !usuario.estadoActivo}" class="pill"
+                            style="background:rgba(156,163,175,.14);color:#6B7280;">
                         <i class="fas fa-circle" style="font-size:6px;"></i>
-                        <span
-                          th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO')}">Activo</span>
+                        <span>Inactivo</span>
+                      </span>
+                      <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and usuario.cuentaBloqueada != null and usuario.cuentaBloqueada}" class="pill"
+                            style="background:rgba(231,76,60,.12);color:#E74C3C;">
+                        <i class="fas fa-lock" style="font-size:6px;"></i>
+                        <span>Bloqueado</span>
+                      </span>
+                      <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and (usuario.cuentaBloqueada == null or !usuario.cuentaBloqueada)}" class="pill"
+                            style="background:rgba(46,204,113,.12);color:#27AE60;">
+                        <i class="fas fa-circle" style="font-size:6px;"></i>
+                        <span>Activo</span>
                       </span>
                     </td>
                     <td style="color:#6B7280;font-size:12px;"
@@ -1039,17 +1048,20 @@
               </thead>
               <tbody>
                 <tr th:each="usuario : ${todosUsuarios}"
-                  th:if="${(!#strings.equals(usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO', 'ACTIVO') or (usuario.cuentaBloqueada != null and usuario.cuentaBloqueada))}">
+                  th:if="${(usuario.estadoActivo == null or !usuario.estadoActivo) or (usuario.cuentaBloqueada != null and usuario.cuentaBloqueada)}">
                   <td style="font-weight:600;color:#1B3A5C;font-size:13px;" th:text="${usuario.nombreCompleto}">Nombre
                   </td>
                   <td style="font-size:12px;color:#6B7280;" th:text="${usuario.correoCorporativo}">correo</td>
                   <td><span class="pill" style="background:rgba(107,114,128,.1);color:#374151;"
                       th:text="${usuario.rolNombre}">Rol</span></td>
                   <td>
-                    <span class="pill"
-                      th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(243,156,18,.12);color:#D68910;'}">
-                      <span
-                        th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'INACTIVO')}">Estado</span>
+                    <span th:if="${usuario.estadoActivo == null or !usuario.estadoActivo}" class="pill"
+                          style="background:rgba(156,163,175,.14);color:#6B7280;">
+                      <span>Inactivo</span>
+                    </span>
+                    <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and usuario.cuentaBloqueada != null and usuario.cuentaBloqueada}" class="pill"
+                          style="background:rgba(231,76,60,.12);color:#E74C3C;">
+                      <span>Bloqueado</span>
                     </span>
                   </td>
                   <td style="font-size:11px;color:#9CA3AF;"
