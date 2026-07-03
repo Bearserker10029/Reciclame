@@ -39,6 +39,18 @@ public class UploadTaskStatusDTO {
     /** Veredicto VT (CLEAN/UNDETECTED/MALICIOUS/SUSPICIOUS/SKIPPED). */
     private String vtVerdict;
 
+    /** Total de engines VT que escanearon el archivo (0 si no fue escaneado). */
+    private Integer vtTotalEngines;
+
+    /** Engines VT que marcaron el archivo como amenaza. */
+    private Integer vtMaliciousEngines;
+
+    /** Engines VT que marcaron el archivo como sospechoso. */
+    private Integer vtSuspiciousEngines;
+
+    /** Si VT omitió el escaneo (timeout, archivo sin contenido analizable, etc). */
+    private Boolean vtSkipped;
+
     /** Motivo de error o skip. */
     private String message;
 

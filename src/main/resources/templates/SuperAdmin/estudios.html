@@ -1042,9 +1042,10 @@
                                    data-poll-url=@{/api/uploads/ESTUDIO/{tid}(tid=${#strings.replace(e.archivoUrl, 'staging://', '')})}">
                       <i class="fas fa-shield-alt"></i> Pendiente
                     </span>
-                    <!-- Bloque viejo: solo se renderiza cuando NO hay staging pendiente (estadoValidacion=null).
-                         Si estadoValidacion está en PENDIENTE/APROBADO/RECHAZADO, el sistema nuevo toma el control. -->
-                    <th:block th:if="${e.estadoValidacion == null}">
+                    <!-- Bloque viejo: se renderiza cuando el archivo YA pasó por staging.
+                         estadoValidacion puede ser null (sin archivo), APROBADO o RECHAZADO.
+                         Solo se oculta cuando estadoValidacion == PENDIENTE (badge "Pendiente" arriba). -->
+                    <th:block th:if="${e.estadoValidacion == null or e.estadoValidacion.name() == 'APROBADO' or e.estadoValidacion.name() == 'RECHAZADO'}">
                     <span th:if="${e.vtVerdict == 'CLEAN' or e.vtVerdict == 'UNDETECTED' or e.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
                       th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: 0/' + e.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
                       <i class="fas fa-shield-virus"></i> Limpio
@@ -1723,7 +1724,26 @@
           var badges = findPending();
           if (!badges.length) return;
 
-          function finalize(el, estado, message) {
+          function buildDetailTitle(estado, vtVerdict, vtTotal, vtMal, vtSusp, vtSkipped, message) {
+            if (estado === 'RECHAZADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtMal != null ? vtMal : 0) + '/' + vtTotal + ' engines marcaron como amenaza';
+            }
+            if (estado === 'APROBADO' && vtVerdict === 'SUSPICIOUS' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtSusp != null ? vtSusp : 0) + ' engines sospechosos de ' + vtTotal;
+            }
+            if (estado === 'APROBADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: 0/' + vtTotal + ' engines detectaron amenaza';
+            }
+            if (vtSkipped) {
+              return 'VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)';
+            }
+            if (message) return message;
+            return 'Veredicto: ' + (vtVerdict || estado || '—');
+          }
+
+          function finalize(el, estado, payload) {
+            payload = payload || {};
+            var message = payload.message || '';
             var rejected = estado === 'RECHAZADO';
             var nuevo = document.createElement('span');
             if (rejected) {
@@ -1736,7 +1756,15 @@
               nuevo.className = 'badge-vt-unscanned';
               nuevo.innerHTML = '<i class="fas fa-shield-alt"></i> ' + (estado || '—');
             }
-            nuevo.title = message || '';
+            nuevo.title = buildDetailTitle(
+              estado,
+              payload.vtVerdict,
+              payload.vtTotalEngines,
+              payload.vtMaliciousEngines,
+              payload.vtSuspiciousEngines,
+              payload.vtSkipped,
+              message
+            );
             if (el.parentNode) el.parentNode.replaceChild(nuevo, el);
             if (typeof showToast === 'function') {
               showToast(rejected ? 'Archivo rechazado por antivirus.' : 'Archivo validado correctamente.',
@@ -1760,7 +1788,7 @@
                 .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
                 .then(function (s) {
                   if (s.estado && s.estado !== 'PENDIENTE') {
-                    finalize(el, s.estado, s.message || s.vtVerdict || '');
+                    finalize(el, s.estado, s);
                   } else {
                     setTimeout(next, 2000);
                   }
