@@ -965,16 +965,24 @@
         </div>
         <form id="form-registro" onsubmit="handleRegistro(event)" novalidate>
           <div class="field-wrap" style="margin-bottom:14px;">
-            <label class="field-label">Nombre completo</label>
-            <div style="position:relative;"><i class="fas fa-user field-icon"></i>
-              <input id="inp-reg-nombre" class="glass-input form-control" type="text"
-                     placeholder="Ej: María López Torres" required /></div>
-          </div>
-          <div class="field-wrap" style="margin-bottom:14px;">
             <label class="field-label">DNI <span style="color:rgba(255,255,255,.3);font-size:10px;">(8 dígitos)</span></label>
             <div style="position:relative;"><i class="fas fa-id-card field-icon"></i>
               <input id="inp-reg-dni" class="glass-input form-control" type="text"
-                     placeholder="74521836" maxlength="8" pattern="\d{8}" required /></div>
+                     placeholder="74521836" maxlength="8" pattern="\d{8}" required
+                     oninput="onRegDniInput()" /></div>
+            <span id="dni-reg-status" style="display:none;font-size:11px;margin-top:4px;"></span>
+          </div>
+          <div class="field-wrap" style="margin-bottom:14px;">
+            <label class="field-label">Nombre completo
+              <i id="lock-reg-nombre" class="fas fa-lock" style="color:rgba(255,255,255,.3);font-size:10px;margin-left:4px;display:none;"
+                 title="Vinculado al DNI"></i>
+            </label>
+            <div style="position:relative;"><i class="fas fa-user field-icon"></i>
+              <input id="inp-reg-nombre" class="glass-input form-control" type="text"
+                     placeholder="Ingresa tu DNI primero" required maxlength="200" /></div>
+            <p id="nombre-reg-hint" style="color:rgba(255,255,255,.3);font-size:11px;margin-top:6px;">
+              <i class="fas fa-info-circle" style="margin-right:4px;"></i>Ingresa tu DNI: autocompletaremos tu nombre.
+            </p>
           </div>
           <div class="field-wrap" style="margin-bottom:14px;">
             <label class="field-label">Correo corporativo</label>
@@ -1197,6 +1205,72 @@
       });
     }
     var CORP_DOMAIN_RE = /^[a-zA-Z0-9._%+\-]+@reciclame\.org$/;
+
+    // ── Búsqueda de nombre por DNI en el panel-registro ───────────
+    // Misma mecánica que /registro: el nombre se autollena con la API
+    // y queda bloqueado porque está vinculado al DNI.
+    var regDniTimer = null;
+    function onRegDniInput() {
+      var dniInput    = document.getElementById('inp-reg-dni');
+      var nombreInput = document.getElementById('inp-reg-nombre');
+      var status      = document.getElementById('dni-reg-status');
+      var lockIcon    = document.getElementById('lock-reg-nombre');
+      var hint        = document.getElementById('nombre-reg-hint');
+      if (!dniInput || !nombreInput) return;
+
+      // Mantener solo dígitos y máximo 8
+      dniInput.value = dniInput.value.replace(/\D/g, '').slice(0, 8);
+
+      // Si el usuario cambia el DNI después de autollenar, desbloquear el nombre
+      // (volverá a bloquearse cuando llegue un autollenado nuevo).
+      if (nombreInput.readOnly) {
+        nombreInput.readOnly = false;
+        nombreInput.style.background = '';
+        nombreInput.style.cursor = '';
+        if (lockIcon) lockIcon.style.display = 'none';
+        if (hint) hint.innerHTML = '<i class="fas fa-info-circle" style="margin-right:4px;"></i>Cambiaste el DNI, vuelve a ingresarlo para autollenar el nombre.';
+      }
+
+      if (regDniTimer) clearTimeout(regDniTimer);
+      if (dniInput.value.length !== 8) {
+        status.style.display = 'none';
+        return;
+      }
+      regDniTimer = setTimeout(function () { consultarRegDni(dniInput.value); }, 400);
+    }
+
+    function consultarRegDni(dni) {
+      var nombreInput = document.getElementById('inp-reg-nombre');
+      var status      = document.getElementById('dni-reg-status');
+      var lockIcon    = document.getElementById('lock-reg-nombre');
+      var hint        = document.getElementById('nombre-reg-hint');
+      if (!nombreInput || !status) return;
+
+      status.style.display = 'block';
+      status.style.color = 'rgba(255,255,255,.5)';
+      status.textContent = 'Buscando...';
+
+      fetch('/registro/consulta-dni/' + dni, { credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          if (data.encontrado && data.nombreCompleto) {
+            nombreInput.value = data.nombreCompleto;
+            // Bloquear: el nombre está vinculado al DNI
+            nombreInput.readOnly = true;
+            nombreInput.style.background = 'rgba(255,255,255,.04)';
+            nombreInput.style.cursor = 'not-allowed';
+            if (lockIcon) lockIcon.style.display = 'inline';
+            if (hint) hint.innerHTML = '<i class="fas fa-lock" style="margin-right:4px;"></i>Vinculado al DNI, no editable.';
+            status.style.color = 'rgba(46,204,113,.9)';
+            status.textContent = '✓ Nombre encontrado';
+          } else {
+            status.style.color = 'rgba(255,255,255,.5)';
+            status.textContent = 'No se encontró el DNI, ingresa tu nombre manualmente';
+            if (hint) hint.innerHTML = '<i class="fas fa-info-circle" style="margin-right:4px;"></i>No encontramos el DNI, escríbelo tú.';
+          }
+        })
+        .catch(function () { status.style.display = 'none'; });
+    }
 
     function validateRegistroEmail() {
       var input = document.getElementById('inp-reg-email');

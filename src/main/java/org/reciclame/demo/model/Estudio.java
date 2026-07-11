@@ -1,6 +1,11 @@
 package org.reciclame.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -26,9 +31,12 @@ public class Estudio {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotBlank(message = "El título es obligatorio")
+    @Size(max = 300, message = "El título no puede superar los 300 caracteres")
     @Column(name = "titulo", nullable = false, length = 300)
     private String titulo;
 
+    @Size(max = 500, message = "La descripción breve no puede superar los 500 caracteres")
     @Column(name = "descripcion_breve", length = 500)
     private String descripcionBreve;
 
@@ -36,22 +44,29 @@ public class Estudio {
     @Column(name = "resumen")
     private String resumen;
 
+    @NotNull(message = "La temática es obligatoria")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "tematica_id", nullable = false)
     private Tematica tematica;
 
+    @Size(max = 200, message = "El autor no puede superar los 200 caracteres")
     @Column(name = "autor", length = 200)
     private String autor;
 
     @Column(name = "fecha_estudio")
     private LocalDate fechaEstudio;
 
+    @Min(value = 1900, message = "El año debe ser igual o posterior a 1900")
+    @Max(value = 2100, message = "El año debe ser igual o anterior a 2100")
     @Column(name = "anio")
     private Integer anio;
 
+    @NotBlank(message = "La URL del archivo es obligatoria")
+    @Size(max = 500, message = "La URL del archivo no puede superar los 500 caracteres")
     @Column(name = "archivo_url", nullable = false, length = 500)
     private String archivoUrl;
 
+    @Size(max = 255, message = "El tipo MIME no puede superar los 255 caracteres")
     @Column(name = "archivo_tipo_mime", length = 50)
     private String archivoTipoMime;
 
@@ -82,6 +97,7 @@ public class Estudio {
     @JoinColumn(name = "normativa_relacionada_id")
     private Normativa normativaRelacionada;
 
+    @NotNull(message = "El usuario que subió el estudio es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "subida_por_id", nullable = false)
     private Usuario subidaPor;

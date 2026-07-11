@@ -177,7 +177,13 @@
           <div style="position:relative;">
             <i class="fas fa-user field-icon"></i>
             <input id="inp-nombre" class="glass-input form-control" type="text" name="nombre"
-                   th:value="${nombre}" placeholder="Ej: María López Torres" required />
+                   th:value="${nombre}" placeholder="Ej: María López Torres" required minlength="3" maxlength="200"
+                   pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'.-]{3,200}$"
+                   oninput="validateNombre()" />
+          </div>
+          <div id="err-nombre" class="field-error">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="err-nombre-msg"></span>
           </div>
         </div>
 
@@ -296,19 +302,116 @@
   window.addEventListener('resize', setGlowEffectRx);
 
   var EMAIL_RE = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+  // Nombre: letras (incluye tildes y ñ), espacios, apóstrofes, puntos, guiones. 3-200 chars.
+  var NOMBRE_RE = /^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'.-]{3,200}$/;
+  // DNI peruano: exactamente 8 dígitos
+  var DNI_RE = /^[0-9]{8}$/;
 
   var dniTimer = null;
   function onDniInput() {
     var input  = document.getElementById('inp-dni');
     var status = document.getElementById('dni-status');
-    input.value = input.value.replace(/\D/g, '').slice(0, 8);
+    var val = input.value.replace(/\D/g, '').slice(0, 8);
+    input.value = val;
 
     if (dniTimer) clearTimeout(dniTimer);
-    if (input.value.length !== 8) {
+    if (val.length !== 8) {
       status.style.display = 'none';
+      // Mientras no llegue a 8 dígitos, marca como inválido en vivo
+      if (val.length > 0) {
+        showFieldError('inp-dni', 'dni-status', 'El DNI debe tener exactamente 8 dígitos', true);
+      } else {
+        showFieldError('inp-dni', 'dni-status', '', false);
+      }
       return;
     }
-    dniTimer = setTimeout(function () { consultarDni(input.value); }, 400);
+    showFieldError('inp-dni', 'dni-status', '', false);
+    dniTimer = setTimeout(function () { consultarDni(val); }, 400);
+  }
+
+  // ── Utilidad: pintar/quitar error en un campo ──────────────────
+  function showFieldError(inputId, statusId, msg, show) {
+    var input  = document.getElementById(inputId);
+    var status = document.getElementById(statusId);
+    if (!input || !status) return;
+    if (show && msg) {
+      status.textContent = msg;
+      status.style.display = 'block';
+      status.style.color = '#FC8181';
+      input.classList.add('input-error');
+    } else {
+      status.style.display = 'none';
+      input.classList.remove('input-error');
+    }
+  }
+
+  // ── Validación de nombre ──────────────────────────────────────
+  function validateNombre() {
+    var input = document.getElementById('inp-nombre');
+    var val = input.value.trim();
+    if (val === '') {
+      showFieldError('inp-nombre', 'err-nombre', 'El nombre es requerido', true);
+      return false;
+    }
+    if (val.length < 3) {
+      showFieldError('inp-nombre', 'err-nombre', 'El nombre debe tener al menos 3 caracteres', true);
+      return false;
+    }
+    if (val.length > 200) {
+      showFieldError('inp-nombre', 'err-nombre', 'El nombre no puede superar los 200 caracteres', true);
+      return false;
+    }
+    if (!NOMBRE_RE.test(val)) {
+      showFieldError('inp-nombre', 'err-nombre',
+        'Solo se permiten letras, espacios, apóstrofes, puntos y guiones', true);
+      return false;
+    }
+    showFieldError('inp-nombre', 'err-nombre', '', false);
+    return true;
+  }
+
+  // ── Validación de correo (re-aprovecha la función existente) ──
+  function validateCorreo() {
+    var input  = document.getElementById('inp-correo');
+    var errDiv = document.getElementById('err-correo');
+    var errMsg = document.getElementById('err-correo-msg');
+    var val    = input.value.trim();
+    var ok     = true;
+
+    if (val === '') {
+      errMsg.textContent = 'El correo es requerido';
+      ok = false;
+    } else if (!EMAIL_RE.test(val)) {
+      errMsg.textContent = 'Ingresa un correo electrónico válido';
+      ok = false;
+    }
+
+    if (ok) {
+      errDiv.classList.remove('show');
+      input.classList.remove('input-error');
+    } else {
+      errDiv.classList.add('show');
+      input.classList.add('input-error');
+    }
+    return ok;
+  }
+
+  // ── Validación global antes de habilitar el botón submit ──────
+  function evaluarFormulario() {
+    var dni    = document.getElementById('inp-dni').value;
+    var nombre = document.getElementById('inp-nombre').value;
+    var correo = document.getElementById('inp-correo').value;
+    var check  = document.getElementById('check-terminos');
+    var btn    = document.getElementById('btn-submit');
+
+    var dniOk    = DNI_RE.test(dni);
+    var nombreOk = validateNombre();
+    var correoOk = validateCorreo();
+    var checkOk  = check && check.checked;
+
+    var todoOk = dniOk && nombreOk && correoOk && checkOk;
+    if (btn) btn.disabled = !todoOk;
+    return todoOk;
   }
 
   function consultarDni(dni) {
@@ -361,16 +464,41 @@
   }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var inp = document.getElementById('inp-correo');
-    if (inp && inp.value) validateCorreo();
+    var inpCorreo = document.getElementById('inp-correo');
+    if (inpCorreo && inpCorreo.value) validateCorreo();
 
-    var check = document.getElementById('check-terminos');
-    var btn = document.getElementById('btn-submit');
-    if (check && btn) {
-      check.addEventListener('change', function() {
-        btn.disabled = !check.checked;
+    var inpNombre = document.getElementById('inp-nombre');
+    if (inpNombre) {
+      inpNombre.addEventListener('blur', validateNombre);
+      inpNombre.addEventListener('input', function() {
+        // Re-evalúa el botón global a cada tecleo
+        clearTimeout(window._nombreTimer);
+        window._nombreTimer = setTimeout(evaluarFormulario, 200);
       });
     }
+
+    var inpDni = document.getElementById('inp-dni');
+    if (inpDni) {
+      inpDni.addEventListener('input', evaluarFormulario);
+    }
+
+    var check = document.getElementById('check-terminos');
+    if (check) {
+      check.addEventListener('change', evaluarFormulario);
+    }
+
+    // Validación final al hacer submit
+    var form = document.querySelector('form[action="/registro"]') || document.querySelector('form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        if (!evaluarFormulario()) {
+          e.preventDefault();
+        }
+      });
+    }
+
+    // Estado inicial del botón
+    evaluarFormulario();
   });
 </script>
 </body>
