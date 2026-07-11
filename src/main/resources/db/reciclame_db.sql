@@ -1489,6 +1489,7 @@ CREATE TABLE `usuarios` (
     `dni` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
     `correo_corporativo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
     `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `debe_cambiar_password` tinyint(1) NOT NULL DEFAULT '0',
     `cargo` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `foto_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `rol_id` bigint NOT NULL,

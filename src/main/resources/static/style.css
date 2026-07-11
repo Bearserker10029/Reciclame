@@ -279,7 +279,7 @@ select.form-control {
   display: none;
   flex-direction: column;
   overflow: hidden;
-  max-height: 520px;
+  max-height: 640px;
 }
 
 #chatbot-panel .chat-header {
@@ -326,7 +326,7 @@ select.form-control {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
-  max-height: 340px;
+  max-height: 460px;
 }
 
 #chatbot-panel .chat-input-area {

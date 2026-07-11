@@ -116,7 +116,8 @@ public class QrLoginController {
                 u.getCorreoCorporativo(),
                 rolNombre,
                 u.getCargo(),
-                u.getFotoUrl()
+                u.getFotoUrl(),
+                Boolean.TRUE.equals(u.getDebeCambiarPassword())
         ));
 
         // Actualizar último login
@@ -127,13 +128,18 @@ public class QrLoginController {
             log.warn("No se pudo actualizar ultimoLogin tras login QR: {}", e.getMessage());
         }
 
-        String redirectUrl = switch (rolNombre) {
-            case "SUPERADMIN" -> "/superadmin/inicio";
-            case "ADMINISTRADOR" -> "/admin/inicio";
-            case "SOCIO" -> "/socio/inicio";
-            case "VISUALIZADOR" -> "/visualizador/inicio";
-            default -> "/admin/inicio";
-        };
+        String redirectUrl;
+        if (Boolean.TRUE.equals(u.getDebeCambiarPassword())) {
+            redirectUrl = "/auth/cambiar-password-inicial";
+        } else {
+            redirectUrl = switch (rolNombre) {
+                case "SUPERADMIN" -> "/superadmin/inicio";
+                case "ADMINISTRADOR" -> "/admin/inicio";
+                case "SOCIO" -> "/socio/inicio";
+                case "VISUALIZADOR" -> "/visualizador/inicio";
+                default -> "/admin/inicio";
+            };
+        }
         log.info("Login QR exitoso para usuario {} (rol={})", u.getCorreoCorporativo(), rolNombre);
         return new RedirectView(redirectUrl);
     }

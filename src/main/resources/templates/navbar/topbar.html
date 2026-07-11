@@ -518,6 +518,7 @@
                   mostrarToastNotif(data);
                   reproducirDing();
                   incrementarBadgeNotif();
+                  if (typeof window.__notifDropdownInvalidar === 'function') window.__notifDropdownInvalidar();
                   if (Notification.permission === 'granted') {
                     new Notification('Recíclame — ' + (data.titulo || 'Nueva notificación'), {
                       body: data.mensaje || '',
@@ -816,6 +817,14 @@
           }
         });
 
+        // Invalidado por el handler de Centrifugo cuando llega una notificación
+        // push, para que el dropdown no se quede con la lista vieja: si está
+        // abierto la refresca ya mismo, si no, la próxima vez que se abra.
+        window.__notifDropdownInvalidar = function () {
+          loaded = false;
+          if (dropdown.classList.contains('open')) { cargarNotificaciones(); }
+        };
+
         document.addEventListener('click', function (e) {
           if (!btn.contains(e.target)) {
             dropdown.classList.remove('open');
@@ -844,31 +853,42 @@
           }
           var html = '';
           noLeidas.slice(0, 10).forEach(function (n) {
-            html += '<div class="notif-drop-item unread" onclick="leerNotif(' + n.id + ',this)">' +
-              '<div class="notif-dot"></div>' +
-              '<div style="flex:1;min-width:0;">' +
+            html += '<div class="notif-drop-item unread" style="position:relative;">' +
+              '<div class="notif-dot" onclick="leerNotif(' + n.id + ',this.parentNode)" style="cursor:pointer;"></div>' +
+              '<div style="flex:1;min-width:0;cursor:pointer;" onclick="leerNotif(' + n.id + ',this.parentNode)">' +
               '<div class="notif-item-title">' + escHtml(n.titulo || '(Sin título)') + '</div>' +
               (n.mensaje ? '<div class="notif-item-msg">' + escHtml(n.mensaje) + '</div>' : '') +
               '<div class="notif-item-time">' + escHtml(n.tiempoRelativo || '') + '</div>' +
-              '</div></div>';
+              '</div>' +
+              '<button type="button" title="Eliminar" onclick="event.stopPropagation();eliminarNotif(' + n.id + ',this.parentNode)" ' +
+              'style="background:none;border:none;color:#C4C9D2;cursor:pointer;font-size:12px;padding:4px;flex-shrink:0;align-self:flex-start;">' +
+              '<i class="fas fa-times"></i></button>' +
+              '</div>';
           });
           list.innerHTML = html;
         }
 
+        function removerItem(id, el) {
+          notifData = notifData.filter(function (n) { return n.id !== id; });
+          el.style.transition = 'opacity .25s';
+          el.style.opacity = '0';
+          setTimeout(function () {
+            el.remove();
+            actualizarBadge(notifData);
+            if (list.querySelectorAll('.notif-drop-item').length === 0) {
+              list.innerHTML = '<div class="notif-drop-empty"><i class="fas fa-bell-slash" style="font-size:24px;color:#D1D5DB;display:block;margin-bottom:8px;"></i>No tienes notificaciones sin leer.</div>';
+            }
+          }, 250);
+        }
+
         window.leerNotif = function (id, el) {
           fetch('/api/notificaciones/' + id + '/leer', { method: 'POST', credentials: 'same-origin' })
-            .then(function () {
-              notifData.forEach(function (n) { if (n.id === id) n.leida = true; });
-              el.style.transition = 'opacity .25s';
-              el.style.opacity = '0';
-              setTimeout(function () {
-                el.remove();
-                actualizarBadge(notifData);
-                if (list.querySelectorAll('.notif-drop-item').length === 0) {
-                  list.innerHTML = '<div class="notif-drop-empty"><i class="fas fa-bell-slash" style="font-size:24px;color:#D1D5DB;display:block;margin-bottom:8px;"></i>No tienes notificaciones sin leer.</div>';
-                }
-              }, 250);
-            });
+            .then(function () { removerItem(id, el); });
+        };
+
+        window.eliminarNotif = function (id, el) {
+          fetch('/api/notificaciones/' + id, { method: 'DELETE', credentials: 'same-origin' })
+            .then(function () { removerItem(id, el); });
         };
 
         window.marcarTodasLeidas = function () {

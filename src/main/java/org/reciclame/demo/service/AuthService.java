@@ -92,10 +92,26 @@ public class AuthService {
 
         Usuario usuario = prt.getUsuario();
         usuario.setPasswordHash(passwordEncoder.encode(nuevaContrasena));
+        usuario.setDebeCambiarPassword(false);
         usuarioRepository.save(usuario);
 
         prt.setUsado(true);
         tokenRepository.save(prt);
         log.info("[Auth] Contraseña restablecida para {}", usuario.getCorreoCorporativo());
+    }
+
+    /**
+     * Cambio obligatorio de contraseña en el primer login (cuando la actual es
+     * una temporal). A diferencia de {@link #restablecerContrasena}, no requiere
+     * token: el usuario ya está autenticado con la temporal, solo se le exige
+     * elegir una propia antes de poder usar el resto del sistema.
+     */
+    public void cambiarPasswordInicial(Long usuarioId, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + usuarioId));
+        usuario.setPasswordHash(passwordEncoder.encode(nuevaContrasena));
+        usuario.setDebeCambiarPassword(false);
+        usuarioRepository.save(usuario);
+        log.info("[Auth] Contraseña inicial definida por el propio usuario para {}", usuario.getCorreoCorporativo());
     }
 }

@@ -16,6 +16,7 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -26,15 +27,18 @@ public class SecurityConfig {
     private final AuthenticationSuccessHandler successHandler;
     private final AuthenticationFailureHandler failureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
+    private final ForzarCambioPasswordFilter forzarCambioPasswordFilter;
 
     public SecurityConfig(UserDetailsService userDetailsService,
                           AuthenticationSuccessHandler successHandler,
                           AuthFailureHandler authFailureHandler,
-                          AccessDeniedHandler accessDeniedHandler) {
+                          AccessDeniedHandler accessDeniedHandler,
+                          ForzarCambioPasswordFilter forzarCambioPasswordFilter) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
         this.failureHandler = authFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.forzarCambioPasswordFilter = forzarCambioPasswordFilter;
     }
 
     @Bean
@@ -123,7 +127,8 @@ public class SecurityConfig {
                         // Permite embeber rutas same-origin como /api/documentos/inline dentro del visor.
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> csrf.disable())
+                .addFilterAfter(forzarCambioPasswordFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

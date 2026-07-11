@@ -25,6 +25,14 @@ public class EmailNotificationService {
     @Value("${app.login-path:/service/repositorio/login}")
     private String loginPath;
 
+    // El logo del correo NUNCA debe salir de app.base-url: en dev local ese
+    // valor es http://localhost:8080 (o un túnel privado), inalcanzable para
+    // Gmail/Outlook al renderizar el correo. Se usa una URL pública fija,
+    // la misma que ya sirve el sitio público (reciclame.org), para que la
+    // imagen cargue sin importar dónde corra el backend que envía el correo.
+    @Value("${app.email-logo-url:https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png}")
+    private String logoUrl;
+
     public EmailNotificationService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
@@ -437,8 +445,6 @@ public class EmailNotificationService {
 
     private String html(String saludo, String subtitulo, String accentColor,
                         String cuerpo, String btnTexto, String btnUrl) {
-
-        String logoUrl = baseUrl + "/assets/images/reciclame/logo-blanco-Reciclame.png";
 
         String boton = (btnTexto != null && btnUrl != null) ? """
             <div style="text-align:center;margin:32px 0 8px">
