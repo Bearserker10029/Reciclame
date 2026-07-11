@@ -2312,3 +2312,50 @@ CALL _add_check_if_missing(
 
 -- ── Limpieza del helper ───────────────────────────────────
 DROP PROCEDURE _add_check_if_missing;
+
+-- ============================================================
+-- MIGRACIÓN: agregar columnas hash_actual / hash_anterior
+-- (cadena de integridad) a la tabla `auditoria`
+-- Fecha: 2026-07-11
+--
+-- Idempotente: usa information_schema + PREPARE/EXECUTE para
+-- agregar cada columna e índice solo si no existe.
+-- Soluciona `Unknown column 'a1_0.hash_actual' in 'field list'`
+-- cuando se despliega código nuevo contra una BD creada con una
+-- versión previa del schema.
+-- ============================================================
+
+-- 1) hash_anterior
+SET @tbl := 'auditoria';
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'hash_anterior') = 0,
+    'ALTER TABLE auditoria
+        ADD COLUMN hash_anterior VARCHAR(64) NULL
+            COMMENT ''SHA-256 hex del registro firmado anterior. NULL para filas previas al despliegue o para el primer registro firmado (usa el genesis).''',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 2) hash_actual
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'hash_actual') = 0,
+    'ALTER TABLE auditoria
+        ADD COLUMN hash_actual VARCHAR(64) NULL
+            COMMENT ''SHA-256 hex sobre hashAnterior+campos cubiertos. NULL para filas previas al despliegue.''',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 3) Índice idx_hash_actual (idempotente)
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.statistics
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND index_name   = 'idx_hash_actual') = 0,
+    'CREATE INDEX idx_hash_actual ON auditoria (hash_actual)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
