@@ -105,6 +105,7 @@ public class SolicitudController {
         usuario.setDni(solicitud.getDni());
         usuario.setCorreoCorporativo(solicitud.getCorreoCorporativo());
         usuario.setPasswordHash(passwordEncoder.encode(tempPassword));
+        usuario.setDebeCambiarPassword(true);
         usuario.setRol(rol);
         usuario.setEmpresa(empresa);
         usuario.setEstadoCuenta("ACTIVO");

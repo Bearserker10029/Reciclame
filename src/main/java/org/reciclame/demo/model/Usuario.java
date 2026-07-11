@@ -61,6 +61,15 @@ public class Usuario {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    /**
+     * true mientras la contraseña actual sea una temporal asignada al crear/aprobar
+     * la cuenta (nunca elegida por el propio usuario). Se fuerza el cambio en el
+     * primer login y se pone en false en cuanto el usuario define su propia clave.
+     */
+    @ColumnDefault("0")
+    @Column(name = "debe_cambiar_password", nullable = false)
+    private Boolean debeCambiarPassword;
+
     @Size(max = 150, message = "El cargo no puede superar los 150 caracteres")
     @Column(name = "cargo", length = 150)
     private String cargo;

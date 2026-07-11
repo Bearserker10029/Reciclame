@@ -76,8 +76,10 @@ public class LoginController {
                                             Authentication authentication) throws java.io.IOException {
             // Guardar datos del usuario en sesión
             HttpSession session = request.getSession();
+            boolean[] debeCambiarPassword = {false};
             usuarioRepository.findByCorreoCorporativo(authentication.getName())
                     .ifPresent(u -> {
+                        debeCambiarPassword[0] = Boolean.TRUE.equals(u.getDebeCambiarPassword());
                         u.setUltimoLogin(Instant.now());
                         usuarioRepository.save(u);
 
@@ -96,7 +98,8 @@ public class LoginController {
                                 u.getCorreoCorporativo(),
                                 u.getRol() != null ? u.getRol().getNombre() : null,
                                 u.getCargo(),
-                                u.getFotoUrl()
+                                u.getFotoUrl(),
+                                Boolean.TRUE.equals(u.getDebeCambiarPassword())
                         ));
 
                         // Si el usuario que se loguea es SuperAdmin, persistir
@@ -118,6 +121,14 @@ public class LoginController {
             DefaultSavedRequest savedRequest = (DefaultSavedRequest)
                     session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
             session.removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+
+            if (debeCambiarPassword[0]) {
+                // Contraseña temporal: ignora cualquier URL guardada y fuerza el
+                // cambio antes de dejarlo entrar a cualquier otra pantalla.
+                response.sendRedirect("/auth/cambiar-password-inicial");
+                return;
+            }
+
             if (savedRequest != null) {
                 String targetUrl = savedRequest.getRedirectUrl();
                 if (targetUrl != null
@@ -184,7 +195,7 @@ public class LoginController {
      * Si los servicios fallan, se renderizan ceros sin tumbar la página.
      */
     @GetMapping("/service/repositorio/login")
-    public String login(Model model) {
+    public String login(Model model, HttpSession session) {
         // Si ya hay una sesión autenticada en este navegador (p.ej. otra pestaña),
         // no se debe mostrar el formulario de login: se redirige directo al home
         // del usuario. Evita la falsa impresión de "dos sesiones" cuando en
@@ -193,6 +204,10 @@ public class LoginController {
         if (authentication != null
                 && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Object sesion = session.getAttribute("usuarioSesion");
+            if (sesion instanceof UsuarioSesion us && us.isDebeCambiarPassword()) {
+                return "redirect:/auth/cambiar-password-inicial";
+            }
             return "redirect:" + resolveHomeUrlForRole(authentication);
         }
 

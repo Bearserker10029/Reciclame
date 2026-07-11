@@ -14,17 +14,24 @@ public class UsuarioSesion implements Serializable {
     private String rolNombre;
     private String cargo;
     private String fotoUrl;
+    private boolean debeCambiarPassword;
 
     public UsuarioSesion() {}
 
     public UsuarioSesion(Long id, String nombreCompleto, String correoCorporativo,
                          String rolNombre, String cargo, String fotoUrl) {
+        this(id, nombreCompleto, correoCorporativo, rolNombre, cargo, fotoUrl, false);
+    }
+
+    public UsuarioSesion(Long id, String nombreCompleto, String correoCorporativo,
+                         String rolNombre, String cargo, String fotoUrl, boolean debeCambiarPassword) {
         this.id = id;
         this.nombreCompleto = nombreCompleto;
         this.correoCorporativo = correoCorporativo;
         this.rolNombre = rolNombre;
         this.cargo = cargo;
         this.fotoUrl = fotoUrl;
+        this.debeCambiarPassword = debeCambiarPassword;
     }
 
     public Long getId() { return id; }
@@ -44,4 +51,7 @@ public class UsuarioSesion implements Serializable {
 
     public String getFotoUrl() { return fotoUrl; }
     public void setFotoUrl(String fotoUrl) { this.fotoUrl = fotoUrl; }
+
+    public boolean isDebeCambiarPassword() { return debeCambiarPassword; }
+    public void setDebeCambiarPassword(boolean debeCambiarPassword) { this.debeCambiarPassword = debeCambiarPassword; }
 }

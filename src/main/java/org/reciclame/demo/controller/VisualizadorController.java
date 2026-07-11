@@ -144,8 +144,9 @@ public class VisualizadorController {
     }
 
     @PostMapping("/visualizador/notificaciones/marcar/{id}")
-    public String marcarLeida(@PathVariable Long id) {
-        notificacionService.marcarComoLeida(id);
+    public String marcarLeida(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        usuarioService.findByCorreo(user.getUsername())
+                .ifPresent(u -> notificacionService.marcarComoLeida(id, u.getId()));
         return "redirect:/visualizador/notificaciones";
     }
 
