@@ -1,5 +1,7 @@
 package org.reciclame.demo.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -30,6 +32,8 @@ public class EstudioRequestDTO {
 
     private LocalDate fechaEstudio;
 
+    @Min(value = 1900, message = "El año debe ser igual o posterior a 1900")
+    @Max(value = 2100, message = "El año debe ser igual o anterior a 2100")
     private Integer anio;
 
     private Boolean esPublico = false;

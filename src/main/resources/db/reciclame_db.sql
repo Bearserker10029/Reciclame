@@ -2080,3 +2080,235 @@ CREATE TABLE IF NOT EXISTS `documentos_compartidos` (
     CONSTRAINT `fk_doc_compartido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
     CONSTRAINT `fk_doc_compartido_compartidopor` FOREIGN KEY (`compartido_por_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Personas con acceso senalado a un documento (tipo Google Drive)';
+
+-- ============================================================
+-- CHECK CONSTRAINTS (validaciones a nivel de base de datos)
+-- Fecha: 2026-07-11
+--
+-- Estas restricciones son la última línea de defensa: aunque
+-- el modelo JPA o el JavaScript validen antes, MySQL también
+-- rechaza INSERT/UPDATE inválidos. Son idempotentes: el script
+-- se puede correr varias veces sin error.
+--
+-- MySQL 8.0+ aplica CHECK constraints. Para columnas NULL se
+-- usa IS NULL en la condición para no romper filas existentes
+-- con valores nulos legítimos.
+-- ============================================================
+
+DELIMITER $$
+
+-- Helper: agrega un CHECK sólo si la constraint no existe aún.
+-- MySQL no soporta `ADD CONSTRAINT IF NOT EXISTS`, así que
+-- consultamos information_schema y componemos el SQL dinámicamente.
+DROP PROCEDURE IF EXISTS _add_check_if_missing $$
+CREATE PROCEDURE _add_check_if_missing(
+    IN p_table VARCHAR(64),
+    IN p_constraint VARCHAR(64),
+    IN p_sql TEXT
+)
+BEGIN
+    DECLARE v_exists INT DEFAULT 0;
+    SELECT COUNT(*) INTO v_exists
+      FROM information_schema.table_constraints
+     WHERE table_schema = DATABASE()
+       AND table_name = p_table
+       AND constraint_name = p_constraint
+       AND constraint_type = 'CHECK';
+    IF v_exists = 0 THEN
+        SET @ddl = p_sql;
+        PREPARE stmt FROM @ddl;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- ── usuarios ──────────────────────────────────────────────
+-- DNI peruano: 8 dígitos exactos
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_dni',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_dni
+   CHECK (dni IS NULL OR dni REGEXP ''^[0-9]{8}$'')'
+);
+
+-- Correo corporativo: formato email básico (al menos algo@algo.algo)
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_correo',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_correo
+   CHECK (correo_corporativo IS NULL
+          OR correo_corporativo REGEXP ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'')'
+);
+
+-- Estado de cuenta: enum fijo
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_estado_cuenta',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_estado_cuenta
+   CHECK (estado_cuenta IN (''PENDIENTE'',''ACTIVO'',''INACTIVO'',''BLOQUEADO''))'
+);
+
+-- Intentos fallidos: rango 0-255 (tinyint) y nunca negativo
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_intentos',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_intentos
+   CHECK (intentos_fallidos IS NULL OR (intentos_fallidos >= 0 AND intentos_fallidos <= 255))'
+);
+
+-- ── empresas ──────────────────────────────────────────────
+-- RUC peruano: 11 dígitos exactos cuando está presente
+CALL _add_check_if_missing(
+  'empresas', 'chk_empresas_ruc',
+  'ALTER TABLE empresas ADD CONSTRAINT chk_empresas_ruc
+   CHECK (ruc IS NULL OR ruc REGEXP ''^[0-9]{11}$'')'
+);
+
+-- ── normativas ────────────────────────────────────────────
+-- Año razonable: 1900..2100 (cubre documentos legales modernos y百年futuros)
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_anio',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_anio
+   CHECK (anio IS NULL OR (anio >= 1900 AND anio <= 2100))'
+);
+
+-- Conteo de descargas/visualizaciones nunca negativo
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_contadores',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_contadores
+   CHECK ((visualizaciones_count IS NULL OR visualizaciones_count >= 0)
+      AND (descargas_count IS NULL OR descargas_count >= 0))'
+);
+
+-- archivo_url no vacío
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_archivo',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_archivo
+   CHECK (archivo_url IS NULL OR CHAR_LENGTH(archivo_url) > 0)'
+);
+
+-- ── estudios ──────────────────────────────────────────────
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_anio',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_anio
+   CHECK (anio IS NULL OR (anio >= 1900 AND anio <= 2100))'
+);
+
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_contadores',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_contadores
+   CHECK ((visualizaciones_count IS NULL OR visualizaciones_count >= 0)
+      AND (descargas_count IS NULL OR descargas_count >= 0))'
+);
+
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_archivo',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_archivo
+   CHECK (archivo_url IS NULL OR CHAR_LENGTH(archivo_url) > 0)'
+);
+
+-- ── solicitudes_registro ──────────────────────────────────
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_dni',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_dni
+   CHECK (dni IS NULL OR dni REGEXP ''^[0-9]{8}$'')'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_correo',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_correo
+   CHECK (correo_corporativo IS NULL
+          OR correo_corporativo REGEXP ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'')'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_estado',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_estado
+   CHECK (estado IN (''PENDIENTE'',''APROBADA'',''RECHAZADA''))'
+);
+
+-- ── parametros_sistema ────────────────────────────────────
+CALL _add_check_if_missing(
+  'parametros_sistema', 'chk_parametros_tipo_dato',
+  'ALTER TABLE parametros_sistema ADD CONSTRAINT chk_parametros_tipo_dato
+   CHECK (tipo_dato IN (''STRING'',''INTEGER'',''BOOLEAN'',''JSON''))'
+);
+
+-- ── programaciones_backup ─────────────────────────────────
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_tipo',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_tipo
+   CHECK (tipo IN (''COMPLETO'',''PARCIAL_USUARIOS'',''PARCIAL_DOCUMENTOS'',''PARCIAL_LOGS''))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_frecuencia',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_frecuencia
+   CHECK (frecuencia IN (''DIARIA'',''SEMANAL'',''MENSUAL''))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_dia_semana',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_dia_semana
+   CHECK (dia_semana IS NULL OR (dia_semana >= 0 AND dia_semana <= 6))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_dia_mes',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_dia_mes
+   CHECK (dia_mes IS NULL OR (dia_mes >= 1 AND dia_mes <= 31))'
+);
+
+-- ── tematicas ─────────────────────────────────────────────
+CALL _add_check_if_missing(
+  'tematicas', 'chk_tematicas_codigo',
+  'ALTER TABLE tematicas ADD CONSTRAINT chk_tematicas_codigo
+   CHECK (codigo REGEXP ''^[A-Z0-9_-]{2,10}$'')'
+);
+
+CALL _add_check_if_missing(
+  'tematicas', 'chk_tematicas_color',
+  'ALTER TABLE tematicas ADD CONSTRAINT chk_tematicas_color
+   CHECK (color_hex REGEXP ''^#[0-9A-Fa-f]{6}$'')'
+);
+
+-- ── tokens_acceso ─────────────────────────────────────────
+CALL _add_check_if_missing(
+  'tokens_acceso', 'chk_tokens_tipo',
+  'ALTER TABLE tokens_acceso ADD CONSTRAINT chk_tokens_tipo
+   CHECK (tipo IN (''MAGIC_LINK'',''RECOVERY'',''VERIFICACION''))'
+);
+
+-- ── mensajes_chatbot ──────────────────────────────────────
+CALL _add_check_if_missing(
+  'mensajes_chatbot', 'chk_mensajes_rol',
+  'ALTER TABLE mensajes_chatbot ADD CONSTRAINT chk_mensajes_rol
+   CHECK (rol IN (''USER'',''BOT''))'
+);
+
+CALL _add_check_if_missing(
+  'mensajes_chatbot', 'chk_mensajes_confianza',
+  'ALTER TABLE mensajes_chatbot ADD CONSTRAINT chk_mensajes_confianza
+   CHECK (confianza IS NULL OR (confianza >= 0 AND confianza <= 1))'
+);
+
+-- ── preferencias_notificacion ─────────────────────────────
+CALL _add_check_if_missing(
+  'preferencias_notificacion', 'chk_pref_frecuencia',
+  'ALTER TABLE preferencias_notificacion ADD CONSTRAINT chk_pref_frecuencia
+   CHECK (frecuencia_email IN (''INMEDIATA'',''DIARIA'',''SEMANAL'',''NUNCA''))'
+);
+
+-- ── solicitudes_respaldo ──────────────────────────────────
+CALL _add_check_if_missing(
+  'solicitudes_respaldo', 'chk_sol_respaldo_tipo',
+  'ALTER TABLE solicitudes_respaldo ADD CONSTRAINT chk_sol_respaldo_tipo
+   CHECK (tipo IN (''COMPLETO'',''PARCIAL_USUARIOS'',''PARCIAL_DOCUMENTOS'',''PARCIAL_LOGS''))'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_respaldo', 'chk_sol_respaldo_estado',
+  'ALTER TABLE solicitudes_respaldo ADD CONSTRAINT chk_sol_respaldo_estado
+   CHECK (estado IN (''PENDIENTE'',''EN_PROCESO'',''COMPLETADO'',''FALLIDO''))'
+);
+
+-- ── Limpieza del helper ───────────────────────────────────
+DROP PROCEDURE _add_check_if_missing;
