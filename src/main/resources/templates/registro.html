@@ -59,6 +59,14 @@
     .glass-input::placeholder { color: rgba(255,255,255,.35); }
     .glass-input:focus { border-color: var(--green); background: rgba(255,255,255,.13); }
     .glass-input.input-error { border-color: #FC8181 !important; background: rgba(252,129,129,.06) !important; }
+    /* Estado disabled del glass-input: mantiene el look del tema oscuro */
+    .glass-input:disabled { background: rgba(255,255,255,.05) !important; color: rgba(255,255,255,.7) !important; border-color: rgba(255,255,255,.12) !important; cursor: not-allowed; }
+
+    /* Wrapper para inputs bloqueados: muestra un candado al hacer hover */
+    .input-locked { position: relative; }
+    .input-locked .glass-input { padding-right: 36px; }
+    .input-lock-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,.55); font-size: 12px; opacity: 0; transition: opacity .2s ease; pointer-events: none; }
+    .input-locked:hover .input-lock-icon { opacity: 1; }
 
     /* ── Error / success ── */
     .field-error { color: #FC8181; font-size: 11px; font-weight: 500; margin-top: 6px; display: none; align-items: center; gap: 5px; }
@@ -173,13 +181,28 @@
         </div>
 
         <div class="field-wrap">
-          <label class="field-label">Nombre completo</label>
-          <div style="position:relative;">
+          <label class="field-label">Nombre completo
+            <i id="reg-nombre-lock-label" class="fas fa-lock"
+               style="color:rgba(255,255,255,.35);font-size:9px;margin-left:5px;display:none;"
+               title="Vinculado al DNI: no editable"></i>
+          </label>
+          <div class="input-locked" style="position:relative;">
             <i class="fas fa-user field-icon"></i>
-            <input id="inp-nombre" class="glass-input form-control" type="text" name="nombre"
-                   th:value="${nombre}" placeholder="Ej: María López Torres" required minlength="3" maxlength="200"
+            <!-- Visible: sin name (los disabled no envían valor al POST).
+                 El hidden de abajo es quien viaja en el form.
+                 Arranca disabled: solo se habilita si la búsqueda de DNI
+                 confirma que el DNI no existe en el sistema. -->
+            <input id="inp-nombre" class="glass-input form-control" type="text"
+                   th:value="${nombre}" placeholder="Ingresa tu DNI primero" required minlength="3" maxlength="200"
                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'.-]{3,200}$"
-                   oninput="validateNombre()" />
+                   title="Se autocompleta al validar tu DNI"
+                   disabled
+                   oninput="validateNombre(); syncNombreHidden();" />
+            <!-- Espejo: el único que lleva el name="nombre" para que el
+                 backend lo reciba tanto si el visible está disabled como
+                 si no. Se sincroniza en cada oninput del visible. -->
+            <input type="hidden" id="inp-nombre-hidden" name="nombre" th:value="${nombre}" />
+            <i class="fas fa-lock input-lock-icon" title="Vinculado al DNI: no editable"></i>
           </div>
           <div id="err-nombre" class="field-error">
             <i class="fas fa-exclamation-triangle"></i>
@@ -314,6 +337,19 @@
     var val = input.value.replace(/\D/g, '').slice(0, 8);
     input.value = val;
 
+    // Si el usuario cambia el DNI después de un autollenado, volver a
+    // bloquear el nombre y limpiarlo: hay que re-buscar primero.
+    var nombreInput = document.getElementById('inp-nombre');
+    var nombreHidden = document.getElementById('inp-nombre-hidden');
+    var lockLabel   = document.getElementById('reg-nombre-lock-label');
+    if (nombreInput) {
+      nombreInput.disabled = true;
+      nombreInput.value = '';
+      nombreInput.placeholder = 'Ingresa tu DNI primero';
+      if (nombreHidden) nombreHidden.value = '';
+      if (lockLabel) lockLabel.style.display = 'none';
+    }
+
     if (dniTimer) clearTimeout(dniTimer);
     if (val.length !== 8) {
       status.style.display = 'none';
@@ -345,9 +381,32 @@
     }
   }
 
+  // Sincroniza el hidden con el valor del input visible, sólo si está
+  // habilitado (los inputs disabled se manejan por separado).
+  function syncNombreHidden() {
+    var input = document.getElementById('inp-nombre');
+    var hidden = document.getElementById('inp-nombre-hidden');
+    if (input && hidden && !input.disabled) {
+      hidden.value = input.value;
+    }
+  }
+
   // ── Validación de nombre ──────────────────────────────────────
   function validateNombre() {
     var input = document.getElementById('inp-nombre');
+    // Si está bloqueado y vacío: el usuario todavía no buscó el DNI.
+    // No lo dejamos pasar al submit.
+    if (input && input.disabled && !input.value.trim()) {
+      showFieldError('inp-nombre', 'err-nombre', '', false);
+      return false;
+    }
+    // Si está bloqueado pero tiene valor: vino del autollenado del DNI.
+    // El valor es válido por construcción.
+    if (input && input.disabled) {
+      showFieldError('inp-nombre', 'err-nombre', '', false);
+      return true;
+    }
+    syncNombreHidden();
     var val = input.value.trim();
     if (val === '') {
       showFieldError('inp-nombre', 'err-nombre', 'El nombre es requerido', true);
@@ -417,6 +476,8 @@
   function consultarDni(dni) {
     var status = document.getElementById('dni-status');
     var nombreInput = document.getElementById('inp-nombre');
+    var nombreHidden = document.getElementById('inp-nombre-hidden');
+    var lockLabel   = document.getElementById('reg-nombre-lock-label');
     status.style.display = 'block';
     status.style.color = 'rgba(255,255,255,.5)';
     status.textContent = 'Buscando...';
@@ -426,15 +487,27 @@
       .then(function (data) {
         if (data.encontrado && data.nombreCompleto) {
           nombreInput.value = data.nombreCompleto;
+          // Bloquear: el nombre está vinculado al DNI
+          nombreInput.disabled = true;
+          nombreInput.placeholder = '';
+          if (nombreHidden) nombreHidden.value = data.nombreCompleto;
+          if (lockLabel) lockLabel.style.display = 'inline';
           status.style.color = '#2ECC71';
-          status.textContent = '✓ Nombre encontrado';
+          status.textContent = '✓ Nombre encontrado y bloqueado (vinculado al DNI)';
         } else {
+          // No encontrado: dejar editable para que el usuario escriba manualmente
+          nombreInput.disabled = false;
+          nombreInput.placeholder = 'No se encontró el DNI, escríbelo';
+          if (lockLabel) lockLabel.style.display = 'none';
           status.style.color = 'rgba(255,255,255,.4)';
           status.textContent = 'No se encontró el DNI, ingresa tu nombre manualmente';
         }
       })
       .catch(function () {
         status.style.display = 'none';
+        nombreInput.disabled = false;
+        nombreInput.placeholder = 'No se pudo consultar el DNI, escríbelo';
+        if (lockLabel) lockLabel.style.display = 'none';
       });
   }
 
