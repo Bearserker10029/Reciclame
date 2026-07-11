@@ -413,8 +413,15 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         boolean bloquear = !Boolean.TRUE.equals(usuario.getCuentaBloqueada());
-        usuario.setCuentaBloqueada(bloquear);
-        usuario.setEstadoCuenta(bloquear ? "BLOQUEADO" : "ACTIVO");
+        if (bloquear) {
+            usuario.setCuentaBloqueada(true);
+            usuario.setEstadoCuenta("BLOQUEADO");
+            // estadoActivo se preserva: si estaba inactivo, sigue inactivo.
+        } else {
+            usuario.setCuentaBloqueada(false);
+            usuario.setEstadoActivo(true);                  // FIX: re-activar al desbloquear
+            usuario.setEstadoCuenta("ACTIVO");
+        }
         usuario.setUpdatedAt(Instant.now());
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 

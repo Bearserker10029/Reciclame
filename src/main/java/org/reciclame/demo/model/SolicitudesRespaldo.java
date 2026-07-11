@@ -1,6 +1,10 @@
 package org.reciclame.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -23,18 +27,26 @@ public class SolicitudesRespaldo {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotNull(message = "El usuario solicitante es obligatorio")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "solicitado_por_id", nullable = false)
     private Usuario solicitadoPor;
 
+    @NotBlank(message = "El tipo de respaldo es obligatorio")
+    @Pattern(regexp = "^(COMPLETO|PARCIAL_USUARIOS|PARCIAL_DOCUMENTOS|PARCIAL_LOGS)$",
+            message = "El tipo debe ser COMPLETO, PARCIAL_USUARIOS, PARCIAL_DOCUMENTOS o PARCIAL_LOGS")
     @ColumnDefault("'COMPLETO'")
     @Column(name = "tipo", nullable = false, length = 30)
     private String tipo;
 
+    @NotBlank(message = "El estado de la solicitud es obligatorio")
+    @Pattern(regexp = "^(PENDIENTE|EN_PROCESO|COMPLETADO|FALLIDO)$",
+            message = "El estado debe ser PENDIENTE, EN_PROCESO, COMPLETADO o FALLIDO")
     @ColumnDefault("'PENDIENTE'")
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
+    @Size(max = 500, message = "La clave de almacenamiento no puede superar los 500 caracteres")
     @Column(name = "storage_key", length = 500)
     private String storageKey;
 

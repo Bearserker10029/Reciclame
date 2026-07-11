@@ -1045,19 +1045,23 @@
                           <i class="fas fa-shield-alt"></i> Pendiente
                         </span>
                         <span th:if="${n.estadoValidacion != null and n.estadoValidacion.name() == 'APROBADO'}"
-                              class="badge-vt-clean" th:title="${n.vtVerdict != null ? 'Veredicto VT: ' + n.vtVerdict : 'Validado'}">
+                              class="badge-vt-clean"
+                              th:title="${n.vtVerdict == 'SUSPICIOUS' and n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtSuspiciousEngines != null ? n.vtSuspiciousEngines : 0) + ' engines sospechosos de ' + n.vtTotalEngines : (n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: 0/' + n.vtTotalEngines + ' engines detectaron amenaza' : (n.vtVerdict != null ? 'Veredicto VT: ' + n.vtVerdict : 'Validado'))}">
                           <i class="fas fa-shield-check"></i> Seguro
                         </span>
                         <span th:if="${n.estadoValidacion != null and n.estadoValidacion.name() == 'RECHAZADO'}"
-                              class="badge-vt-rejected" title="Archivo bloqueado por antivirus">
+                              class="badge-vt-rejected"
+                              th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtMaliciousEngines != null ? n.vtMaliciousEngines : 0) + '/' + n.vtTotalEngines + ' engines marcaron como amenaza' : 'Archivo bloqueado por antivirus'}">
                           <i class="fas fa-shield-virus"></i> Rechazado
                         </span>
                         <span th:if="${n.archivoUrl != null and !#strings.isEmpty(n.archivoUrl) and n.estadoValidacion == null and n.vtVerdict != null and n.vtVerdict != 'MALICIOUS'}"
-                              class="badge-vt-clean" th:title="'Veredicto: ' + ${n.vtVerdict}">
+                              class="badge-vt-clean"
+                              th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: 0/' + n.vtTotalEngines + ' engines detectaron amenaza' : 'Veredicto: ' + n.vtVerdict}">
                           <i class="fas fa-shield-check"></i> Limpio
                         </span>
                         <span th:if="${n.archivoUrl != null and !#strings.isEmpty(n.archivoUrl) and n.vtVerdict == 'MALICIOUS'}"
-                              class="badge-vt-malicious" title="Malicioso">
+                              class="badge-vt-malicious"
+                              th:title="${n.vtTotalEngines != null and n.vtTotalEngines > 0 ? 'VirusTotal: ' + (n.vtMaliciousEngines != null ? n.vtMaliciousEngines : 0) + '/' + n.vtTotalEngines + ' engines marcaron como amenaza' : 'Malicioso'}">
                           <i class="fas fa-shield-virus"></i> Malicioso
                         </span>
                       </td>
@@ -1088,21 +1092,23 @@
                       <!-- Gestión -->
                       <td class="text-center">
                         <div style="display:inline-flex;gap:6px;">
-                          <a th:href="@{/admin/normativo/editar/{id}(id=${n.id})}" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
-                                border-radius:7px;border:1.5px solid #3498DB;background:rgba(52,152,219,.07);
-                                color:#2471A3;font-size:11px;font-weight:700;text-decoration:none;
-                                transition:all .2s;"
+                          <a th:href="@{/admin/normativo/editar/{id}(id=${n.id})}" title="Editar"
+                            style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
+                                   border-radius:7px;border:1.5px solid #3498DB;background:rgba(52,152,219,.07);
+                                   color:#2471A3;font-size:13px;text-decoration:none;
+                                   transition:all .2s;min-width:30px;"
                             onmouseover="this.style.background='#3498DB';this.style.color='#fff'"
                             onmouseout="this.style.background='rgba(52,152,219,.07)';this.style.color='#2471A3'">
-                            <i class="fas fa-pen"></i> Editar
+                            <i class="fas fa-pen"></i>
                           </a>
-                          <button th:data-id="${n.id}" onclick="eliminarNormativa(this.dataset.id)" style="display:inline-flex;align-items:center;gap:4px;padding:5px 11px;
-                                     border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.07);
-                                     color:#C0392B;font-size:11px;font-weight:700;cursor:pointer;
-                                     font-family:inherit;transition:all .2s;"
+                          <button th:data-id="${n.id}" onclick="eliminarNormativa(this.dataset.id)" title="Eliminar"
+                            style="display:inline-flex;align-items:center;justify-content:center;padding:6px 9px;
+                                   border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.07);
+                                   color:#C0392B;font-size:13px;cursor:pointer;
+                                   font-family:inherit;transition:all .2s;min-width:30px;"
                             onmouseover="this.style.background='#E74C3C';this.style.color='#fff'"
                             onmouseout="this.style.background='rgba(231,76,60,.07)';this.style.color='#C0392B'">
-                            <i class="fas fa-trash"></i> Eliminar
+                            <i class="fas fa-trash"></i>
                           </button>
                         </div>
                       </td>
@@ -1803,7 +1809,26 @@
           var badges = findPending();
           if (!badges.length) return;
 
-          function finalize(el, estado, message) {
+          function buildDetailTitle(estado, vtVerdict, vtTotal, vtMal, vtSusp, vtSkipped, message) {
+            if (estado === 'RECHAZADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtMal != null ? vtMal : 0) + '/' + vtTotal + ' engines marcaron como amenaza';
+            }
+            if (estado === 'APROBADO' && vtVerdict === 'SUSPICIOUS' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtSusp != null ? vtSusp : 0) + ' engines sospechosos de ' + vtTotal;
+            }
+            if (estado === 'APROBADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: 0/' + vtTotal + ' engines detectaron amenaza';
+            }
+            if (vtSkipped) {
+              return 'VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)';
+            }
+            if (message) return message;
+            return 'Veredicto: ' + (vtVerdict || estado || '—');
+          }
+
+          function finalize(el, estado, payload) {
+            payload = payload || {};
+            var message = payload.message || '';
             var rejected = estado === 'RECHAZADO';
             var nuevo = document.createElement('span');
             if (rejected) {
@@ -1813,7 +1838,15 @@
               nuevo.className = 'badge-vt-clean';
               nuevo.innerHTML = '<i class="fas fa-shield-check"></i> Seguro';
             }
-            nuevo.title = message || '';
+            nuevo.title = buildDetailTitle(
+              estado,
+              payload.vtVerdict,
+              payload.vtTotalEngines,
+              payload.vtMaliciousEngines,
+              payload.vtSuspiciousEngines,
+              payload.vtSkipped,
+              message
+            );
             if (el.parentNode) el.parentNode.replaceChild(nuevo, el);
             if (typeof showToast === 'function') {
               showToast(rejected ? 'Archivo rechazado por antivirus.' : 'Archivo validado correctamente.',
@@ -1837,7 +1870,7 @@
                 .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
                 .then(function (s) {
                   if (s.estado && s.estado !== 'PENDIENTE') {
-                    finalize(el, s.estado, s.message || s.vtVerdict || '');
+                    finalize(el, s.estado, s);
                   } else {
                     setTimeout(next, 2000);
                   }

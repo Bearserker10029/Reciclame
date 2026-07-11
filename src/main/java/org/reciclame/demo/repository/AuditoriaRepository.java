@@ -4,15 +4,50 @@ import org.reciclame.demo.model.Auditoria;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
+
+    /**
+     * Trae el último registro de auditoría ordenado por id descendente,
+     * aplicando un lock pesimista a nivel de fila (SELECT ... FOR UPDATE).
+     * Se usa para serializar el cálculo del hash chain: dos inserciones
+     * simultáneas deben esperar a que la primera obtenga el
+     * {@code hashActual} del último bloque antes de calcular el suyo.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT a FROM Auditoria a ORDER BY a.id DESC")
+    List<Auditoria> findTopByOrderByIdDescWithLock(Pageable pageable);
+
+    /**
+     * Igual al anterior pero sin lock — útil para verificación de
+     * integridad y seed inicial.
+     */
+    @Query("SELECT a FROM Auditoria a ORDER BY a.id DESC")
+    List<Auditoria> findTopByOrderByIdDesc(Pageable pageable);
+
+    /**
+     * Primer registro histórico (id mínimo) — punto de partida de la
+     * cadena. Si la tabla está vacía devuelve {@link Optional#empty()}.
+     */
+    @Query("SELECT a FROM Auditoria a ORDER BY a.id ASC")
+    List<Auditoria> findFirstByOrderByIdAsc(Pageable pageable);
+
+    /**
+     * Devuelve todas las filas ordenadas por id ascendente (caden completo).
+     * Para verificación de integridad — evita paginar y perder el orden.
+     */
+    @Query("SELECT a FROM Auditoria a ORDER BY a.id ASC")
+    List<Auditoria> findAllOrderedById();
 
     List<Auditoria> findByUsuarioId(Long usuarioId);
 

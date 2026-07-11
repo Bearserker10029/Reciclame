@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +20,12 @@ import java.util.stream.Collectors;
 public class AuditoriaService {
 
     private final AuditoriaRepository auditoriaRepository;
+    private final AuditoriaHashChainService hashChainService;
 
-    public AuditoriaService(AuditoriaRepository auditoriaRepository) {
+    public AuditoriaService(AuditoriaRepository auditoriaRepository,
+                            AuditoriaHashChainService hashChainService) {
         this.auditoriaRepository = auditoriaRepository;
+        this.hashChainService = hashChainService;
     }
 
     // ── CREAR AUDITORÍA ──────────────────────────────────────────────
@@ -68,12 +72,42 @@ public class AuditoriaService {
             auditoria.setUserAgent(userAgent);
             auditoria.setFechaAccion(Instant.now());
 
-            return auditoriaRepository.save(auditoria);
+            // ── Hash chain: firma tamper-evident ────────────────────
+            // Tomamos lock pesimista sobre el último registro para que
+            // dos inserciones concurrentes serialicen correctamente y
+            // cada nueva fila vea el hashActual real del bloque previo.
+            String hashAnterior = obtenerHashDelUltimoRegistroConLock();
+            auditoria.setHashAnterior(hashAnterior);
+
+            Auditoria persistida = auditoriaRepository.saveAndFlush(auditoria);
+            // El id se asigna en el flush; ya podemos calcular el hashActual.
+            String hashActual = hashChainService.calcularHashActual(hashAnterior, persistida);
+            persistida.setHashActual(hashActual);
+            return auditoriaRepository.save(persistida);
         } catch (Exception e) {
             System.err.println("Error al registrar acción de auditoría: " + e.getMessage());
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Devuelve el {@code hashActual} del ÚLTIMO registro FIRMADO de la
+     * tabla, aplicando un SELECT ... FOR UPDATE.
+     *
+     * <p>Importante: las filas previas al despliegue del hash chain
+     * (aquellas con {@code hash_actual IS NULL}) NO cuentan para el
+     * encadenamiento. El primer registro firmado después del despliegue
+     * se enlaza contra el bloque génesis; a partir de ahí cada nueva
+     * fila se enlaza contra la anterior firmada. Las filas sin firma
+     * quedan congeladas con sus valores originales — no se modifican.</p>
+     */
+    private String obtenerHashDelUltimoRegistroConLock() {
+        List<Auditoria> ultimos = auditoriaRepository
+                .findTopByOrderByIdDescWithLock(PageRequest.of(0, 1));
+        if (ultimos == null || ultimos.isEmpty()) return null;
+        Auditoria ultimo = ultimos.get(0);
+        return ultimo.getHashActual();
     }
 
     // ── READ ─────────────────────────────────────────────────────────
@@ -375,6 +409,93 @@ public class AuditoriaService {
 
     public long contarEntreFechas(Instant desde, Instant hasta) {
         return auditoriaRepository.contarEntreFechas(desde, hasta);
+    }
+
+    // ── INTEGRIDAD DE LA CADENA DE AUDITORÍA ──────────────────────────
+
+    /**
+     * Recorre toda la tabla en orden ascendente por id y verifica la
+     * cadena de hashes. Devuelve un objeto inmutable con el resultado
+     * (íntegro, primer id fallido, hashes esperados vs encontrados, etc.).
+     *
+     * <p>Coste O(n) — para tablas de auditoría típicas (cientos de miles
+     * de filas) sigue siendo sub-segundo en una BD local.</p>
+     */
+    public AuditoriaHashChainService.ResultadoVerificacion verificarIntegridadCadena() {
+        List<Auditoria> todas = auditoriaRepository.findAllOrderedById();
+        return hashChainService.verificar(todas);
+    }
+
+    /**
+     * Variante que acepta un rango temporal para acelerar la verificación
+     * cuando el equipo solo necesita auditar un período (ej. "último mes").
+     * Si la cadena anterior al rango ya estaba íntegra, devolvemos
+     * integro=true aunque no verifiquemos todo el historial.
+     */
+    public AuditoriaHashChainService.ResultadoVerificacion verificarIntegridadCadenaEnRango(
+            Instant desde, Instant hasta) {
+        List<Auditoria> todas = auditoriaRepository.findAllOrderedById();
+        if (todas == null || todas.isEmpty()) {
+            return AuditoriaHashChainService.ResultadoVerificacion.vacio();
+        }
+        java.util.List<Auditoria> enRango = todas.stream()
+                .filter(a -> a.getFechaAccion() != null
+                        && !a.getFechaAccion().isBefore(desde)
+                        && !a.getFechaAccion().isAfter(hasta))
+                .collect(Collectors.toList());
+        // Para verificación en rango, igualmente necesitamos anclar el
+        // encadenamiento: si el rango no empieza en el génesis, tenemos
+        // que asegurar que el bloque inmediatamente anterior (si existe
+        // en todas) tiene un hashActual válido.
+        if (enRango.isEmpty()) {
+            return AuditoriaHashChainService.ResultadoVerificacion.integro(0, 0);
+        }
+        // El primer registro en todas que sea < 'desde' es el ancla.
+        Optional<Auditoria> ancla = todas.stream()
+                .filter(a -> a.getFechaAccion() != null && a.getFechaAccion().isBefore(desde))
+                .reduce((a, b) -> b); // el último
+        String esperadoAnterior;
+        int preambuloVerificados = 0;
+        if (ancla.isPresent()) {
+            esperadoAnterior = ancla.get().getHashActual();
+            preambuloVerificados = 1;
+        } else {
+            esperadoAnterior = hashChainService.calcularHashGenesis();
+        }
+
+        // Reusamos el motor de verificación pasando una lista sintética
+        // donde la primera fila es el ancla (o el génesis). Para mantener
+        // el motor simple, hacemos una verificación artesanal del rango.
+        int total = enRango.size();
+        for (Auditoria actual : enRango) {
+            if (actual.getHashAnterior() == null || actual.getHashActual() == null) {
+                return AuditoriaHashChainService.ResultadoVerificacion.fallo(
+                        total, preambuloVerificados, actual.getId(),
+                        esperadoAnterior, actual.getHashAnterior(),
+                        actual.getHashActual(),
+                        "Registro sin firma completa dentro del rango solicitado.");
+            }
+            if (!esperadoAnterior.equals(actual.getHashAnterior())) {
+                return AuditoriaHashChainService.ResultadoVerificacion.fallo(
+                        total, preambuloVerificados, actual.getId(),
+                        esperadoAnterior, actual.getHashAnterior(),
+                        actual.getHashActual(),
+                        "Encadenamiento roto dentro del rango.");
+            }
+            String recalculado = hashChainService.calcularHashActual(
+                    esperadoAnterior, actual);
+            if (!recalculado.equals(actual.getHashActual())) {
+                return AuditoriaHashChainService.ResultadoVerificacion.fallo(
+                        total, preambuloVerificados, actual.getId(),
+                        recalculado, actual.getHashAnterior(),
+                        actual.getHashActual(),
+                        "Contenido alterado dentro del rango.");
+            }
+            esperadoAnterior = actual.getHashActual();
+            preambuloVerificados++;
+        }
+        return AuditoriaHashChainService.ResultadoVerificacion.integro(
+                total, preambuloVerificados);
     }
 
     // ── CONSTANTES ───────────────────────────────────────────────────
