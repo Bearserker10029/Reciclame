@@ -111,12 +111,28 @@ public class InicioPublicoController {
         return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
     }
 
+    // Iconos del theme original (Consultio + Slider Revolution) que dependen de una
+    // fuente de íconos propietaria que reciclame.org no sirve en todos los contextos;
+    // sin ella se ven como cuadros vacíos. Ninguno tiene función real aquí (el buscador
+    // abre un modal inexistente en esta home, y las flechas navegan un slider de una
+    // sola imagen), así que se ocultan en vez de mostrar el glifo roto.
+    private static final String ICON_FIX_STYLE =
+            "\n<style id=\"reciclame-icon-fix\">"
+            + ".header-right-item.h-btn-search,sr7-arrow{display:none!important}"
+            + "</style>";
+
     String patchHtml(String html, String backendBase) {
         // 1) <base> para que los assets relativos carguen desde reciclar.org
         if (!html.contains("<base ")) {
             html = html.replaceFirst("<head>",
                     Matcher.quoteReplacement("<head>")
                             + "\n<base href=\"" + publicSiteUrl + "\">");
+        }
+
+        // 1b) Ocultar íconos rotos (buscador y flechas del slider, ver ICON_FIX_STYLE)
+        if (!html.contains("reciclame-icon-fix") && html.contains("</head>")) {
+            html = html.replaceFirst("</head>",
+                    Matcher.quoteReplacement(ICON_FIX_STYLE) + "\n</head>");
         }
 
         // 2) Script de parche (con URL absoluta del backend)
