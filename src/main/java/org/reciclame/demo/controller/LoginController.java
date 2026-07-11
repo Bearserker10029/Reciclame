@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.reciclame.demo.dto.UsuarioSesion;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -64,9 +66,12 @@ public class LoginController {
     public static class RoleBasedSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
         private final UsuarioRepository usuarioRepository;
+        private final AuditoriaService auditoriaService;
 
-        public RoleBasedSuccessHandler(UsuarioRepository usuarioRepository) {
+        public RoleBasedSuccessHandler(UsuarioRepository usuarioRepository,
+                                      AuditoriaService auditoriaService) {
             this.usuarioRepository = usuarioRepository;
+            this.auditoriaService = auditoriaService;
         }
 
         @Override
@@ -115,6 +120,24 @@ public class LoginController {
                             session.setAttribute("SUPERADMIN_ORIGINAL_NOMBRE", u.getNombreCompleto());
                             session.setAttribute("SUPERADMIN_ORIGINAL_CORREO", u.getCorreoCorporativo());
                         }
+
+                        // ── Trazabilidad: registrar el LOGIN ──────────────
+                        // Módulo "AUTENTICACION" (no "SEGURIDAD") a propósito:
+                        // la query del admin excluye modulo='SEGURIDAD', pero
+                        // SÍ debe ver los logins de admin/socio/visualizador.
+                        // El superadmin lo ve via findEventosSeguridad (que
+                        // acepta LOGIN por acción, independientemente del módulo).
+                        String ip = extractClientIp(request);
+                        String userAgent = request.getHeader("User-Agent");
+                        String rolNombre = u.getRol() != null ? u.getRol().getNombre() : "USUARIO";
+                        auditoriaService.registrarAccion(
+                                u.getId(),
+                                u.getNombreCompleto(),
+                                AuditoriaService.ACCION_LOGIN,
+                                "AUTENTICACION",
+                                "Inicio de sesión exitoso (" + rolNombre + ")",
+                                null, null, "EXITOSO", null, ip, userAgent
+                        );
                     });
 
             // Si el usuario venía de una URL protegida válida, redirigir allí
@@ -142,6 +165,22 @@ public class LoginController {
 
             // Redirección según rol
             response.sendRedirect(resolveHomeUrlForRole(authentication));
+        }
+
+        /**
+         * Devuelve la IP del cliente. Prioriza {@code X-Forwarded-For}
+         * (típico cuando se está detrás de nginx/ALB) y cae al
+         * {@code X-Real-IP} y finalmente a {@code request.getRemoteAddr()}.
+         */
+        private static String extractClientIp(HttpServletRequest request) {
+            String xff = request.getHeader("X-Forwarded-For");
+            if (xff != null && !xff.isBlank()) {
+                int coma = xff.indexOf(',');
+                return (coma > 0 ? xff.substring(0, coma) : xff).trim();
+            }
+            String realIp = request.getHeader("X-Real-IP");
+            if (realIp != null && !realIp.isBlank()) return realIp.trim();
+            return request.getRemoteAddr();
         }
     }
 
@@ -257,5 +296,79 @@ public class LoginController {
     @GetMapping("/logout")
     public String logout() {
         return "redirect:" + LOGIN_PATH + "?logout=true";
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  AUDITORÍA DE LOGOUT
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * {@link LogoutHandler} que registra un evento {@code LOGOUT} en la tabla
+     * de auditoría antes de que Spring Security invalide la sesión. Se enchufa
+     * en la cadena de logout vía {@code SecurityConfig.logout(...)} con
+     * {@code .addLogoutHandler(auditLogoutHandler)}; corre antes que
+     * {@code SecurityContextLogoutHandler} (que limpia la sesión), por lo que
+     * todavía podemos leer el {@code Authentication} de
+     * {@link SecurityContextHolder}.
+     *
+     * <p>El handler retorna el resultado de la última operación: nunca lanza
+     * para no romper el flujo de logout si la BD está caída — solo loguea el
+     * error y sigue.</p>
+     */
+    @Component
+    public static class AuditingLogoutHandler implements LogoutHandler {
+
+        private final UsuarioRepository usuarioRepository;
+        private final AuditoriaService auditoriaService;
+
+        public AuditingLogoutHandler(UsuarioRepository usuarioRepository,
+                                     AuditoriaService auditoriaService) {
+            this.usuarioRepository = usuarioRepository;
+            this.auditoriaService = auditoriaService;
+        }
+
+        @Override
+        @Transactional
+        public void logout(jakarta.servlet.http.HttpServletRequest request,
+                          jakarta.servlet.http.HttpServletResponse response,
+                          org.springframework.security.core.Authentication authentication) {
+            if (authentication == null) {
+                // Logout disparado sin sesión activa (raro pero posible); no
+                // podemos atribuirlo a nadie. No registramos evento.
+                return;
+            }
+            usuarioRepository.findByCorreoCorporativo(authentication.getName())
+                    .ifPresent(u -> {
+                        String ip = extractClientIpStatic(request);
+                        String userAgent = request.getHeader("User-Agent");
+                        String rolNombre = u.getRol() != null ? u.getRol().getNombre() : "USUARIO";
+                        auditoriaService.registrarAccion(
+                                u.getId(),
+                                u.getNombreCompleto(),
+                                AuditoriaService.ACCION_LOGOUT,
+                                "AUTENTICACION",
+                                "Cierre de sesión (" + rolNombre + ")",
+                                null, null, "EXITOSO", null, ip, userAgent
+                        );
+                    });
+        }
+    }
+
+    /**
+     * Helper estático de extracción de IP (mismo criterio que el success
+     * handler: priorizar X-Forwarded-For, fallback a X-Real-IP y finalmente
+     * a {@code request.getRemoteAddr()}). Vive en la clase externa para
+     * poder ser usado por el {@link AuditingLogoutHandler} sin instanciar
+     * el handler de login.
+     */
+    private static String extractClientIpStatic(jakarta.servlet.http.HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            int coma = xff.indexOf(',');
+            return (coma > 0 ? xff.substring(0, coma) : xff).trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) return realIp.trim();
+        return request.getRemoteAddr();
     }
 }

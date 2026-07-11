@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -28,17 +29,20 @@ public class SecurityConfig {
     private final AuthenticationFailureHandler failureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
     private final ForzarCambioPasswordFilter forzarCambioPasswordFilter;
+    private final LogoutHandler auditLogoutHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
                           AuthenticationSuccessHandler successHandler,
                           AuthFailureHandler authFailureHandler,
                           AccessDeniedHandler accessDeniedHandler,
-                          ForzarCambioPasswordFilter forzarCambioPasswordFilter) {
+                          ForzarCambioPasswordFilter forzarCambioPasswordFilter,
+                          LogoutHandler auditLogoutHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
         this.failureHandler = authFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
         this.forzarCambioPasswordFilter = forzarCambioPasswordFilter;
+        this.auditLogoutHandler = auditLogoutHandler;
     }
 
     @Bean
@@ -99,6 +103,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/service/repositorio/login?logout=true")
+                        // Handler de auditoría: registra el LOGOUT antes de
+                        // que SecurityContextLogoutHandler invalide la sesión.
+                        .addLogoutHandler(auditLogoutHandler)
                         // Support both container sessions (dev) and Spring Session cookie (prod)
                         .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
