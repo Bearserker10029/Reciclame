@@ -1,6 +1,8 @@
 package org.reciclame.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -18,6 +20,8 @@ public class TiposNormativa {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotBlank(message = "El nombre del tipo es obligatorio")
+    @Size(max = 60, message = "El nombre del tipo no puede superar los 60 caracteres")
     @Column(name = "nombre", nullable = false, length = 60)
     private String nombre;
 

@@ -266,9 +266,14 @@
               <label class="form-label-custom">
                 Valor <span style="color:#E74C3C;">*</span>
               </label>
-              <textarea name="valor" rows="3" class="form-control-custom" required style="resize:vertical;"
+              <textarea id="valor-textarea" name="valor" rows="3" class="form-control-custom" required
+                maxlength="500" style="resize:vertical;"
                 th:classappend="${error_valor != null} ? 'input-error'"
                 th:text="${parametro.valor}"></textarea>
+              <span id="valor-hint" style="display:block;font-size:11px;color:#9CA3AF;margin-top:4px;"></span>
+              <span class="error-message" id="err-valor"
+                    th:if="${error_valor}" th:text="${error_valor}"
+                    style="display:none;"></span>
               <span class="error-message" th:if="${error_valor}" th:text="${error_valor}"></span>
             </div>
 
@@ -339,6 +344,93 @@
       };
       window.location.href = map[page] || ('/superadmin/' + page);
     }
+
+    // ── Validación del valor según el tipo_dato del parámetro ───
+    // Cubre la misma regla que ParametrosSistemaRequestDTO + la
+    // CHECK constraint chk_parametros_tipo_dato de la BD.
+    function validarValorPorTipo(valor, tipo) {
+      var v = (valor || '').trim();
+      if (v === '') return 'El valor es obligatorio.';
+      switch (tipo) {
+        case 'INTEGER':
+          if (!/^-?[0-9]+$/.test(v)) return 'El valor debe ser un número entero (puede ser negativo).';
+          return null;
+        case 'BOOLEAN':
+          if (!/^(true|false|TRUE|FALSE|0|1|si|no|SI|NO)$/i.test(v)) {
+            return 'El valor debe ser un booleano: true, false, 0, 1, sí o no.';
+          }
+          return null;
+        case 'JSON':
+          try { JSON.parse(v); return null; }
+          catch (e) { return 'El valor debe ser un JSON válido: ' + e.message; }
+        case 'STRING':
+        default:
+          if (v.length > 500) return 'El valor no puede superar los 500 caracteres.';
+          return null;
+      }
+    }
+
+    function setFieldError(inputId, errId, msg) {
+      var input = document.getElementById(inputId);
+      var err   = errId ? document.getElementById(errId) : null;
+      if (msg) {
+        if (input) input.classList.add('input-error');
+        if (err) { err.textContent = msg; err.style.display = 'block'; }
+      } else {
+        if (input) input.classList.remove('input-error');
+        if (err) err.style.display = 'none';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var valor   = document.querySelector('textarea[name="valor"]');
+      var tipo    /* se inyecta vía Thymeleaf más abajo */;
+      // Detectamos el tipo desde el badge de tipo que ya pinta la plantilla
+      var badgeTipo = document.querySelector('.badge-tipo');
+      if (badgeTipo) tipo = (badgeTipo.textContent || '').trim();
+
+      // Mensaje de ayuda bajo el textarea
+      var hint = document.getElementById('valor-hint');
+      function actualizarHint() {
+        if (!hint || !tipo) return;
+        switch (tipo) {
+          case 'INTEGER': hint.textContent = 'Formato: número entero (ej. 5, -3, 1000)'; break;
+          case 'BOOLEAN': hint.textContent = 'Formato: true, false, 0, 1, sí o no'; break;
+          case 'JSON':    hint.textContent = 'Formato: JSON válido (ej. {"k":"v"} o [1,2,3])'; break;
+          default:        hint.textContent = 'Formato: texto libre (máx. 500 caracteres)';
+        }
+      }
+      actualizarHint();
+
+      function validar() {
+        if (!valor) return;
+        var msg = validarValorPorTipo(valor.value, tipo);
+        if (msg) {
+          setFieldError('valor-textarea', 'err-valor', msg);
+        } else {
+          setFieldError('valor-textarea', 'err-valor', null);
+        }
+      }
+      if (valor) {
+        valor.addEventListener('input', validar);
+        valor.addEventListener('blur', validar);
+        validar();
+      }
+
+      // Interceptar submit
+      var form = document.querySelector('form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          if (!valor) return;
+          var msg = validarValorPorTipo(valor.value, tipo);
+          if (msg) {
+            e.preventDefault();
+            setFieldError('valor-textarea', 'err-valor', msg);
+            valor.focus();
+          }
+        });
+      }
+    });
   </script>
 
 </body>

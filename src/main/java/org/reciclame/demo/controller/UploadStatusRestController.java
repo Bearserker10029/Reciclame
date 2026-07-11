@@ -117,6 +117,10 @@ public class UploadStatusRestController {
                         .estado(EstadoValidacion.inferir(n.getArchivoUrl(), n.getVtVerdict()))
                         .archivoUrl(n.getArchivoUrl())
                         .vtVerdict(n.getVtVerdict())
+                        .vtTotalEngines(n.getVtTotalEngines())
+                        .vtMaliciousEngines(n.getVtMaliciousEngines())
+                        .vtSuspiciousEngines(n.getVtSuspiciousEngines())
+                        .vtSkipped(n.getVtSkipped())
                         .message(n.getVtScannedAt() != null ? n.getVtScannedAt().toString() : null)
                         .updatedAt(n.getUpdatedAt())
                         .build());
@@ -134,6 +138,10 @@ public class UploadStatusRestController {
                         .estado(EstadoValidacion.inferir(e.getArchivoUrl(), e.getVtVerdict()))
                         .archivoUrl(e.getArchivoUrl())
                         .vtVerdict(e.getVtVerdict())
+                        .vtTotalEngines(e.getVtTotalEngines())
+                        .vtMaliciousEngines(e.getVtMaliciousEngines())
+                        .vtSuspiciousEngines(e.getVtSuspiciousEngines())
+                        .vtSkipped(e.getVtSkipped())
                         .message(e.getVtScannedAt() != null ? e.getVtScannedAt().toString() : null)
                         .updatedAt(e.getUpdatedAt())
                         .build());

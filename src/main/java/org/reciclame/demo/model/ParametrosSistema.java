@@ -1,6 +1,9 @@
 package org.reciclame.demo.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
@@ -21,16 +24,23 @@ public class ParametrosSistema {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @NotBlank(message = "La clave del parámetro es obligatoria")
+    @Size(max = 100, message = "La clave no puede superar los 100 caracteres")
     @Column(name = "clave", nullable = false, length = 100)
     private String clave;
 
+    @NotBlank(message = "El valor del parámetro es obligatorio")
     @Lob
     @Column(name = "valor", nullable = false)
     private String valor;
 
+    @Size(max = 300, message = "La descripción no puede superar los 300 caracteres")
     @Column(name = "descripcion", length = 300)
     private String descripcion;
 
+    @NotBlank(message = "El tipo de dato es obligatorio")
+    @Pattern(regexp = "^(STRING|INTEGER|BOOLEAN|JSON)$",
+            message = "El tipo de dato debe ser STRING, INTEGER, BOOLEAN o JSON")
     @ColumnDefault("'STRING'")
     @Column(name = "tipo_dato", nullable = false, length = 10)
     private String tipoDato;

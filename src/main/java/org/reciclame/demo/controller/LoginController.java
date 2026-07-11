@@ -8,8 +8,10 @@ import org.reciclame.demo.repository.UsuarioRepository;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
@@ -96,6 +98,20 @@ public class LoginController {
                                 u.getCargo(),
                                 u.getFotoUrl()
                         ));
+
+                        // Si el usuario que se loguea es SuperAdmin, persistir
+                        // su id en un atributo inmutable de sesión. Esto es
+                        // crítico para que los registros de auditoría de
+                        // IMPERSONAR / SALIR_IMPERSONACION siempre muestren
+                        // el nombre real del superadmin raíz y no el correo
+                        // del último usuario impersonado (que es lo que
+                        // devuelve SecurityContextHolder.getName() durante
+                        // una impersonación anidada).
+                        if (u.getRol() != null && "SUPERADMIN".equalsIgnoreCase(u.getRol().getNombre())) {
+                            session.setAttribute("SUPERADMIN_ORIGINAL_ID", u.getId());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_NOMBRE", u.getNombreCompleto());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_CORREO", u.getCorreoCorporativo());
+                        }
                     });
 
             // Si el usuario venía de una URL protegida válida, redirigir allí
@@ -114,28 +130,30 @@ public class LoginController {
             }
 
             // Redirección según rol
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            String redirectUrl = "/admin/inicio";
-
-            for (GrantedAuthority authority : authorities) {
-                String role = authority.getAuthority();
-                if (role.equals("ROLE_SUPERADMIN")) {
-                    redirectUrl = "/superadmin/inicio";
-                    break;
-                } else if (role.equals("ROLE_ADMINISTRADOR")) {
-                    redirectUrl = "/admin/inicio";
-                    break;
-                } else if (role.equals("ROLE_SOCIO")) {
-                    redirectUrl = "/socio/inicio";
-                    break;
-                } else if (role.equals("ROLE_VISUALIZADOR")) {
-                    redirectUrl = "/visualizador/inicio";
-                    break;
-                }
-            }
-
-            response.sendRedirect(redirectUrl);
+            response.sendRedirect(resolveHomeUrlForRole(authentication));
         }
+    }
+
+    /**
+     * URL de inicio según el rol del usuario autenticado. Compartido entre el
+     * success handler (login recién hecho) y el chequeo de sesión activa en
+     * {@link #login(Model)} (usuario ya autenticado que vuelve a /login).
+     */
+    private static String resolveHomeUrlForRole(Authentication authentication) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            String role = authority.getAuthority();
+            if (role.equals("ROLE_SUPERADMIN")) {
+                return "/superadmin/inicio";
+            } else if (role.equals("ROLE_ADMINISTRADOR")) {
+                return "/admin/inicio";
+            } else if (role.equals("ROLE_SOCIO")) {
+                return "/socio/inicio";
+            } else if (role.equals("ROLE_VISUALIZADOR")) {
+                return "/visualizador/inicio";
+            }
+        }
+        return "/admin/inicio";
     }
 
     /**
@@ -167,6 +185,17 @@ public class LoginController {
      */
     @GetMapping("/service/repositorio/login")
     public String login(Model model) {
+        // Si ya hay una sesión autenticada en este navegador (p.ej. otra pestaña),
+        // no se debe mostrar el formulario de login: se redirige directo al home
+        // del usuario. Evita la falsa impresión de "dos sesiones" cuando en
+        // realidad es la misma sesión (misma cookie) vista desde otra pestaña.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            return "redirect:" + resolveHomeUrlForRole(authentication);
+        }
+
         long totalNormativas = 0;
         long totalDocumentos = 0;
         long porcentajeActualizado = 0;

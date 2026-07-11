@@ -1,6 +1,7 @@
 package org.reciclame.demo.controller;
 
 import org.reciclame.demo.model.Auditoria;
+import org.reciclame.demo.service.AuditoriaHashChainService;
 import org.reciclame.demo.service.AuditoriaService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auditoria")
@@ -81,6 +84,52 @@ public class AuditoriaController {
     @GetMapping("/{id}")
     public ResponseEntity<Auditoria> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(auditoriaService.obtenerAuditoriaPorId(id));
+    }
+
+    // ── VERIFICACIÓN DE INTEGRIDAD (HASH CHAIN) ────────────────────────
+    /**
+     * Recorre toda la cadena y devuelve el primer registro que rompa la
+     * integridad, junto con los hashes esperados y encontrados. Status
+     * 200 incluso cuando la verificación falla — la respuesta incluye
+     * {@code integro: false} para que la UI pueda mostrar el detalle
+     * sin tratar el HTTP como error de servidor.
+     */
+    @GetMapping("/verificar-integridad")
+    public ResponseEntity<Map<String, Object>> verificarIntegridad() {
+        AuditoriaHashChainService.ResultadoVerificacion r =
+                auditoriaService.verificarIntegridadCadena();
+        Map<String, Object> body = new HashMap<>();
+        body.put("integro", r.isIntegro());
+        body.put("totalRegistros", r.getTotalRegistros());
+        body.put("registrosVerificados", r.getRegistrosVerificados());
+        body.put("registrosSinFirma", r.getRegistrosSinFirma());
+        body.put("idFalla", r.getIdFalla());
+        body.put("hashEsperado", r.getHashEsperado());
+        body.put("hashAnteriorEncontrado", r.getHashAnteriorEncontrado());
+        body.put("hashActualEncontrado", r.getHashActualEncontrado());
+        body.put("mensaje", r.getMensaje());
+        return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/verificar-integridad/rango")
+    public ResponseEntity<Map<String, Object>> verificarIntegridadRango(
+            @RequestParam String desde,
+            @RequestParam String hasta) {
+        Instant d = Instant.parse(desde);
+        Instant h = Instant.parse(hasta);
+        AuditoriaHashChainService.ResultadoVerificacion r =
+                auditoriaService.verificarIntegridadCadenaEnRango(d, h);
+        Map<String, Object> body = new HashMap<>();
+        body.put("integro", r.isIntegro());
+        body.put("totalRegistros", r.getTotalRegistros());
+        body.put("registrosVerificados", r.getRegistrosVerificados());
+        body.put("registrosSinFirma", r.getRegistrosSinFirma());
+        body.put("idFalla", r.getIdFalla());
+        body.put("hashEsperado", r.getHashEsperado());
+        body.put("hashAnteriorEncontrado", r.getHashAnteriorEncontrado());
+        body.put("hashActualEncontrado", r.getHashActualEncontrado());
+        body.put("mensaje", r.getMensaje());
+        return ResponseEntity.ok(body);
     }
 
     // ── MANEJO DE ERRORES ────────────────────────────────────────────

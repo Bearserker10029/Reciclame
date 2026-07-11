@@ -285,7 +285,11 @@
             <div class="form-group">
               <label>Razón Social <span class="required">*</span></label>
               <input id="input-razon-social" type="text" name="razonSocial" th:value="${empresa?.razonSocial}" required
+                minlength="3" maxlength="200"
                 th:classappend="${error_razonSocial != null} ? 'input-error'" placeholder="Ingrese la razón social" />
+              <span class="error-message" id="err-razon-social"
+                    th:if="${error_razonSocial}" th:text="${error_razonSocial}"
+                    style="display:none;"></span>
               <span class="error-message" th:if="${error_razonSocial}" th:text="${error_razonSocial}"></span>
             </div>
 
@@ -320,13 +324,90 @@
   </div>
 
   <script>
+    // ── Reglas de validación (cliente) ───────────────────────────
+    var RUC_RE     = /^[0-9]{11}$/;
+    var RAZON_RE   = /^[\s\S]{3,200}$/; // cualquier caracter, 3-200
+
+    // ── Utilidad: pintar/quitar error en un campo ────────────────
+    function setFieldError(inputId, errMsgId, msg) {
+      var input = document.getElementById(inputId);
+      var err   = errMsgId ? document.getElementById(errMsgId) : null;
+      if (msg) {
+        if (input) {
+          input.classList.add('input-error');
+          input.setAttribute('aria-invalid', 'true');
+        }
+        if (err) { err.textContent = msg; err.style.display = 'block'; }
+      } else {
+        if (input) {
+          input.classList.remove('input-error');
+          input.removeAttribute('aria-invalid');
+        }
+        if (err) err.style.display = 'none';
+      }
+    }
+
+    // ── Validación de RUC ───────────────────────────────────────
+    function validateRuc() {
+      var input = document.getElementById('input-ruc');
+      if (!input) return true; // En modo edición el RUC no es editable
+      var v = (input.value || '').trim();
+      if (v === '') {
+        setFieldError('input-ruc', null, '');
+        return false;
+      }
+      if (!/^[0-9]+$/.test(v)) {
+        setFieldError('input-ruc', null, '');
+        return false;
+      }
+      if (!RUC_RE.test(v)) {
+        setFieldError('input-ruc', null, '');
+        return false;
+      }
+      setFieldError('input-ruc', null, '');
+      return true;
+    }
+
+    // ── Validación de Razón Social ──────────────────────────────
+    function validateRazonSocial() {
+      var input = document.getElementById('input-razon-social');
+      if (!input) return true;
+      var v = (input.value || '').trim();
+      if (v === '') {
+        setFieldError('input-razon-social', 'err-razon-social',
+          'La razón social es obligatoria');
+        return false;
+      }
+      if (v.length < 3) {
+        setFieldError('input-razon-social', 'err-razon-social',
+          'La razón social debe tener al menos 3 caracteres');
+        return false;
+      }
+      if (v.length > 200) {
+        setFieldError('input-razon-social', 'err-razon-social',
+          'La razón social no puede superar los 200 caracteres');
+        return false;
+      }
+      setFieldError('input-razon-social', 'err-razon-social', '');
+      return true;
+    }
+
+    // ── Validación global del formulario ────────────────────────
+    function evaluarFormulario() {
+      var rucOk   = validateRuc();
+      var razonOk = validateRazonSocial();
+      return rucOk && razonOk;
+    }
+
+    // ── Consultar RUC en SUNAT ──────────────────────────────────
     function verificarRuc() {
       var ruc = document.getElementById('input-ruc').value.trim();
       var fb = document.getElementById('ruc-feedback');
       var btn = document.getElementById('btn-verificar-ruc');
-      if (ruc.length !== 11) {
+      if (ruc === '' || !RUC_RE.test(ruc)) {
         fb.style.display = 'block'; fb.style.color = '#EF4444';
-        fb.textContent = 'Ingresa los 11 dígitos del RUC primero.'; return;
+        fb.textContent = 'Ingresa los 11 dígitos del RUC primero.';
+        return;
       }
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Consultando...';
@@ -340,6 +421,7 @@
         .then(function(data) {
           var razonInput = document.getElementById('input-razon-social');
           if (razonInput) razonInput.value = data.razonSocial || '';
+          validateRazonSocial(); // refresca estado del campo tras autollenado
           fb.style.display = 'block'; fb.style.color = '#16A34A';
           var extra = data.estadoContribuyente ? ' · ' + data.estadoContribuyente : '';
           fb.textContent = '✓ Razón social completada desde SUNAT.' + extra;
@@ -354,6 +436,36 @@
           btn.innerHTML = '<i class="fas fa-search"></i> Verificar';
         });
     }
+
+    // ── Hooks en input ──────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+      var ruc = document.getElementById('input-ruc');
+      if (ruc) {
+        ruc.addEventListener('input', function() {
+          ruc.value = ruc.value.replace(/\D/g, '').slice(0, 11);
+          validateRuc();
+        });
+        ruc.addEventListener('blur', validateRuc);
+      }
+      var razon = document.getElementById('input-razon-social');
+      if (razon) {
+        razon.addEventListener('input', validateRazonSocial);
+        razon.addEventListener('blur', validateRazonSocial);
+      }
+
+      // Interceptar submit
+      var form = document.querySelector('form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          if (!evaluarFormulario()) {
+            e.preventDefault();
+            // Scroll al primer error
+            var firstErr = document.querySelector('.input-error');
+            if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        });
+      }
+    });
   </script>
 
 </body>
