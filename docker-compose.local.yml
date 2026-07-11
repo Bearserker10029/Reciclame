@@ -7,6 +7,10 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: reciclame_db
       TZ: America/Lima
+    ports:
+      # Host 3306 suele estar ocupado por un MySQL nativo de Windows; se publica
+      # en 3307 para dev local fuera de Docker (ver .idea/runConfigurations).
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./src/main/resources/db/reciclame_db.sql:/docker-entrypoint-initdb.d/01-reciclame_db.sql:ro
