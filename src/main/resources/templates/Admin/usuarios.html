@@ -778,7 +778,7 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- HERO -->
+
         <div class="estudios-hero">
           <div
             style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
@@ -824,7 +824,7 @@
           </div>
         </div>
 
-        <!-- ═══ TABS ═══ -->
+
         <div class="norm-tab-bar">
           <button id="tab-usuarios-activos" class="norm-tab active" onclick="switchUsuarioTab('activos')">
             <i class="fas fa-users"></i> Usuarios activos
@@ -843,9 +843,9 @@
           </button>
         </div>
 
-        <!-- ═══ TAB: ACTIVOS ═══ -->
+
         <div id="utab-activos">
-          <!-- Filtros -->
+
           <div class="filter-row">
             <input type="text" style="display:none;position:absolute;left:-9999px;" autocomplete="username"
               tabindex="-1" aria-hidden="true" />
@@ -876,7 +876,7 @@
             </button>
           </div>
 
-          <!-- Tabla -->
+
           <div class="norm-table-card">
             <div style="overflow-x:auto;">
               <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
@@ -989,7 +989,7 @@
           </div>
         </div>
 
-        <!-- ═══ TAB: PENDIENTES ═══ -->
+
         <div id="utab-pendientes" style="display:none;">
           <div style="display:flex;flex-direction:column;gap:12px;">
             <div th:each="sol : ${solicitudesPendientes}"
@@ -1036,7 +1036,7 @@
           </div>
         </div>
 
-        <!-- ═══ TAB: HISTORIAL ═══ -->
+
         <div id="utab-historial" style="display:none;">
           <div
             style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
@@ -1098,7 +1098,7 @@
           </div>
         </div>
 
-        <!-- ═══ TAB: Solicitudes resueltas (APROBADA / RECHAZADA) ═══ -->
+
         <div id="utab-resueltas" style="display:none;">
           <div class="norm-table-card" style="margin-top:14px;">
             <div style="overflow-x:auto;">
@@ -1159,7 +1159,7 @@
           </div>
         </div>
 
-        <!-- ═══ Modal: Ver motivo de rechazo ═══ -->
+
         <div id="modal-ver-motivo" class="modal-rechazo" style="display:none;">
           <div style="background:#fff;border-radius:16px;padding:28px;max-width:540px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
@@ -1199,7 +1199,7 @@
           </div>
         </div>
 
-        <!-- MODALES Y SCRIPTS (igual que en Admin/usuarios.html) -->
+
         <div id="modal-crear" class="modal-overlay">
           <div class="modal-box">
             <div class="modal-header-banner">
@@ -1865,7 +1865,7 @@
     </div>
   </div>
 
-  <!-- Modal Reactivar Usuario -->
+
   <div id="modal-reactivar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1888,7 +1888,7 @@
     </div>
   </div>
 
-  <!-- Modal Desbloquear Usuario -->
+
   <div id="modal-desbloquear"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1911,7 +1911,7 @@
     </div>
   </div>
 
-  <!-- Modal Éxito -->
+
   <div id="modal-exito"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1928,7 +1928,7 @@
     </div>
   </div>
 
-  <!-- Modal Confirmar Bloqueo / Desbloqueo -->
+
   <div id="modal-confirmar-bloqueo"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1951,7 +1951,7 @@
     </div>
   </div>
 
-  <!-- Modal Eliminar Usuario (Rojo) -->
+
   <div id="modal-eliminar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1976,7 +1976,7 @@
     </div>
   </div>
 
-    <!-- Modal Aprobar Solicitud -->
+
     <div id="modal-aprobar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="text-align:center;margin-bottom:20px;">
@@ -1993,7 +1993,7 @@
       </div>
     </div>
 
-    <!-- Modal Rechazar Solicitud -->
+
     <div id="modal-rechazar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="text-align:center;margin-bottom:20px;">
@@ -2014,7 +2014,7 @@
       </div>
     </div>
 
-    <!-- Modal Error Genérico -->
+
     <div id="modal-error" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
         <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">

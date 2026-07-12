@@ -132,11 +132,11 @@
   </script>
 
   <div class="layout">
-    <!-- Topbar estándar de la app (incluye search box global) -->
+
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
 
     <div class="layout-main">
-      <!-- Sidebar único que se adapta al rol vía variable model 'rol' -->
+
       <th:block th:if="${session.usuarioSesion != null and rolEfectivo != null}">
         <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       </th:block>

@@ -101,7 +101,7 @@
 
   <div class="tr-grid">
 
-    <!-- ── TOP 5 MÁS VISTAS ─────────────────────────────────── -->
+
     <div class="glass-card" style="padding:20px;">
       <div class="tr-section-title">
         <span><i class="fas fa-fire" style="color:#E67E22;font-size:14px;"></i> Más consultadas</span>
@@ -113,23 +113,23 @@
           <a class="tr-card"
              th:href="@{/{p}/normativo/{id}/ver(p=${prefijo},id=${n.id})}">
 
-            <!-- Portada con color de temática -->
+
             <div class="tr-cover"
                  th:style="'background:linear-gradient(135deg,' + (${n.tematicaColor != null ? n.tematicaColor : '#1B3A5C'}) + ' 0%,' + (${n.tematicaColor != null ? n.tematicaColor : '#1B3A5C'}) + 'CC 100%);'">
-              <!-- Número de ranking -->
+
               <span class="tr-rank"
                     th:text="${i.index == 0 ? '🥇' : (i.index == 1 ? '🥈' : (i.index == 2 ? '🥉' : '#' + (i.index+1)))}">1</span>
               <i class="fas fa-gavel tr-cover-icon"></i>
               <span class="tr-cover-badge"
                     th:text="${n.tematicaCodigo != null ? n.tematicaCodigo : 'NORM'}">NORM</span>
-              <!-- Contador vistas -->
+
               <span class="tr-views">
                 <i class="fas fa-eye"></i>
                 <span th:text="${n.visualizacionesCount != null ? n.visualizacionesCount : 0}">0</span>
               </span>
             </div>
 
-            <!-- Info -->
+
             <div class="tr-body">
               <div class="tr-body-title" th:text="${n.titulo}">—</div>
               <div class="tr-body-meta">
@@ -148,7 +148,7 @@
       </div>
     </div>
 
-    <!-- ── VISTOS RECIENTEMENTE ──────────────────────────────── -->
+
     <div class="glass-card" style="padding:20px;">
       <div class="tr-section-title">
         <span><i class="fas fa-clock" style="color:#3498DB;font-size:14px;"></i> Vistos recientemente</span>
@@ -158,7 +158,7 @@
         <th:block th:each="r : ${recientesUsuario}">
           <a class="tr-rec-card" th:href="${r.urlVer}">
 
-            <!-- Portada según tipo de icono -->
+
             <div class="tr-rec-cover"
                  th:style="${r.iconVariant == 'pdf'} ? 'background:linear-gradient(135deg,#C0392B 0%,#E74C3C 100%);'
                            : (${r.iconVariant == 'slide'} ? 'background:linear-gradient(135deg,#D35400 0%,#E67E22 100%);'
@@ -170,7 +170,7 @@
               <span class="tr-rec-time" th:text="${r.tiempoRelativo}">—</span>
             </div>
 
-            <!-- Info -->
+
             <div class="tr-rec-body">
               <div class="tr-rec-title" th:text="${r.titulo}">—</div>
               <div class="tr-rec-meta"

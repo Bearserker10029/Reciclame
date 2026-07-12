@@ -399,14 +399,14 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ DATA ISLAND ══ -->
+
         <script th:inline="javascript">
           var IS_EDIT = [[${ isEdit }]];
           var NORMATIVA_ID = [[${ normativa?.id }]];
           var INIT_DATA = IS_EDIT ? [[${ normativa }]] : null;
         </script>
 
-        <!-- ══ HERO ══ -->
+
         <div class="form-hero">
           <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
             <a href="/admin/normativo" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
@@ -429,23 +429,23 @@
           </div>
         </div>
 
-        <!-- ══ ERROR BANNER ══ -->
+
         <div id="form-error"></div>
 
-        <!-- ══ INFO: ESCANEO VIRUS TOTAL ══ -->
+
         <div class="vt-info-banner"
              style="background:#e7f1ff;border:1px solid #b6d4fe;color:#052c65;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px;">
           <i class="fas fa-shield-alt"></i>
           <span>Todo archivo adjunto se escanea automáticamente contra <strong>VirusTotal</strong> antes de almacenarse. Si el antivirus detecta malware, la subida será rechazada.</span>
         </div>
 
-        <!-- ══ FORM GRID ══ -->
+
         <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
 
-          <!-- LEFT COLUMN -->
+
           <div>
 
-            <!-- ── Card 1: Información General ── -->
+
             <div class="form-card">
               <div class="card-section-title">
                 <i class="fas fa-file-alt"></i> Información General
@@ -469,7 +469,7 @@
               </div>
             </div>
 
-            <!-- ── Card 2: Clasificación Legal ── -->
+
             <div class="form-card" style="animation-delay:.05s">
               <div class="card-section-title">
                 <i class="fas fa-gavel"></i> Clasificación Legal
@@ -513,7 +513,7 @@
                 </div>
               </div>
 
-              <!-- Etiquetas -->
+
               <div style="margin-top:16px;">
                 <label class="form-label">Etiquetas</label>
                 <div class="etiqueta-grid" id="etiqueta-grid">
@@ -525,7 +525,7 @@
               </div>
             </div>
 
-            <!-- ── Card 3: Fechas Clave ── -->
+
             <div class="form-card" style="animation-delay:.1s">
               <div class="card-section-title">
                 <i class="fas fa-calendar-alt"></i> Fechas Clave
@@ -550,18 +550,18 @@
               </div>
             </div>
 
-          </div><!-- /left column -->
+          </div> 
 
-          <!-- RIGHT COLUMN -->
+
           <div>
 
-            <!-- ── Card 4: Archivo y Visibilidad ── -->
+
             <div class="form-card" style="animation-delay:.15s">
               <div class="card-section-title">
                 <i class="fas fa-upload"></i> Archivo y Visibilidad
               </div>
 
-              <!-- Drop zone -->
+
               <div class="drop-zone" id="drop-zone" onclick="document.getElementById('f-archivo').click()"
                 ondragover="event.preventDefault();this.classList.add('dragover')"
                 ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
@@ -573,7 +573,7 @@
               <input type="file" id="f-archivo" style="display:none;" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onchange="onFileChange(this)" />
 
-              <!-- Archivo actual en modo edición -->
+
               <div id="archivo-actual" style="display:none;margin-top:10px;padding:10px 14px;
                background:#F0FFF6;border-radius:9px;border:1px solid rgba(46,204,113,.2);">
                 <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px;">
@@ -584,7 +584,7 @@
                 </a>
               </div>
 
-              <!-- Visibilidad toggle -->
+
               <div style="margin-top:20px;padding:14px;background:#FAFBFC;border-radius:10px;border:1px solid #F0F4F8;">
                 <div class="toggle-wrap">
                   <label class="toggle-switch">
@@ -598,12 +598,12 @@
                 </div>
               </div>
 
-              <!-- Errores de validación del backend -->
+
               <div id="errores-validacion" style="display:none;margin-top:14px;padding:12px 14px;
                background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
                color:#B91C1C;font-size:12px;line-height:1.6;"></div>
 
-              <!-- Actions -->
+
               <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
                 <button id="btn-guardar" class="btn-submit" onclick="submitForm()">
                   <i class="fas fa-save" style="margin-right:6px;"></i>
@@ -615,10 +615,10 @@
               </div>
             </div>
 
-          </div><!-- /right column -->
-        </div><!-- /form grid -->
+          </div> 
+        </div> 
 
-        <!-- ══ TOAST ══ -->
+
         <div id="toast-norm"></div>
 
         <script>

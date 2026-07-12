@@ -135,7 +135,7 @@
 <body>
 <div class="layout">
 
-  <!-- ═══════════════════════ PANEL IZQUIERDO ═══════════════════════ -->
+
   <div class="left glow">
     <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
 
@@ -161,7 +161,7 @@
         </div>
       </div>
 
-      <!-- Error del servidor (AC3 duplicado) -->
+
       <div class="error-banner" th:if="${error != null and !#strings.isEmpty(error)}">
         <i class="fas fa-exclamation-triangle"></i>
         <span th:text="${error}">Error</span>
@@ -188,19 +188,14 @@
           </label>
           <div class="input-locked" style="position:relative;">
             <i class="fas fa-user field-icon"></i>
-            <!-- Visible: sin name (los disabled no envían valor al POST).
-                 El hidden de abajo es quien viaja en el form.
-                 Arranca disabled: solo se habilita si la búsqueda de DNI
-                 confirma que el DNI no existe en el sistema. -->
+
             <input id="inp-nombre" class="glass-input form-control" type="text"
                    th:value="${nombre}" placeholder="Ingresa tu DNI primero" required minlength="3" maxlength="200"
                    pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü\s'.-]{3,200}$"
                    title="Se autocompleta al validar tu DNI"
                    disabled
                    oninput="validateNombre(); syncNombreHidden();" />
-            <!-- Espejo: el único que lleva el name="nombre" para que el
-                 backend lo reciba tanto si el visible está disabled como
-                 si no. Se sincroniza en cada oninput del visible. -->
+
             <input type="hidden" id="inp-nombre-hidden" name="nombre" th:value="${nombre}" />
             <i class="fas fa-lock input-lock-icon" title="Vinculado al DNI: no editable"></i>
           </div>
@@ -240,10 +235,10 @@
 
       <p class="register-hint">¿Ya tienes cuenta? <a th:href="@{/service/repositorio/login}" href="/service/repositorio/login">Iniciar sesión</a></p>
     </div>
-  </div><!-- /left -->
+  </div> 
 
 
-  <!-- ═══════════════════════ PANEL DERECHO ════════════════════════ -->
+
   <div class="right">
     <img class="right-bg"
          src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
@@ -310,9 +305,9 @@
         Acceso exclusivo para socios verificados de Recíclame
       </div>
     </div>
-  </div><!-- /right -->
+  </div> 
 
-</div><!-- /layout -->
+</div> 
 
 <script>
   function setGlowEffectRx() {

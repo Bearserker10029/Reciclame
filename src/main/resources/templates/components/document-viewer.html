@@ -2,18 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <body>
 
-<!--
-  Fragmento reutilizable para el visor de documentos con kkfileview.
-  Muestra un loading overlay mientras el iframe carga y reintenta automáticamente
-  si kkfileview tarda más de lo esperado (archivos .docx/.pptx de 2-3 MB).
 
-  Uso:
-    <th:block th:replace="~{components/document-viewer :: viewer(
-        archivoUrl=${entity.archivoUrl},
-        titulo=${entity.titulo},
-        mime=${entity.archivoTipoMime})}">
-    </th:block>
--->
 <th:block th:fragment="viewer(archivoUrl, titulo, mime)">
 
   <style>
@@ -67,7 +56,7 @@
   </style>
 
   <div class="doc-viewer-wrap" id="docViewerWrap">
-    <!-- Overlay de carga / error (visible por defecto hasta que el JS confirme que el archivo existe) -->
+
     <div class="doc-viewer-loading" id="docViewerLoading">
       <div class="doc-viewer-spinner"></div>
       <div class="doc-viewer-loading-text">
@@ -79,12 +68,7 @@
         Reintentar
       </button>
     </div>
-    <!--
-      iframe del visor: NO se renderiza acá. El JS lo crea dinámicamente
-      (wrap.parentNode.appendChild(iframe)) solo cuando el endpoint /visor
-      confirma que el archivo existe. Si no existe, el overlay se queda
-      mostrando el mensaje de error y el iframe nunca aparece en el DOM.
-    -->
+
   </div>
 
   <script th:inline="javascript">
