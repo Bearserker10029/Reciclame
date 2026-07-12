@@ -848,9 +848,7 @@
 
   <div class="layout">
 
-    <!-- ═══════════════════════════════════════
-       PANEL IZQUIERDO
-  ═══════════════════════════════════════ -->
+
     <div class="left glow">
       <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none">
         <rect></rect>
@@ -870,7 +868,7 @@
         <div class="logo-divider"></div>
       </div>
 
-      <!-- LOGIN -->
+
       <div id="panel-login" class="panel active">
         <div class="section-title">Repositorio Circular</div>
         <div class="section-sub">Accede con tu correo corporativo para continuar</div>
@@ -911,7 +909,7 @@
           <button type="submit" class="btn btn-primary"><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</button>
         </form>
 
-        <!-- Botón de escaneo QR: visible solo en móvil/tablet (≤ 1024px ancho) -->
+
         <div id="qr-scan-row" class="qr-scan-row">
           <div class="qr-scan-divider"><span>o</span></div>
           <button type="button" class="btn qr-scan-btn" onclick="abrirScannerQr()">
@@ -927,7 +925,7 @@
         </div>
       </div>
 
-      <!-- RECOVERY -->
+
       <div id="panel-recovery" class="panel">
         <div class="back-row">
           <button class="btn back-btn" onclick="showPanel('panel-login')"><i class="fas fa-arrow-left"></i></button>
@@ -954,7 +952,7 @@
         </div>
       </div>
 
-      <!-- REGISTRO -->
+
       <div id="panel-registro" class="panel">
         <div class="back-row">
           <button class="btn back-btn" onclick="showPanel('panel-login')"><i class="fas fa-arrow-left"></i></button>
@@ -1013,14 +1011,12 @@
         </div>
       </div>
 
-      </div><!-- /left -->
+      </div> 
 
 
-    <!-- ═══════════════════════════════════════
-       PANEL DERECHO — REDISEÑADO
-  ═══════════════════════════════════════ -->
+
     <div class="right">
-      <!-- Imagen de fondo (reciclaje en Perú) -->
+
       <img class="right-bg"
         src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
         onerror="this.style.display='none'"
@@ -1028,7 +1024,7 @@
 
       <div class="right-overlay"></div>
 
-      <!-- Partículas flotantes -->
+
       <div class="particle" style="width:6px;height:6px;left:15%;animation-duration:12s;animation-delay:0s;"></div>
       <div class="particle" style="width:4px;height:4px;left:35%;animation-duration:18s;animation-delay:3s;"></div>
       <div class="particle" style="width:8px;height:8px;left:55%;animation-duration:14s;animation-delay:1.5s;"></div>
@@ -1036,20 +1032,20 @@
       <div class="particle" style="width:3px;height:3px;left:85%;animation-duration:10s;animation-delay:2s;"></div>
       <div class="particle" style="width:7px;height:7px;left:25%;animation-duration:20s;animation-delay:7s;"></div>
 
-      <!-- Círculos decorativos -->
+
       <div class="deco-circle deco-circle-1"></div>
       <div class="deco-circle deco-circle-2"></div>
       <div class="deco-circle deco-circle-3"></div>
 
       <div class="right-content">
 
-        <!-- Badge live -->
+
         <div class="live-badge">
           <span class="pulse-dot"></span>
           Sistema en línea · actualizado hoy
         </div>
 
-        <!-- Logo Recíclame grande -->
+
         <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
           <img src="https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png"
                alt="Recíclame" style="height:52px;width:auto;filter:brightness(1.1);"
@@ -1057,13 +1053,13 @@
           <div style="height:2px;width:48px;background:linear-gradient(90deg,transparent,var(--green),transparent);border-radius:999px;"></div>
         </div>
 
-        <!-- Headline -->
+
         <div class="right-headline">
           <h1>Repositorio<br /><em>Circular</em></h1>
           <p>La plataforma de gestión de conocimiento en economía circular para socios de Recíclame Perú.</p>
         </div>
 
-        <!-- Stats (valores reales desde BD vía LoginController) -->
+
         <div class="stats-row glow">
           <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none">
             <rect></rect>
@@ -1088,7 +1084,7 @@
           </div>
         </div>
 
-        <!-- Módulos highlight -->
+
         <div style="display:flex;gap:10px;width:100%;max-width:400px;">
           <div style="flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;backdrop-filter:blur(8px);text-align:center;">
             <i class="fas fa-folder-open" style="color:var(--green);font-size:20px;display:block;margin-bottom:6px;"></i>
@@ -1107,16 +1103,16 @@
           </div>
         </div>
 
-        <!-- Tagline bottom -->
+
         <div class="right-tagline">
           <i class="fas fa-shield-alt" style="color:var(--green);margin-right:6px;font-size:10px;"></i>
           Acceso exclusivo para socios verificados de Recíclame
         </div>
 
       </div>
-    </div><!-- /right -->
+    </div> 
 
-  </div><!-- /layout -->
+  </div> 
 
   <script>
     function setGlowEffectRx() {
@@ -1276,7 +1272,7 @@
     }
   </script>
 
-  <!-- ═══════════════════════ Scanner QR (móvil/tablet) ═══════════════════════ -->
+
   <div id="qr-scanner-modal" class="qr-scanner-modal" role="dialog" aria-modal="true">
     <div class="qr-scanner-header">
       <div class="qr-scanner-title">
@@ -1296,7 +1292,7 @@
     <div id="qr-scanner-error" class="qr-scanner-error"></div>
   </div>
 
-  <!-- Librería html5-qrcode: carga bajo demanda al abrir el scanner -->
+
   <script>
     (function () {
       var html5QrInstance = null;

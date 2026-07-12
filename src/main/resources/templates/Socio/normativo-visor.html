@@ -120,7 +120,7 @@
       <main
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;display:flex;flex-direction:column;overflow:hidden;">
 
-        <!-- Barra superior del visor -->
+
         <div class="visor-topbar">
           <div class="visor-topbar-left">
             <a th:href="${urlRetorno != null ? urlRetorno : '/socio/normativo'}" class="btn-back">
@@ -147,7 +147,7 @@
           </div>
         </div>
 
-        <!-- Error state: archivo no existe en MinIO -->
+
         <div th:unless="${archivoDisponible}"
              style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#6B7280;background:#F8FAFC;">
           <i class="fas fa-file-slash" style="font-size:56px;color:#D1D5DB;"></i>
@@ -161,7 +161,7 @@
           </a>
         </div>
 
-        <!-- Visor con loading overlay y retry automático -->
+
         <th:block th:if="${archivoDisponible}"
           th:replace="~{components/document-viewer :: viewer(
             archivoUrl=${normativa.archivoUrl},

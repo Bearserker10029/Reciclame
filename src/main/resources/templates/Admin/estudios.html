@@ -990,7 +990,7 @@
                     </th:block>
                   </td>
                   <td class="text-center">
-                    <!-- PENDIENTE — staging://… detectado por el helper, se actualiza vía polling -->
+
                     <span th:if="${e.estadoValidacion != null and e.estadoValidacion.name() == 'PENDIENTE'}"
                           class="badge-vt-pending"
                           title="Archivo recién subido a staging. La validación VirusTotal está en curso."
@@ -999,9 +999,7 @@
                                    data-poll-url=@{/api/uploads/ESTUDIO/{tid}(tid=${#strings.replace(e.archivoUrl, 'staging://', '')})}">
                       <i class="fas fa-shield-alt"></i> Pendiente
                     </span>
-                    <!-- Bloque viejo: se renderiza cuando el archivo YA pasó por staging.
-                         estadoValidacion puede ser null (sin archivo), APROBADO o RECHAZADO.
-                         Solo se oculta cuando estadoValidacion == PENDIENTE (badge "Pendiente" arriba). -->
+
                     <th:block th:if="${e.estadoValidacion == null or e.estadoValidacion.name() == 'APROBADO' or e.estadoValidacion.name() == 'RECHAZADO'}">
                     <span th:if="${e.vtVerdict == 'CLEAN' or e.vtVerdict == 'UNDETECTED' or e.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
                       th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: 0/' + e.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
@@ -1066,7 +1064,7 @@
               </tbody>
             </table>
           </div>
-          <!-- ══ PAGINACIÓN ══ -->
+
           <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
             <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
             <div id="paginacion-estudios" style="display:flex;align-items:center;flex-wrap:wrap;gap:2px;"></div>
@@ -1127,7 +1125,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- Vista previa kkfileview -->
+
                 <div id="modal-visor-preview" class="mt-3" style="display:none;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <small
@@ -1146,7 +1144,7 @@
                   </div>
                 </div>
 
-                <!-- Bloque VirusTotal (rellenado por JS al abrir modal) -->
+
                 <div id="modal-vt-block"
                   style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.18);">
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -1677,7 +1675,7 @@
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <!-- ── Polling de archivos pendientes de validación VirusTotal ── -->
+
   <script>
   (function () {
     function findPendingBadges() {
@@ -1769,7 +1767,7 @@
   <script th:inline="javascript">
   </script>
 
-  <!-- ── Modal eliminar estudio ── -->
+
   <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
       <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">

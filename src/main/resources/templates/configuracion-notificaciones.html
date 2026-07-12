@@ -6,15 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recíclame — Configuración de Notificaciones</title>
 
-  <!--
-    Derivamos el prefijo de rol a partir de configuracionUrl (siempre disponible).
-    Ejemplos:
-      /socio/notificaciones/configuracion     → "socio"
-      /admin/notificaciones/configuracion     → "admin"
-      /superadmin/notificaciones/configuracion → "superadmin"
 
-    La función navTo() del script lee esta etiqueta para construir las rutas.
-  -->
   <meta name="rol-prefix" th:content="${#strings.substringBefore(
                         #strings.substringAfter(configuracionUrl, '/'),
                         '/')}" content="socio" />
@@ -296,17 +288,17 @@
 
         <div style="max-width:520px;animation:fadeUp .5s .1s ease both;">
 
-          <!-- Alerta de éxito tras guardar (redirect con param guardado=true) -->
+
           <div class="alert-ok" th:if="${guardado}">
             <i class="fas fa-check-circle" style="margin-right:6px;color:#2ECC71;"></i>
             Preferencias guardadas correctamente.
           </div>
 
-          <!-- Formulario de preferencias -->
+
           <div style="background:rgba(255,255,255,.85);border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.1);backdrop-filter:blur(14px);">
             <form th:action="${configuracionUrl}" method="post">
 
-              <!-- Sección: Tipos de notificación -->
+
               <p class="pref-section-title">Tipos de notificación</p>
               <div style="margin-bottom:24px;">
 
@@ -336,7 +328,7 @@
 
               </div>
 
-              <!-- Sección: Canal y frecuencia -->
+
               <p class="pref-section-title">Canal y frecuencia</p>
               <div style="margin-bottom:28px;">
 
@@ -372,7 +364,7 @@
 
               </div>
 
-              <!-- Acciones -->
+
               <div style="display:flex;gap:12px;">
                 <button type="submit" class="btn-save">
                   <i class="fas fa-save" style="margin-right:6px;"></i>Guardar
@@ -390,10 +382,10 @@
       </main>
     </div>
 
-    <!-- ── Chatbot extraído a fragmento reutilizable ── -->
+
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 
-  </div><!-- #s-app -->
+  </div> 
 
   <script>
     /**

@@ -232,10 +232,10 @@
     </div>
   </aside>
 
-  <!-- ── Bottom Dock (mobile only) ── -->
+
   <nav id="mobile-dock">
 
-    <!-- VISUALIZADOR -->
+
     <th:block th:if="${rol == 'VISUALIZADOR'}">
       <a class="dock-item" th:href="@{/visualizador/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -256,7 +256,7 @@
       </a>
     </th:block>
 
-    <!-- SOCIO -->
+
     <th:block th:if="${rol == 'SOCIO'}">
       <a class="dock-item" th:href="@{/socio/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -275,7 +275,7 @@
       </button>
     </th:block>
 
-    <!-- ADMIN -->
+
     <th:block th:if="${rol == 'ADMIN'}">
       <a class="dock-item" th:href="@{/admin/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -294,11 +294,11 @@
       </button>
     </th:block>
 
-    <!-- SUPERADMIN: usa dock.html propio, no se renderiza aquí -->
+
 
   </nav>
 
-  <!-- Scrim del drawer del sidebar (mobile) — fuera del nav, a nivel de body -->
+
   <div id="sidebar-scrim" onclick="reciclameCerrarDrawer()"></div>
 
 <script>
@@ -331,7 +331,7 @@
     });
   </script>
 
-  <!-- ── Drawer del sidebar (Admin y SuperAdmin) ── -->
+
   <script>
     (function () {
       /* Funciones unificadas para Admin y SuperAdmin.

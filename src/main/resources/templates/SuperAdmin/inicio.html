@@ -223,16 +223,16 @@
           </form>
         </div>
 
-        <!-- DASHBOARD INICIO -->
+
         <div style="margin-bottom:24px;">
           <h1 style="font-size:24px;font-weight:800;color:#1B3A5C;margin-bottom:4px;">Panel de Administración</h1>
           <p style="color:#6B7280;font-size:14px;">Resumen de actividad del repositorio y gestión de usuarios</p>
         </div>
 
-        <!-- HERO BANNERS -->
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:28px;">
 
-          <!-- Banner Estudios -->
+
           <div id="tour-estudios" onclick="navTo('estudios')"
             style="position:relative;background:linear-gradient(135deg,#1B3A5C 0%,#2C5F8A 60%,#1B3A5C 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(27,58,92,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(27,58,92,.3)'"
@@ -279,7 +279,7 @@
             </div>
           </div>
 
-          <!-- Banner Normativo -->
+
           <div id="tour-normativo" onclick="navTo('normativo')"
             style="position:relative;background:linear-gradient(135deg,#0d5c2e 0%,#1a8a45 60%,#0d5c2e 100%);border-radius:16px;padding:28px 28px 24px;cursor:pointer;overflow:hidden;transition:transform .22s,box-shadow .22s;box-shadow:0 4px 18px rgba(13,92,46,.2);"
             onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 12px 32px rgba(13,92,46,.3)'"
@@ -328,9 +328,9 @@
             </div>
           </div>
 
-        </div><!-- /hero banners -->
+        </div> 
 
-        <!-- STATS ROW -->
+
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;">
 
           <div class="stat-card">
@@ -384,9 +384,9 @@
             <div style="font-size:12px;color:#6B7280;">Descargas totales</div>
           </div>
 
-        </div><!-- /stats row -->
+        </div> 
 
-        <!-- DONUT CHART -->
+
         <div
           style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:16px;padding:24px;box-shadow:0 4px 24px rgba(0,0,0,.08);margin-bottom:24px;">
           <div
@@ -432,12 +432,12 @@
               </div>
             </div>
           </div>
-        </div><!-- /donut -->
+        </div> 
 
-        <!-- ACTIVIDAD RECIENTE + SOLICITUDES PENDIENTES -->
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
 
-          <!-- Actividad reciente -->
+
           <div
             style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;padding:24px;box-shadow:0 4px 24px rgba(0,0,0,.08);">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:18px;">
@@ -477,7 +477,7 @@
             </div>
           </div>
 
-          <!-- Solicitudes pendientes -->
+
           <div
             style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;padding:24px;box-shadow:0 4px 24px rgba(0,0,0,.08);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
@@ -529,7 +529,7 @@
             </button>
           </div>
 
-        </div><!-- /two-col -->
+        </div> 
 
         <th:block th:replace="~{navbar/dock :: dock}"></th:block>
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
@@ -624,7 +624,7 @@
 
   <div th:replace="~{components/notif-toast :: notif-toast}"></div>
 
-  <!-- ── Onboarding Tour (Intro.js) ───────────────────────── -->
+
   <link rel="stylesheet" href="https://unpkg.com/intro.js/minified/introjs.min.css"/>
   <script src="https://unpkg.com/intro.js/minified/intro.min.js"></script>
   <style>

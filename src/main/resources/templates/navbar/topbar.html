@@ -292,7 +292,7 @@
           th:text="${session.usuarioSesion?.rolNombre}">ADMIN</span>
       </div>
 
-      <!-- Search box global (desktop) -->
+
       <th:block sec:authorize="isAuthenticated()">
         <form id="topbar-search" th:action="@{/buscar}" method="get" autocomplete="off"
               style="margin-left:24px;">
@@ -303,13 +303,13 @@
                  aria-label="Búsqueda global" />
         </form>
         <div id="search-dropdown" role="listbox" aria-label="Resultados de búsqueda"></div>
-        <!-- Ícono búsqueda mobile -->
+
         <div id="search-btn-mobile" onclick="abrirBusquedaMobile()" title="Buscar">
           <i class="fas fa-search"></i>
         </div>
       </th:block>
 
-      <!-- Overlay búsqueda mobile -->
+
       <div id="search-overlay-mobile">
         <i class="fas fa-search" style="color:rgba(255,255,255,.6);font-size:16px;"></i>
         <input id="search-mobile-input" type="text" placeholder="Buscar normativas y estudios…" autocomplete="off"/>
@@ -318,7 +318,7 @@
 
       <div style="flex:1"></div>
       <div style="display:flex;align-items:center;gap:20px;">
-        <!-- Ícono de chat interno (oculto para SUPERADMIN, excepto durante impersonación) -->
+
         <th:block sec:authorize="isAuthenticated()"
                   th:if="${session.usuarioSesion?.rolNombre != null
                           and (session.usuarioSesion.rolNombre != 'SUPERADMIN' or session.IMPERSONATED_USER != null)
@@ -374,7 +374,7 @@
       </div>
     </nav>
 
-    <!-- ── Panel lateral de chat ─────────────────────────────── -->
+
     <th:block sec:authorize="isAuthenticated()"
               th:if="${session.usuarioSesion?.rolNombre != null
                       and (session.usuarioSesion.rolNombre != 'SUPERADMIN' or session.IMPERSONATED_USER != null)
@@ -390,7 +390,7 @@
           </button>
         </div>
 
-        <!-- Vista 1: lista de conversaciones/contactos -->
+
         <div id="csp-listview" style="display:flex;flex-direction:column;flex:1;min-height:0;">
           <div class="csp-tabs">
             <button id="csp-tab-convs" class="active" onclick="cspCambiarTab('convs')">Conversaciones</button>
@@ -402,7 +402,7 @@
           <div id="csp-list" class="csp-list"></div>
         </div>
 
-        <!-- Vista 2: conversación activa -->
+
         <div id="csp-conv" class="csp-conv">
           <div class="csp-conv-head">
             <button class="csp-back" onclick="cspVolverLista()" title="Volver">

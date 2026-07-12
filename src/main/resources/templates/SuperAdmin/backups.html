@@ -601,7 +601,7 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- HERO -->
+
         <div class="estudios-hero">
           <div
             style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
@@ -651,7 +651,7 @@
           </div>
         </div>
 
-        <!-- TABS -->
+
         <div class="norm-tab-bar">
           <button id="tab-todos" class="norm-tab active" onclick="switchBkpTab('todos')">
             <i class="fas fa-list"></i> Todos<span class="count-badge" id="badge-todos">0</span>
@@ -670,7 +670,7 @@
           </button>
         </div>
 
-        <!-- FILTER ROW -->
+
         <div class="filter-row" id="filter-row-backups" style="display:none;">
           <div style="position:relative;flex:1;min-width:200px;">
             <i class="fas fa-search"
@@ -697,7 +697,7 @@
           </button>
         </div>
 
-        <!-- PANEL: BACKUPS -->
+
         <div id="panel-backups">
           <div class="norm-table-card">
             <div style="overflow-x:auto;">
@@ -725,7 +725,7 @@
           </div>
         </div>
 
-        <!-- PANEL: PROGRAMACIONES -->
+
         <div id="panel-programaciones" style="display:none;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
             <div>
@@ -761,11 +761,11 @@
       </main>
     </div>
 
-    <!-- CHATBOT -->
+
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <!-- MODAL: NUEVO BACKUP -->
+
   <div id="modal-nuevo-backup"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -809,7 +809,7 @@
     </div>
   </div>
 
-  <!-- MODAL: CONFIRMAR RESTAURACION (Step 1) -->
+
   <div id="modal-confirmar-restaurar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -859,7 +859,7 @@
     </div>
   </div>
 
-  <!-- MODAL: CONFIRMAR RESTAURACION (Step 2 - Typing) -->
+
   <div id="modal-confirmar-restaurar-paso2"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -900,7 +900,7 @@
     </div>
   </div>
 
-  <!-- MODAL: PROGRAMAR BACKUP -->
+
   <div id="modal-programar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -979,7 +979,7 @@
     </div>
   </div>
 
-  <!-- TOAST -->
+
   <div id="bkp-toast"></div>
 
   <script>
