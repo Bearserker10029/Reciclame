@@ -125,6 +125,7 @@
         #search-btn-mobile { display: flex !important; }
         #role-badge { display: none !important; }
         .topbar-subtitle { display: none !important; }
+        #peru-flag { display: none !important; }
         #notif-dropdown { width: 96vw; right: -8px; }
       }
       @media (min-width: 768px) {
@@ -290,6 +291,14 @@
         <span id="role-badge"
           style="background:rgba(243,156,18,.2);color:#F39C12;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;"
           th:text="${session.usuarioSesion?.rolNombre}">ADMIN</span>
+        <span id="peru-flag" title="¡Felices Fiestas Patrias, Perú!" aria-label="Bandera del Perú"
+          style="display:inline-flex;align-items:center;margin-left:6px;height:16px;width:24px;border-radius:2px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.25),0 1px 2px rgba(0,0,0,.3);flex-shrink:0;">
+          <svg width="24" height="16" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <rect x="0"  y="0" width="8"  height="16" fill="#D62828"/>
+            <rect x="8"  y="0" width="8"  height="16" fill="#FFFFFF"/>
+            <rect x="16" y="0" width="8"  height="16" fill="#D62828"/>
+          </svg>
+        </span>
       </div>
 
 
@@ -1173,6 +1182,54 @@
           if (e.key === 'Escape') window.cerrarBusquedaMobile();
         });
       });
+
+      (function () {
+        var HIDE_AFTER = new Date('2026-08-01T00:00:00');
+        if (new Date() >= HIDE_AFTER) {
+          var f = document.getElementById('peru-flag');
+          if (f) f.style.display = 'none';
+          return;
+        }
+        if (document.getElementById('peru-confetti-host')) return;
+
+        var colors = ['#D62828', '#fff', '#D62828', '#1B3A5C', '#F4C542'];
+        var host = document.createElement('div');
+        host.id = 'peru-confetti-host';
+        host.setAttribute('aria-hidden', 'true');
+        host.style.cssText = 'position:fixed;top:64px;left:0;right:0;height:140px;pointer-events:none;z-index:60;overflow:hidden;';
+        var N = 22;
+        for (var i = 0; i < N; i++) {
+          var piece = document.createElement('span');
+          var size = 5 + Math.random() * 5;
+          var left = Math.random() * 100;
+          var delay = Math.random() * 2.5;
+          var duration = 5 + Math.random() * 4;
+          var color = colors[Math.floor(Math.random() * colors.length)];
+          var rotate = Math.random() * 360;
+          piece.style.cssText = [
+            'position:absolute',
+            'top:-12px',
+            'left:' + left + '%',
+            'width:' + size + 'px',
+            'height:' + (size * 0.45) + 'px',
+            'background:' + color,
+            'border-radius:1px',
+            'opacity:.85',
+            'transform:rotate(' + rotate + 'deg)',
+            'animation:peruFall ' + duration + 's linear ' + delay + 's infinite'
+          ].join(';');
+          host.appendChild(piece);
+        }
+        var styleEl = document.createElement('style');
+        styleEl.textContent =
+          '@keyframes peruFall{' +
+          '0%{transform:translateY(-10px) rotate(0);opacity:0}' +
+          '10%{opacity:.85}' +
+          '100%{transform:translateY(160px) rotate(540deg);opacity:0}' +
+          '}';
+        document.head.appendChild(styleEl);
+        document.body.appendChild(host);
+      })();
     </script>
   </th:block>
 </body>
