@@ -40,12 +40,31 @@ public class SearchViewController {
 
         model.addAttribute("query", queryLimpio);
         model.addAttribute("rolEfectivo", resp.getRolEfectivo());
-        // El sidebar único usa 'rol' para saber qué opciones mostrar
-        model.addAttribute("rol", resp.getRolEfectivo());
+        // El sidebar único compara con 'ADMIN' / 'SOCIO' / 'SUPERADMIN' / 'VISUALIZADOR'.
+        // El session trae el nombre completo ('ADMINISTRADOR'), por eso normalizamos aquí.
+        model.addAttribute("rol", normalizarRolCorto(resp.getRolEfectivo()));
         model.addAttribute("tiposPermitidos", resp.getTiposPermitidos());
         model.addAttribute("resultados", resp.getResultados());
         model.addAttribute("resultsHtml", renderResultsHtml(resp));
         return "buscar";
+    }
+
+    /**
+     * Mapea el nombre completo del rol (como viene en sesión y de la BD) al
+     * alias corto que espera el sidebar compartido (navbar/sidebar.html) y
+     * el fragmento del dock. Si el rol no se reconoce, devuelve "" para que
+     * el sidebar/dock se omitan en vez de mostrar opciones incorrectas.
+     */
+    private String normalizarRolCorto(String rolCompleto) {
+        if (rolCompleto == null) return "";
+        String r = rolCompleto.trim().toUpperCase(java.util.Locale.ROOT);
+        return switch (r) {
+            case "ADMINISTRADOR" -> "ADMIN";
+            case "SUPERADMIN"   -> "SUPERADMIN";
+            case "SOCIO"        -> "SOCIO";
+            case "VISUALIZADOR" -> "VISUALIZADOR";
+            default             -> "";
+        };
     }
 
     // ─────────────────────────────────────────────────────────
