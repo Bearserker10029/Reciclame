@@ -103,34 +103,6 @@
 </head>
 
 <body>
-  <script>
-    // Polyfill de navTo: el topbar y el sidebar usan onclick="navTo('xxx')".
-    // Determina la base según el rol del usuario en sesión.
-    // Se inyecta antes del topbar para que esté disponible en el primer click.
-    (function () {
-      if (typeof navTo !== 'undefined') return;
-      window.navTo = function (p) {
-        var map = { 'admin-docs': 'documentos' };
-        var path = window.location.pathname;
-        var base;
-        if (path.startsWith('/superadmin'))   base = '/superadmin';
-        else if (path.startsWith('/admin'))   base = '/admin';
-        else if (path.startsWith('/socio'))   base = '/socio';
-        else if (path.startsWith('/visualizador')) base = '/visualizador';
-        else {
-          // fallback: inferir desde el body data-rol
-          var rol = (document.body.getAttribute('data-rol') || '').toUpperCase();
-          if (rol.indexOf('SUPERADMIN') !== -1)      base = '/superadmin';
-          else if (rol.indexOf('ADMIN') !== -1)      base = '/admin';
-          else if (rol.indexOf('SOCIO') !== -1)      base = '/socio';
-          else if (rol.indexOf('VISUALIZADOR') !== -1) base = '/visualizador';
-          else base = '/socio';
-        }
-        window.location.href = base + '/' + (map[p] || p);
-      };
-    })();
-  </script>
-
   <div class="layout">
 
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>

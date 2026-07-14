@@ -1621,7 +1621,7 @@
 
               return '<div class="grid-card" style="animation-delay:' + (idx * 40) + 'ms">' +
                 '<div class="grid-card-actions">' +
-                (url ? '<a href="' + escapeHtml(url) + '" class="btn-view" title="Ver" target="_blank" onclick="event.stopPropagation();"><i class="fas fa-eye"></i></a>' : '') +
+                (url ? '<a href="/admin/normativo/' + id + '/ver" class="btn-view" title="Ver" onclick="event.stopPropagation();"><i class="fas fa-eye"></i></a>' : '') +
                 '<a href="/admin/normativo/editar/' + id + '" class="btn-edit" title="Editar" onclick="event.stopPropagation();" style="text-decoration:none;"><i class="fas fa-edit"></i></a>' +
                 '<button class="btn-delete" title="Eliminar" onclick="event.stopPropagation();eliminarNormativa(\'' + id + '\')"><i class="fas fa-trash"></i></button>' +
                 '</div>' +
