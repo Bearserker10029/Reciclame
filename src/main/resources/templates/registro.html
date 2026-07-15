@@ -497,12 +497,14 @@
           status.style.color = 'rgba(255,255,255,.4)';
           status.textContent = 'No se encontró el DNI, ingresa tu nombre manualmente';
         }
+        evaluarFormulario();
       })
       .catch(function () {
         status.style.display = 'none';
         nombreInput.disabled = false;
         nombreInput.placeholder = 'No se pudo consultar el DNI, escríbelo';
         if (lockLabel) lockLabel.style.display = 'none';
+        evaluarFormulario();
       });
   }
 
