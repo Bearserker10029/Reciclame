@@ -211,7 +211,7 @@
             <i class="fas fa-envelope field-icon"></i>
             <input id="inp-correo" class="glass-input form-control" type="email" name="correo"
                    th:value="${correo}" placeholder="usuario@empresa.com"
-                   required oninput="validateCorreo()" />
+                   required oninput="validateCorreo(); evaluarFormulario();" />
           </div>
           <div id="err-correo" class="field-error">
             <i class="fas fa-exclamation-triangle"></i>
@@ -506,31 +506,6 @@
         if (lockLabel) lockLabel.style.display = 'none';
         evaluarFormulario();
       });
-  }
-
-  function validateCorreo() {
-    var input  = document.getElementById('inp-correo');
-    var errDiv = document.getElementById('err-correo');
-    var errMsg = document.getElementById('err-correo-msg');
-    var btn    = document.getElementById('btn-submit');
-    var val    = input.value.trim();
-    var ok     = true;
-
-    if (val === '') {
-      errMsg.textContent = 'El correo es requerido';
-      ok = false;
-    } else if (!EMAIL_RE.test(val)) {
-      errMsg.textContent = 'Ingresa un correo electrónico válido';
-      ok = false;
-    }
-
-    if (ok) {
-      errDiv.classList.remove('show');
-      input.classList.remove('input-error');
-    } else {
-      errDiv.classList.add('show');
-      input.classList.add('input-error');
-    }
   }
 
 document.addEventListener('DOMContentLoaded', function() {
