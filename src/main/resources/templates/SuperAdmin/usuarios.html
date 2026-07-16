@@ -778,7 +778,7 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- HERO -->
+
         <div class="estudios-hero">
           <div
             style="position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:20px;">
@@ -824,7 +824,7 @@
           </div>
         </div>
 
-        <!-- ═══ TABS ═══ -->
+
         <div class="norm-tab-bar">
           <button id="tab-usuarios-activos" class="norm-tab active" onclick="switchUsuarioTab('activos')">
             <i class="fas fa-users"></i> Usuarios activos
@@ -837,11 +837,15 @@
           <button id="tab-usuarios-historial" class="norm-tab" onclick="switchUsuarioTab('historial')">
             <i class="fas fa-history"></i> Historial
           </button>
+          <button id="tab-usuarios-resueltas" class="norm-tab" onclick="switchUsuarioTab('resueltas')">
+            <i class="fas fa-clipboard-check"></i> Solicitudes resueltas
+            <span class="count-badge" th:text="${solicitudesResueltas != null ? #lists.size(solicitudesResueltas) : 0}">0</span>
+          </button>
         </div>
 
-        <!-- ═══ TAB: ACTIVOS ═══ -->
+
         <div id="utab-activos">
-          <!-- Filtros -->
+
           <div class="filter-row">
             <input type="text" style="display:none;position:absolute;left:-9999px;" autocomplete="username"
               tabindex="-1" aria-hidden="true" />
@@ -872,7 +876,7 @@
             </button>
           </div>
 
-          <!-- Tabla -->
+
           <div class="norm-table-card">
             <div style="overflow-x:auto;">
               <table class="table table-striped table-hover" id="tabla-usuarios-activos" style="margin-bottom:0;">
@@ -912,11 +916,20 @@
                     <td><span class="pill" style="background:rgba(46,204,113,.12);color:#27AE60;"
                         th:text="${usuario.rolNombre}">Rol</span></td>
                     <td>
-                      <span class="pill"
-                        th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(46,204,113,.12);color:#27AE60;'}">
+                      <span th:if="${usuario.estadoActivo == null or !usuario.estadoActivo}" class="pill"
+                            style="background:rgba(156,163,175,.14);color:#6B7280;">
                         <i class="fas fa-circle" style="font-size:6px;"></i>
-                        <span
-                          th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO')}">Activo</span>
+                        <span>Inactivo</span>
+                      </span>
+                      <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and usuario.cuentaBloqueada != null and usuario.cuentaBloqueada}" class="pill"
+                            style="background:rgba(231,76,60,.12);color:#E74C3C;">
+                        <i class="fas fa-lock" style="font-size:6px;"></i>
+                        <span>Bloqueado</span>
+                      </span>
+                      <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and (usuario.cuentaBloqueada == null or !usuario.cuentaBloqueada)}" class="pill"
+                            style="background:rgba(46,204,113,.12);color:#27AE60;">
+                        <i class="fas fa-circle" style="font-size:6px;"></i>
+                        <span>Activo</span>
                       </span>
                     </td>
                     <td style="color:#6B7280;font-size:12px;"
@@ -926,7 +939,7 @@
                       —
                     </td>
                     <td>
-                      <div style="display:flex;gap:6px;">
+                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}" style="display:flex;gap:6px;">
                         <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
                           th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
                           th:data-correo="${usuario.correoCorporativo}"
@@ -950,6 +963,11 @@
                           <i class="fas fa-trash" style="color:#E74C3C;"></i>
                         </button>
                       </div>
+                      <span th:unless="${usuario.estadoActivo != null and usuario.estadoActivo}"
+                            style="font-size:11px;color:#9CA3AF;font-style:italic;"
+                            title="Para editar, bloquear o desbloquear un usuario inactivo, primero reactivarlo desde la pestaña 'Historial / Inactivos'.">
+                        <i class="fas fa-lock" style="margin-right:4px;"></i>Inactivo
+                      </span>
                     </td>
                   </tr>
                   <tr id="fila-sin-usuarios" th:if="${#lists.isEmpty(usuariosActivos)}">
@@ -971,7 +989,7 @@
           </div>
         </div>
 
-        <!-- ═══ TAB: PENDIENTES ═══ -->
+
         <div id="utab-pendientes" style="display:none;">
           <div style="display:flex;flex-direction:column;gap:12px;">
             <div th:each="sol : ${solicitudesPendientes}"
@@ -984,7 +1002,7 @@
                   <span th:text="${sol.correoCorporativo}">correo</span> · DNI: <span th:text="${sol.dni}">00000000</span>
                 </div>
                 <div style="font-size:11px;color:#6B7280;margin-bottom:2px;">
-                  Empresa: <span th:text="${sol.empresaNombre}">—</span>
+                  Empresa: <span th:text="${sol.empresaNombre != null ? sol.empresaNombre : '—'}">—</span>
                 </div>
                 <div style="font-size:11px;color:#6B7280;background:#F9FAFB;padding:5px 10px;border-radius:6px;border-left:3px solid #F39C12;display:inline-block;"
                   th:text="'Solicitado el ' + ${sol.createdAt != null ? #temporals.format(sol.createdAt, 'dd/MM/yyyy HH:mm') : '—'}">Fecha</div>
@@ -1018,7 +1036,7 @@
           </div>
         </div>
 
-        <!-- ═══ TAB: HISTORIAL ═══ -->
+
         <div id="utab-historial" style="display:none;">
           <div
             style="background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.08);overflow:hidden;">
@@ -1035,17 +1053,20 @@
               </thead>
               <tbody>
                 <tr th:each="usuario : ${todosUsuarios}"
-                  th:if="${(!#strings.equals(usuario.estadoCuenta != null ? usuario.estadoCuenta : 'ACTIVO', 'ACTIVO') or (usuario.cuentaBloqueada != null and usuario.cuentaBloqueada))}">
+                  th:if="${(usuario.estadoActivo == null or !usuario.estadoActivo) or (usuario.cuentaBloqueada != null and usuario.cuentaBloqueada)}">
                   <td style="font-weight:600;color:#1B3A5C;font-size:13px;" th:text="${usuario.nombreCompleto}">Nombre
                   </td>
                   <td style="font-size:12px;color:#6B7280;" th:text="${usuario.correoCorporativo}">correo</td>
                   <td><span class="pill" style="background:rgba(107,114,128,.1);color:#374151;"
                       th:text="${usuario.rolNombre}">Rol</span></td>
                   <td>
-                    <span class="pill"
-                      th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'background:rgba(231,76,60,.12);color:#E74C3C;' : 'background:rgba(243,156,18,.12);color:#D68910;'}">
-                      <span
-                        th:text="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Bloqueado' : (usuario.estadoCuenta != null ? usuario.estadoCuenta : 'INACTIVO')}">Estado</span>
+                    <span th:if="${usuario.estadoActivo == null or !usuario.estadoActivo}" class="pill"
+                          style="background:rgba(156,163,175,.14);color:#6B7280;">
+                      <span>Inactivo</span>
+                    </span>
+                    <span th:if="${usuario.estadoActivo != null and usuario.estadoActivo and usuario.cuentaBloqueada != null and usuario.cuentaBloqueada}" class="pill"
+                          style="background:rgba(231,76,60,.12);color:#E74C3C;">
+                      <span>Bloqueado</span>
                     </span>
                   </td>
                   <td style="font-size:11px;color:#9CA3AF;"
@@ -1077,7 +1098,108 @@
           </div>
         </div>
 
-        <!-- MODALES Y SCRIPTS (igual que en Admin/usuarios.html) -->
+
+        <div id="utab-resueltas" style="display:none;">
+          <div class="norm-table-card" style="margin-top:14px;">
+            <div style="overflow-x:auto;">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>DNI</th>
+                    <th>Correo</th>
+                    <th>Empresa</th>
+                    <th>Estado</th>
+                    <th>Solicitado</th>
+                    <th>Resuelto</th>
+                    <th class="text-center">Motivo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="sr : ${solicitudesResueltas}">
+                    <td style="font-weight:700;color:#1B3A5C;font-size:12px;" th:text="${sr.nombreCompleto}">—</td>
+                    <td style="font-size:12px;color:#374151;" th:text="${sr.dni}">—</td>
+                    <td style="font-size:12px;color:#374151;" th:text="${sr.correoCorporativo}">—</td>
+                    <td style="font-size:12px;color:#6B7280;" th:text="${sr.empresaNombre != null ? sr.empresaNombre : '—'}">—</td>
+                    <td>
+                      <span th:if="${sr.estado.name() == 'APROBADA'}" class="badge-vigente"
+                        style="background:rgba(46,204,113,.1);color:#1E8449;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-check"></i> Aprobada
+                      </span>
+                      <span th:if="${sr.estado.name() == 'RECHAZADA'}" class="badge-derogada"
+                        style="background:rgba(231,76,60,.1);color:#922B21;padding:3px 10px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-times"></i> Rechazada
+                      </span>
+                    </td>
+                    <td style="font-size:11px;color:#6B7280;"
+                      th:text="${#temporals.format(sr.createdAt, 'dd/MM/yyyy HH:mm')}">—</td>
+                    <td style="font-size:11px;color:#6B7280;"
+                      th:text="${sr.fechaResolucion != null ? #temporals.format(sr.fechaResolucion, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+                    <td class="text-center">
+                      <button th:if="${sr.estado.name() == 'RECHAZADA'}"
+                        th:onclick="|verMotivoRechazo(${sr.id})|"
+                        style="display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:7px;border:1.5px solid #E74C3C;background:rgba(231,76,60,.06);color:#C0392B;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s;"
+                        onmouseover="this.style.background='#E74C3C';this.style.color='#fff'"
+                        onmouseout="this.style.background='rgba(231,76,60,.06)';this.style.color='#C0392B'"
+                        title="Ver motivo de rechazo">
+                        <i class="fas fa-eye"></i> Ver motivo
+                      </button>
+                      <span th:unless="${sr.estado.name() == 'RECHAZADA'}" style="color:#9CA3AF;font-size:11px;">—</span>
+                    </td>
+                  </tr>
+                  <tr th:if="${solicitudesResueltas == null or #lists.isEmpty(solicitudesResueltas)}">
+                    <td colspan="8" style="text-align:center;padding:30px;color:#9CA3AF;font-size:13px;">
+                      <i class="fas fa-clipboard" style="margin-right:6px;"></i>
+                      No hay solicitudes resueltas todavía.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <div id="modal-ver-motivo" class="modal-rechazo" style="display:none;">
+          <div style="background:#fff;border-radius:16px;padding:28px;max-width:540px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:rgba(231,76,60,.1);display:flex;align-items:center;justify-content:center;">
+                  <i class="fas fa-comment-dots" style="color:#C0392B;font-size:18px;"></i>
+                </div>
+                <div>
+                  <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;letter-spacing:.06em;margin-bottom:2px;">Solicitud rechazada</div>
+                  <h3 id="modal-ver-motivo-nombre" style="margin:0;font-size:16px;font-weight:800;color:#1B3A5C;">—</h3>
+                </div>
+              </div>
+              <button onclick="cerrarVerMotivoRechazo()" style="border:none;background:transparent;font-size:18px;color:#6B7280;cursor:pointer;padding:4px;">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="padding:10px 12px;border-radius:10px;background:#F9FAFB;">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">DNI</div>
+                <div id="modal-ver-motivo-dni" style="font-weight:700;color:#1B3A5C;font-size:13px;">—</div>
+              </div>
+              <div style="padding:10px 12px;border-radius:10px;background:#F9FAFB;">
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">Correo</div>
+                <div id="modal-ver-motivo-correo" style="font-weight:600;color:#1B3A5C;font-size:12px;word-break:break-all;">—</div>
+              </div>
+            </div>
+            <div style="padding:14px;border-radius:12px;background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.18);margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:800;text-transform:uppercase;color:#922B21;letter-spacing:.06em;margin-bottom:8px;">
+                <i class="fas fa-quote-left" style="margin-right:4px;"></i> Motivo del rechazo
+              </div>
+              <div id="modal-ver-motivo-texto" style="font-size:13px;color:#374151;line-height:1.6;white-space:pre-wrap;min-height:36px;">—</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#6B7280;">
+              <span><i class="fas fa-user-shield" style="margin-right:4px;"></i>Revisada por <strong id="modal-ver-motivo-revisor">—</strong></span>
+              <span><i class="fas fa-clock" style="margin-right:4px;"></i><span id="modal-ver-motivo-fecha">—</span></span>
+            </div>
+          </div>
+        </div>
+
+
         <div id="modal-crear" class="modal-overlay">
           <div class="modal-box">
             <div class="modal-header-banner">
@@ -1281,17 +1403,6 @@
                       </select>
                     </div>
                   </div>
-                  <div class="field-wrap full">
-                    <label>Nueva contraseña <span style="color:#9CA3AF;font-weight:400;">(dejar vacío para no
-                        cambiar)</span></label>
-                    <div class="input-icon-wrap">
-                      <i class="fas fa-lock inp-icon"></i>
-                      <input id="edit-password" type="password" class="form-control" placeholder="Nueva contraseña..."
-                        style="padding-right:36px!important;" />
-                      <button type="button" class="pw-toggle" onclick="togglePw('edit-password',this)"><i
-                          class="fas fa-eye"></i></button>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1319,7 +1430,7 @@
           }
 
           function switchUsuarioTab(tab) {
-            var tabs = ['activos', 'pendientes', 'historial'];
+            var tabs = ['activos', 'pendientes', 'historial', 'resueltas'];
             tabs.forEach(function (t) {
               var btn = document.getElementById('tab-usuarios-' + t);
               var panel = document.getElementById('utab-' + t);
@@ -1331,6 +1442,51 @@
                 if (panel) panel.style.display = 'none';
               }
             });
+          }
+
+          // ─── Ver motivo de rechazo ───────────────────────────────
+          function verMotivoRechazo(id) {
+            fetch('/api/solicitudes/' + id, { credentials: 'same-origin' })
+              .then(function (r) { if (!r.ok) throw new Error('No se pudo cargar'); return r.json(); })
+              .then(function (s) {
+                document.getElementById('modal-ver-motivo-nombre').textContent = s.nombreCompleto || '—';
+                document.getElementById('modal-ver-motivo-dni').textContent = s.dni || '—';
+                document.getElementById('modal-ver-motivo-correo').textContent = s.correoCorporativo || '—';
+                document.getElementById('modal-ver-motivo-texto').textContent = s.motivoRechazo || '(Sin motivo registrado)';
+                document.getElementById('modal-ver-motivo-revisor').textContent = s.revisadaPorNombre || '—';
+                if (s.fechaResolucion) {
+                  var d = new Date(s.fechaResolucion);
+                  var pad = function (n) { return n < 10 ? '0' + n : n; };
+                  document.getElementById('modal-ver-motivo-fecha').textContent =
+                    pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' +
+                    pad(d.getHours()) + ':' + pad(d.getMinutes());
+                } else {
+                  document.getElementById('modal-ver-motivo-fecha').textContent = '—';
+                }
+                var modal = document.getElementById('modal-ver-motivo');
+                if (modal) {
+                  modal.style.display = 'flex';
+                  modal.style.position = 'fixed';
+                  modal.style.inset = '0';
+                  modal.style.background = 'rgba(0,0,0,0.5)';
+                  modal.style.zIndex = '99999';
+                  modal.style.alignItems = 'center';
+                  modal.style.justifyContent = 'center';
+                }
+              })
+              .catch(function (err) {
+                console.error('verMotivoRechazo error:', err);
+                if (typeof showToast === 'function') {
+                  showToast('No se pudo cargar el motivo de rechazo.', 'error');
+                } else {
+                  alert('No se pudo cargar el motivo de rechazo.');
+                }
+              });
+          }
+
+          function cerrarVerMotivoRechazo() {
+            var modal = document.getElementById('modal-ver-motivo');
+            if (modal) modal.style.display = 'none';
           }
 
           const USUARIOS_POR_PAGINA = 5;
@@ -1464,9 +1620,9 @@
           function crearCheckPw() { var v = document.getElementById('crear-password').value; var bar = document.getElementById('crear-pw-bar'); var fill = document.getElementById('crear-pw-fill'); var label = document.getElementById('crear-pw-label'); if (!v) { bar.style.display = 'none'; return; } bar.style.display = 'block'; var s = crearPwStrength(v); fill.style.width = s + '%'; if (s < 40) { fill.style.background = '#ef4444'; label.textContent = 'Muy débil'; label.style.color = '#ef4444'; } else if (s < 65) { fill.style.background = '#f97316'; label.textContent = 'Débil'; label.style.color = '#f97316'; } else if (s < 85) { fill.style.background = '#eab308'; label.textContent = 'Aceptable'; label.style.color = '#eab308'; } else { fill.style.background = '#22c55e'; label.textContent = 'Fuerte'; label.style.color = '#22c55e'; } crearCheckMatch(); }
           function crearCheckMatch() { var p1 = document.getElementById('crear-password').value; var p2 = document.getElementById('crear-password2').value; var msg = document.getElementById('crear-match-msg'); if (!p2) { msg.style.display = 'none'; return; } msg.style.display = 'block'; if (p1 === p2) { msg.textContent = '✓ Las contraseñas coinciden'; msg.style.color = '#22c55e'; } else { msg.textContent = '✗ Las contraseñas no coinciden'; msg.style.color = '#ef4444'; } }
           function guardarNuevoUsuario() { var nombre = document.getElementById('crear-nombre').value.trim(); var dni = document.getElementById('crear-dni').value.trim(); var correo = document.getElementById('crear-correo').value.trim(); var password = document.getElementById('crear-password').value; var password2 = document.getElementById('crear-password2').value; var rolId = document.getElementById('crear-rol').value; var empresaId = document.getElementById('crear-empresa').value; var cargo = document.getElementById('crear-cargo').value.trim(); var errorEl = document.getElementById('crear-error'); if (!nombre || !dni || !correo || !password || !password2 || !rolId) { errorEl.textContent = 'Completa los campos obligatorios (*)'; errorEl.style.display = 'block'; return; } if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) { errorEl.textContent = 'El nombre solo debe contener letras y espacios'; errorEl.style.display = 'block'; return; } if (dni.length !== 8 || !/^\d+$/.test(dni)) { errorEl.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos'; errorEl.style.display = 'block'; return; } if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { errorEl.textContent = 'El correo electrónico no tiene un formato válido'; errorEl.style.display = 'block'; return; } if (password.length < 8) { errorEl.textContent = 'La contraseña debe tener al menos 8 caracteres'; errorEl.style.display = 'block'; return; } if (crearPwStrength(password) < 40) { errorEl.textContent = 'La contraseña es muy débil. Agrega números o mayúsculas'; errorEl.style.display = 'block'; return; } if (password !== password2) { errorEl.textContent = 'Las contraseñas no coinciden'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, dni: dni, correoCorporativo: correo, password: password, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { r.json().then(function (data) { cerrarModalCrear(); location.href = getBaseUrl() + '/usuarios?nuevo=' + (data.id || ''); }); } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al crear el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
-          function abrirModalEditar(btn) { document.getElementById('edit-id').value = btn.dataset.id || ''; document.getElementById('edit-nombre').value = btn.dataset.nombre || ''; document.getElementById('edit-dni').value = btn.dataset.dni || ''; document.getElementById('edit-correo').value = btn.dataset.correo || ''; document.getElementById('edit-cargo').value = btn.dataset.cargo || ''; document.getElementById('edit-password').value = ''; document.getElementById('editar-error').style.display = 'none'; document.getElementById('edit-subtitulo').textContent = btn.dataset.correo || ''; var rolSelect = document.getElementById('edit-rol'); rolSelect.value = btn.dataset.rolId || ''; var empSelect = document.getElementById('edit-empresa'); empSelect.value = btn.dataset.empresaId || ''; document.getElementById('modal-editar').style.display = 'flex'; }
+          function abrirModalEditar(btn) { document.getElementById('edit-id').value = btn.dataset.id || ''; document.getElementById('edit-nombre').value = btn.dataset.nombre || ''; document.getElementById('edit-dni').value = btn.dataset.dni || ''; document.getElementById('edit-correo').value = btn.dataset.correo || ''; document.getElementById('edit-cargo').value = btn.dataset.cargo || ''; document.getElementById('editar-error').style.display = 'none'; document.getElementById('edit-subtitulo').textContent = btn.dataset.correo || ''; var rolSelect = document.getElementById('edit-rol'); rolSelect.value = btn.dataset.rolId || ''; var empSelect = document.getElementById('edit-empresa'); empSelect.value = btn.dataset.empresaId || ''; document.getElementById('modal-editar').style.display = 'flex'; }
           function cerrarModalEditar() { document.getElementById('modal-editar').style.display = 'none'; }
-          function guardarEdicionUsuario() { var id = document.getElementById('edit-id').value; var nombre = document.getElementById('edit-nombre').value.trim(); var rolId = document.getElementById('edit-rol').value; var empresaId = document.getElementById('edit-empresa').value; var cargo = document.getElementById('edit-cargo').value.trim(); var password = document.getElementById('edit-password').value; var errorEl = document.getElementById('editar-error'); if (!nombre || !rolId) { errorEl.textContent = 'El nombre y el rol son obligatorios'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; if (password) payload.password = password; fetch('/api/usuarios/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { cerrarModalEditar(); location.href = getBaseUrl() + '/usuarios'; } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al actualizar el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
+          function guardarEdicionUsuario() { var id = document.getElementById('edit-id').value; var nombre = document.getElementById('edit-nombre').value.trim(); var rolId = document.getElementById('edit-rol').value; var empresaId = document.getElementById('edit-empresa').value; var cargo = document.getElementById('edit-cargo').value.trim(); var errorEl = document.getElementById('editar-error'); if (!nombre || !rolId) { errorEl.textContent = 'El nombre y el rol son obligatorios'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { cerrarModalEditar(); location.href = getBaseUrl() + '/usuarios'; } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al actualizar el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
           var _bloqueoId = null;
           var _bloqueoAccion = null;
 
@@ -1710,7 +1866,7 @@
     </div>
   </div>
 
-  <!-- Modal Reactivar Usuario -->
+
   <div id="modal-reactivar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1733,7 +1889,7 @@
     </div>
   </div>
 
-  <!-- Modal Desbloquear Usuario -->
+
   <div id="modal-desbloquear"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1756,7 +1912,7 @@
     </div>
   </div>
 
-  <!-- Modal Éxito -->
+
   <div id="modal-exito"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1773,7 +1929,7 @@
     </div>
   </div>
 
-  <!-- Modal Confirmar Bloqueo / Desbloqueo -->
+
   <div id="modal-confirmar-bloqueo"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1796,7 +1952,7 @@
     </div>
   </div>
 
-  <!-- Modal Eliminar Usuario (Rojo) -->
+
   <div id="modal-eliminar"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
     <div
@@ -1821,7 +1977,7 @@
     </div>
   </div>
 
-    <!-- Modal Aprobar Solicitud -->
+
     <div id="modal-aprobar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="text-align:center;margin-bottom:20px;">
@@ -1838,7 +1994,7 @@
       </div>
     </div>
 
-    <!-- Modal Rechazar Solicitud -->
+
     <div id="modal-rechazar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="text-align:center;margin-bottom:20px;">
@@ -1859,7 +2015,7 @@
       </div>
     </div>
 
-    <!-- Modal Error Genérico -->
+
     <div id="modal-error" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
         <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">

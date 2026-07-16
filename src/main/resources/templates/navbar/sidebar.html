@@ -18,11 +18,18 @@
       window.navTo = function (page) {
         var map = { 'admin-docs': 'documentos' };
         var path = window.location.pathname || '';
-        var prefix = '/';
+        var prefix = '';
         if (path.indexOf('/superadmin') === 0)      prefix = '/superadmin';
         else if (path.indexOf('/admin') === 0)      prefix = '/admin';
         else if (path.indexOf('/socio') === 0)      prefix = '/socio';
         else if (path.indexOf('/visualizador') === 0) prefix = '/visualizador';
+        if (!prefix) {
+          var rol = (document.body.getAttribute('data-rol') || '').toUpperCase();
+          if (rol === 'SUPERADMIN')      prefix = '/superadmin';
+          else if (rol === 'ADMIN')      prefix = '/admin';
+          else if (rol === 'SOCIO')      prefix = '/socio';
+          else if (rol === 'VISUALIZADOR') prefix = '/visualizador';
+        }
         var target = map[page] || page;
         window.location.href = prefix + '/' + target;
       };
@@ -232,10 +239,10 @@
     </div>
   </aside>
 
-  <!-- ── Bottom Dock (mobile only) ── -->
+
   <nav id="mobile-dock">
 
-    <!-- VISUALIZADOR -->
+
     <th:block th:if="${rol == 'VISUALIZADOR'}">
       <a class="dock-item" th:href="@{/visualizador/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -256,7 +263,7 @@
       </a>
     </th:block>
 
-    <!-- SOCIO -->
+
     <th:block th:if="${rol == 'SOCIO'}">
       <a class="dock-item" th:href="@{/socio/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -275,7 +282,7 @@
       </button>
     </th:block>
 
-    <!-- ADMIN -->
+
     <th:block th:if="${rol == 'ADMIN'}">
       <a class="dock-item" th:href="@{/admin/inicio}">
         <i class="fas fa-home"></i><span>Inicio</span>
@@ -294,11 +301,11 @@
       </button>
     </th:block>
 
-    <!-- SUPERADMIN: usa dock.html propio, no se renderiza aquí -->
+
 
   </nav>
 
-  <!-- Scrim del drawer del sidebar (mobile) — fuera del nav, a nivel de body -->
+
   <div id="sidebar-scrim" onclick="reciclameCerrarDrawer()"></div>
 
 <script>
@@ -331,7 +338,7 @@
     });
   </script>
 
-  <!-- ── Drawer del sidebar (Admin y SuperAdmin) ── -->
+
   <script>
     (function () {
       /* Funciones unificadas para Admin y SuperAdmin.

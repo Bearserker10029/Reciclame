@@ -2,18 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <body>
 
-<!--
-  Fragmento reutilizable para el visor de documentos con kkfileview.
-  Muestra un loading overlay mientras el iframe carga y reintenta automáticamente
-  si kkfileview tarda más de lo esperado (archivos .docx/.pptx de 2-3 MB).
 
-  Uso:
-    <th:block th:replace="~{components/document-viewer :: viewer(
-        archivoUrl=${entity.archivoUrl},
-        titulo=${entity.titulo},
-        mime=${entity.archivoTipoMime})}">
-    </th:block>
--->
 <th:block th:fragment="viewer(archivoUrl, titulo, mime)">
 
   <style>
@@ -67,7 +56,7 @@
   </style>
 
   <div class="doc-viewer-wrap" id="docViewerWrap">
-    <!-- Overlay de carga -->
+
     <div class="doc-viewer-loading" id="docViewerLoading">
       <div class="doc-viewer-spinner"></div>
       <div class="doc-viewer-loading-text">
@@ -80,30 +69,51 @@
       </button>
     </div>
 
-    <!-- iframe del visor -->
-    <iframe id="docViewerIframe"
-            class="doc-viewer-iframe"
-            th:src="@{/api/documentos/visor(url=${archivoUrl},titulo=${titulo},mime=${mime})}"
-            allowfullscreen
-            onload="docViewerOnLoad()"
-            onerror="docViewerOnError()">
-    </iframe>
   </div>
 
   <script th:inline="javascript">
     (function () {
-      var iframeEl   = document.getElementById('docViewerIframe');
-      var loadingEl  = document.getElementById('docViewerLoading');
-      var msgEl      = document.getElementById('docViewerMsg');
-      var subMsgEl   = document.getElementById('docViewerSubMsg');
-      var retryBtn   = document.getElementById('docViewerRetryBtn');
-      var baseUrl    = iframeEl ? iframeEl.src : '';
+      var wrap      = document.getElementById('docViewerWrap');
+      var loadingEl = document.getElementById('docViewerLoading');
+      var msgEl     = document.getElementById('docViewerMsg');
+      var subMsgEl  = document.getElementById('docViewerSubMsg');
+      var retryBtn  = document.getElementById('docViewerRetryBtn');
+
+      // iframeEl puede ser null al inicio: el iframe se CREA dinámicamente
+      // solo cuando el archivo existe en MinIO.
+      var iframeEl  = null;
+      var currentIframeUrl = '';
+
+      // URL base del endpoint de visor (NO se asigna al iframe hasta validar
+      // que el archivo existe en MinIO).
+      var visorUrl = /*[[@{/api/documentos/visor(url=${archivoUrl},titulo=${titulo},mime=${mime})}]]*/ '';
 
       var FAST_TIMEOUT   = 30000;   // 30s → mensaje "tardando más de lo normal"
       var RETRY_TIMEOUT  = 120000;  // 2 min → ofrecer reintentar
       var fastTimer, retryTimer;
       var retryCount = 0;
       var MAX_RETRIES = 3;
+
+      function showError(mensaje, subMensaje) {
+        clearTimers();
+        // Si por algo quedara un iframe previo, lo destruimos.
+        removeIframe();
+        // Ocultamos el wrap completo: la página del visor (estudios-visor.html
+        // / normativo-visor.html) ya tiene su propio error UI con botón
+        // "Editar estudio/normativa". Mostrar el overlay acá duplica el mensaje.
+        if (wrap) wrap.style.display = 'none';
+      }
+
+      function showLoading(mensaje, subMensaje) {
+        removeIframe();
+        if (loadingEl) {
+          loadingEl.classList.remove('hidden');
+          loadingEl.style.display = 'flex';
+        }
+        if (msgEl) msgEl.textContent = mensaje || 'Preparando visualización...';
+        if (subMsgEl) subMsgEl.textContent = subMensaje || '';
+        if (retryBtn) retryBtn.style.display = 'none';
+      }
 
       function startTimers() {
         clearTimers();
@@ -130,16 +140,86 @@
         if (retryTimer) clearTimeout(retryTimer);
       }
 
+      /** Crea el iframe en el DOM y le asigna la URL. */
+      function createIframe(url) {
+        removeIframe();
+        iframeEl = document.createElement('iframe');
+        iframeEl.id = 'docViewerIframe';
+        iframeEl.className = 'doc-viewer-iframe';
+        iframeEl.setAttribute('allowfullscreen', '');
+        iframeEl.addEventListener('load', docViewerOnLoad);
+        iframeEl.addEventListener('error', docViewerOnError);
+        iframeEl.src = url;
+        wrap.appendChild(iframeEl);
+        currentIframeUrl = url;
+      }
+
+      /** Quita el iframe del DOM si existe. */
+      function removeIframe() {
+        if (iframeEl && iframeEl.parentNode) {
+          iframeEl.parentNode.removeChild(iframeEl);
+        }
+        iframeEl = null;
+        currentIframeUrl = '';
+      }
+
+      /**
+       * Valida que el archivo exista antes de abrir el visor. Hace un
+       * fetch al endpoint /api/documentos/visor y, si la respuesta es
+       * 200 OK o 302 (FOUND), crea el iframe con esa URL. Si es 404
+       * u otro error, muestra un mensaje claro y NO crea el iframe.
+       */
+      function openVisor() {
+        showLoading('Preparando visualización...',
+                    'Los documentos Office (.docx, .pptx) pueden tardar unos segundos la primera vez.');
+        var bustUrl = visorUrl + '&_r=' + Date.now();
+        fetch(bustUrl, { method: 'GET', redirect: 'manual', credentials: 'same-origin' })
+          .then(function (resp) {
+            // 'opaqueredirect' / 'manual' puede dar opaqueredirect en algunos browsers
+            if (resp.type === 'opaqueredirect' || resp.status === 0) {
+              // No podemos leer Location ni body en redirects manuales con opaqueredirect.
+              // Asumimos OK y dejamos que el iframe se cargue desde la URL original.
+              createIframe(bustUrl);
+              startTimers();
+              return null;
+            }
+            if (resp.ok || resp.status === 302) {
+              createIframe(bustUrl);
+              startTimers();
+              return null;
+            }
+            // 404 / 400 / 500 → el backend ya devolvió un JSON con "mensaje".
+            // En estos casos NO creamos el iframe, queda solo el overlay.
+            return resp.text().then(function (txt) {
+              var msg = 'No se pudo abrir el documento.';
+              try {
+                var body = JSON.parse(txt);
+                if (body && body.mensaje) msg = body.mensaje;
+              } catch (e) { /* no era JSON */ }
+              if (resp.status === 404) {
+                showError('Archivo no disponible', msg);
+              } else if (resp.status === 400) {
+                showError('URL inválida', msg);
+              } else {
+                showError('Error al abrir el documento', msg);
+              }
+            });
+          })
+          .catch(function () {
+            showError('Error de red', 'No se pudo conectar con el servidor. Verifica tu conexión.');
+          });
+      }
+
       window.docViewerOnLoad = function () {
         try {
           // Si el iframe carga una página de error de kkfileview, no ocultar el overlay.
+          if (!iframeEl) return;
           var doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
           var body = doc && doc.body ? doc.body.innerText : '';
           if (body && (body.includes('error') || body.length < 50)) {
-            // Posible página de error — dejar timers corriendo
-            return;
+            return; // posible página de error — dejar timers corriendo
           }
-        } catch (e) { /* cross-origin: el iframe cargó algo → OK */ }
+        } catch (e) { /* cross-origin → el iframe cargó algo */ }
         clearTimers();
         loadingEl.classList.add('hidden');
         setTimeout(function () { loadingEl.style.display = 'none'; }, 300);
@@ -150,26 +230,18 @@
         if (retryCount < MAX_RETRIES) {
           docViewerRetry();
         } else {
-          msgEl.textContent = 'Error al cargar el documento';
-          subMsgEl.textContent = 'Puedes intentar recargar la página.';
-          retryBtn.style.display = 'inline-block';
+          showError('Error al cargar el documento',
+                    'Puedes intentar recargar la página.');
         }
       };
 
       window.docViewerRetry = function () {
         retryCount++;
-        retryBtn.style.display = 'none';
-        msgEl.textContent = 'Reintentando...';
-        subMsgEl.textContent = 'Intento ' + retryCount + ' de ' + MAX_RETRIES;
-        loadingEl.classList.remove('hidden');
-        loadingEl.style.display = 'flex';
-        // Forzar recarga del iframe con cache-bust
-        iframeEl.src = baseUrl + '&_r=' + Date.now();
-        startTimers();
+        openVisor();
       };
 
-      // Iniciar timers al cargar la página
-      if (iframeEl) startTimers();
+      // Arranca: valida que el archivo exista y, si sí, crea el iframe.
+      openVisor();
     })();
   </script>
 

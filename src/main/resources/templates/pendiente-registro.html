@@ -84,7 +84,7 @@
 <body>
 <div class="layout">
 
-  <!-- ═══════════════════════ PANEL IZQUIERDO ═══════════════════════ -->
+
   <div class="left glow">
     <svg class="glow-outline" aria-hidden="true" focusable="false" preserveAspectRatio="none"><rect></rect></svg>
 
@@ -126,14 +126,24 @@
         </div>
       </div>
 
+      <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.25);border-radius:10px;padding:14px 16px;margin-bottom:24px;display:flex;gap:10px;align-items:flex-start;">
+        <i class="fas fa-envelope-circle-check" style="color:var(--green);font-size:14px;margin-top:2px;flex-shrink:0;"></i>
+        <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;">
+          Te enviamos un correo de confirmación. Si no lo ves en tu bandeja de entrada
+          en unos minutos, <strong style="color:#fff;">revisa la carpeta de spam o
+          promociones</strong> — ahí también llegarán tus credenciales cuando se apruebe
+          tu solicitud.
+        </div>
+      </div>
+
       <a th:href="@{/service/repositorio/login}" href="/service/repositorio/login" class="btn-home">
         <i class="fas fa-home"></i> Volver al inicio
       </a>
     </div>
-  </div><!-- /left -->
+  </div> 
 
 
-  <!-- ═══════════════════════ PANEL DERECHO ════════════════════════ -->
+
   <div class="right">
     <img class="right-bg"
          src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=1400&q=80"
@@ -177,9 +187,9 @@
         Acceso exclusivo para socios verificados de Recíclame
       </div>
     </div>
-  </div><!-- /right -->
+  </div> 
 
-</div><!-- /layout -->
+</div> 
 
 <script>
   function setGlowEffectRx() {

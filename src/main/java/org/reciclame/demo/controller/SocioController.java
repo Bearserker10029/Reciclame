@@ -16,6 +16,7 @@ import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.SocioReportesService;
 import org.reciclame.demo.service.TematicaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -26,7 +27,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Value;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,6 +39,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class SocioController {
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     private final UsuarioService usuarioService;
     private final EstudioService estudioService;
@@ -48,6 +54,9 @@ public class SocioController {
     private final DocumentosRecientesService documentosRecientesService;
     private final ReporteService reporteService;
     private final EmailNotificationService emailNotificationService;
+    private final org.reciclame.demo.service.MinioStorageService minioStorageService;
+    private final java.net.http.HttpClient httpClient;
+    private final org.reciclame.demo.service.CompartirService compartirService;
 
     public SocioController(UsuarioService usuarioService,
                           EstudioService estudioService,
@@ -59,7 +68,10 @@ public class SocioController {
                           MiUnidadService miUnidadService,
                           DocumentosRecientesService documentosRecientesService,
                           ReporteService reporteService,
-                          EmailNotificationService emailNotificationService) {
+                          EmailNotificationService emailNotificationService,
+                          org.reciclame.demo.service.MinioStorageService minioStorageService,
+                          java.net.http.HttpClient httpClient,
+                          org.reciclame.demo.service.CompartirService compartirService) {
         this.usuarioService = usuarioService;
         this.estudioService = estudioService;
         this.normativaService = normativaService;
@@ -71,6 +83,9 @@ public class SocioController {
         this.documentosRecientesService = documentosRecientesService;
         this.reporteService = reporteService;
         this.emailNotificationService = emailNotificationService;
+        this.minioStorageService = minioStorageService;
+        this.httpClient = httpClient;
+        this.compartirService = compartirService;
     }
 
     private void setupCommonAttributes(Model model, String correo) {
@@ -341,9 +356,154 @@ public class SocioController {
                 .body(archivo);
     }
 
+    // ─── Compartir documento por correo ─────────────────────────
+
+    public static class CompartirDocumentoRequest {
+        public String para;
+        public String cc;
+        public String asunto;
+        public String descripcion;
+        public String titulo;
+        public String tipo; // NORMATIVA | ESTUDIO
+        public Long documentoId;
+    }
+
+    @PostMapping("/socio/compartir/enviar")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> compartirDocumento(
+            @RequestBody CompartirDocumentoRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty())
+            return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+        if (req.para == null || req.para.isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "El campo Para es obligatorio"));
+
+        var remitente = uOpt.get();
+
+        // Obtener archivo desde MinIO
+        byte[] archivoBytes = null;
+        String nombreArchivo = "documento";
+        String archivoMime = "application/octet-stream";
+        try {
+            String archivoUrl = null;
+            String archivoTipoMime = null;
+            if ("NORMATIVA".equalsIgnoreCase(req.tipo) && req.documentoId != null) {
+                var norm = normativaService.obtenerNormativaPorId(req.documentoId);
+                archivoUrl = norm.getArchivoUrl();
+                archivoTipoMime = norm.getArchivoTipoMime();
+            } else if ("ESTUDIO".equalsIgnoreCase(req.tipo) && req.documentoId != null) {
+                var est = estudioService.obtenerEstudioPorId(req.documentoId);
+                archivoUrl = est.getArchivoUrl();
+                archivoTipoMime = est.getArchivoTipoMime();
+            }
+            if (archivoUrl != null) {
+                String firmada = minioStorageService.generarUrlFirmadaInterna(archivoUrl, 5);
+                java.net.http.HttpRequest httpReq = java.net.http.HttpRequest.newBuilder()
+                        .uri(java.net.URI.create(firmada))
+                        .timeout(java.time.Duration.ofSeconds(30))
+                        .GET().build();
+                java.net.http.HttpResponse<byte[]> resp = httpClient.send(httpReq,
+                        java.net.http.HttpResponse.BodyHandlers.ofByteArray());
+                if (resp.statusCode() == 200) {
+                    archivoBytes = resp.body();
+                }
+                if (archivoTipoMime != null) archivoMime = archivoTipoMime;
+                String ext = extractExtension(archivoUrl);
+                nombreArchivo = req.titulo != null
+                        ? req.titulo.replaceAll("[/\\\\:*?\"<>|]", "_") + ext
+                        : "documento" + ext;
+            }
+        } catch (Exception e) {
+            // enviar sin adjunto si falla la descarga
+        }
+
+        // Parsear CC
+        String[] ccArray = null;
+        if (req.cc != null && !req.cc.isBlank()) {
+            ccArray = java.util.Arrays.stream(req.cc.split("[,;]"))
+                    .map(String::trim).filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+        }
+
+        try {
+            emailNotificationService.enviarDocumentoCompartido(
+                    req.para.trim(), ccArray, req.asunto,
+                    remitente.getNombreCompleto(), req.titulo,
+                    req.descripcion, archivoBytes, nombreArchivo, archivoMime);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "No se pudo enviar el correo: " + e.getMessage()));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "enviado", true,
+                "mensaje", "Documento enviado a " + req.para));
+    }
+
+    private String extractExtension(String url) {
+        try {
+            String path = url.contains("?") ? url.substring(0, url.indexOf('?')) : url;
+            int dot = path.lastIndexOf('.');
+            int slash = path.lastIndexOf('/');
+            if (dot > slash && dot > 0) return path.substring(dot).toLowerCase();
+        } catch (Exception ignored) {}
+        return "";
+    }
+
+    // ─── Compartir documento con personas (estilo Google Drive) ─────────
+
+    @GetMapping("/socio/compartir/{tipo}/{id}/personas")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> listarPersonasCompartido(@PathVariable String tipo, @PathVariable Long id) {
+        try {
+            Map<String, Object> info = compartirService.obtenerInfoDocumento(tipo, id);
+            info.put("personas", compartirService.listarPersonas(tipo, id));
+            return ResponseEntity.ok(info);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    public static class AgregarPersonaRequest {
+        public String correo;
+        public String enlace;
+    }
+
+    @PostMapping("/socio/compartir/{tipo}/{id}/personas")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> agregarPersonaCompartido(
+            @PathVariable String tipo, @PathVariable Long id,
+            @RequestBody AgregarPersonaRequest req,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty()) return ResponseEntity.badRequest().body(Map.of("error", "Usuario no encontrado"));
+        try {
+            var persona = compartirService.agregarPersona(tipo, id, req.correo, uOpt.get().getId(), req.enlace);
+            return ResponseEntity.ok(persona);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "No se pudo compartir el documento"));
+        }
+    }
+
+    @org.springframework.web.bind.annotation.DeleteMapping("/socio/compartir/{tipo}/{id}/personas/{usuarioId}")
+    @org.springframework.web.bind.annotation.ResponseBody
+    public ResponseEntity<?> quitarPersonaCompartido(
+            @PathVariable String tipo, @PathVariable Long id, @PathVariable Long usuarioId) {
+        try {
+            compartirService.quitarPersona(tipo, id, usuarioId);
+            return ResponseEntity.ok(Map.of("eliminado", true));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/socio/notificaciones/marcar/{id}")
-    public String marcarLeida(@PathVariable Long id) {
-        notificacionService.marcarComoLeida(id);
+    public String marcarLeida(@PathVariable Long id, @AuthenticationPrincipal UserDetails user) {
+        usuarioService.findByCorreo(user.getUsername())
+                .ifPresent(u -> notificacionService.marcarComoLeida(id, u.getId()));
         return "redirect:/socio/notificaciones";
     }
 
@@ -354,7 +514,8 @@ public class SocioController {
             @RequestParam String correoCorporativo,
             @AuthenticationPrincipal UserDetails user,
             RedirectAttributes ra,
-            HttpSession session) {
+            HttpSession session,
+            HttpServletRequest request) {
         if (nombreCompleto == null || nombreCompleto.isBlank()) {
             ra.addFlashAttribute("errorPerfil", "El nombre completo es obligatorio");
             return "redirect:/socio/perfil";
@@ -372,7 +533,12 @@ public class SocioController {
                 var dto = new org.reciclame.demo.dto.UsuarioRequestDTO();
                 dto.setNombreCompleto(nombreCompleto);
                 dto.setCorreoCorporativo(correoCorporativo);
-                var updated = usuarioService.actualizarUsuario(id, dto);
+                var updated = usuarioService.actualizarUsuario(
+                        id, dto,
+                        u.getId(),
+                        u.getNombreCompleto(),
+                        HttpClientIpResolver.resolve(request),
+                        request.getHeader("User-Agent"));
                 session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
                         updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
                         updated.getRolNombre(), null, null));

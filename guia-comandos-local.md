@@ -249,7 +249,7 @@ docker exec -it reciclame-minio mc anonymous set download local/reciclame-docs/t
 
 | Aspecto                 | EC2 (`docker-compose.yml`)            | Local (`docker-compose.local.yml`)           |
 |-------------------------|----------------------------------------|----------------------------------------------|
-| Instancias de la app    | 3 (app1, app2, app3)                  | 1 (`app`)                                    |
+| Instancias de la app    | 2 (app1, app2)                        | 1 (`app`)                                    |
 | Balanceo               | `nginx_lb` (round-robin)              | No hay — la app expone 8080 directo          |
 | HTTPS / dominio        | `nginx-proxy-manager` + DuckDNS       | No — todo en HTTP plano sobre localhost      |
 | Base de datos          | AWS RDS (`reciclame-db...amazonaws.com`) | MySQL 8.0 local (contenedor `mysql`)         |

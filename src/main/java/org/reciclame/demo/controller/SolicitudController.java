@@ -1,6 +1,7 @@
 package org.reciclame.demo.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.reciclame.demo.dto.SolicitudRegistroDTO;
 import org.reciclame.demo.model.EstadoSolicitud;
 import org.reciclame.demo.model.SolicitudesRegistro;
 import org.reciclame.demo.model.Empresa;
@@ -14,6 +15,7 @@ import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EmailNotificationService;
 import org.reciclame.demo.service.NotificacionService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -103,6 +105,7 @@ public class SolicitudController {
         usuario.setDni(solicitud.getDni());
         usuario.setCorreoCorporativo(solicitud.getCorreoCorporativo());
         usuario.setPasswordHash(passwordEncoder.encode(tempPassword));
+        usuario.setDebeCambiarPassword(true);
         usuario.setRol(rol);
         usuario.setEmpresa(empresa);
         usuario.setEstadoCuenta("ACTIVO");
@@ -132,7 +135,7 @@ public class SolicitudController {
                 "Aprobar solicitud de registro: " + solicitud.getNombreCompleto() +
                 " (" + solicitud.getCorreoCorporativo() + ")",
                 null, null, "EXITOSO", null,
-                obtenerIp(request), request.getHeader("User-Agent"));
+                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
         // Notificación in-app
         try { notificacionService.notificarAprobacion(guardado.getId()); } catch (Exception ex) { /* no rollback */ }
@@ -182,7 +185,7 @@ public class SolicitudController {
                 "Rechazar solicitud de registro: " + solicitud.getNombreCompleto() +
                 " (" + solicitud.getCorreoCorporativo() + ")",
                 null, null, "EXITOSO", null,
-                obtenerIp(request), request.getHeader("User-Agent"));
+                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
         try {
             emailService.enviarRechazo(
@@ -192,6 +195,31 @@ public class SolicitudController {
         } catch (Exception ex) { /* no rollback */ }
 
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    // GET /api/solicitudes/{id}
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitudRegistroDTO> obtener(@PathVariable Long id) {
+        return solicitudRepo.findById(id)
+                .map(this::toDTO)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    private SolicitudRegistroDTO toDTO(SolicitudesRegistro s) {
+        SolicitudRegistroDTO dto = new SolicitudRegistroDTO();
+        dto.setId(s.getId());
+        dto.setNombreCompleto(s.getNombreCompleto());
+        dto.setDni(s.getDni());
+        dto.setCorreoCorporativo(s.getCorreoCorporativo());
+        dto.setEmpresaNombre(s.getEmpresaNombre());
+        dto.setEstado(s.getEstado() != null ? s.getEstado().name() : null);
+        dto.setMotivoRechazo(s.getMotivoRechazo());
+        dto.setFechaResolucion(s.getFechaResolucion());
+        dto.setRevisadaPorNombre(s.getRevisadaPor() != null ? s.getRevisadaPor().getNombreCompleto() : null);
+        dto.setCreatedAt(s.getCreatedAt());
+        return dto;
     }
 
     // ── helpers ─────────────────────────────────────────────────
@@ -208,14 +236,5 @@ public class SolicitudController {
         var dto = usuarioService.findByCorreo(userDetails.getUsername()).orElse(null);
         if (dto == null) return new String[]{null, userDetails.getUsername()};
         return new String[]{String.valueOf(dto.getId()), dto.getNombreCompleto()};
-    }
-
-    private String obtenerIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getHeader("X-Real-IP");
-        if (ip == null || ip.isBlank() || "unknown".equalsIgnoreCase(ip))
-            ip = request.getRemoteAddr();
-        return ip;
     }
 }

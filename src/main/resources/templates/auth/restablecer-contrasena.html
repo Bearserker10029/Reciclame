@@ -112,7 +112,7 @@
 <body>
   <div class="card">
 
-    <!-- Logo -->
+
     <div class="logo">
       <div class="logo-icon">♻️</div>
       <div class="logo-text">Recíclame</div>
@@ -122,13 +122,13 @@
     <h1>Nueva contraseña</h1>
     <p class="subtitle">Elige una contraseña segura de al menos 8 caracteres.</p>
 
-    <!-- Alertas -->
+
     <div th:if="${error}" class="alert alert-error">
       <i class="fas fa-circle-exclamation"></i>
       <span th:text="${error}">Error</span>
     </div>
 
-    <!-- Formulario -->
+
     <form th:action="@{/auth/restablecer}" method="post" id="resetForm" novalidate>
       <input type="hidden" name="token" th:value="${token}" />
 

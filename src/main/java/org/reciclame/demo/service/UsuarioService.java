@@ -84,6 +84,10 @@ public class UsuarioService {
         usuario.setDni(dto.getDni());
         usuario.setCorreoCorporativo(dto.getCorreoCorporativo());
         usuario.setPasswordHash(hashPassword(dto.getPassword()));
+        // La define el admin como contraseña inicial; se exige cambiarla en el
+        // primer login (ver ForzarCambioPasswordFilter), igual que el flujo de
+        // aprobación de solicitudes.
+        usuario.setDebeCambiarPassword(true);
         usuario.setCargo(dto.getCargo());
         usuario.setFotoUrl(dto.getFotoUrl());
         usuario.setRol(rol);
@@ -267,9 +271,10 @@ public class UsuarioService {
                     .orElseThrow(() -> new RuntimeException("Empresa no encontrada con id: " + dto.getEmpresaId()));
             usuario.setEmpresa(empresa);
         }
-        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            usuario.setPasswordHash(hashPassword(dto.getPassword()));
-        }
+        // La contraseña de un usuario ya existente NUNCA se toca desde acá:
+        // ni admin ni superadmin pueden asignarle/cambiarle la clave a otra
+        // persona (solo el propio usuario, vía "olvidé mi contraseña" o el
+        // cambio obligatorio de la temporal en su primer login).
 
         usuario.setUpdatedAt(Instant.now());
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
@@ -413,8 +418,15 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         boolean bloquear = !Boolean.TRUE.equals(usuario.getCuentaBloqueada());
-        usuario.setCuentaBloqueada(bloquear);
-        usuario.setEstadoCuenta(bloquear ? "BLOQUEADO" : "ACTIVO");
+        if (bloquear) {
+            usuario.setCuentaBloqueada(true);
+            usuario.setEstadoCuenta("BLOQUEADO");
+            // estadoActivo se preserva: si estaba inactivo, sigue inactivo.
+        } else {
+            usuario.setCuentaBloqueada(false);
+            usuario.setEstadoActivo(true);                  // FIX: re-activar al desbloquear
+            usuario.setEstadoCuenta("ACTIVO");
+        }
         usuario.setUpdatedAt(Instant.now());
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
 
@@ -456,6 +468,11 @@ public class UsuarioService {
     }
 
     // ── HELPERS ───────────────────────────────────────────────
+    public List<UsuarioResponseDTO> listarCompanerosEmpresa(Long empresaId, Long excludeId) {
+        return usuarioRepository.findCompanerosEmpresa(empresaId, excludeId)
+                .stream().map(this::toResponseDTO).collect(Collectors.toList());
+    }
+
     private UsuarioResponseDTO toResponseDTO(Usuario u) {
         UsuarioResponseDTO dto = new UsuarioResponseDTO();
         dto.setId(u.getId());

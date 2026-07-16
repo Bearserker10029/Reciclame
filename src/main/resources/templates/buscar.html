@@ -8,6 +8,19 @@
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script th:inline="javascript">
+    if (typeof navTo === 'undefined') {
+      var ROL_BASE = /*[[${rol}]]*/ 'ADMIN';
+      var navBase = ROL_BASE === 'SUPERADMIN' ? '/superadmin'
+                  : ROL_BASE === 'SOCIO'      ? '/socio'
+                  : ROL_BASE === 'VISUALIZADOR' ? '/visualizador'
+                  : '/admin';
+      function navTo(p) {
+        var map = { 'admin-docs': 'documentos' };
+        window.location.href = navBase + '/' + (map[p] || p);
+      }
+    }
+  </script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -99,44 +112,45 @@
       background: #FEF3C7; border-radius: 8px; margin-bottom: 12px;
       border-left: 3px solid #F59E0B;
     }
+
+    #buscar-dock {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9990;
+      height: 60px;
+      background: #1B3A5C;
+      border-top: 1px solid rgba(255,255,255,.12);
+      display: none;
+      align-items: stretch;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.2);
+    }
+    #buscar-dock a {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      cursor: pointer; color: rgba(255,255,255,.55);
+      font-size: 10px; font-weight: 600; text-decoration: none;
+      transition: color .15s, background .15s;
+      padding: 6px 2px; position: relative;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #buscar-dock a i { font-size: 18px; }
+    #buscar-dock a:hover, #buscar-dock a.active { color: #2ECC71; }
+    #buscar-dock a.active::after {
+      content: ''; position: absolute; top: 0; left: 20%; right: 20%;
+      height: 2px; background: #2ECC71; border-radius: 0 0 3px 3px;
+    }
+    @media (max-width: 767px) {
+      #buscar-dock { display: flex; }
+      body { padding-bottom: 64px; }
+    }
   </style>
 </head>
 
 <body>
-  <script>
-    // Polyfill de navTo: el topbar y el sidebar usan onclick="navTo('xxx')".
-    // Determina la base según el rol del usuario en sesión.
-    // Se inyecta antes del topbar para que esté disponible en el primer click.
-    (function () {
-      if (typeof navTo !== 'undefined') return;
-      window.navTo = function (p) {
-        var map = { 'admin-docs': 'documentos' };
-        var path = window.location.pathname;
-        var base;
-        if (path.startsWith('/superadmin'))   base = '/superadmin';
-        else if (path.startsWith('/admin'))   base = '/admin';
-        else if (path.startsWith('/socio'))   base = '/socio';
-        else if (path.startsWith('/visualizador')) base = '/visualizador';
-        else {
-          // fallback: inferir desde el body data-rol
-          var rol = (document.body.getAttribute('data-rol') || '').toUpperCase();
-          if (rol.indexOf('SUPERADMIN') !== -1)      base = '/superadmin';
-          else if (rol.indexOf('ADMIN') !== -1)      base = '/admin';
-          else if (rol.indexOf('SOCIO') !== -1)      base = '/socio';
-          else if (rol.indexOf('VISUALIZADOR') !== -1) base = '/visualizador';
-          else base = '/socio';
-        }
-        window.location.href = base + '/' + (map[p] || p);
-      };
-    })();
-  </script>
-
   <div class="layout">
-    <!-- Topbar estándar de la app (incluye search box global) -->
+
     <th:block th:replace="~{navbar/topbar :: topbar}"></th:block>
 
     <div class="layout-main">
-      <!-- Sidebar único que se adapta al rol vía variable model 'rol' -->
+
       <th:block th:if="${session.usuarioSesion != null and rolEfectivo != null}">
         <th:block th:replace="~{navbar/sidebar :: sidebar}"></th:block>
       </th:block>
@@ -172,7 +186,6 @@
   </div>
 
   <script th:inline="javascript">
-    /* Marca el término buscado dentro de los snippets con <mark>. */
     (function () {
       var query = /*[[${query}]]*/ '';
       if (!query) return;
@@ -185,6 +198,80 @@
       });
     })();
   </script>
+
+  <nav id="buscar-dock" th:if="${rol == 'VISUALIZADOR'}">
+    <a class="dock-item" th:href="@{/visualizador/inicio}">
+      <i class="fas fa-home"></i><span>Inicio</span>
+    </a>
+    <a class="dock-item" th:href="@{/visualizador/normativo}">
+      <i class="fas fa-balance-scale"></i><span>Normativo</span>
+    </a>
+    <a class="dock-item" th:href="@{/visualizador/estudios}">
+      <i class="fas fa-file-alt"></i><span>Estudios</span>
+    </a>
+    <a class="dock-item" th:href="@{/visualizador/notificaciones}" style="position:relative;">
+      <i class="fas fa-bell"></i>
+      <span th:if="${noLeidasCount != null and noLeidasCount > 0}" class="dock-badge" th:text="${noLeidasCount}">0</span>
+      <span>Alertas</span>
+    </a>
+    <a class="dock-item" th:href="@{/visualizador/perfil}">
+      <i class="fas fa-user"></i><span>Perfil</span>
+    </a>
+  </nav>
+
+  <nav id="buscar-dock" th:if="${rol == 'SOCIO'}">
+    <a class="dock-item" th:href="@{/socio/inicio}">
+      <i class="fas fa-home"></i><span>Inicio</span>
+    </a>
+    <a class="dock-item" th:href="@{/socio/normativo}">
+      <i class="fas fa-balance-scale"></i><span>Normativo</span>
+    </a>
+    <a class="dock-item" th:href="@{/socio/estudios}">
+      <i class="fas fa-file-alt"></i><span>Estudios</span>
+    </a>
+    <a class="dock-item" th:href="@{/socio/mi-unidad}">
+      <i class="fas fa-cloud"></i><span>Mi Unidad</span>
+    </a>
+    <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+      <i class="fas fa-ellipsis-h"></i><span>Más</span>
+    </button>
+  </nav>
+
+  <nav id="buscar-dock" th:if="${rol == 'ADMIN'}">
+    <a class="dock-item" th:href="@{/admin/inicio}">
+      <i class="fas fa-home"></i><span>Inicio</span>
+    </a>
+    <a class="dock-item" th:href="@{/admin/normativo}">
+      <i class="fas fa-balance-scale"></i><span>Normativo</span>
+    </a>
+    <a class="dock-item" th:href="@{/admin/estudios}">
+      <i class="fas fa-file-alt"></i><span>Estudios</span>
+    </a>
+    <a class="dock-item" th:href="@{/admin/usuarios}">
+      <i class="fas fa-users"></i><span>Usuarios</span>
+    </a>
+    <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+      <i class="fas fa-ellipsis-h"></i><span>Más</span>
+    </button>
+  </nav>
+
+  <nav id="buscar-dock" th:if="${rol == 'SUPERADMIN'}">
+    <a class="dock-item" th:href="@{/superadmin/inicio}">
+      <i class="fas fa-home"></i><span>Inicio</span>
+    </a>
+    <a class="dock-item" th:href="@{/superadmin/estudios}">
+      <i class="fas fa-file-alt"></i><span>Estudios</span>
+    </a>
+    <a class="dock-item" th:href="@{/superadmin/normativo}">
+      <i class="fas fa-balance-scale"></i><span>Normativo</span>
+    </a>
+    <a class="dock-item" th:href="@{/superadmin/usuarios}">
+      <i class="fas fa-users"></i><span>Usuarios</span>
+    </a>
+    <button class="dock-item dock-item--more" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
+      <i class="fas fa-ellipsis-h"></i><span>Más</span>
+    </button>
+  </nav>
 </body>
 
 </html>

@@ -7,11 +7,15 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: reciclame_db
       TZ: America/Lima
+    ports:
+      # Host 3306 suele estar ocupado por un MySQL nativo de Windows; se publica
+      # en 3307 para dev local fuera de Docker (ver .idea/runConfigurations).
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./src/main/resources/db/reciclame_db.sql:/docker-entrypoint-initdb.d/01-reciclame_db.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]     
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -42,15 +46,13 @@ services:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
       MINIO_BUCKET: reciclame-docs
+      MINIO_BUCKET_STAGING: reciclame-staging
       KKFILEVIEW_URL: http://kkfileview:8012
       N8N_WEBHOOK_URL: http://n8n:5678/webhook/send-email
       N8N_CHATBOT_WEBHOOK_URL: /webhook/chatbot-reciclame
 
-
-      VERIFICA_API_KEY: sk-7rgyH2OPhCiqpTxyOP9kf9XGOYcQ+xyzt7lDpenaW6Q==
+      APIPERUDEV_TOKEN: "19233|ouJBj1HMYJ7DPfC045I4rns1QSLgMOM9msnnpPNbc5ee5706"
       ATENEA_API_KEY: jJetKioI4tPL81xfcTHFqeLxNG+zKbfunQYoVbWb1zI=
-
-
 
       APP_BASE_URL: http://localhost:8080
       APP_KK_ACCESSIBLE_URL: http://reciclame-app:8080
@@ -87,14 +89,14 @@ services:
     networks:
       - reciclame-local
     entrypoint: >
-      /bin/sh -c "mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && echo 'Bucket reciclame-docs listo.' && exit 0"
+      /bin/sh -c "mc alias set local http://minio:9000 minioadmin minioadmin && mc mb --ignore-existing local/reciclame-docs && mc anonymous set none local/reciclame-docs && mc mb --ignore-existing local/reciclame-staging && mc anonymous set none local/reciclame-staging && echo 'Buckets reciclame-docs y reciclame-staging listos.' && exit 0"
 
   n8n:
     image: n8nio/n8n:latest
     container_name: reciclame-n8n
     restart: unless-stopped
     ports:
-      - "5678:5678"
+      - "15678:5678"
     environment:
       N8N_SECURE_COOKIE: "false"
       GENERIC_TIMEZONE: America/Lima
@@ -130,8 +132,9 @@ services:
       - reciclame-local
 
   kkfileview:
-    image: keking/kkfileview:latest
+    image: kent10029/kkfileview:5.0.0
     container_name: reciclame-kkfileview
+    platform: linux/amd64
     ports:
       - "8012:8012"
     depends_on:
@@ -139,6 +142,7 @@ services:
         condition: service_completed_successfully
     environment:
       KK_HTTP_PREVIEW: "true"
+      KK_TRUST_HOST: "*"
       SPRING_FREEMARKER_TEMPLATE_LOADER_PATH: file:/opt/kkFileView/templates/web/,classpath:/web/
     volumes:
       - ./kkfileview-templates/web:/opt/kkFileView/templates/web

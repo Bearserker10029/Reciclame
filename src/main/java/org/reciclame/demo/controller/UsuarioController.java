@@ -2,7 +2,10 @@ package org.reciclame.demo.controller;
 
 import org.reciclame.demo.dto.UsuarioRequestDTO;
 import org.reciclame.demo.dto.UsuarioResponseDTO;
+import org.reciclame.demo.model.Auditoria;
+import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +16,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -20,9 +25,11 @@ import java.util.List;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final AuditoriaService auditoriaService;
 
-    public UsuarioController(UsuarioService usuarioService) {
+    public UsuarioController(UsuarioService usuarioService, AuditoriaService auditoriaService) {
         this.usuarioService = usuarioService;
+        this.auditoriaService = auditoriaService;
     }
 
     // CREATE
@@ -31,7 +38,7 @@ public class UsuarioController {
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request, @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String auditorUsuarioNombre = userDetails != null ? userDetails.getUsername() : "Sistema";
         UsuarioResponseDTO auditor = auditorUsuarioNombre != null ?
@@ -63,12 +70,21 @@ public class UsuarioController {
     // PUT /api/usuarios/{id}
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<UsuarioResponseDTO> actualizarUsuario(
+    public ResponseEntity<?> actualizarUsuario(
             @PathVariable Long id,
             @RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        // Guarda: no se puede editar un usuario inactivo. Primero hay
+        // que reactivarlo desde el tab "Historial / Inactivos".
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "No se puede editar un usuario inactivo. Reactivarlo primero.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -78,9 +94,19 @@ public class UsuarioController {
     // DELETE /api/usuarios/{id}
     @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
+    public ResponseEntity<?> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        // Guarda: tampoco se puede eliminar (lógicamente) un usuario
+        // ya inactivo — está implícito en su estado. Devolvemos 409 para
+        // que la UI no muestre error genérico.
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "El usuario ya está inactivo. No es necesario eliminarlo.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         usuarioService.eliminarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent);
@@ -100,7 +126,7 @@ public class UsuarioController {
         if (rolId == null) {
             return ResponseEntity.badRequest().build();
         }
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.aprobarUsuario(id, rolId, empresaId, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -114,7 +140,7 @@ public class UsuarioController {
             @RequestParam(required = false) String motivo,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.rechazarUsuario(id, motivo, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -124,9 +150,19 @@ public class UsuarioController {
     // POST /api/usuarios/{id}/bloquear
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/bloquear")
-    public ResponseEntity<UsuarioResponseDTO> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
+    public ResponseEntity<?> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        String ipAddress = obtenerIpAddress(request);
+        // Guarda: bloquear/desbloquear solo aplica a usuarios activos.
+        // Un usuario inactivo no entra ni sale de bloqueo — primero se
+        // lo reactiva.
+        UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
+        if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
+            Map<String, Object> err = new LinkedHashMap<>();
+            err.put("error", "USUARIO_INACTIVO");
+            err.put("mensaje", "No se puede bloquear/desbloquear un usuario inactivo. Reactivarlo primero.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(err);
+        }
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         String[] auditor = resolverAuditor(userDetails);
         return ResponseEntity.ok(usuarioService.toggleBloquear(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
@@ -139,9 +175,32 @@ public class UsuarioController {
     public ResponseEntity<?> reaccionarUsuario(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails,
             HttpServletRequest request) {
         String[] auditor = resolverAuditor(userDetails);
-        String ipAddress = obtenerIpAddress(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         return ResponseEntity.ok(usuarioService.reactivarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
+    }
+
+    // HISTORIAL DE ACTIVIDAD POR USUARIO
+    // GET /api/usuarios/{id}/historial
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
+    @GetMapping("/{id}/historial")
+    public ResponseEntity<List<Map<String, Object>>> historialUsuario(@PathVariable Long id) {
+        List<Auditoria> auditorias = auditoriaService.listarAuditoriasPorUsuario(id);
+        List<Map<String, Object>> result = auditorias.stream()
+                .filter(a -> a.getEstadoActivo() == null || a.getEstadoActivo())
+                .map(a -> {
+                    Map<String, Object> m = new LinkedHashMap<>();
+                    m.put("id", a.getId());
+                    m.put("accion", a.getAccion());
+                    m.put("modulo", a.getModulo());
+                    m.put("descripcion", a.getDescripcion());
+                    m.put("estado", a.getEstado());
+                    m.put("ipAddress", a.getIpAddress());
+                    m.put("fechaAccion", a.getFechaAccion() != null ? a.getFechaAccion().toString() : null);
+                    return m;
+                })
+                .toList();
+        return ResponseEntity.ok(result);
     }
 
     // EXPORTAR CSV
@@ -163,17 +222,6 @@ public class UsuarioController {
         UsuarioResponseDTO dto = usuarioService.findByCorreo(userDetails.getUsername()).orElse(null);
         if (dto == null) return new String[]{null, userDetails.getUsername()};
         return new String[]{String.valueOf(dto.getId()), dto.getNombreCompleto()};
-    }
-
-    private String obtenerIpAddress(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
     }
 
     // ── MANEJO DE ERRORES ─────────────────────────────────────

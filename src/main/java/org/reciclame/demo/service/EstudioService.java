@@ -3,6 +3,7 @@ package org.reciclame.demo.service;
 import org.reciclame.demo.dto.EstudioRequestDTO;
 import org.reciclame.demo.dto.EstudioResponseDTO;
 import org.reciclame.demo.dto.VirusTotalVerdict;
+import org.reciclame.demo.helper.EstadoValidacion;
 import org.reciclame.demo.model.*;
 import org.reciclame.demo.repository.*;
 import org.springframework.stereotype.Service;
@@ -176,6 +177,96 @@ public class EstudioService {
         return crearEstudio(dto, archivoUrl, archivoTipoMime, correoAutor, null, "Sistema", null, null);
     }
 
+    /**
+     * Crea un Estudio en estado PENDIENTE de validación VirusTotal. Es el primer paso
+     * del flujo asíncrono: el archivo ya está en staging MinIO y {@code UploadStagingScanner}
+     * completará la validación + promote en background.
+     */
+    @Transactional
+    public EstudioResponseDTO crearEstudioPendiente(EstudioRequestDTO dto,
+                                                    String archivoStagingUrl,
+                                                    String archivoTipoMime,
+                                                    String correoAutor,
+                                                    Long auditorUsuarioId,
+                                                    String auditorUsuarioNombre,
+                                                    String ipAddress,
+                                                    String userAgent) {
+        if (archivoStagingUrl == null || !archivoStagingUrl.startsWith("staging://")) {
+            throw new RuntimeException("crearEstudioPendiente requiere archivoStagingUrl con marker staging://");
+        }
+        Tematica tematica = tematicaRepository.findById(dto.getTematicaId())
+                .orElseThrow(() -> new RuntimeException("Temática no encontrada"));
+
+        Usuario subidaPor = usuarioRepository.findByCorreoCorporativo(correoAutor)
+                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado: " + correoAutor));
+
+        Estudio e = new Estudio();
+        mapDtoToEntity(dto, e, tematica, archivoStagingUrl, archivoTipoMime);
+        e.setSubidaPor(subidaPor);
+        e.setEstadoActivo(true);
+        e.setVisualizacionesCount(0);
+        e.setDescargasCount(0);
+        e.setCreatedAt(Instant.now());
+        e.setUpdatedAt(Instant.now());
+
+        Estudio saved = estudioRepository.save(e);
+        guardarEtiquetas(saved, dto.getEtiquetasIds());
+
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                "Subida de estudio pendiente de validación: " + saved.getTitulo() + " (staging=" + archivoStagingUrl + ")",
+                null, null, "PENDIENTE", null, ipAddress, userAgent);
+
+        return toResponseDTO(saved);
+    }
+
+    /**
+     * Actualiza el registro tras finalizar el escaneo VirusTotal.
+     */
+    @Transactional
+    public void actualizarEstadoValidacion(Long id,
+                                           VirusTotalVerdict vtVerdict,
+                                           String archivoUrlFinal,
+                                           Long auditorUsuarioId,
+                                           String auditorUsuarioNombre,
+                                           String ipAddress,
+                                           String userAgent) {
+        Estudio e = estudioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
+        applyVerdict(e, vtVerdict);
+        if (archivoUrlFinal != null) {
+            e.setArchivoUrl(archivoUrlFinal);
+        }
+        e.setUpdatedAt(Instant.now());
+        estudioRepository.save(e);
+
+        String accion;
+        String resultado;
+        if (vtVerdict == null || vtVerdict.getVerdict() == org.reciclame.demo.dto.VirusTotalVerdict.Verdict.SKIPPED) {
+            accion = "Validación de archivo finalizada (SKIPPED)";
+            resultado = "EXITOSO";
+        } else if (vtVerdict.getVerdict() == org.reciclame.demo.dto.VirusTotalVerdict.Verdict.MALICIOUS) {
+            accion = "Archivo rechazado por antivirus";
+            resultado = "RECHAZADO";
+            e.setEstadoActivo(false);
+            estudioRepository.save(e);
+        } else {
+            accion = "Validación de archivo finalizada (" + vtVerdict.getVerdict() + ")";
+            resultado = "EXITOSO";
+        }
+        String detalle = vtVerdict != null ? vtVerdict.getMessage() : null;
+        auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
+                AuditoriaService.ACCION_CREAR_ESTUDIO, AuditoriaService.MODULO_ESTUDIOS,
+                accion + " — " + e.getTitulo() + " (ID " + e.getId() + ")",
+                null, null, resultado, detalle, ipAddress, userAgent);
+
+        if (resultado.equals("EXITOSO")
+                && vtVerdict != null
+                && vtVerdict.getVerdict() != org.reciclame.demo.dto.VirusTotalVerdict.Verdict.SKIPPED) {
+            try { notificacionService.notificarNuevoEstudio(e.getTitulo()); } catch (Exception ignored) {}
+        }
+    }
+
     // ── UPDATE ────────────────────────────────────────────────
     @Transactional
     public EstudioResponseDTO actualizarEstudio(Long id,
@@ -239,6 +330,8 @@ public class EstudioService {
             estudiosEtiquetaRepository.deleteByEstudioId(saved.getId());
             guardarEtiquetas(saved, dto.getEtiquetasIds());
         }
+
+        try { notificacionService.notificarEstudioActualizado(saved.getTitulo()); } catch (Exception ex) { /* no rollback */ }
 
         String datosNuevos = null;
         try {
@@ -441,6 +534,8 @@ public class EstudioService {
                 .filter(r -> r != null && r.getEtiqueta() != null && r.getEtiqueta().getNombre() != null)
                 .map(r -> r.getEtiqueta().getNombre())
                 .collect(Collectors.toList()));
+
+        dto.setEstadoValidacion(EstadoValidacion.inferir(e.getArchivoUrl(), e.getVtVerdict()));
 
         return dto;
     }

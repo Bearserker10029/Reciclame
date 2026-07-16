@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <th:block th:fragment="dock">
-  <!-- El scrim #sidebar-scrim y las funciones del drawer (reciclameAbrirDrawer /
-       reciclameCerrarDrawer) viven en navbar/sidebar.html, que se incluye para
-       todos los roles. Aquí solo dejamos el dock y la lógica propia de SuperAdmin. -->
 
-  <!-- Dock inferior estilo Apple (visible solo ≤760px) -->
+
+
   <nav id="app-dock" aria-label="Navegación principal móvil">
     <button class="dock-item" id="dock-inicio" type="button" onclick="reciclameDockGo('/superadmin/inicio', this)" aria-label="Inicio">
       <i class="fas fa-home"></i>
@@ -24,7 +22,7 @@
       <span>Usuarios</span>
       <span class="dock-badge" id="dock-usuarios-badge" style="display:none;">0</span>
     </button>
-    <!-- "Más": abre el drawer del sidebar con todas las opciones restantes -->
+
     <button class="dock-item dock-item--more" id="dock-mas" type="button" onclick="reciclameAbrirDrawer()" aria-label="Más opciones">
       <i class="fas fa-ellipsis-h"></i>
       <span>Más</span>

@@ -17,15 +17,15 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chat")
-public class ChatRestController {
+public class ChatTiempoRealRestController {
 
     private final ChatService chatService;
     private final UsuarioRepository usuarioRepo;
     private final CentrifugoService centrifugo;
 
-    public ChatRestController(ChatService chatService,
-                              UsuarioRepository usuarioRepo,
-                              CentrifugoService centrifugo) {
+    public ChatTiempoRealRestController(ChatService chatService,
+                                       UsuarioRepository usuarioRepo,
+                                       CentrifugoService centrifugo) {
         this.chatService = chatService;
         this.usuarioRepo = usuarioRepo;
         this.centrifugo = centrifugo;

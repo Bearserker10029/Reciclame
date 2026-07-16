@@ -30,33 +30,44 @@ public class QrLoginService {
 
     private static final Logger log = LoggerFactory.getLogger(QrLoginService.class);
     private static final String KEY_PREFIX = "qrlogin:";
-    private static final Duration TTL = Duration.ofMinutes(5);
     private static final SecureRandom RNG = new SecureRandom();
 
     private final StringRedisTemplate redis;
+    private final ParametrosSistemaService parametrosService;
 
-    public QrLoginService(StringRedisTemplate redis) {
+    public QrLoginService(StringRedisTemplate redis, ParametrosSistemaService parametrosService) {
         this.redis = redis;
+        this.parametrosService = parametrosService;
     }
 
     /**
-     * Genera un nuevo token QR para el usuario indicado.
-     * El token vive 5 minutos en Redis y es de un solo uso.
+     * Genera un nuevo token QR (magic link) para el usuario indicado.
+     * El TTL es parametrizable (parametros_sistema.magic_link_expiracion_min)
+     * y el token es de un solo uso.
      */
     public String generarToken(Long usuarioId) {
         if (usuarioId == null) {
             throw new IllegalArgumentException("usuarioId no puede ser null");
         }
+        int minutosExpiracion = parametrosService.getIntegerOrDefault("magic_link_expiracion_min", 10);
+        Duration ttl = Duration.ofMinutes(minutosExpiracion);
         byte[] bytes = new byte[24];
         RNG.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         try {
-            redis.opsForValue().set(KEY_PREFIX + token, String.valueOf(usuarioId), TTL);
+            redis.opsForValue().set(KEY_PREFIX + token, String.valueOf(usuarioId), ttl);
         } catch (Exception e) {
             log.error("No se pudo guardar token QR en Redis: {}", e.getMessage());
             throw new IllegalStateException("Servicio de QR no disponible", e);
         }
         return token;
+    }
+
+    /**
+     * Minutos de vida configurados actualmente para el token (uso informativo, p.ej. UI).
+     */
+    public int obtenerMinutosExpiracion() {
+        return parametrosService.getIntegerOrDefault("magic_link_expiracion_min", 10);
     }
 
     /**

@@ -25,6 +25,14 @@ public class EmailNotificationService {
     @Value("${app.login-path:/service/repositorio/login}")
     private String loginPath;
 
+    // El logo del correo NUNCA debe salir de app.base-url: en dev local ese
+    // valor es http://localhost:8080 (o un túnel privado), inalcanzable para
+    // Gmail/Outlook al renderizar el correo. Se usa una URL pública fija,
+    // la misma que ya sirve el sitio público (reciclame.org), para que la
+    // imagen cargue sin importar dónde corra el backend que envía el correo.
+    @Value("${app.email-logo-url:https://reciclame.org/wp-content/uploads/2025/12/logo-blanco-Reciclame.png}")
+    private String logoUrl;
+
     public EmailNotificationService(JavaMailSender mailSender) {
         this.mailSender = mailSender;
     }
@@ -335,6 +343,74 @@ public class EmailNotificationService {
         }
     }
 
+    public void enviarDocumentoCompartido(String to, String[] cc, String asunto,
+                                          String nombreRemitente, String tituloDocumento,
+                                          String descripcion, byte[] adjunto,
+                                          String nombreArchivo, String tipoMime) {
+        try {
+            MimeMessage mime = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mime, true, "UTF-8");
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            if (cc != null && cc.length > 0) {
+                helper.setCc(cc);
+            }
+            helper.setSubject(asunto != null && !asunto.isBlank() ? asunto : tituloDocumento + " — Recíclame");
+
+            String descBlock = (descripcion != null && !descripcion.isBlank())
+                    ? """
+                      <div style="background:#F7FAFC;border-left:4px solid #A0AEC0;border-radius:0 8px 8px 0;
+                                  padding:16px 20px;margin:24px 0">
+                        <p style="margin:0 0 6px;color:#718096;font-size:12px;font-weight:600;
+                                   text-transform:uppercase;letter-spacing:1px">Mensaje</p>
+                        <p style="margin:0;color:#2D3748;font-size:14px;line-height:1.6">
+                          %s
+                        </p>
+                      </div>
+                      """.formatted(esc(descripcion))
+                    : "";
+
+            String cuerpo = html(
+                "Documento compartido",
+                esc(nombreRemitente) + " te envió un documento",
+                "#3498DB",
+                """
+                <p><strong>%s</strong> te ha enviado un documento desde la plataforma
+                <strong>Recíclame</strong>.</p>
+
+                <div style="background:#EBF8FF;border:1px solid #BEE3F8;border-radius:12px;
+                            padding:20px 24px;margin:24px 0">
+                  <p style="margin:0 0 6px;color:#718096;font-size:12px;font-weight:600;
+                             text-transform:uppercase;letter-spacing:1px">Documento adjunto</p>
+                  <p style="margin:0;color:#1B3A5C;font-size:16px;font-weight:700">
+                    📄 %s
+                  </p>
+                  <p style="margin:6px 0 0;color:#A0AEC0;font-size:12px">
+                    Archivo: %s
+                  </p>
+                </div>
+
+                %s
+                """.formatted(esc(nombreRemitente), esc(tituloDocumento), esc(nombreArchivo), descBlock),
+                "Ir a Recíclame",
+                baseUrl + loginPath
+            );
+
+            helper.setText(cuerpo, true);
+            if (adjunto != null && adjunto.length > 0) {
+                helper.addAttachment(nombreArchivo,
+                        new org.springframework.core.io.ByteArrayResource(adjunto),
+                        tipoMime != null ? tipoMime : "application/octet-stream");
+            }
+            mailSender.send(mime);
+            log.info("[Email] Documento '{}' compartido por {} a {} ({} bytes)",
+                    tituloDocumento, nombreRemitente, to, adjunto != null ? adjunto.length : 0);
+        } catch (MessagingException ex) {
+            log.error("[Email] Fallo al compartir documento a {}: {}", to, ex.getMessage());
+            throw new RuntimeException("No se pudo enviar el correo: " + ex.getMessage(), ex);
+        }
+    }
+
     public void enviarConfirmacionSoporte(String to, String ticketId) {
         sendEmail(to, "Ticket de soporte recibido — Recíclame", html(
             "Recibimos tu solicitud de soporte",
@@ -369,8 +445,6 @@ public class EmailNotificationService {
 
     private String html(String saludo, String subtitulo, String accentColor,
                         String cuerpo, String btnTexto, String btnUrl) {
-
-        String logoUrl = baseUrl + "/assets/images/reciclame/logo-blanco-Reciclame.png";
 
         String boton = (btnTexto != null && btnUrl != null) ? """
             <div style="text-align:center;margin:32px 0 8px">

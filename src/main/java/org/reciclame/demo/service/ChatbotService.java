@@ -12,6 +12,7 @@ import org.reciclame.demo.repository.ChatbotFeedbackRepository;
 import org.reciclame.demo.repository.ConversacionesChatbotRepository;
 import org.reciclame.demo.repository.MensajesChatbotRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -87,7 +88,7 @@ public class ChatbotService {
         conv.setTotalMensajes(0);
         conv.setDuracionTotalMs(0L);
         conv.setUltimoMensajeAt(Instant.now());
-        conv.setIpAddress(firstNonBlank(req.getIpAddress(), clientIp(httpReq)));
+        conv.setIpAddress(firstNonBlank(req.getIpAddress(), HttpClientIpResolver.resolve(httpReq)));
         conv.setUserAgent(truncar(req.getUserAgent(), 500));
         conv.setCerradaPorUsuario(false);
         conv.setEstadoActivo(true);
@@ -165,26 +166,46 @@ public class ChatbotService {
     // ====================================================================
 
     @Transactional(readOnly = true)
-    public ChatbotEstadisticasDTO calcularEstadisticas(Instant desde, Instant hasta) {
+    public ChatbotEstadisticasDTO calcularEstadisticas(Instant desde, Instant hasta, boolean excluirSuperadmin) {
         ChatbotEstadisticasDTO dto = new ChatbotEstadisticasDTO();
-        dto.setTotalConversaciones(conversacionRepo.countByRango(desde, hasta));
-        dto.setTotalMensajes(mensajeRepo.countByRango(desde, hasta));
-        dto.setTotalMensajesUsuario(mensajeRepo.countUserByRango(desde, hasta));
-        dto.setTotalMensajesBot(mensajeRepo.countBotByRango(desde, hasta));
-        dto.setTotalErrores(mensajeRepo.countErroresByRango(desde, hasta));
-        dto.setTotalDerivadosSoporte(mensajeRepo.countDerivadosByRango(desde, hasta));
-        dto.setUsuariosUnicos(conversacionRepo.countDistinctUsuariosByRango(desde, hasta));
-        Double avg = mensajeRepo.avgLatenciaBot(desde, hasta);
-        dto.setLatenciaPromedioMs(avg != null ? Math.round(avg) : 0d);
-        dto.setFeedbackPositivo(feedbackRepo.countPositivo(desde, hasta));
-        dto.setFeedbackNegativo(feedbackRepo.countNegativo(desde, hasta));
+        if (excluirSuperadmin) {
+            dto.setTotalConversaciones(conversacionRepo.countByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setTotalMensajes(mensajeRepo.countByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setTotalMensajesUsuario(mensajeRepo.countUserByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setTotalMensajesBot(mensajeRepo.countBotByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setTotalErrores(mensajeRepo.countErroresByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setTotalDerivadosSoporte(mensajeRepo.countDerivadosByRangoExcluyendoSuperadmin(desde, hasta));
+            dto.setUsuariosUnicos(conversacionRepo.countDistinctUsuariosByRangoExcluyendoSuperadmin(desde, hasta));
+            Double avg = mensajeRepo.avgLatenciaBotExcluyendoSuperadmin(desde, hasta);
+            dto.setLatenciaPromedioMs(avg != null ? Math.round(avg) : 0d);
+            dto.setFeedbackPositivo(feedbackRepo.countPositivoExcluyendoSuperadmin(desde, hasta));
+            dto.setFeedbackNegativo(feedbackRepo.countNegativoExcluyendoSuperadmin(desde, hasta));
+        } else {
+            dto.setTotalConversaciones(conversacionRepo.countByRango(desde, hasta));
+            dto.setTotalMensajes(mensajeRepo.countByRango(desde, hasta));
+            dto.setTotalMensajesUsuario(mensajeRepo.countUserByRango(desde, hasta));
+            dto.setTotalMensajesBot(mensajeRepo.countBotByRango(desde, hasta));
+            dto.setTotalErrores(mensajeRepo.countErroresByRango(desde, hasta));
+            dto.setTotalDerivadosSoporte(mensajeRepo.countDerivadosByRango(desde, hasta));
+            dto.setUsuariosUnicos(conversacionRepo.countDistinctUsuariosByRango(desde, hasta));
+            Double avg = mensajeRepo.avgLatenciaBot(desde, hasta);
+            dto.setLatenciaPromedioMs(avg != null ? Math.round(avg) : 0d);
+            dto.setFeedbackPositivo(feedbackRepo.countPositivo(desde, hasta));
+            dto.setFeedbackNegativo(feedbackRepo.countNegativo(desde, hasta));
+        }
 
         // Series para charts
-        dto.setMensajesPorDia(agruparMensajesPorDia(desde, hasta));
-        dto.setConversacionesPorRol(agruparPorRol(desde, hasta));
-        dto.setTopIntents(obtenerTopIntents(desde, hasta));
-        dto.setTopUsuarios(obtenerTopUsuarios(desde, hasta));
+        dto.setMensajesPorDia(agruparMensajesPorDia(desde, hasta, excluirSuperadmin));
+        dto.setConversacionesPorRol(agruparPorRol(desde, hasta, excluirSuperadmin));
+        dto.setTopIntents(obtenerTopIntents(desde, hasta, excluirSuperadmin));
+        dto.setTopUsuarios(obtenerTopUsuarios(desde, hasta, excluirSuperadmin));
         return dto;
+    }
+
+    /** Backward-compat: si nadie pasa el flag, NO se excluye (comportamiento original). */
+    @Transactional(readOnly = true)
+    public ChatbotEstadisticasDTO calcularEstadisticas(Instant desde, Instant hasta) {
+        return calcularEstadisticas(desde, hasta, false);
     }
 
     // ====================================================================
@@ -196,9 +217,22 @@ public class ChatbotService {
                                                                      Long rolId,
                                                                      Instant desde,
                                                                      Instant hasta,
-                                                                     Pageable pageable) {
-        Page<ConversacionesChatbot> page = conversacionRepo.filtrar(usuarioId, rolId, desde, hasta, pageable);
+                                                                     Pageable pageable,
+                                                                     boolean excluirSuperadmin) {
+        Page<ConversacionesChatbot> page = excluirSuperadmin
+                ? conversacionRepo.filtrarExcluyendoSuperadmin(usuarioId, rolId, desde, hasta, pageable)
+                : conversacionRepo.filtrar(usuarioId, rolId, desde, hasta, pageable);
         return page.map(this::toFila);
+    }
+
+    /** Backward-compat */
+    @Transactional(readOnly = true)
+    public Page<ChatbotConsultaFilaDTO> listarConversacionesFiltrado(Long usuarioId,
+                                                                     Long rolId,
+                                                                     Instant desde,
+                                                                     Instant hasta,
+                                                                     Pageable pageable) {
+        return listarConversacionesFiltrado(usuarioId, rolId, desde, hasta, pageable, false);
     }
 
     @Transactional(readOnly = true)
@@ -213,6 +247,12 @@ public class ChatbotService {
             dto.setIntentDetectado(m.getIntentDetectado());
             dto.setDuracionMs(m.getDuracionMs());
             dto.setTokensEstimados(m.getTokensEstimados());
+            dto.setModelo(m.getModelo());
+            dto.setMensajeError(m.getMensajeError());
+            dto.setSqlEjecutado(m.getSqlEjecutado());
+            dto.setFilasDevueltas(m.getFilasDevueltas());
+            dto.setMetadata(m.getMetadata());
+            dto.setIpAddress(m.getIpAddress());
             dto.setEsError(m.getEsError());
             dto.setCreatedAt(m.getCreatedAt());
             out.add(dto);
@@ -227,8 +267,10 @@ public class ChatbotService {
     private ChatbotConsultaFilaDTO toFila(ConversacionesChatbot c) {
         ChatbotConsultaFilaDTO dto = new ChatbotConsultaFilaDTO();
         dto.setConversacionId(c.getId());
+        dto.setTitulo(c.getTitulo());
         dto.setFechaInicio(c.getCreatedAt());
         dto.setFechaUltimoMensaje(c.getUltimoMensajeAt() != null ? c.getUltimoMensajeAt() : c.getCreatedAt());
+        dto.setIpOrigen(c.getIpAddress());
         if (c.getUsuario() != null) {
             dto.setUsuarioId(c.getUsuario().getId());
             dto.setUsuarioNombre(c.getUsuario().getNombreCompleto());
@@ -259,8 +301,10 @@ public class ChatbotService {
         return dto;
     }
 
-    private List<Map<String, Object>> agruparMensajesPorDia(Instant desde, Instant hasta) {
-        List<Object[]> rows = mensajeRepo.mensajesPorDia(desde, hasta);
+    private List<Map<String, Object>> agruparMensajesPorDia(Instant desde, Instant hasta, boolean excluirSuperadmin) {
+        List<Object[]> rows = excluirSuperadmin
+                ? mensajeRepo.mensajesPorDiaExcluyendoSuperadmin(desde, hasta)
+                : mensajeRepo.mensajesPorDia(desde, hasta);
         Map<String, long[]> bucket = new LinkedHashMap<>();
         for (Object[] r : rows) {
             String fecha = Objects.toString(r[0], FECHA_FMT.format(Instant.now()));
@@ -281,8 +325,10 @@ public class ChatbotService {
         return out;
     }
 
-    private List<Map<String, Object>> agruparPorRol(Instant desde, Instant hasta) {
-        List<Object[]> rows = conversacionRepo.conversacionesPorRol(desde, hasta);
+    private List<Map<String, Object>> agruparPorRol(Instant desde, Instant hasta, boolean excluirSuperadmin) {
+        List<Object[]> rows = excluirSuperadmin
+                ? conversacionRepo.conversacionesPorRolExcluyendoSuperadmin(desde, hasta)
+                : conversacionRepo.conversacionesPorRol(desde, hasta);
         List<Map<String, Object>> out = new ArrayList<>();
         for (Object[] r : rows) {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -293,8 +339,10 @@ public class ChatbotService {
         return out;
     }
 
-    private List<Map<String, Object>> obtenerTopIntents(Instant desde, Instant hasta) {
-        List<Object[]> rows = mensajeRepo.topIntents(desde, hasta, PageRequest.of(0, 5));
+    private List<Map<String, Object>> obtenerTopIntents(Instant desde, Instant hasta, boolean excluirSuperadmin) {
+        List<Object[]> rows = excluirSuperadmin
+                ? mensajeRepo.topIntentsExcluyendoSuperadmin(desde, hasta, PageRequest.of(0, 5))
+                : mensajeRepo.topIntents(desde, hasta, PageRequest.of(0, 5));
         List<Map<String, Object>> out = new ArrayList<>();
         for (Object[] r : rows) {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -305,8 +353,10 @@ public class ChatbotService {
         return out;
     }
 
-    private List<Map<String, Object>> obtenerTopUsuarios(Instant desde, Instant hasta) {
-        List<Object[]> rows = conversacionRepo.topUsuarios(desde, hasta, PageRequest.of(0, 5));
+    private List<Map<String, Object>> obtenerTopUsuarios(Instant desde, Instant hasta, boolean excluirSuperadmin) {
+        List<Object[]> rows = excluirSuperadmin
+                ? conversacionRepo.topUsuariosExcluyendoSuperadmin(desde, hasta, PageRequest.of(0, 5))
+                : conversacionRepo.topUsuarios(desde, hasta, PageRequest.of(0, 5));
         List<Map<String, Object>> out = new ArrayList<>();
         for (Object[] r : rows) {
             Map<String, Object> row = new LinkedHashMap<>();
@@ -330,10 +380,4 @@ public class ChatbotService {
         return null;
     }
 
-    private static String clientIp(HttpServletRequest req) {
-        if (req == null) return null;
-        String h = req.getHeader("X-Forwarded-For");
-        if (h != null && !h.isBlank()) return h.split(",")[0].trim();
-        return req.getRemoteAddr();
-    }
 }

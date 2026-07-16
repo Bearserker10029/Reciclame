@@ -268,6 +268,7 @@
             <option value="EMPRESAS">EMPRESAS</option>
             <option value="SISTEMA">SISTEMA</option>
             <option value="SEGURIDAD">SEGURIDAD</option>
+            <option value="AUTENTICACION">AUTENTICACION</option>
           </select>
           <select id="filterAccionTraza">
             <option value="">Acción: Todas</option>
@@ -281,6 +282,8 @@
             <option value="CREAR_ESTUDIO">Crear Estudio</option>
             <option value="EDITAR_ESTUDIO">Editar Estudio</option>
             <option value="ELIMINAR_ESTUDIO">Eliminar Estudio</option>
+            <option value="LOGIN">Inicio de sesión</option>
+            <option value="LOGOUT">Cierre de sesión</option>
           </select>
           <select id="filterEstadoTraza">
             <option value="">Estado: Todas</option>
@@ -304,14 +307,13 @@
                   <th><i class="fas fa-bolt" style="margin-right:6px;"></i>Acción</th>
                   <th><i class="fas fa-cube" style="margin-right:6px;"></i>Módulo</th>
                   <th>Descripción</th>
-                  <th><i class="fas fa-network-wired" style="margin-right:6px;"></i>IP</th>
                   <th>Resultado</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody id="tablaAuditoria">
                 <tr th:if="${auditorias == null or auditorias.isEmpty()}">
-                  <td colspan="8" style="text-align:center;padding:60px;">
+                  <td colspan="7" style="text-align:center;padding:60px;">
                     <i class="fas fa-clipboard-list" style="font-size:44px;color:#E5E7EB;display:block;margin-bottom:16px;"></i>
                     <div style="font-size:15px;font-weight:600;color:#9CA3AF;">No hay registros de auditoría aún</div>
                   </td>
@@ -321,10 +323,6 @@
                     th:data-modulo="${a.modulo}"
                     th:data-texto="${(a.usuarioNombre ?: '') + ' ' + (a.accion ?: '') + ' ' + (a.descripcion ?: '')}"
                     th:data-id="${a.id}"
-                    th:data-datos-anteriores="${a.datosAnteriores ?: ''}"
-                    th:data-datos-nuevos="${a.datosNuevos ?: ''}"
-                    th:data-user-agent="${a.userAgent ?: ''}"
-                    th:data-mensaje-error="${a.mensajeError ?: ''}"
                     th:style="'animation-delay:' + ${iStat.index * 40} + 'ms'">
                   <td>
                     <div style="font-size:12px;font-weight:600;color:#1B3A5C;white-space:nowrap;"
@@ -352,7 +350,6 @@
                   </td>
                   <td><span class="mod-tag" th:text="${a.modulo ?: '—'}">—</span></td>
                   <td style="color:#6B7280;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" th:text="${a.descripcion ?: '—'}">—</td>
-                  <td><span style="font-family:monospace;font-size:11px;color:#6B7280;background:#F3F4F6;padding:3px 7px;border-radius:5px;" th:text="${a.ipAddress ?: 'N/A'}">—</span></td>
                   <td>
                     <span th:if="${a.estado == 'EXITOSO'}" class="badge-exitoso"><i class="fas fa-check-circle" style="font-size:9px;"></i> Exitoso</span>
                     <span th:unless="${a.estado == 'EXITOSO'}" class="badge-fallido"><i class="fas fa-times-circle" style="font-size:9px;"></i> <span th:text="${a.estado ?: 'Fallido'}">Fallido</span></span>

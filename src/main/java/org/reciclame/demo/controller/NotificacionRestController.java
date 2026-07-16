@@ -6,6 +6,7 @@ import org.reciclame.demo.service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -60,26 +61,37 @@ public class NotificacionRestController {
     @PostMapping("/{id}/leer")
     public ResponseEntity<Map<String, Object>> marcarLeida(@PathVariable Long id,
                                                            @AuthenticationPrincipal UserDetails user) {
-        if (user == null) {
-            return ResponseEntity.status(401).build();
-        }
-        Long usuarioId = usuarioService.findByCorreo(user.getUsername())
-                .map(u -> u.getId())
-                .orElse(null);
+        Long usuarioId = resolverUsuarioId(user);
         if (usuarioId == null) {
             return ResponseEntity.status(401).build();
         }
-
-        // Verifica pertenencia antes de marcar para no exponer IDs ajenos.
-        NotificacionResponseDTO notif = notificacionService.listarPorUsuario(usuarioId).stream()
-                .filter(n -> id.equals(n.getId()))
-                .findFirst()
-                .orElse(null);
-        if (notif == null) {
+        boolean ok = notificacionService.marcarComoLeida(id, usuarioId);
+        if (!ok) {
             return ResponseEntity.notFound().build();
         }
-
-        notificacionService.marcarComoLeida(id);
         return ResponseEntity.ok(Map.of("ok", true, "id", id));
+    }
+
+    /**
+     * Elimina (lógicamente) una notificación propia. Mismo criterio de
+     * pertenencia que marcarLeida.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> eliminar(@PathVariable Long id,
+                                                         @AuthenticationPrincipal UserDetails user) {
+        Long usuarioId = resolverUsuarioId(user);
+        if (usuarioId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        boolean ok = notificacionService.eliminarNotificacion(id, usuarioId);
+        if (!ok) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of("ok", true, "id", id));
+    }
+
+    private Long resolverUsuarioId(UserDetails user) {
+        if (user == null) return null;
+        return usuarioService.findByCorreo(user.getUsername()).map(u -> u.getId()).orElse(null);
     }
 }

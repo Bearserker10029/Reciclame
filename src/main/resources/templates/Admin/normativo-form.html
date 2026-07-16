@@ -399,14 +399,14 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ DATA ISLAND ══ -->
+
         <script th:inline="javascript">
           var IS_EDIT = [[${ isEdit }]];
           var NORMATIVA_ID = [[${ normativa?.id }]];
           var INIT_DATA = IS_EDIT ? [[${ normativa }]] : null;
         </script>
 
-        <!-- ══ HERO ══ -->
+
         <div class="form-hero">
           <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
             <a href="/admin/normativo" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
@@ -429,23 +429,23 @@
           </div>
         </div>
 
-        <!-- ══ ERROR BANNER ══ -->
+
         <div id="form-error"></div>
 
-        <!-- ══ INFO: ESCANEO VIRUS TOTAL ══ -->
+
         <div class="vt-info-banner"
              style="background:#e7f1ff;border:1px solid #b6d4fe;color:#052c65;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px;">
           <i class="fas fa-shield-alt"></i>
           <span>Todo archivo adjunto se escanea automáticamente contra <strong>VirusTotal</strong> antes de almacenarse. Si el antivirus detecta malware, la subida será rechazada.</span>
         </div>
 
-        <!-- ══ FORM GRID ══ -->
+
         <div style="display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start;">
 
-          <!-- LEFT COLUMN -->
+
           <div>
 
-            <!-- ── Card 1: Información General ── -->
+
             <div class="form-card">
               <div class="card-section-title">
                 <i class="fas fa-file-alt"></i> Información General
@@ -453,7 +453,7 @@
               <div style="display:flex;flex-direction:column;gap:14px;">
                 <div>
                   <label class="form-label">Título <span style="color:#E74C3C;">*</span></label>
-                  <input id="f-titulo" type="text" class="form-control" maxlength="300"
+                  <input id="f-titulo" type="text" class="form-control" maxlength="300" minlength="5" required
                     placeholder="Ej: Ley de Gestión Integral de Residuos Sólidos" />
                 </div>
                 <div>
@@ -469,7 +469,7 @@
               </div>
             </div>
 
-            <!-- ── Card 2: Clasificación Legal ── -->
+
             <div class="form-card" style="animation-delay:.05s">
               <div class="card-section-title">
                 <i class="fas fa-gavel"></i> Clasificación Legal
@@ -513,7 +513,7 @@
                 </div>
               </div>
 
-              <!-- Etiquetas -->
+
               <div style="margin-top:16px;">
                 <label class="form-label">Etiquetas</label>
                 <div class="etiqueta-grid" id="etiqueta-grid">
@@ -525,7 +525,7 @@
               </div>
             </div>
 
-            <!-- ── Card 3: Fechas Clave ── -->
+
             <div class="form-card" style="animation-delay:.1s">
               <div class="card-section-title">
                 <i class="fas fa-calendar-alt"></i> Fechas Clave
@@ -550,30 +550,30 @@
               </div>
             </div>
 
-          </div><!-- /left column -->
+          </div> 
 
-          <!-- RIGHT COLUMN -->
+
           <div>
 
-            <!-- ── Card 4: Archivo y Visibilidad ── -->
+
             <div class="form-card" style="animation-delay:.15s">
               <div class="card-section-title">
                 <i class="fas fa-upload"></i> Archivo y Visibilidad
               </div>
 
-              <!-- Drop zone -->
+
               <div class="drop-zone" id="drop-zone" onclick="document.getElementById('f-archivo').click()"
                 ondragover="event.preventDefault();this.classList.add('dragover')"
                 ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event)">
                 <i class="fas fa-cloud-upload-alt"></i>
-                <p>Arrastra el PDF / DOC o haz clic para seleccionar</p>
+                <p>Arrastra el archivo o haz clic para seleccionar</p>
                 <p style="font-size:11px;color:#9CA3AF;margin-top:4px;">Máx. 50 MB — PDF, DOC, DOCX</p>
                 <div class="file-name" id="file-name-label" style="display:none;"></div>
               </div>
-              <input type="file" id="f-archivo" style="display:none;" accept=".pdf,.doc,.docx"
+              <input type="file" id="f-archivo" style="display:none;" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onchange="onFileChange(this)" />
 
-              <!-- Archivo actual en modo edición -->
+
               <div id="archivo-actual" style="display:none;margin-top:10px;padding:10px 14px;
                background:#F0FFF6;border-radius:9px;border:1px solid rgba(46,204,113,.2);">
                 <div style="font-size:11px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px;">
@@ -584,7 +584,7 @@
                 </a>
               </div>
 
-              <!-- Visibilidad toggle -->
+
               <div style="margin-top:20px;padding:14px;background:#FAFBFC;border-radius:10px;border:1px solid #F0F4F8;">
                 <div class="toggle-wrap">
                   <label class="toggle-switch">
@@ -598,12 +598,12 @@
                 </div>
               </div>
 
-              <!-- Errores de validación del backend -->
+
               <div id="errores-validacion" style="display:none;margin-top:14px;padding:12px 14px;
                background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
                color:#B91C1C;font-size:12px;line-height:1.6;"></div>
 
-              <!-- Actions -->
+
               <div style="margin-top:24px;display:flex;flex-direction:column;gap:10px;">
                 <button id="btn-guardar" class="btn-submit" onclick="submitForm()">
                   <i class="fas fa-save" style="margin-right:6px;"></i>
@@ -615,10 +615,10 @@
               </div>
             </div>
 
-          </div><!-- /right column -->
-        </div><!-- /form grid -->
+          </div> 
+        </div> 
 
-        <!-- ══ TOAST ══ -->
+
         <div id="toast-norm"></div>
 
         <script>
@@ -653,13 +653,44 @@
 
           // ── File handling ──────────────────────────────────────────
           var selectedFile = null;
+          var EXT_NORMATIVA_OK = ['.pdf', '.doc', '.docx'];
+
+          function extensionArchivo(name) {
+            var i = (name || '').lastIndexOf('.');
+            return i >= 0 ? name.substring(i).toLowerCase() : '';
+          }
+
+          function archivoNormativaPermitido(file) {
+            if (!file) return true;
+            return EXT_NORMATIVA_OK.indexOf(extensionArchivo(file.name)) !== -1;
+          }
+
+          function rechazarArchivoNoPermitido() {
+            selectedFile = null;
+            var input = document.getElementById('f-archivo');
+            if (input) input.value = '';
+            var label = document.getElementById('file-name-label');
+            if (label) {
+              label.style.display = 'none';
+              label.textContent = '';
+            }
+            showToast('Formato no permitido para normativas. Usa PDF, DOC o DOCX.', 'error');
+          }
+
+          function asignarArchivo(file) {
+            if (!archivoNormativaPermitido(file)) {
+              rechazarArchivoNoPermitido();
+              return;
+            }
+            selectedFile = file;
+            var label = document.getElementById('file-name-label');
+            label.textContent = selectedFile.name;
+            label.style.display = 'block';
+          }
 
           function onFileChange(input) {
             if (input.files && input.files[0]) {
-              selectedFile = input.files[0];
-              var label = document.getElementById('file-name-label');
-              label.textContent = selectedFile.name;
-              label.style.display = 'block';
+              asignarArchivo(input.files[0]);
             }
           }
 
@@ -668,10 +699,7 @@
             document.getElementById('drop-zone').classList.remove('dragover');
             var files = event.dataTransfer.files;
             if (files && files[0]) {
-              selectedFile = files[0];
-              var label = document.getElementById('file-name-label');
-              label.textContent = selectedFile.name;
-              label.style.display = 'block';
+              asignarArchivo(files[0]);
             }
           }
 
@@ -758,6 +786,100 @@
           }
 
           // ── Submit ─────────────────────────────────────────────────
+          // ── Validación integral (cliente) ────────────────────────────
+          // Devuelve un objeto { ok: true|false, errores: [{campo,mensaje}] }.
+          // Cubre las mismas reglas que NormativaRequestDTO + las CHECK
+          // constraints de la BD, para no malgastar round-trips.
+          function validarNormativa() {
+            var errores = [];
+            var titulo = '';
+            var anio   = '';
+            var archivo;
+            try {
+              titulo = document.getElementById('f-titulo').value.trim();
+              anio   = document.getElementById('f-anio').value;
+              archivo = document.getElementById('f-archivo').files[0] || selectedFile;
+            } catch (e) { /* tolerate DOM missing */ }
+
+            // Título
+            if (!titulo) {
+              errores.push({ campo: 'titulo', mensaje: 'El título es obligatorio.' });
+            } else if (titulo.length < 5) {
+              errores.push({ campo: 'titulo', mensaje: 'El título debe tener al menos 5 caracteres.' });
+            } else if (titulo.length > 300) {
+              errores.push({ campo: 'titulo', mensaje: 'El título no puede superar los 300 caracteres.' });
+            }
+
+            // Temática
+            if (!document.getElementById('f-tematica').value) {
+              errores.push({ campo: 'tematicaId', mensaje: 'Debes seleccionar una temática.' });
+            }
+            // Tipo
+            if (!document.getElementById('f-tipo').value) {
+              errores.push({ campo: 'tipoNormativaId', mensaje: 'Debes seleccionar el tipo de normativa.' });
+            }
+            // Estado
+            if (!document.getElementById('f-estado').value) {
+              errores.push({ campo: 'estadoNormativaId', mensaje: 'Debes seleccionar el estado normativo.' });
+            }
+
+            // Año (obligatorio, 1900-2100)
+            if (!anio) {
+              errores.push({ campo: 'anio', mensaje: 'El año de publicación es obligatorio.' });
+            } else {
+              var anioNum = parseInt(anio, 10);
+              if (isNaN(anioNum) || anioNum < 1900 || anioNum > 2100) {
+                errores.push({ campo: 'anio', mensaje: 'El año debe estar entre 1900 y 2100.' });
+              }
+            }
+
+            // Coherencia de fechas
+            var fp = document.getElementById('f-fecha-promulgacion').value;
+            var fv = document.getElementById('f-fecha-vigencia').value;
+            var fd = document.getElementById('f-fecha-derogacion').value;
+            if (fp && fv && fp > fv) {
+              errores.push({ campo: 'fechaEntradaVigencia',
+                mensaje: 'La fecha de entrada en vigencia no puede ser anterior a la promulgación.' });
+            }
+            if (fv && fd && fv > fd) {
+              errores.push({ campo: 'fechaDerogacion',
+                mensaje: 'La fecha de derogación no puede ser anterior a la entrada en vigencia.' });
+            }
+            if (fp && fd && fp > fd) {
+              errores.push({ campo: 'fechaDerogacion',
+                mensaje: 'La fecha de derogación no puede ser anterior a la promulgación.' });
+            }
+
+            // Archivo obligatorio al crear
+            if (!IS_EDIT && !archivo) {
+              errores.push({ campo: 'archivo',
+                mensaje: 'El archivo PDF/DOC es obligatorio para crear una normativa.' });
+            }
+            if (archivo && !archivoNormativaPermitido(archivo)) {
+              errores.push({ campo: 'archivo',
+                mensaje: 'Formato no permitido. Las normativas solo aceptan PDF, DOC o DOCX.' });
+            }
+
+            return { ok: errores.length === 0, errores: errores };
+          }
+
+          // Pinta un error en el banner de error del formulario.
+          function pintarErroresValidacion(errores) {
+            var errBanner = document.getElementById('form-error');
+            if (!errBanner) return;
+            if (errores.length === 1) {
+              errBanner.textContent = errores[0].mensaje;
+            } else {
+              var ul = '<ul style="margin:6px 0 0 18px;padding:0;">';
+              errores.forEach(function (e) {
+                ul += '<li><strong>' + (LABELS_NORMATIVA[e.campo] || e.campo) + '</strong>: ' + e.mensaje + '</li>';
+              });
+              ul += '</ul>';
+              errBanner.innerHTML = errores[0].mensaje + ul;
+            }
+            errBanner.style.display = 'block';
+          }
+
           async function submitForm() {
             // Limpiar cualquier backdrop que bloquee la pantalla antes de operar
             limpiarModales();
@@ -773,6 +895,14 @@
             errDetalle.style.display = 'none';
             errDetalle.textContent = '';
 
+            // ── Validación integral (cliente) ────────────────────────────
+            var v = validarNormativa();
+            if (!v.ok) {
+              pintarErroresValidacion(v.errores);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+
             // ── Recoger campos con try-catch para detectar errores de DOM ──
             var titulo, tematica, tipo, estado, anio, archivo;
             try {
@@ -786,44 +916,6 @@
               console.error('submitForm: error leyendo campos del formulario:', domErr);
               errBanner.textContent = 'Error interno al leer el formulario: ' + domErr.message;
               errBanner.style.display = 'block';
-              return;
-            }
-
-            // ── Validaciones client-side ────────────────────────────────────
-            if (!titulo) {
-              errBanner.textContent = 'El título es obligatorio.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              return;
-            }
-            if (!tematica) {
-              errBanner.textContent = 'Debes seleccionar una temática.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              return;
-            }
-            if (!tipo) {
-              errBanner.textContent = 'Debes seleccionar el tipo de normativa.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              return;
-            }
-            if (!estado) {
-              errBanner.textContent = 'Debes seleccionar el estado normativo.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              return;
-            }
-            if (!anio) {
-              errBanner.textContent = 'El año de publicación es obligatorio.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-              return;
-            }
-            if (!IS_EDIT && !archivo) {
-              errBanner.textContent = 'El archivo PDF/DOC es obligatorio para crear una normativa.';
-              errBanner.style.display = 'block';
-              window.scrollTo({ top: 0, behavior: 'smooth' });
               return;
             }
 
@@ -870,7 +962,7 @@
               : '<i class="fas fa-save" style="margin-right:6px;"></i> Crear normativa';
 
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-shield-alt fa-spin" style="margin-right:6px;"></i> Escaneando con VirusTotal…';
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin" style="margin-right:6px;"></i> Subiendo…';
 
             try {
               var url = IS_EDIT ? '/api/normativas/' + NORMATIVA_ID : '/api/normativas';
@@ -885,18 +977,36 @@
                 data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
               }
 
+              // ── 202 Accepted: flujo NUEVO con staging asíncrono ──
+              if (res.status === 202) {
+                exito = true;
+                // Persistir taskId en sessionStorage para que el polling de la lista
+                // lo recoja aunque el navegador refresque o se navegue de vuelta.
+                try {
+                  if (data.taskId) {
+                    var pending = JSON.parse(sessionStorage.getItem('pendingUploads') || '[]');
+                    pending.push({ taskId: data.taskId, tipo: 'NORMATIVA', refId: data.refId, ts: Date.now() });
+                    sessionStorage.setItem('pendingUploads', JSON.stringify(pending));
+                  }
+                } catch (e) { /* ignore quota errors */ }
+                showToast(data.mensaje || 'Subida en validación. Te avisamos al terminar.',
+                          'info', { duration: 2200 });
+                // Redirigir inmediatamente a la lista (badge PENDIENTE aparece solo).
+                window.location.href = '/admin/normativo';
+                return;
+              }
+
               if (!res.ok) {
                 if (data.tipo === 'VALIDACION' && data.errores) {
                   mostrarErroresBackend(data.errores);
                   showToast('Revisa los campos marcados.', 'error');
-                } else if (data.tipo === 'VIRUS_DETECTADO') {
-                  // Banner rojo de VirusTotal: muestra detalle de motores que marcaron el archivo.
+                } else if (data.tipo === 'VIRUS_DETECTADO' || (data.mensaje && /antivirus|virus|malicioso/i.test(data.mensaje))) {
                   var detalle = '';
                   if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
                   if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';
                   errBanner.innerHTML =
                     '<i class="fas fa-shield-virus" style="color:#dc3545;margin-right:8px;"></i>' +
-                    '<strong>Archivo rechazado por VirusTotal.</strong> ' +
+                    '<strong>Archivo rechazado por antivirus.</strong> ' +
                     (data.mensaje || '') +
                     (detalle ? '<br><small>' + detalle + '</small>' : '');
                   errBanner.style.display = 'block';

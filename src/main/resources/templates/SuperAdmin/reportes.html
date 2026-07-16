@@ -695,7 +695,7 @@
 
         <div id="rtab-content-chatbot" style="display:none;">
 
-          <!-- Filtros -->
+
           <div
             style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;background:rgba(255,255,255,0.28);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.5);border-radius:16px;padding:18px 22px;margin-bottom:24px;box-shadow:0 4px 24px rgba(0,0,0,.08);animation:fadeUp .35s ease both;">
             <div>
@@ -727,7 +727,7 @@
             </div>
           </div>
 
-          <!-- KPIs -->
+
           <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;">
             <div class="stat-card" style="animation-delay:.05s">
               <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9CA3AF;">Conversaciones</div>
@@ -776,7 +776,7 @@
             </div>
           </div>
 
-          <!-- Charts -->
+
           <div style="display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:22px;">
             <div class="chart-card">
               <div class="chart-title">
@@ -798,7 +798,7 @@
             </div>
           </div>
 
-          <!-- Tops -->
+
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;">
             <div class="chart-card">
               <div class="chart-title">
@@ -820,7 +820,7 @@
             </div>
           </div>
 
-          <!-- Tabla de conversaciones -->
+
           <div class="chart-card">
             <div class="chart-title">
               <div style="width:32px;height:32px;border-radius:8px;background:rgba(139,92,246,.1);display:flex;align-items:center;justify-content:center;">
@@ -837,11 +837,12 @@
                     <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Usuario</th>
                     <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Rol</th>
                     <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Empresa</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">IP origen</th>
                     <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Idioma</th>
                     <th style="padding:10px 8px;text-align:center;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Msgs</th>
                     <th style="padding:10px 8px;text-align:center;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Errores</th>
                     <th style="padding:10px 8px;text-align:right;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Duracion</th>
-                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Primera pregunta</th>
+                    <th style="padding:10px 8px;text-align:left;font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:.04em;">Título</th>
                   </tr>
                 </thead>
                 <tbody id="chat-tabla-body">
@@ -857,7 +858,7 @@
             </div>
           </div>
 
-          <!-- Modal de detalle -->
+
           <div id="chat-modal" style="display:none;position:fixed;inset:0;background:rgba(27,58,92,.55);z-index:9999;align-items:center;justify-content:center;padding:32px;">
             <div style="background:#fff;border-radius:16px;max-width:780px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.25);">
               <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #F0F4F8;">
@@ -1095,7 +1096,7 @@
               var tbody = document.getElementById('chat-tabla-body');
               if (!tbody) return;
               if (!filas || !filas.length) {
-                tbody.innerHTML = '<tr><td colspan="9" style="padding:32px 16px;text-align:center;color:#9CA3AF;">' +
+                tbody.innerHTML = '<tr><td colspan="10" style="padding:32px 16px;text-align:center;color:#9CA3AF;">' +
                   '<i class="fas fa-inbox" style="font-size:24px;display:block;margin-bottom:6px;"></i>' +
                   'Sin conversaciones registradas en este rango.</td></tr>';
                 return;
@@ -1103,6 +1104,7 @@
               var html = '';
               filas.forEach(function (f) {
                 var fecha = f.fechaInicio ? new Date(f.fechaInicio).toLocaleString('es-PE') : '—';
+                var tituloMostrar = f.titulo || f.primeraPregunta || '—';
                 html += '<tr style="border-bottom:1px solid #F3F4F6;cursor:pointer;transition:background .15s;" ' +
                         'onmouseover="this.style.background=\'#F9FAFB\'" onmouseout="this.style.background=\'transparent\'" ' +
                         'onclick="window.__chatbotVerDetalle(' + f.conversacionId + ')">' +
@@ -1110,13 +1112,14 @@
                   '<td style="padding:10px 8px;color:#1B3A5C;font-weight:600;">' + escapeHtml(f.usuarioNombre || '—') + '</td>' +
                   '<td style="padding:10px 8px;"><span style="padding:3px 8px;border-radius:6px;background:rgba(27,58,92,.08);color:#1B3A5C;font-size:10px;font-weight:700;">' + escapeHtml(f.usuarioRol || '—') + '</span></td>' +
                   '<td style="padding:10px 8px;color:#6B7280;">' + escapeHtml(f.usuarioEmpresa || '—') + '</td>' +
+                  '<td style="padding:10px 8px;color:#6B7280;font-family:monospace;font-size:11px;">' + escapeHtml(f.ipOrigen || '—') + '</td>' +
                   '<td style="padding:10px 8px;color:#6B7280;text-align:center;">' + escapeHtml((f.idioma || 'es').toUpperCase()) + '</td>' +
                   '<td style="padding:10px 8px;text-align:center;color:#374151;font-weight:700;">' + fmtNumber(f.totalMensajes) + '</td>' +
                   '<td style="padding:10px 8px;text-align:center;">' +
                     (f.errores > 0 ? '<span style="color:#E74C3C;font-weight:700;">' + f.errores + '</span>' : '<span style="color:#9CA3AF;">0</span>') +
                   '</td>' +
                   '<td style="padding:10px 8px;text-align:right;color:#374151;">' + (f.duracionTotalMs || 0) + ' ms</td>' +
-                  '<td style="padding:10px 8px;color:#374151;">' + escapeHtml(truncar(f.primeraPregunta, 100)) + '</td>' +
+                  '<td style="padding:10px 8px;color:#374151;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + escapeHtml(tituloMostrar) + '">' + escapeHtml(truncar(tituloMostrar, 100)) + '</td>' +
                 '</tr>';
               });
               tbody.innerHTML = html;
@@ -1233,12 +1236,34 @@
                     var meta = [];
                     if (m.duracionMs != null) meta.push(m.duracionMs + ' ms');
                     if (m.tokensEstimados != null) meta.push(m.tokensEstimados + ' tokens');
+                    if (m.modelo) meta.push('modelo: ' + m.modelo);
                     if (m.intentDetectado) meta.push('intent: ' + m.intentDetectado);
                     if (m.esError) meta.push('ERROR');
-                    html += '<div style="margin-bottom:12px;">' +
-                      '<div style="font-size:11px;font-weight:700;color:' + fg + ';text-transform:uppercase;letter-spacing:.04em;">' + tag + '</div>' +
+                    var debugHtml = '';
+                    if (m.sqlEjecutado) {
+                      debugHtml += '<details style="margin-top:6px;"><summary style="font-size:10px;color:#2471A3;cursor:pointer;font-weight:700;"><i class="fas fa-database"></i> SQL ejecutado</summary>' +
+                        '<pre style="background:#1B3A5C;color:#E0F2FE;padding:10px 12px;border-radius:8px;font-family:JetBrains Mono,monospace;font-size:11px;margin-top:6px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;">' + escapeHtml(m.sqlEjecutado) + '</pre>' +
+                        '</details>';
+                    }
+                    if (m.metadata) {
+                      debugHtml += '<details style="margin-top:6px;"><summary style="font-size:10px;color:#2471A3;cursor:pointer;font-weight:700;"><i class="fas fa-code"></i> Metadata</summary>' +
+                        '<pre style="background:#F9FAFB;color:#1B3A5C;padding:10px 12px;border-radius:8px;font-family:JetBrains Mono,monospace;font-size:11px;margin-top:6px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;border:1px solid #E5E7EB;">' + escapeHtml(m.metadata) + '</pre>' +
+                        '</details>';
+                    }
+                    if (m.mensajeError) {
+                      debugHtml += '<div style="margin-top:6px;padding:8px 10px;background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.2);border-radius:6px;font-size:11px;color:#922B21;"><i class="fas fa-triangle-exclamation"></i> ' + escapeHtml(m.mensajeError) + '</div>';
+                    }
+                    var extra = '';
+                    if (m.filasDevueltas != null) extra += '<span style="margin-right:10px;"><i class="fas fa-list-ol"></i> ' + m.filasDevueltas + ' filas</span>';
+                    if (m.ipAddress) extra += '<span style="font-family:monospace;"><i class="fas fa-globe"></i> ' + escapeHtml(m.ipAddress) + '</span>';
+                    html += '<div style="margin-bottom:14px;">' +
+                      '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">' +
+                        '<div style="font-size:11px;font-weight:700;color:' + fg + ';text-transform:uppercase;letter-spacing:.04em;">' + tag + '</div>' +
+                        (extra ? '<div style="font-size:10px;color:#6B7280;">' + extra + '</div>' : '') +
+                      '</div>' +
                       '<div style="background:' + bg + ';padding:12px 14px;border-radius:10px;color:#1B3A5C;font-size:13px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word;">' + escapeHtml(m.contenido) + '</div>' +
                       (meta.length ? '<div style="font-size:10px;color:#9CA3AF;margin-top:4px;">' + escapeHtml(meta.join(' · ')) + '</div>' : '') +
+                      debugHtml +
                     '</div>';
                   });
                   body.innerHTML = html;
@@ -1290,7 +1315,7 @@
     </div>
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
 
-    <!-- ═══ Modal Exportar Reportes ═══ -->
+
     <div id="modal-export-usuarios" style="display:none;position:fixed;inset:0;background:rgba(8,18,32,.6);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:18px;width:90%;max-width:480px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;">
         <div style="background:linear-gradient(135deg,#0F2236 0%,#1B3A5C 100%);padding:24px 28px;position:relative;">
@@ -1357,7 +1382,7 @@
       </div>
     </div>
 
-    <!-- Modal Éxito Export -->
+
     <div id="modal-export-ok" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10000;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:16px;padding:32px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3);">
         <div style="width:64px;height:64px;background:linear-gradient(135deg,#D5F5E3,#ABEBC6);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">

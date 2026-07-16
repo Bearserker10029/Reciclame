@@ -2,15 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!--
-  Fragmento: notif-toast
-  Incluir en cualquier inicio.html que pase "notificaciones" en el modelo.
-  Muestra un toast por cada notificación no leída reciente (máx. 3).
-  Usa sessionStorage para no repetir en la misma sesión de navegador.
--->
+
 <div th:fragment="notif-toast" th:if="${notificaciones != null and noLeidasCount != null and noLeidasCount > 0}">
 
-  <!-- Contenedor de toasts -->
+
   <div id="notif-toast-container" style="
     position:fixed; bottom:24px; right:24px; z-index:9999;
     display:flex; flex-direction:column-reverse; gap:10px;

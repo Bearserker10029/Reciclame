@@ -50,6 +50,26 @@ public class Auditoria {
     @Column(name = "estado_activo", nullable = false)
     private Boolean estadoActivo = true;
 
+    // ── Cadena de integridad (tamper-evident hash chain) ───────────────
+    /**
+     * Hash SHA-256 en hex (64 chars) del registro anterior en la cadena.
+     * Para el primer registro (génesis) será siempre
+     * {@code SHA-256(GENESIS_SALT)} — ver {@code AuditoriaHashChainService}.
+     * Si es {@code null} indica que la fila fue insertada antes del
+     * despliegue del hash chain y debe re-firmarse con la migración SQL.
+     */
+    @Column(name = "hash_anterior", length = 64)
+    private String hashAnterior;
+
+    /**
+     * Hash SHA-256 en hex (64 chars) calculado sobre
+     * {@code (hash_anterior || id || fecha_accion_iso || accion || modulo ||
+     * usuario_id || descripcion || estado)}. Cualquier edición posterior en
+     * cualquiera de esos campos rompe la verificación.
+     */
+    @Column(name = "hash_actual", length = 64)
+    private String hashActual;
+
     public Auditoria() {
         this.fechaAccion = Instant.now();
         this.estado = "EXITOSO";
@@ -175,5 +195,21 @@ public class Auditoria {
 
     public void setEstadoActivo(Boolean estadoActivo) {
         this.estadoActivo = estadoActivo;
+    }
+
+    public String getHashAnterior() {
+        return hashAnterior;
+    }
+
+    public void setHashAnterior(String hashAnterior) {
+        this.hashAnterior = hashAnterior;
+    }
+
+    public String getHashActual() {
+        return hashActual;
+    }
+
+    public void setHashActual(String hashActual) {
+        this.hashActual = hashActual;
     }
 }

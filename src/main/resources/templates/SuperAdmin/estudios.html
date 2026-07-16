@@ -9,6 +9,8 @@
   <link rel="stylesheet" th:href="@{/style.css}" href="/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/superadmin/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -302,6 +304,22 @@
       opacity: 1;
     }
 
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
+    }
+
     .table-card {
       background: #F0FAF4;
       border-radius: 16px;
@@ -392,6 +410,107 @@
       border-radius: 999px;
       font-size: 10px;
       font-weight: 600;
+    }
+
+    /* ── Badges VirusTotal ── */
+    .badge-vt-clean {
+      background: rgba(46, 204, 113, .12);
+      color: #1E8449;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-malicious {
+      background: rgba(231, 76, 60, .14);
+      color: #922B21;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-suspicious {
+      background: rgba(243, 156, 18, .14);
+      color: #9A7D0A;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-unscanned {
+      background: rgba(156, 163, 175, .12);
+      color: #6B7280;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .badge-vt-skipped {
+      background: rgba(52, 152, 219, .12);
+      color: #1F618D;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+    }
+
+    .badge-vt-pending {
+      background: rgba(241, 196, 15, .18);
+      color: #9C6B00;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
+      border: 1px solid rgba(241, 196, 15, .55);
+      animation: badgePulseSaEst 1.6s ease-in-out infinite;
+    }
+    .badge-vt-pending i { animation: badgeBlinkSaEst 1.2s linear infinite; }
+    @keyframes badgePulseSaEst {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(241, 196, 15, 0); }
+      50% { box-shadow: 0 0 0 4px rgba(241, 196, 15, .25); }
+    }
+    @keyframes badgeBlinkSaEst {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .35; }
+    }
+    .badge-vt-rejected {
+      background: rgba(192, 57, 43, .22);
+      color: #922B21;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: help;
     }
 
     .btn-ver {
@@ -808,7 +927,7 @@
         </div>
 
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:220px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
             <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
@@ -831,6 +950,9 @@
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
             </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
+            </button>
           </div>
           <button
             onclick="document.getElementById('search-estudios').value='';document.getElementById('filter-formato').value='';document.getElementById('filter-anio').value='';filtrarEstudios();"
@@ -846,10 +968,11 @@
             <table class="table mb-0" id="tabla-estudios" style="min-width:680px;">
               <thead>
                 <tr>
-                  <th style="width:34%;">Documento</th>
+                  <th style="width:30%;">Documento</th>
                   <th>Objetivo</th>
                   <th>Año</th>
                   <th>Formato</th>
+                  <th>Antivirus</th>
                   <th>Acceso</th>
                   <th class="text-center">Ver</th>
                   <th class="text-center">Gestión</th>
@@ -862,8 +985,15 @@
                                 (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
                                 (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                   th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
+                  th:data-tematica="${e.tematicaCodigo}" th:data-tema-nombre="${e.tematicaNombre}"
+                  th:data-tema-color="${e.tematicaColor}"
+                  th:data-fecha="${e.fechaEstudio != null ? e.fechaEstudio : ''}"
                   th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
-                  th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
+                  th:data-url="${e.archivoUrl}"
+                  th:data-vt-verdict="${e.vtVerdict}" th:data-vt-sha256="${e.vtSha256}"
+                  th:data-vt-malicious="${e.vtMaliciousEngines}" th:data-vt-suspicious="${e.vtSuspiciousEngines}"
+                  th:data-vt-total="${e.vtTotalEngines}" th:data-vt-skipped="${e.vtSkipped}"
+                  th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                   <td>
                     <div style="display:flex;align-items:center;gap:10px;">
                       <th:block th:switch="${tipo}">
@@ -903,6 +1033,44 @@
                           style="font-size:9px;margin-right:3px;"></i>Otro</span>
                     </th:block>
                   </td>
+                  <td class="text-center">
+                    <span th:if="${e.estadoValidacion != null and e.estadoValidacion.name() == 'PENDIENTE'}"
+                          class="badge-vt-pending"
+                          title="Archivo recién subido a staging. La validación VirusTotal está en curso."
+                          th:attr="data-staging-taskid=${#strings.replace(e.archivoUrl, 'staging://', '')},
+                                   data-tipo=ESTUDIO,
+                                   data-poll-url=@{/api/uploads/ESTUDIO/{tid}(tid=${#strings.replace(e.archivoUrl, 'staging://', '')})}">
+                      <i class="fas fa-shield-alt"></i> Pendiente
+                    </span>
+
+                    <th:block th:if="${e.estadoValidacion == null or e.estadoValidacion.name() == 'APROBADO' or e.estadoValidacion.name() == 'RECHAZADO'}">
+                    <span th:if="${e.vtVerdict == 'CLEAN' or e.vtVerdict == 'UNDETECTED' or e.vtVerdict == 'HARMLESS'}" class="badge-vt-clean"
+                      th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: 0/' + e.vtTotalEngines + ' engines detectaron amenaza' : 'VirusTotal: archivo no escaneado'}">
+                      <i class="fas fa-shield-virus"></i> Limpio
+                    </span>
+                    <span th:if="${e.vtVerdict == 'MALICIOUS'}" class="badge-vt-malicious"
+                      th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: ' + (e.vtMaliciousEngines != null ? e.vtMaliciousEngines : 0) + '/' + e.vtTotalEngines + ' engines marcaron como amenaza' : 'VirusTotal: archivo no escaneado'}">
+                      <i class="fas fa-virus"></i> Peligroso
+                    </span>
+                    <span th:if="${e.vtVerdict == 'SUSPICIOUS'}" class="badge-vt-suspicious"
+                      th:title="${e.vtTotalEngines != null and e.vtTotalEngines > 0 ? 'VirusTotal: ' + (e.vtSuspiciousEngines != null ? e.vtSuspiciousEngines : 0) + ' engines sospechosos de ' + e.vtTotalEngines : 'VirusTotal: archivo no escaneado'}">
+                      <i class="fas fa-triangle-exclamation"></i> Sospechoso
+                    </span>
+                    <span th:if="${e.vtVerdict != null and e.vtVerdict != 'CLEAN' and e.vtVerdict != 'UNDETECTED' and e.vtVerdict != 'HARMLESS' and e.vtVerdict != 'MALICIOUS' and e.vtVerdict != 'SUSPICIOUS'}"
+                      class="badge-vt-unscanned"
+                      th:title="|Veredicto: ${e.vtVerdict}|">
+                      <i class="fas fa-shield-virus"></i> <span th:text="${e.vtVerdict}">—</span>
+                    </span>
+                    <span th:if="${e.vtVerdict == null and e.vtSkipped == true}" class="badge-vt-skipped"
+                      title="VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)">
+                      <i class="fas fa-forward"></i> Omitido
+                    </span>
+                    <span th:if="${e.vtVerdict == null and e.vtSkipped != true}" class="badge-vt-unscanned"
+                      title="Archivo sin escanear por VirusTotal">
+                      <i class="fas fa-shield-virus"></i> Sin escanear
+                    </span>
+                    </th:block>
+                  </td>
                   <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;margin-right:3px;"></i>Solo
                       lectura</span></td>
                   <td class="text-center">
@@ -929,7 +1097,7 @@
                   </td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(estudios)}">
-                  <td colspan="7">
+                  <td colspan="8">
                     <div class="empty-state">
                       <i class="fas fa-folder-open"></i>
                       <p>No hay estudios registrados aún.</p>
@@ -939,7 +1107,7 @@
               </tbody>
             </table>
           </div>
-          <!-- ══ PAGINACIÓN ══ -->
+
           <div
             style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #F3F4F6;flex-wrap:wrap;gap:8px;">
             <span id="conteo-estudios" style="font-size:11px;color:#9CA3AF;font-weight:600;"></span>
@@ -948,6 +1116,8 @@
         </div>
 
         <div id="estudios-grid" class="grid-container" style="display:none;"></div>
+
+        <th:block th:replace="~{components/doc-timeline :: docTimeline}"></th:block>
 
         <div class="modal fade" id="modal-estudio" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -999,7 +1169,7 @@
                     </div>
                   </div>
                 </div>
-                <!-- Vista previa kkfileview -->
+
                 <div id="modal-visor-preview" class="mt-3" style="display:none;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
                     <small
@@ -1015,6 +1185,39 @@
                     <iframe id="modal-visor-iframe" src="" width="100%" height="100%" frameborder="0" loading="lazy"
                       style="display:block;">
                     </iframe>
+                  </div>
+                </div>
+
+
+                <div id="modal-vt-block"
+                  style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(46,204,113,.05);border:1px solid rgba(46,204,113,.18);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <i class="fas fa-shield-virus" style="color:#27AE60;font-size:14px;"></i>
+                      <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#1E8449;">Antivirus (VirusTotal)</span>
+                    </div>
+                    <a id="modal-vt-link" href="#" target="_blank"
+                      style="display:none;font-size:11px;color:#2471A3;font-weight:700;text-decoration:none;">
+                      <i class="fas fa-external-link-alt"></i> Ver reporte completo
+                    </a>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Veredicto</div>
+                      <div id="modal-vt-verdict" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Motores maliciosos</div>
+                      <div id="modal-vt-malicious" style="font-weight:800;color:#C0392B;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                    <div style="padding:8px 12px;border-radius:8px;background:#fff;">
+                      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;">Total motores</div>
+                      <div id="modal-vt-total" style="font-weight:800;color:#1B3A5C;font-size:13px;margin-top:2px;">—</div>
+                    </div>
+                  </div>
+                  <div style="margin-top:10px;padding:8px 12px;border-radius:8px;background:#fff;">
+                    <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:3px;">SHA-256</div>
+                    <code id="modal-vt-sha256" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#374151;word-break:break-all;">—</code>
                   </div>
                 </div>
               </div>
@@ -1150,6 +1353,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (vistaActual === 'grid') renderGrid();
+            if (vistaActual === 'timeline') renderEstTimelineFragment();
           }
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
@@ -1158,8 +1362,14 @@
             document.querySelectorAll('.estudio-row').forEach(function (tr) {
               tr.dataset.filtrado = '1';
             });
-            inicializarPaginacion();
-            mostrarPagina(1);
+            var savedVista = null;
+            try { savedVista = sessionStorage.getItem('reciclameEstudiosVista'); } catch (e) { }
+            if (savedVista === 'grid' || savedVista === 'timeline') {
+              setVista(savedVista);
+            } else {
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
           });
 
           function openModalFromRow(btn) {
@@ -1170,7 +1380,14 @@
               row.dataset.descripcion || '—',
               row.dataset.anio || '—',
               row.dataset.mime || '',
-              row.dataset.url || '#'
+              row.dataset.url || '#',
+              {
+                verdict: row.dataset.vtVerdict || null,
+                sha256: row.dataset.vtSha256 || null,
+                malicious: row.dataset.vtMalicious || null,
+                total: row.dataset.vtTotal || null,
+                skipped: row.dataset.vtSkipped || null
+              }
             );
           }
 
@@ -1183,7 +1400,7 @@
             return 'otro';
           }
 
-          async function openModal(id, titulo, descripcion, anio, mime, url) {
+          async function openModal(id, titulo, descripcion, anio, mime, url, vt) {
             var tipo = tipoArchivo(mime);
             var formatoMap = {
               pdf: 'PDF — Infografía / Reporte',
@@ -1208,6 +1425,32 @@
             var iconI = document.getElementById('modal-icon-i');
             icon.style.background = iconMap[tipo].bg;
             iconI.className = iconMap[tipo].cls;
+
+            // Renderizar bloque VirusTotal
+            var vtBlock = document.getElementById('modal-vt-block');
+            if (vtBlock && vt) {
+              var hasVt = vt.verdict || vt.sha256;
+              if (hasVt) {
+                vtBlock.style.display = 'block';
+                document.getElementById('modal-vt-verdict').textContent = vt.verdict || '—';
+                document.getElementById('modal-vt-malicious').textContent = vt.malicious || '0';
+                document.getElementById('modal-vt-total').textContent = vt.total || '—';
+                document.getElementById('modal-vt-sha256').textContent = vt.sha256 || '—';
+                var vtLink = document.getElementById('modal-vt-link');
+                if (vtLink && vt.sha256) {
+                  vtLink.href = 'https://www.virustotal.com/gui/file/' + vt.sha256;
+                  vtLink.style.display = 'inline-flex';
+                  vtLink.style.alignItems = 'center';
+                  vtLink.style.gap = '4px';
+                } else if (vtLink) {
+                  vtLink.style.display = 'none';
+                }
+              } else {
+                vtBlock.style.display = 'none';
+              }
+            } else if (vtBlock) {
+              vtBlock.style.display = 'none';
+            }
 
             // Vista previa kkfileview
             var previewSection = document.getElementById('modal-visor-preview');
@@ -1274,31 +1517,74 @@
 
           var vistaActual = 'lista';
 
+          var _tipoLabel = { pdf: 'PDF', excel: 'Excel', word: 'Word', ppt: 'PowerPoint', otro: 'Documento' };
+
+          function renderEstTimelineFragment() {
+            if (!window.ReciclameTimeline) return;
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+            ReciclameTimeline.render({
+              rows: filas,
+              clickBase: '/superadmin/estudios/',
+              heading: 'Línea de tiempo de estudios',
+              subtitle: 'Publicaciones por temática y año',
+              countLabel: 'estudios',
+              read: function (row) {
+                return {
+                  id: row.dataset.id,
+                  title: row.dataset.titulo || '',
+                  year: row.dataset.anio || '',
+                  date: (row.dataset.fecha || '').trim(),
+                  group: (row.dataset.tematica || 'OTRO'),
+                  groupName: row.dataset.temaNombre || '',
+                  color: row.dataset.temaColor || '',
+                  status: _tipoLabel[row.dataset.tipo] || ''
+                };
+              }
+            });
+          }
+
           function setVista(vista) {
             var listaDiv = document.getElementById('estudios-lista');
             var gridDiv = document.getElementById('estudios-grid');
+            var timelineWrap = document.getElementById('doc-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
             var paginacion = document.getElementById('paginacion-estudios');
             var conteo = document.getElementById('conteo-estudios');
 
             vistaActual = vista;
+            try { sessionStorage.setItem('reciclameEstudiosVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               listaDiv.style.display = 'none';
               gridDiv.style.display = 'grid';
-              paginacion.style.display = 'none';
-              conteo.style.display = 'none';
-              btnLista.classList.remove('active');
+              if (timelineWrap) timelineWrap.style.display = 'none';
+              if (paginacion) paginacion.style.display = 'none';
+              if (conteo) conteo.style.display = 'none';
               btnGrid.classList.add('active');
               renderGrid();
+            } else if (vista === 'timeline') {
+              listaDiv.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (paginacion) paginacion.style.display = 'none';
+              if (conteo) conteo.style.display = 'none';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderEstTimelineFragment();
             } else {
               listaDiv.style.display = '';
               gridDiv.style.display = 'none';
-              paginacion.style.display = '';
-              conteo.style.display = '';
+              if (timelineWrap) timelineWrap.style.display = 'none';
+              if (paginacion) paginacion.style.display = '';
+              if (conteo) conteo.style.display = '';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }
@@ -1427,6 +1713,92 @@
           })();
         </script>
 
+
+        <script>
+        (function () {
+          function findPending() {
+            return Array.from(document.querySelectorAll('.badge-vt-pending[data-staging-taskid]'));
+          }
+          var badges = findPending();
+          if (!badges.length) return;
+
+          function buildDetailTitle(estado, vtVerdict, vtTotal, vtMal, vtSusp, vtSkipped, message) {
+            if (estado === 'RECHAZADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtMal != null ? vtMal : 0) + '/' + vtTotal + ' engines marcaron como amenaza';
+            }
+            if (estado === 'APROBADO' && vtVerdict === 'SUSPICIOUS' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: ' + (vtSusp != null ? vtSusp : 0) + ' engines sospechosos de ' + vtTotal;
+            }
+            if (estado === 'APROBADO' && vtTotal != null && vtTotal > 0) {
+              return 'VirusTotal: 0/' + vtTotal + ' engines detectaron amenaza';
+            }
+            if (vtSkipped) {
+              return 'VirusTotal omitió el escaneo (archivo sin contenido analizable o timeout)';
+            }
+            if (message) return message;
+            return 'Veredicto: ' + (vtVerdict || estado || '—');
+          }
+
+          function finalize(el, estado, payload) {
+            payload = payload || {};
+            var message = payload.message || '';
+            var rejected = estado === 'RECHAZADO';
+            var nuevo = document.createElement('span');
+            if (rejected) {
+              nuevo.className = 'badge-vt-rejected';
+              nuevo.innerHTML = '<i class="fas fa-shield-virus"></i> Rechazado';
+            } else if (estado === 'APROBADO') {
+              nuevo.className = 'badge-vt-clean';
+              nuevo.innerHTML = '<i class="fas fa-shield-check"></i> Seguro';
+            } else {
+              nuevo.className = 'badge-vt-unscanned';
+              nuevo.innerHTML = '<i class="fas fa-shield-alt"></i> ' + (estado || '—');
+            }
+            nuevo.title = buildDetailTitle(
+              estado,
+              payload.vtVerdict,
+              payload.vtTotalEngines,
+              payload.vtMaliciousEngines,
+              payload.vtSuspiciousEngines,
+              payload.vtSkipped,
+              message
+            );
+            if (el.parentNode) el.parentNode.replaceChild(nuevo, el);
+            if (typeof showToast === 'function') {
+              showToast(rejected ? 'Archivo rechazado por antivirus.' : 'Archivo validado correctamente.',
+                        rejected ? 'error' : 'success', { duration: 4500 });
+            }
+          }
+
+          function tick() {
+            if (!badges.length) return;
+            var i = 0;
+            function next() {
+              if (i >= badges.length) {
+                setTimeout(function () { badges = findPending(); tick(); }, 5000);
+                return;
+              }
+              var el = badges[i++];
+              if (!el || !el.isConnected) { setTimeout(next, 0); return; }
+              var url = el.dataset.pollUrl;
+              if (!url) { setTimeout(next, 0); return; }
+              fetch(url, { credentials: 'same-origin' })
+                .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+                .then(function (s) {
+                  if (s.estado && s.estado !== 'PENDIENTE') {
+                    finalize(el, s.estado, s);
+                  } else {
+                    setTimeout(next, 2000);
+                  }
+                })
+                .catch(function () { setTimeout(next, 4000); });
+            }
+            next();
+          }
+          tick();
+        })();
+        </script>
+
         <th:block th:replace="~{navbar/dock :: dock}"></th:block>
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
@@ -1437,7 +1809,7 @@
   <script th:inline="javascript">
   </script>
 
-  <!-- ── Modal eliminar estudio ── -->
+
   <div id="modal-eliminar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99999;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:16px;padding:32px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center;">
       <div style="width:64px;height:64px;background:linear-gradient(135deg,#FADBD8,#F5B7B1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">

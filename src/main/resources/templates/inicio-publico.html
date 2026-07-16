@@ -7,7 +7,7 @@
 
   <link rel="icon" type="image/png" href="/assets/images/reciclame/Isotipo-Reciclame-1.png"/>
 
-  <!-- Mismas hojas que reciclar.org -->
+
   <link rel="stylesheet" th:href="@{/assets/css/bootstrap.min.css}" href="/assets/css/bootstrap.min.css" />
   <link rel="stylesheet" th:href="@{/assets/css/font-awesome5.min.css}" href="/assets/css/font-awesome5.min.css" />
   <link rel="stylesheet" th:href="@{/assets/css/material-design-iconic-font.min.css}" href="/assets/css/material-design-iconic-font.min.css" />
@@ -63,13 +63,13 @@
 
 <body class="home page-template-default wp-theme-consultio site-h2 body-default-font heading-default-font">
 
-  <!-- Banner local -->
+
   <div class="local-banner" id="local-banner">
     <button class="close-btn" onclick="document.getElementById('local-banner').style.display='none'" aria-label="Cerrar">×</button>
     🛠️ Mirror local de desarrollo (no es reciclame.org real) · <a href="/service/repositorio/login">Ir al Repositorio →</a>
   </div>
 
-  <!-- ═══════════════ HEADER (idéntico a reciclar.org) ═══════════════ -->
+
   <header id="ct-masthead">
     <div id="ct-header-wrap" class="ct-header-layout2 header-trans is-sticky">
       <div id="ct-header" class="ct-header-main">
@@ -93,7 +93,7 @@
                       <a th:href="@{/inicio}" href="/inicio"><span>Inicio</span></a>
                     </li>
 
-                    <!-- ► Ejes de Gestión + ◄ -->
+
                     <li class="menu-item menu-item-has-children">
                       <a href="#"><span>Ejes de Gestión</span></a>
                       <ul class="sub-menu">
@@ -117,7 +117,7 @@
                     <li class="menu-item"><a href="/inicio#blog"><span>Blog</span></a></li>
                     <li class="menu-item"><a href="/inicio#contacto"><span>Contacto</span></a></li>
 
-                    <!-- CTA directo al repositorio (visible siempre) -->
+
                     <li class="menu-item menu-item-cta" style="margin-left:14px;">
                       <a class="repositorio-cta" style="background:linear-gradient(135deg,#26b0cf,#55b579); padding:8px 16px; border-radius:4px;"
                          th:href="@{/service/repositorio/login}" href="/service/repositorio/login">
@@ -134,7 +134,7 @@
     </div>
   </header>
 
-  <!-- ═══════════════ HERO / SLIDER ═══════════════ -->
+
   <section id="ct-slider" style="position:relative; min-height:560px; overflow:hidden; background:#152e4d;">
     <div style="position:absolute; inset:0;
                 background:url('/assets/images/reciclame/1-Poryecto-reciclaje.jpg') center/cover no-repeat;
@@ -166,12 +166,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════ EJES DE GESTIÓN ═══════════════ -->
+
   <section id="ejes" style="padding:80px 0; background:#fff;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Ejes de Gestión</h2>
       <div class="row">
-        <!-- Card Gestión del conocimiento -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
                       box-shadow:0 4px 20px rgba(0,0,0,.05); transition:all .25s;">
@@ -185,7 +185,7 @@
             <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px; letter-spacing:.3px;">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
-        <!-- Card Educación técnica -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
                       box-shadow:0 4px 20px rgba(0,0,0,.05);">
@@ -199,7 +199,7 @@
             <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
-        <!-- Card Programa REP -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
                       box-shadow:0 4px 20px rgba(0,0,0,.05);">
@@ -213,7 +213,7 @@
             <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
-        <!-- Card Políticas Públicas -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
                       box-shadow:0 4px 20px rgba(0,0,0,.05);">
@@ -227,7 +227,7 @@
             <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
-        <!-- Card Comunicaciones -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:#F4F6F8; border-radius:10px; padding:30px 24px; text-align:center; height:100%;
                       box-shadow:0 4px 20px rgba(0,0,0,.05);">
@@ -241,7 +241,7 @@
             <a href="#" style="color:#2ECC71; font-weight:700; text-transform:uppercase; font-size:13px;">Ver más <i class="fas fa-arrow-right"></i></a>
           </div>
         </div>
-        <!-- ►►► Card destacado REPOSITORIO ◄◄◄ -->
+
         <div class="col-md-4 col-sm-6" style="margin-bottom:30px;">
           <div style="background:linear-gradient(135deg,#fff 0%, #F0FDF4 100%);
                       border:2px solid #2ECC71; border-radius:10px; padding:30px 24px;
@@ -267,7 +267,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ PROYECTOS ESPECÍFICOS ═══════════════ -->
+
   <section id="proyectos" style="padding:80px 0; background:#F4F6F8;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Proyectos Específicos</h2>
@@ -298,7 +298,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ ¿QUIÉNES SOMOS? ═══════════════ -->
+
   <section id="nosotros" style="padding:80px 0; background:#fff;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <div class="row" style="display:flex; flex-wrap:wrap; align-items:center; gap:40px;">
@@ -323,7 +323,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ EMPRESAS ALIADAS ═══════════════ -->
+
   <section style="padding:60px 0; background:#F4F6F8;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:28px; font-weight:700; color:#1B3A5C; margin:0 0 40px;">Empresas líderes que nos conforman</h2>
@@ -340,7 +340,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ SERVICIOS ═══════════════ -->
+
   <section id="servicios" style="padding:80px 0; background:#fff;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Nuestros Servicios</h2>
@@ -393,7 +393,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ BLOG ═══════════════ -->
+
   <section id="blog" style="padding:80px 0; background:#F4F6F8;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:36px; font-weight:700; color:#1B3A5C; margin:0 0 12px;">Blog | Novedades</h2>
@@ -451,7 +451,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ EQUIPO ═══════════════ -->
+
   <section style="padding:80px 0; background:#fff;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <h2 style="text-align:center; font-size:32px; font-weight:700; color:#1B3A5C; margin:0 0 48px;">Nuestro Equipo</h2>
@@ -484,7 +484,7 @@
     </div>
   </section>
 
-  <!-- ═══════════════ FOOTER ═══════════════ -->
+
   <footer id="contacto" style="background:#0a0a0a; color:rgba(255,255,255,.7); padding:60px 0 30px;">
     <div style="max-width:1200px; margin:0 auto; padding:0 24px;">
       <div class="row" style="display:flex; flex-wrap:wrap; gap:40px;">
@@ -527,7 +527,7 @@
     </div>
   </footer>
 
-  <!-- Scripts -->
+
   <script src="/assets/js/jquery.min.js"></script>
   <script src="/assets/js/bootstrap.min.js"></script>
   <script src="/assets/js/main.js"></script>

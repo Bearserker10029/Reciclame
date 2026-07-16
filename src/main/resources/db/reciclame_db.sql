@@ -52,12 +52,22 @@ CREATE TABLE `auditoria` (
     `mensaje_error` text COLLATE utf8mb4_unicode_ci,
     `fecha_accion` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `estado_activo` tinyint(1) NOT NULL DEFAULT '1',
+    -- Cadena de integridad (tamper-evident hash chain). Filas previas
+    -- al despliegue quedan con NULL: el servicio Java las trata como
+    -- previas al despliegue (no se verifican, no se tocan). A partir
+    -- de la primera insercion posterior al despliegue, cada nuevo
+    -- registro firma contra el anterior con SHA-256.
+    `hash_anterior` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+        COMMENT 'SHA-256 hex del registro firmado anterior. NULL para filas previas al despliegue o para el primer registro firmado (usa el genesis).',
+    `hash_actual` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+        COMMENT 'SHA-256 hex sobre hashAnterior+campos cubiertos. NULL para filas previas al despliegue.',
     PRIMARY KEY (`id`),
     KEY `idx_usuario` (`usuario_id`),
     KEY `idx_accion` (`accion`),
     KEY `idx_modulo` (`modulo`),
     KEY `idx_estado` (`estado`),
-    KEY `idx_fecha` (`fecha_accion`)
+    KEY `idx_fecha` (`fecha_accion`),
+    KEY `idx_hash_actual` (`hash_actual`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 7 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */
 ;
@@ -69,9 +79,7 @@ CREATE TABLE `auditoria` (
 LOCK TABLES `auditoria` WRITE;
 /*!40000 ALTER TABLE `auditoria` DISABLE KEYS */
 ;
-INSERT INTO
-    `auditoria`
-VALUES (
+INSERT INTO `auditoria` (`id`,`usuario_id`,`usuario_nombre`,`accion`,`modulo`,`descripcion`,`datos_anteriores`,`datos_nuevos`,`ip_address`,`user_agent`,`estado`,`mensaje_error`,`fecha_accion`,`estado_activo`,`hash_anterior`,`hash_actual`) VALUES (
         1,
         NULL,
         'Admin',
@@ -85,7 +93,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 04:51:55',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         2,
@@ -101,7 +111,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 04:56:53',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         3,
@@ -117,7 +129,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:02:02',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         4,
@@ -133,7 +147,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:07:35',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         5,
@@ -149,7 +165,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:13:52',
-        1
+        1,
+        NULL,
+        NULL
     ),
     (
         6,
@@ -165,7 +183,9 @@ VALUES (
         'EXITOSO',
         NULL,
         '2026-04-26 05:21:39',
-        1
+        1,
+        NULL,
+        NULL
     );
 /*!40000 ALTER TABLE `auditoria` ENABLE KEYS */
 ;
@@ -319,9 +339,7 @@ CREATE TABLE `empresas` (
 LOCK TABLES `empresas` WRITE;
 /*!40000 ALTER TABLE `empresas` DISABLE KEYS */
 ;
-INSERT INTO
-    `empresas`
-VALUES (
+INSERT INTO `empresas` (`id`,`razon_social`,`ruc`,`sector`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'ReciclamE S.A.C.',
         '20512345678',
@@ -388,9 +406,7 @@ CREATE TABLE `estados_normativa` (
 LOCK TABLES `estados_normativa` WRITE;
 /*!40000 ALTER TABLE `estados_normativa` DISABLE KEYS */
 ;
-INSERT INTO
-    `estados_normativa`
-VALUES (
+INSERT INTO `estados_normativa` (`id`,`nombre`,`estado_activo`,`created_at`) VALUES (
         1,
         'Vigente',
         1,
@@ -726,9 +742,7 @@ CREATE TABLE `normativas` (
 LOCK TABLES `normativas` WRITE;
 /*!40000 ALTER TABLE `normativas` DISABLE KEYS */
 ;
-INSERT INTO
-    `normativas`
-VALUES (
+INSERT INTO `normativas` (`id`,`titulo`,`descripcion_breve`,`contenido_resumido`,`tematica_id`,`tipo_normativa_id`,`estado_normativa_id`,`ambito`,`clasificacion`,`anio`,`fecha_promulgacion`,`fecha_entrada_vigencia`,`fecha_derogacion`,`archivo_url`,`archivo_tipo_mime`,`vt_sha256`,`vt_verdict`,`vt_malicious_engines`,`vt_suspicious_engines`,`vt_total_engines`,`vt_skipped`,`vt_scanned_at`,`creada_por_id`,`validada_por_id`,`es_publica`,`visualizaciones_count`,`descargas_count`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'estudio_2',
         NULL,
@@ -902,9 +916,7 @@ CREATE TABLE `parametros_sistema` (
 LOCK TABLES `parametros_sistema` WRITE;
 /*!40000 ALTER TABLE `parametros_sistema` DISABLE KEYS */
 ;
-INSERT INTO
-    `parametros_sistema`
-VALUES (
+INSERT INTO `parametros_sistema` (`id`,`clave`,`valor`,`descripcion`,`tipo_dato`,`modificado_por_id`,`estado_activo`,`created_at`,`updated_at`) VALUES (
         1,
         'max_intentos_login',
         '5',
@@ -1055,9 +1067,7 @@ CREATE TABLE `roles` (
 LOCK TABLES `roles` WRITE;
 /*!40000 ALTER TABLE `roles` DISABLE KEYS */
 ;
-INSERT INTO
-    `roles`
-VALUES (
+INSERT INTO `roles` (`id`,`nombre`,`descripcion`,`estado_activo`,`created_at`) VALUES (
         1,
         'SUPERADMIN',
         'Administrador supremo PUCP - auditoria y gestion global',
@@ -1183,7 +1193,7 @@ CREATE TABLE `solicitudes_registro` (
     `nombre_completo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
     `dni` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
     `correo_corporativo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-    `empresa_nombre` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `empresa_nombre` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `estado` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, APROBADA, RECHAZADA',
     `revisada_por_id` bigint DEFAULT NULL,
     `motivo_rechazo` text COLLATE utf8mb4_unicode_ci,
@@ -1314,9 +1324,7 @@ CREATE TABLE `tematicas` (
 LOCK TABLES `tematicas` WRITE;
 /*!40000 ALTER TABLE `tematicas` DISABLE KEYS */
 ;
-INSERT INTO
-    `tematicas`
-VALUES (
+INSERT INTO `tematicas` (`id`,`codigo`,`nombre`,`color_hex`,`estado_activo`,`created_at`) VALUES (
         1,
         'EC',
         'Economia Circular',
@@ -1387,9 +1395,7 @@ CREATE TABLE `tipos_normativa` (
 LOCK TABLES `tipos_normativa` WRITE;
 /*!40000 ALTER TABLE `tipos_normativa` DISABLE KEYS */
 ;
-INSERT INTO
-    `tipos_normativa`
-VALUES (
+INSERT INTO `tipos_normativa` (`id`,`nombre`,`estado_activo`,`created_at`) VALUES (
         1,
         'Ley',
         1,
@@ -1483,12 +1489,14 @@ CREATE TABLE `usuarios` (
     `dni` varchar(8) COLLATE utf8mb4_unicode_ci NOT NULL,
     `correo_corporativo` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
     `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `debe_cambiar_password` tinyint(1) NOT NULL DEFAULT '0',
     `cargo` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `foto_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `rol_id` bigint NOT NULL,
     `empresa_id` bigint DEFAULT NULL,
     `intentos_fallidos` tinyint NOT NULL DEFAULT '0',
     `cuenta_bloqueada` tinyint(1) NOT NULL DEFAULT '0',
+    `fecha_bloqueo` timestamp NULL DEFAULT NULL,
     `ip_bloqueada` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
     `tfa_activo` tinyint(1) NOT NULL DEFAULT '0',
     `tfa_secret` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -1526,9 +1534,7 @@ LOCK TABLES `usuarios` WRITE;
 -- pendiente@reciclame.com    → password
 -- a20202132 / sergiomeneses893 → 910e0084
 -- sergiomeneses3 / jairo     → 123456
-INSERT INTO
-    `usuarios`
-VALUES (
+INSERT INTO `usuarios` (`id`,`nombre_completo`,`dni`,`correo_corporativo`,`password_hash`,`cargo`,`foto_url`,`rol_id`,`empresa_id`,`intentos_fallidos`,`cuenta_bloqueada`,`fecha_bloqueo`,`ip_bloqueada`,`tfa_activo`,`tfa_secret`,`estado_cuenta`,`estado_activo`,`ultimo_login`,`created_at`,`updated_at`) VALUES (
         1,
         'Ad',
         '71234567',
@@ -1540,6 +1546,7 @@ VALUES (
         1,
         0,
         0,
+        NULL,
         NULL,
         0,
         NULL,
@@ -1562,6 +1569,7 @@ VALUES (
         0,
         0,
         NULL,
+        NULL,
         0,
         NULL,
         'ACTIVO',
@@ -1582,6 +1590,7 @@ VALUES (
         1,
         0,
         0,
+        NULL,
         NULL,
         0,
         NULL,
@@ -1604,6 +1613,7 @@ VALUES (
         0,
         0,
         NULL,
+        NULL,
         0,
         NULL,
         'ACTIVO',
@@ -1624,6 +1634,7 @@ VALUES (
         2,
         0,
         0,
+        NULL,
         NULL,
         0,
         NULL,
@@ -1646,6 +1657,7 @@ VALUES (
         0,
         0,
         NULL,
+        NULL,
         0,
         NULL,
         'ACTIVO',
@@ -1666,6 +1678,7 @@ VALUES (
         4,
         0,
         0,
+        NULL,
         NULL,
         0,
         NULL,
@@ -1688,6 +1701,7 @@ VALUES (
         0,
         0,
         NULL,
+        NULL,
         0,
         NULL,
         'ACTIVO',
@@ -1708,6 +1722,7 @@ VALUES (
         1,
         0,
         0,
+        NULL,
         NULL,
         0,
         NULL,
@@ -2042,5 +2057,306 @@ SET @sql := IF(
         AND table_name   = @tbl
         AND index_name   = 'idx_estudios_vt_sha256') = 0,
     'CREATE INDEX idx_estudios_vt_sha256 ON estudios (vt_sha256)',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ─────────────────────────────────────────────────────────────
+-- Migración: tabla de "compartir con personas" (estilo Google Drive)
+-- para estudios y normativas. Registra qué usuario compartió qué
+-- documento con qué otro usuario. No reemplaza la visibilidad por
+-- rol ya existente; sirve para notificar y llevar un registro
+-- explícito de a quién se le señaló un documento en particular.
+-- ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `documentos_compartidos` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `tipo_documento` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ESTUDIO o NORMATIVA',
+    `documento_id` bigint NOT NULL,
+    `usuario_id` bigint NOT NULL COMMENT 'Usuario con quien se compartió',
+    `compartido_por_id` bigint NOT NULL COMMENT 'Usuario que compartió',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_doc_compartido` (`tipo_documento`, `documento_id`, `usuario_id`),
+    KEY `idx_doc_compartido_usuario` (`usuario_id`),
+    KEY `idx_doc_compartido_doc` (`tipo_documento`, `documento_id`),
+    CONSTRAINT `fk_doc_compartido_usuario` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_doc_compartido_compartidopor` FOREIGN KEY (`compartido_por_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Personas con acceso senalado a un documento (tipo Google Drive)';
+
+-- ============================================================
+-- CHECK CONSTRAINTS (validaciones a nivel de base de datos)
+-- Fecha: 2026-07-11
+--
+-- Estas restricciones son la última línea de defensa: aunque
+-- el modelo JPA o el JavaScript validen antes, MySQL también
+-- rechaza INSERT/UPDATE inválidos. Son idempotentes: el script
+-- se puede correr varias veces sin error.
+--
+-- MySQL 8.0+ aplica CHECK constraints. Para columnas NULL se
+-- usa IS NULL en la condición para no romper filas existentes
+-- con valores nulos legítimos.
+-- ============================================================
+
+DELIMITER $$
+
+-- Helper: agrega un CHECK sólo si la constraint no existe aún.
+-- MySQL no soporta `ADD CONSTRAINT IF NOT EXISTS`, así que
+-- consultamos information_schema y componemos el SQL dinámicamente.
+DROP PROCEDURE IF EXISTS _add_check_if_missing $$
+CREATE PROCEDURE _add_check_if_missing(
+    IN p_table VARCHAR(64),
+    IN p_constraint VARCHAR(64),
+    IN p_sql TEXT
+)
+BEGIN
+    DECLARE v_exists INT DEFAULT 0;
+    SELECT COUNT(*) INTO v_exists
+      FROM information_schema.table_constraints
+     WHERE table_schema = DATABASE()
+       AND table_name = p_table
+       AND constraint_name = p_constraint
+       AND constraint_type = 'CHECK';
+    IF v_exists = 0 THEN
+        SET @ddl = p_sql;
+        PREPARE stmt FROM @ddl;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+    END IF;
+END $$
+
+DELIMITER ;
+
+-- ── usuarios ──────────────────────────────────────────────
+-- DNI peruano: 8 dígitos exactos
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_dni',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_dni
+   CHECK (dni IS NULL OR dni REGEXP ''^[0-9]{8}$'')'
+);
+
+-- Correo corporativo: formato email básico (al menos algo@algo.algo)
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_correo',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_correo
+   CHECK (correo_corporativo IS NULL
+          OR correo_corporativo REGEXP ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'')'
+);
+
+-- Estado de cuenta: enum fijo
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_estado_cuenta',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_estado_cuenta
+   CHECK (estado_cuenta IN (''PENDIENTE'',''ACTIVO'',''INACTIVO'',''BLOQUEADO''))'
+);
+
+-- Intentos fallidos: rango 0-255 (tinyint) y nunca negativo
+CALL _add_check_if_missing(
+  'usuarios', 'chk_usuarios_intentos',
+  'ALTER TABLE usuarios ADD CONSTRAINT chk_usuarios_intentos
+   CHECK (intentos_fallidos IS NULL OR (intentos_fallidos >= 0 AND intentos_fallidos <= 255))'
+);
+
+-- ── empresas ──────────────────────────────────────────────
+-- RUC peruano: 11 dígitos exactos cuando está presente
+CALL _add_check_if_missing(
+  'empresas', 'chk_empresas_ruc',
+  'ALTER TABLE empresas ADD CONSTRAINT chk_empresas_ruc
+   CHECK (ruc IS NULL OR ruc REGEXP ''^[0-9]{11}$'')'
+);
+
+-- ── normativas ────────────────────────────────────────────
+-- Año razonable: 1900..2100 (cubre documentos legales modernos y百年futuros)
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_anio',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_anio
+   CHECK (anio IS NULL OR (anio >= 1900 AND anio <= 2100))'
+);
+
+-- Conteo de descargas/visualizaciones nunca negativo
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_contadores',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_contadores
+   CHECK ((visualizaciones_count IS NULL OR visualizaciones_count >= 0)
+      AND (descargas_count IS NULL OR descargas_count >= 0))'
+);
+
+-- archivo_url no vacío
+CALL _add_check_if_missing(
+  'normativas', 'chk_normativas_archivo',
+  'ALTER TABLE normativas ADD CONSTRAINT chk_normativas_archivo
+   CHECK (archivo_url IS NULL OR CHAR_LENGTH(archivo_url) > 0)'
+);
+
+-- ── estudios ──────────────────────────────────────────────
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_anio',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_anio
+   CHECK (anio IS NULL OR (anio >= 1900 AND anio <= 2100))'
+);
+
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_contadores',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_contadores
+   CHECK ((visualizaciones_count IS NULL OR visualizaciones_count >= 0)
+      AND (descargas_count IS NULL OR descargas_count >= 0))'
+);
+
+CALL _add_check_if_missing(
+  'estudios', 'chk_estudios_archivo',
+  'ALTER TABLE estudios ADD CONSTRAINT chk_estudios_archivo
+   CHECK (archivo_url IS NULL OR CHAR_LENGTH(archivo_url) > 0)'
+);
+
+-- ── solicitudes_registro ──────────────────────────────────
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_dni',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_dni
+   CHECK (dni IS NULL OR dni REGEXP ''^[0-9]{8}$'')'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_correo',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_correo
+   CHECK (correo_corporativo IS NULL
+          OR correo_corporativo REGEXP ''^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'')'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_registro', 'chk_solicitudes_estado',
+  'ALTER TABLE solicitudes_registro ADD CONSTRAINT chk_solicitudes_estado
+   CHECK (estado IN (''PENDIENTE'',''APROBADA'',''RECHAZADA''))'
+);
+
+-- ── parametros_sistema ────────────────────────────────────
+CALL _add_check_if_missing(
+  'parametros_sistema', 'chk_parametros_tipo_dato',
+  'ALTER TABLE parametros_sistema ADD CONSTRAINT chk_parametros_tipo_dato
+   CHECK (tipo_dato IN (''STRING'',''INTEGER'',''BOOLEAN'',''JSON''))'
+);
+
+-- ── programaciones_backup ─────────────────────────────────
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_tipo',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_tipo
+   CHECK (tipo IN (''COMPLETO'',''PARCIAL_USUARIOS'',''PARCIAL_DOCUMENTOS'',''PARCIAL_LOGS''))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_frecuencia',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_frecuencia
+   CHECK (frecuencia IN (''DIARIA'',''SEMANAL'',''MENSUAL''))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_dia_semana',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_dia_semana
+   CHECK (dia_semana IS NULL OR (dia_semana >= 0 AND dia_semana <= 6))'
+);
+
+CALL _add_check_if_missing(
+  'programaciones_backup', 'chk_prog_dia_mes',
+  'ALTER TABLE programaciones_backup ADD CONSTRAINT chk_prog_dia_mes
+   CHECK (dia_mes IS NULL OR (dia_mes >= 1 AND dia_mes <= 31))'
+);
+
+-- ── tematicas ─────────────────────────────────────────────
+CALL _add_check_if_missing(
+  'tematicas', 'chk_tematicas_codigo',
+  'ALTER TABLE tematicas ADD CONSTRAINT chk_tematicas_codigo
+   CHECK (codigo REGEXP ''^[A-Z0-9_-]{2,10}$'')'
+);
+
+CALL _add_check_if_missing(
+  'tematicas', 'chk_tematicas_color',
+  'ALTER TABLE tematicas ADD CONSTRAINT chk_tematicas_color
+   CHECK (color_hex REGEXP ''^#[0-9A-Fa-f]{6}$'')'
+);
+
+-- ── tokens_acceso ─────────────────────────────────────────
+CALL _add_check_if_missing(
+  'tokens_acceso', 'chk_tokens_tipo',
+  'ALTER TABLE tokens_acceso ADD CONSTRAINT chk_tokens_tipo
+   CHECK (tipo IN (''MAGIC_LINK'',''RECOVERY'',''VERIFICACION''))'
+);
+
+-- ── mensajes_chatbot ──────────────────────────────────────
+CALL _add_check_if_missing(
+  'mensajes_chatbot', 'chk_mensajes_rol',
+  'ALTER TABLE mensajes_chatbot ADD CONSTRAINT chk_mensajes_rol
+   CHECK (rol IN (''USER'',''BOT''))'
+);
+
+CALL _add_check_if_missing(
+  'mensajes_chatbot', 'chk_mensajes_confianza',
+  'ALTER TABLE mensajes_chatbot ADD CONSTRAINT chk_mensajes_confianza
+   CHECK (confianza IS NULL OR (confianza >= 0 AND confianza <= 1))'
+);
+
+-- ── preferencias_notificacion ─────────────────────────────
+CALL _add_check_if_missing(
+  'preferencias_notificacion', 'chk_pref_frecuencia',
+  'ALTER TABLE preferencias_notificacion ADD CONSTRAINT chk_pref_frecuencia
+   CHECK (frecuencia_email IN (''INMEDIATA'',''DIARIA'',''SEMANAL'',''NUNCA''))'
+);
+
+-- ── solicitudes_respaldo ──────────────────────────────────
+CALL _add_check_if_missing(
+  'solicitudes_respaldo', 'chk_sol_respaldo_tipo',
+  'ALTER TABLE solicitudes_respaldo ADD CONSTRAINT chk_sol_respaldo_tipo
+   CHECK (tipo IN (''COMPLETO'',''PARCIAL_USUARIOS'',''PARCIAL_DOCUMENTOS'',''PARCIAL_LOGS''))'
+);
+
+CALL _add_check_if_missing(
+  'solicitudes_respaldo', 'chk_sol_respaldo_estado',
+  'ALTER TABLE solicitudes_respaldo ADD CONSTRAINT chk_sol_respaldo_estado
+   CHECK (estado IN (''PENDIENTE'',''EN_PROCESO'',''COMPLETADO'',''FALLIDO''))'
+);
+
+-- ── Limpieza del helper ───────────────────────────────────
+DROP PROCEDURE _add_check_if_missing;
+
+-- ============================================================
+-- MIGRACIÓN: agregar columnas hash_actual / hash_anterior
+-- (cadena de integridad) a la tabla `auditoria`
+-- Fecha: 2026-07-11
+--
+-- Idempotente: usa information_schema + PREPARE/EXECUTE para
+-- agregar cada columna e índice solo si no existe.
+-- Soluciona `Unknown column 'a1_0.hash_actual' in 'field list'`
+-- cuando se despliega código nuevo contra una BD creada con una
+-- versión previa del schema.
+-- ============================================================
+
+-- 1) hash_anterior
+SET @tbl := 'auditoria';
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'hash_anterior') = 0,
+    'ALTER TABLE auditoria
+        ADD COLUMN hash_anterior VARCHAR(64) NULL
+            COMMENT ''SHA-256 hex del registro firmado anterior. NULL para filas previas al despliegue o para el primer registro firmado (usa el genesis).''',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 2) hash_actual
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.columns
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND column_name  = 'hash_actual') = 0,
+    'ALTER TABLE auditoria
+        ADD COLUMN hash_actual VARCHAR(64) NULL
+            COMMENT ''SHA-256 hex sobre hashAnterior+campos cubiertos. NULL para filas previas al despliegue.''',
+    'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- 3) Índice idx_hash_actual (idempotente)
+SET @sql := IF(
+    (SELECT COUNT(*) FROM information_schema.statistics
+      WHERE table_schema = DATABASE()
+        AND table_name   = @tbl
+        AND index_name   = 'idx_hash_actual') = 0,
+    'CREATE INDEX idx_hash_actual ON auditoria (hash_actual)',
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;

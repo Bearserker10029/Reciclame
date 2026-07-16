@@ -1,10 +1,11 @@
-<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+﻿<!-- Reciclame — Reporte de Normativas y Estudios (rediseño de marca 2026) -->
 <jasperReport name="normativas_estudios_report" language="java" pageWidth="1200" pageHeight="842" columnWidth="1160" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="6a7ebf9a-2b2d-4d79-96ab-05a1e5e46ddb">
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
-	<style name="headerStyle" forecolor="#FFFFFF" backcolor="#3399FF" fontName="SansSerif" fontSize="10.0" bold="true"/>
-	<style name="rowStyle" fontName="SansSerif" fontSize="9.0"/>
-	<style name="rowAltStyle" backcolor="#F5F5F5" fontName="SansSerif" fontSize="9.0"/>
-	<style name="footerStyle" forecolor="#9CA3AF" fontName="SansSerif" fontSize="8.0"/>
+
+	<style name="rowStyle"    fontName="SansSerif" fontSize="9.0"/>
+	<style name="footerStyle" forecolor="#6B7280" fontName="SansSerif" fontSize="8.0"/>
+	<style name="urlStyle"    forecolor="#27AE60" fontName="SansSerif" fontSize="8.0" bold="true"/>
+
 	<dataset name="DocsTipoDataset" uuid="abcd9183-93fc-4b1b-a25f-676d4d242bbf">
 		<field name="label" class="java.lang.String"/>
 		<field name="value" class="java.lang.Integer"/>
@@ -15,23 +16,75 @@
 	</dataset>
 	<dataset name="DescargasAnioDataset" uuid="63bad83e-737a-4adf-b047-c0f6c5d5bdd0">
 		<field name="category" class="java.lang.String"/>
-		<field name="value" class="java.lang.Integer"/>
+		<field name="value"    class="java.lang.Integer"/>
 	</dataset>
+
 	<parameter name="chartData1" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="chartData2" class="net.sf.jasperreports.engine.JRDataSource"/>
 	<parameter name="chartData3" class="net.sf.jasperreports.engine.JRDataSource"/>
-	<field name="titulo" class="java.lang.String"/>
-	<field name="tipo" class="java.lang.String"/>
+
+	<field name="titulo"         class="java.lang.String"/>
+	<field name="tipo"           class="java.lang.String"/>
 	<field name="tematicaNombre" class="java.lang.String"/>
-	<field name="estado" class="java.lang.String"/>
-	<field name="anio" class="java.lang.Integer"/>
+	<field name="estado"         class="java.lang.String"/>
+	<field name="anio"           class="java.lang.Integer"/>
 	<field name="descargasCount" class="java.lang.Integer"/>
-	<field name="fechaCreacion" class="java.lang.String"/>
-	<background height="690" splitType="Stretch">
-		<element kind="image" uuid="baa1c802-26a9-4063-b8a6-994ca68e04eb" positionType="FixRelativeToBottom" stretchType="NoStretch" mode="Transparent" x="100" y="291" width="640" height="220" linkType="None" linkTarget="Self">
+	<field name="fechaCreacion"  class="java.lang.String"/>
+
+	<background height="760" splitType="Stretch">
+		<element kind="image" uuid="baa1c802-26a9-4063-b8a6-994ca68e04eb" positionType="FixRelativeToBottom" mode="Transparent" x="40" y="310" width="500" height="180" linkType="None" linkTarget="Self">
 			<expression><![CDATA["reports/Logo-azul-Reciclame-.png"]]></expression>
 		</element>
-		<element kind="chart" chartType="bar3D" uuid="e0ea17e4-2cd1-4a94-99dd-70c2e0b7cdea" x="877" y="510" width="260" height="180" showLegend="false" evaluationTime="Report">
+		<element kind="staticText" uuid="6a7ebf9a-0011-4d79-96ab-000000000011" x="900" y="105" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Documentos por Tipo]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="648a18ee-c9c4-4287-bb37-77683fdc91b8" x="888" y="124" width="272" height="170" showLegend="true" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="0062c4ac-c2cd-4fb6-8702-66aa8c4ffcf9" subDataset="DocsTipoDataset">
+					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#2ECC71"/>
+				<seriesColor order="1" color="#1B3A5C"/>
+				<seriesColor order="2" color="#3498DB"/>
+				<seriesColor order="3" color="#F39C12"/>
+				<seriesColor order="4" color="#E74C3C"/>
+				<seriesColor order="5" color="#8B5CF6"/>
+			</plot>
+		</element>
+		<element kind="staticText" uuid="6a7ebf9a-0014-4d79-96ab-000000000014" x="900" y="308" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Documentos por Temática]]></text>
+		</element>
+		<element kind="chart" chartType="pie" uuid="40164f19-c4e2-4de4-a38f-d4368fcfdc9b" x="888" y="328" width="272" height="160" showLegend="true" evaluationTime="Report">
+			<dataset kind="pie">
+				<datasetRun uuid="85bd1918-a982-4fbe-ad72-af71fe5e615f" subDataset="DocsTematicaDataset">
+					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
+				</datasetRun>
+				<series>
+					<keyExpression><![CDATA[$F{label}]]></keyExpression>
+					<valueExpression><![CDATA[$F{value}]]></valueExpression>
+				</series>
+			</dataset>
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
+				<itemLabel color="#1B3A5C" backgroundColor="#FFFFFF"/>
+				<seriesColor order="0" color="#2ECC71"/>
+				<seriesColor order="1" color="#27AE60"/>
+				<seriesColor order="2" color="#1B3A5C"/>
+				<seriesColor order="3" color="#3498DB"/>
+				<seriesColor order="4" color="#F39C12"/>
+				<seriesColor order="5" color="#8B5CF6"/>
+			</plot>
+		</element>
+		<element kind="staticText" uuid="6a7ebf9a-0017-4d79-96ab-000000000017" x="900" y="504" width="260" height="18" forecolor="#1B3A5C" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center">
+			<text><![CDATA[Descargas por Año]]></text>
+		</element>
+		<element kind="chart" chartType="bar" uuid="e0ea17e4-2cd1-4a94-99dd-70c2e0b7cdea" x="888" y="524" width="272" height="180" showLegend="false" evaluationTime="Report">
 			<dataset kind="category">
 				<datasetRun uuid="13afd542-1067-41e8-b89e-1255262f6def" subDataset="DescargasAnioDataset">
 					<dataSourceExpression><![CDATA[$P{chartData3} != null ? $P{chartData3} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
@@ -42,122 +95,63 @@
 					<valueExpression><![CDATA[$F{value}]]></valueExpression>
 				</series>
 			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
+			<plot backgroundAlpha="0.0" foregroundAlpha="0.85">
 				<itemLabel/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
-			</plot>
-		</element>
-		<element kind="chart" chartType="pie3D" uuid="40164f19-c4e2-4de4-a38f-d4368fcfdc9b" x="888" y="350" width="260" height="140" showLegend="false" evaluationTime="Report">
-			<dataset kind="pie">
-				<datasetRun uuid="85bd1918-a982-4fbe-ad72-af71fe5e615f" subDataset="DocsTematicaDataset">
-					<dataSourceExpression><![CDATA[$P{chartData2} != null ? $P{chartData2} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
-				</datasetRun>
-				<series>
-					<keyExpression><![CDATA[$F{label}]]></keyExpression>
-					<valueExpression><![CDATA[$F{value}]]></valueExpression>
-				</series>
-			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
-			</plot>
-		</element>
-		<element kind="chart" chartType="pie3D" uuid="648a18ee-c9c4-4287-bb37-77683fdc91b8" x="888" y="170" width="260" height="140" showLegend="false" evaluationTime="Report">
-			<dataset kind="pie">
-				<datasetRun uuid="0062c4ac-c2cd-4fb6-8702-66aa8c4ffcf9" subDataset="DocsTipoDataset">
-					<dataSourceExpression><![CDATA[$P{chartData1} != null ? $P{chartData1} : new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(java.util.Collections.emptyList())]]></dataSourceExpression>
-				</datasetRun>
-				<series>
-					<keyExpression><![CDATA[$F{label}]]></keyExpression>
-					<valueExpression><![CDATA[$F{value}]]></valueExpression>
-				</series>
-			</dataset>
-			<plot backgroundAlpha="0.5" foregroundAlpha="0.8">
-				<itemLabel color="#000000" backgroundColor="#FFFFFF"/>
-				<seriesColor order="0" color="#3399FF"/>
-				<seriesColor order="1" color="#00CCFF"/>
-				<seriesColor order="2" color="#0066CC"/>
-				<seriesColor order="3" color="#6699FF"/>
-				<seriesColor order="4" color="#004A94"/>
-				<seriesColor order="5" color="#00356A"/>
+				<seriesColor order="0" color="#2ECC71"/>
+				<seriesColor order="1" color="#27AE60"/>
+				<seriesColor order="2" color="#1B3A5C"/>
 			</plot>
 		</element>
 	</background>
-	<title height="60" splitType="Stretch">
-		<element kind="staticText" uuid="c70c23bc-f82f-46bd-8c87-193b378f85cc" x="0" y="10" width="1160" height="40" fontSize="20.0" bold="true" hTextAlign="Center">
-			<text><![CDATA[Reporte de Normativas y Estudios]]></text>
-		</element>
+
+	<title height="90" splitType="Stretch">
+		<element kind="staticText" uuid="6a7ebf9a-0020-4d79-96ab-000000000020" mode="Opaque" x="0" y="0" width="1160" height="90" backcolor="#1B3A5C"><text><![CDATA[]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0021-4d79-96ab-000000000021" mode="Opaque" x="0" y="0" width="6" height="90" backcolor="#2ECC71"><text><![CDATA[]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0022-4d79-96ab-000000000022" mode="Transparent" x="16" y="8" width="860" height="44" forecolor="#FFFFFF" fontName="SansSerif" fontSize="26.0" bold="true" vTextAlign="Middle"><text><![CDATA[Reporte de Normativas y Estudios]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0023-4d79-96ab-000000000023" mode="Transparent" x="16" y="56" width="860" height="24" forecolor="#2ECC71" fontName="SansSerif" fontSize="11.0" vTextAlign="Middle"><text><![CDATA[Repositorio Circular de Economía Circular  ·  reciclame.org]]></text></element>
 	</title>
-	<columnHeader height="30" splitType="Stretch">
-		<element kind="line" uuid="c2a43838-0d78-458d-bf08-5d24a0d42189" x="0" y="28" width="889" height="1">
-			<pen lineWidth="2.0" lineColor="#1B3A5C"/>
-		</element>
-		<element kind="staticText" uuid="9274e304-cd68-46b8-8d00-d56f2529ecc0" mode="Opaque" x="0" y="0" width="279" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Titulo]]></text>
-		</element>
-		<element kind="staticText" uuid="70aea031-615d-40ce-86aa-642e01fc53de" mode="Opaque" x="280" y="0" width="80" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Tipo]]></text>
-		</element>
-		<element kind="staticText" uuid="3f2c1602-d7d1-4e99-8861-2f4fb1a319e5" mode="Opaque" x="360" y="0" width="120" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Tematica]]></text>
-		</element>
-		<element kind="staticText" uuid="9bfdbb3c-2a28-46de-b427-d3ee434b8d70" mode="Opaque" x="480" y="0" width="100" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Anio]]></text>
-		</element>
-		<element kind="staticText" uuid="a91cdde6-1c43-46bf-af66-b4e3bc58a5b1" mode="Opaque" x="580" y="0" width="80" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Estado]]></text>
-		</element>
-		<element kind="staticText" uuid="d2958c09-78dd-4a2d-95dc-4bcede0bc3b8" mode="Opaque" x="660" y="0" width="100" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Descargas]]></text>
-		</element>
-		<element kind="staticText" uuid="7719f7a1-9893-407d-8915-ad1c552893c8" mode="Opaque" x="760" y="0" width="130" height="28" forecolor="#FFFFFF" backcolor="#244771" hTextAlign="Center" style="headerStyle">
-			<text><![CDATA[Fecha Creacion]]></text>
-		</element>
+
+	<columnHeader height="34" splitType="Stretch">
+		<element kind="staticText" uuid="6a7ebf9a-0030-4d79-96ab-000000000030" mode="Opaque" x="0" y="0" width="890" height="34" backcolor="#27AE60"><text><![CDATA[]]></text></element>
+		<element kind="line" uuid="6a7ebf9a-0031-4d79-96ab-000000000031" x="0" y="33" width="890" height="1"><pen lineWidth="2.0" lineColor="#1B3A5C"/></element>
+		<element kind="staticText" uuid="6a7ebf9a-0032-4d79-96ab-000000000032" mode="Transparent" x="2"   y="0" width="268" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Título]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0033-4d79-96ab-000000000033" mode="Transparent" x="270" y="0" width="78"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Tipo]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0034-4d79-96ab-000000000034" mode="Transparent" x="348" y="0" width="128" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Temática]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0035-4d79-96ab-000000000035" mode="Transparent" x="476" y="0" width="78"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Año]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0036-4d79-96ab-000000000036" mode="Transparent" x="554" y="0" width="88"  height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Estado]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0037-4d79-96ab-000000000037" mode="Transparent" x="642" y="0" width="108" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Descargas]]></text></element>
+		<element kind="staticText" uuid="6a7ebf9a-0038-4d79-96ab-000000000038" mode="Transparent" x="750" y="0" width="140" height="34" forecolor="#FFFFFF" fontName="SansSerif" fontSize="9.0" bold="true" hTextAlign="Center" vTextAlign="Middle"><text><![CDATA[Fecha Creación]]></text></element>
 	</columnHeader>
+
 	<detail>
 		<band height="25" splitType="Stretch">
-			<element kind="textField" uuid="ab237159-e993-48bc-b833-be69085977ee" x="0" y="0" width="279" height="25" hTextAlign="Left" style="rowAltStyle">
-				<expression><![CDATA[$F{titulo}]]></expression>
-			</element>
-			<element kind="textField" uuid="a17c9579-6868-4a19-9f56-5dd01c0440a5" x="280" y="0" width="80" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{tipo}]]></expression>
-			</element>
-			<element kind="textField" uuid="30da582e-f28c-4bb4-9dad-c735ef06510e" x="360" y="0" width="120" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{tematicaNombre}]]></expression>
-			</element>
-			<element kind="textField" uuid="0168c546-9795-4647-b555-dcade95a61aa" x="480" y="0" width="100" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{anio} != null ? $F{anio}.toString() : "-"]]></expression>
-			</element>
-			<element kind="textField" uuid="baf78199-2e94-4627-b1d6-e94d7a019e8b" x="580" y="0" width="80" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{estado}]]></expression>
-			</element>
-			<element kind="textField" uuid="9f216f6a-6d7d-4d2b-a44e-12dad9782ca5" x="660" y="0" width="100" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{descargasCount} != null ? $F{descargasCount}.toString() : "0"]]></expression>
-			</element>
-			<element kind="textField" uuid="4de00b4c-4bcf-46c8-9bae-10133630c28b" x="760" y="0" width="130" height="25" hTextAlign="Center" style="rowAltStyle">
-				<expression><![CDATA[$F{fechaCreacion}]]></expression>
-			</element>
+			<element kind="textField" uuid="6a7ebf9a-0042-4d79-96ab-000000000042" mode="Opaque" x="2"   y="0" width="268" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{titulo}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a2-4d79-96ab-0000000000a2" mode="Opaque" x="2"   y="0" width="268" height="25" hTextAlign="Left"   style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{titulo}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0043-4d79-96ab-000000000043" mode="Opaque" x="270" y="0" width="78"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{tipo}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a3-4d79-96ab-0000000000a3" mode="Opaque" x="270" y="0" width="78"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{tipo}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0044-4d79-96ab-000000000044" mode="Opaque" x="348" y="0" width="128" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{tematicaNombre}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a4-4d79-96ab-0000000000a4" mode="Opaque" x="348" y="0" width="128" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{tematicaNombre}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0045-4d79-96ab-000000000045" mode="Opaque" x="476" y="0" width="78"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{anio} != null ? $F{anio}.toString() : "-"]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a5-4d79-96ab-0000000000a5" mode="Opaque" x="476" y="0" width="78"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{anio} != null ? $F{anio}.toString() : "-"]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0046-4d79-96ab-000000000046" mode="Opaque" x="554" y="0" width="88"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{estado}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a6-4d79-96ab-0000000000a6" mode="Opaque" x="554" y="0" width="88"  height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{estado}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0047-4d79-96ab-000000000047" mode="Opaque" x="642" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{descargasCount} != null ? $F{descargasCount}.toString() : "0"]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a7-4d79-96ab-0000000000a7" mode="Opaque" x="642" y="0" width="108" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{descargasCount} != null ? $F{descargasCount}.toString() : "0"]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-0048-4d79-96ab-000000000048" mode="Opaque" x="750" y="0" width="140" height="25" hTextAlign="Center" style="rowStyle" backcolor="#F0FFF4"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2==0]]></printWhenExpression><expression><![CDATA[$F{fechaCreacion}]]></expression></element>
+			<element kind="textField" uuid="6a7ebf9a-00a8-4d79-96ab-0000000000a8" mode="Opaque" x="750" y="0" width="140" height="25" hTextAlign="Center" style="rowStyle" backcolor="#FFFFFF"><printWhenExpression><![CDATA[$V{REPORT_COUNT}%2!=0]]></printWhenExpression><expression><![CDATA[$F{fechaCreacion}]]></expression></element>
+			<element kind="line" uuid="6a7ebf9a-0049-4d79-96ab-000000000049" x="0" y="24" width="890" height="1"><pen lineWidth="0.5" lineColor="#D1D5DB"/></element>
 		</band>
 	</detail>
-	<pageFooter height="30" splitType="Stretch">
-		<element kind="line" uuid="1eca2e54-7015-45be-8221-9b5b20d05285" x="0" y="0" width="1160" height="1">
-			<pen lineWidth="1.0" lineColor="#1B3A5C"/>
-		</element>
-		<element kind="textField" uuid="8d6f375c-70cb-46d5-952e-56eae6de4e46" x="0" y="5" width="400" height="20" style="footerStyle">
+
+	<pageFooter height="36" splitType="Stretch">
+		<element kind="line" uuid="6a7ebf9a-0050-4d79-96ab-000000000050" x="0" y="0" width="1160" height="1"><pen lineWidth="2.0" lineColor="#1B3A5C"/></element>
+		<element kind="line" uuid="6a7ebf9a-0051-4d79-96ab-000000000051" x="0" y="2" width="1160" height="1"><pen lineWidth="1.0" lineColor="#2ECC71"/></element>
+		<element kind="textField" uuid="6a7ebf9a-0052-4d79-96ab-000000000052" x="0" y="8" width="400" height="22" style="footerStyle">
 			<expression><![CDATA["Generado: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></expression>
 		</element>
-		<element kind="textField" uuid="537ebbf5-6eeb-4842-8698-ff0cfb05bc64" x="960" y="5" width="200" height="20" hTextAlign="Right" style="footerStyle">
-			<expression><![CDATA["Pagina " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
+		<element kind="staticText" uuid="6a7ebf9a-0053-4d79-96ab-000000000053" x="430" y="8" width="300" height="22" hTextAlign="Center" style="urlStyle"><text><![CDATA[reciclame.org]]></text></element>
+		<element kind="textField" uuid="6a7ebf9a-0054-4d79-96ab-000000000054" x="960" y="8" width="200" height="22" hTextAlign="Right" style="footerStyle">
+			<expression><![CDATA["Página " + $V{PAGE_NUMBER} + " de " + $V{PAGE_COUNT}]]></expression>
 		</element>
 	</pageFooter>
 </jasperReport>

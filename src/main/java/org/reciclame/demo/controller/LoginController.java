@@ -5,12 +5,16 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.reciclame.demo.dto.UsuarioSesion;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.reciclame.demo.service.AuditoriaService;
 import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.NormativaService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.savedrequest.DefaultSavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
@@ -62,9 +66,12 @@ public class LoginController {
     public static class RoleBasedSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
         private final UsuarioRepository usuarioRepository;
+        private final AuditoriaService auditoriaService;
 
-        public RoleBasedSuccessHandler(UsuarioRepository usuarioRepository) {
+        public RoleBasedSuccessHandler(UsuarioRepository usuarioRepository,
+                                      AuditoriaService auditoriaService) {
             this.usuarioRepository = usuarioRepository;
+            this.auditoriaService = auditoriaService;
         }
 
         @Override
@@ -74,10 +81,21 @@ public class LoginController {
                                             Authentication authentication) throws java.io.IOException {
             // Guardar datos del usuario en sesión
             HttpSession session = request.getSession();
+            boolean[] debeCambiarPassword = {false};
             usuarioRepository.findByCorreoCorporativo(authentication.getName())
                     .ifPresent(u -> {
+                        debeCambiarPassword[0] = Boolean.TRUE.equals(u.getDebeCambiarPassword());
                         u.setUltimoLogin(Instant.now());
                         usuarioRepository.save(u);
+
+                        // Si el usuario tenía intentos fallidos o estaba bloqueado,
+                        // resetearlos al iniciar sesión correctamente.
+                        if ((u.getIntentosFallidos() != null && u.getIntentosFallidos() != 0)
+                                || Boolean.TRUE.equals(u.getCuentaBloqueada())) {
+                            usuarioRepository.resetearIntentosYDesbloquear(u.getId());
+                            u.setIntentosFallidos((byte) 0);
+                            u.setCuentaBloqueada(false);
+                        }
 
                         session.setAttribute("usuarioSesion", new UsuarioSesion(
                                 u.getId(),
@@ -85,14 +103,55 @@ public class LoginController {
                                 u.getCorreoCorporativo(),
                                 u.getRol() != null ? u.getRol().getNombre() : null,
                                 u.getCargo(),
-                                u.getFotoUrl()
+                                u.getFotoUrl(),
+                                Boolean.TRUE.equals(u.getDebeCambiarPassword())
                         ));
+
+                        // Si el usuario que se loguea es SuperAdmin, persistir
+                        // su id en un atributo inmutable de sesión. Esto es
+                        // crítico para que los registros de auditoría de
+                        // IMPERSONAR / SALIR_IMPERSONACION siempre muestren
+                        // el nombre real del superadmin raíz y no el correo
+                        // del último usuario impersonado (que es lo que
+                        // devuelve SecurityContextHolder.getName() durante
+                        // una impersonación anidada).
+                        if (u.getRol() != null && "SUPERADMIN".equalsIgnoreCase(u.getRol().getNombre())) {
+                            session.setAttribute("SUPERADMIN_ORIGINAL_ID", u.getId());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_NOMBRE", u.getNombreCompleto());
+                            session.setAttribute("SUPERADMIN_ORIGINAL_CORREO", u.getCorreoCorporativo());
+                        }
+
+                        // ── Trazabilidad: registrar el LOGIN ──────────────
+                        // Módulo "AUTENTICACION" (no "SEGURIDAD") a propósito:
+                        // la query del admin excluye modulo='SEGURIDAD', pero
+                        // SÍ debe ver los logins de admin/socio/visualizador.
+                        // El superadmin lo ve via findEventosSeguridad (que
+                        // acepta LOGIN por acción, independientemente del módulo).
+                        String ip = extractClientIp(request);
+                        String userAgent = request.getHeader("User-Agent");
+                        String rolNombre = u.getRol() != null ? u.getRol().getNombre() : "USUARIO";
+                        auditoriaService.registrarAccion(
+                                u.getId(),
+                                u.getNombreCompleto(),
+                                AuditoriaService.ACCION_LOGIN,
+                                "AUTENTICACION",
+                                "Inicio de sesión exitoso (" + rolNombre + ")",
+                                null, null, "EXITOSO", null, ip, userAgent
+                        );
                     });
 
             // Si el usuario venía de una URL protegida válida, redirigir allí
             DefaultSavedRequest savedRequest = (DefaultSavedRequest)
                     session.getAttribute("SPRING_SECURITY_SAVED_REQUEST");
             session.removeAttribute("SPRING_SECURITY_SAVED_REQUEST");
+
+            if (debeCambiarPassword[0]) {
+                // Contraseña temporal: ignora cualquier URL guardada y fuerza el
+                // cambio antes de dejarlo entrar a cualquier otra pantalla.
+                response.sendRedirect("/auth/cambiar-password-inicial");
+                return;
+            }
+
             if (savedRequest != null) {
                 String targetUrl = savedRequest.getRedirectUrl();
                 if (targetUrl != null
@@ -105,28 +164,46 @@ public class LoginController {
             }
 
             // Redirección según rol
-            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-            String redirectUrl = "/admin/inicio";
-
-            for (GrantedAuthority authority : authorities) {
-                String role = authority.getAuthority();
-                if (role.equals("ROLE_SUPERADMIN")) {
-                    redirectUrl = "/superadmin/inicio";
-                    break;
-                } else if (role.equals("ROLE_ADMINISTRADOR")) {
-                    redirectUrl = "/admin/inicio";
-                    break;
-                } else if (role.equals("ROLE_SOCIO")) {
-                    redirectUrl = "/socio/inicio";
-                    break;
-                } else if (role.equals("ROLE_VISUALIZADOR")) {
-                    redirectUrl = "/visualizador/inicio";
-                    break;
-                }
-            }
-
-            response.sendRedirect(redirectUrl);
+            response.sendRedirect(resolveHomeUrlForRole(authentication));
         }
+
+        /**
+         * Devuelve la IP del cliente. Prioriza {@code X-Forwarded-For}
+         * (típico cuando se está detrás de nginx/ALB) y cae al
+         * {@code X-Real-IP} y finalmente a {@code request.getRemoteAddr()}.
+         */
+        private static String extractClientIp(HttpServletRequest request) {
+            String xff = request.getHeader("X-Forwarded-For");
+            if (xff != null && !xff.isBlank()) {
+                int coma = xff.indexOf(',');
+                return (coma > 0 ? xff.substring(0, coma) : xff).trim();
+            }
+            String realIp = request.getHeader("X-Real-IP");
+            if (realIp != null && !realIp.isBlank()) return realIp.trim();
+            return request.getRemoteAddr();
+        }
+    }
+
+    /**
+     * URL de inicio según el rol del usuario autenticado. Compartido entre el
+     * success handler (login recién hecho) y el chequeo de sesión activa en
+     * {@link #login(Model)} (usuario ya autenticado que vuelve a /login).
+     */
+    private static String resolveHomeUrlForRole(Authentication authentication) {
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            String role = authority.getAuthority();
+            if (role.equals("ROLE_SUPERADMIN")) {
+                return "/superadmin/inicio";
+            } else if (role.equals("ROLE_ADMINISTRADOR")) {
+                return "/admin/inicio";
+            } else if (role.equals("ROLE_SOCIO")) {
+                return "/socio/inicio";
+            } else if (role.equals("ROLE_VISUALIZADOR")) {
+                return "/visualizador/inicio";
+            }
+        }
+        return "/admin/inicio";
     }
 
     /**
@@ -157,7 +234,22 @@ public class LoginController {
      * Si los servicios fallan, se renderizan ceros sin tumbar la página.
      */
     @GetMapping("/service/repositorio/login")
-    public String login(Model model) {
+    public String login(Model model, HttpSession session) {
+        // Si ya hay una sesión autenticada en este navegador (p.ej. otra pestaña),
+        // no se debe mostrar el formulario de login: se redirige directo al home
+        // del usuario. Evita la falsa impresión de "dos sesiones" cuando en
+        // realidad es la misma sesión (misma cookie) vista desde otra pestaña.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && !(authentication instanceof AnonymousAuthenticationToken)) {
+            Object sesion = session.getAttribute("usuarioSesion");
+            if (sesion instanceof UsuarioSesion us && us.isDebeCambiarPassword()) {
+                return "redirect:/auth/cambiar-password-inicial";
+            }
+            return "redirect:" + resolveHomeUrlForRole(authentication);
+        }
+
         long totalNormativas = 0;
         long totalDocumentos = 0;
         long porcentajeActualizado = 0;
@@ -204,5 +296,79 @@ public class LoginController {
     @GetMapping("/logout")
     public String logout() {
         return "redirect:" + LOGIN_PATH + "?logout=true";
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    //  AUDITORÍA DE LOGOUT
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * {@link LogoutHandler} que registra un evento {@code LOGOUT} en la tabla
+     * de auditoría antes de que Spring Security invalide la sesión. Se enchufa
+     * en la cadena de logout vía {@code SecurityConfig.logout(...)} con
+     * {@code .addLogoutHandler(auditLogoutHandler)}; corre antes que
+     * {@code SecurityContextLogoutHandler} (que limpia la sesión), por lo que
+     * todavía podemos leer el {@code Authentication} de
+     * {@link SecurityContextHolder}.
+     *
+     * <p>El handler retorna el resultado de la última operación: nunca lanza
+     * para no romper el flujo de logout si la BD está caída — solo loguea el
+     * error y sigue.</p>
+     */
+    @Component
+    public static class AuditingLogoutHandler implements LogoutHandler {
+
+        private final UsuarioRepository usuarioRepository;
+        private final AuditoriaService auditoriaService;
+
+        public AuditingLogoutHandler(UsuarioRepository usuarioRepository,
+                                     AuditoriaService auditoriaService) {
+            this.usuarioRepository = usuarioRepository;
+            this.auditoriaService = auditoriaService;
+        }
+
+        @Override
+        @Transactional
+        public void logout(jakarta.servlet.http.HttpServletRequest request,
+                          jakarta.servlet.http.HttpServletResponse response,
+                          org.springframework.security.core.Authentication authentication) {
+            if (authentication == null) {
+                // Logout disparado sin sesión activa (raro pero posible); no
+                // podemos atribuirlo a nadie. No registramos evento.
+                return;
+            }
+            usuarioRepository.findByCorreoCorporativo(authentication.getName())
+                    .ifPresent(u -> {
+                        String ip = extractClientIpStatic(request);
+                        String userAgent = request.getHeader("User-Agent");
+                        String rolNombre = u.getRol() != null ? u.getRol().getNombre() : "USUARIO";
+                        auditoriaService.registrarAccion(
+                                u.getId(),
+                                u.getNombreCompleto(),
+                                AuditoriaService.ACCION_LOGOUT,
+                                "AUTENTICACION",
+                                "Cierre de sesión (" + rolNombre + ")",
+                                null, null, "EXITOSO", null, ip, userAgent
+                        );
+                    });
+        }
+    }
+
+    /**
+     * Helper estático de extracción de IP (mismo criterio que el success
+     * handler: priorizar X-Forwarded-For, fallback a X-Real-IP y finalmente
+     * a {@code request.getRemoteAddr()}). Vive en la clase externa para
+     * poder ser usado por el {@link AuditingLogoutHandler} sin instanciar
+     * el handler de login.
+     */
+    private static String extractClientIpStatic(jakarta.servlet.http.HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            int coma = xff.indexOf(',');
+            return (coma > 0 ? xff.substring(0, coma) : xff).trim();
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) return realIp.trim();
+        return request.getRemoteAddr();
     }
 }

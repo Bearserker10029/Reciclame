@@ -6,6 +6,7 @@ import org.reciclame.demo.service.EstudioService;
 import org.reciclame.demo.service.MinioStorageService;
 import org.reciclame.demo.service.NormativaService;
 import org.reciclame.demo.service.UsuarioService;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -188,7 +189,7 @@ public class DocumentoViewController {
             HttpServletRequest request,
             HttpServletResponse response) throws IOException, InterruptedException {
 
-        String ipAddress = obtenerIp(request);
+        String ipAddress = HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
 
         Long usuarioId = null;
@@ -295,6 +296,12 @@ public class DocumentoViewController {
     /**
      * Genera la URL del visor bajo demanda (token fresco).
      * Requiere autenticación — impide que URLs del visor en el HTML sean reutilizables sin sesión.
+     *
+     * <p>Antes de generar la URL, verifica que el archivo exista en MinIO.
+     * Si el archivo fue borrado del bucket pero la BD todavía lo referencia
+     * (huérfano), se responde 404 con un JSON descriptivo en vez de un
+     * 302 a una URL que kkfileview no podría servir. Esto evita que el iframe
+     * del visor quede abierto mostrando una página de error de kkfileview.</p>
      */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/visor")
@@ -302,30 +309,44 @@ public class DocumentoViewController {
             @RequestParam("url") String url,
             @RequestParam(name = "titulo", required = false, defaultValue = "documento") String titulo,
             @RequestParam(name = "mime", required = false) String mime) {
+        // 1) URL válida (mismo bucket, formato correcto)
+        try {
+            // Solo verifica el formato; no hace I/O contra MinIO todavía
+            minioStorageService.getObjectNameFromUrl(url);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("mensaje", "URL de documento inválida.", "tipo", "URL_INVALIDA"));
+        }
+
+        // 2) El objeto existe físicamente en el bucket
+        if (!minioStorageService.existeArchivo(url)) {
+            log.warn("Visor bloqueado: archivo no existe en MinIO para url={}", url);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "mensaje", "El archivo no está disponible en el almacenamiento. "
+                                    + "Es posible que haya sido eliminado o que la subida no haya finalizado.",
+                            "tipo", "ARCHIVO_NO_ENCONTRADO"));
+        }
+
+        // 3) Generar URL del visor y devolver 302
         try {
             String previewUrl = documentPreviewService.buildViewerUrl(url, titulo, mime);
             if (previewUrl == null || previewUrl.isBlank()) {
                 return ResponseEntity.badRequest()
-                        .body(Map.of("mensaje", "No hay archivo disponible para previsualizar."));
+                        .body(Map.of("mensaje", "No hay archivo disponible para previsualizar.",
+                                     "tipo", "URL_INVALIDA"));
             }
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, previewUrl)
                     .build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("mensaje", "URL de documento inválida."));
+                    .body(Map.of("mensaje", "URL de documento inválida.", "tipo", "URL_INVALIDA"));
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(Map.of("mensaje", "No se pudo generar la vista previa."));
+                    .body(Map.of("mensaje", "No se pudo generar la vista previa.",
+                                 "tipo", "ERROR_INTERNO"));
         }
-    }
-
-    private String obtenerIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private String extractExtension(String url) {

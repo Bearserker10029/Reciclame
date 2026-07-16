@@ -577,7 +577,11 @@
             </thead>
             <tbody id="documentos-tbody">
               <tr th:each="e : ${estudios}" class="doc-row" th:data-nombre="${e.titulo}" th:data-seccion="'Estudio'"
-                th:data-categoria="${e.tematicaCodigo}" th:data-mime="${e.archivoTipoMime}">
+                th:data-categoria="${e.tematicaCodigo}" th:data-mime="${e.archivoTipoMime}"
+                th:with="tipo=${e.archivoTipoMime != null and (#strings.contains(e.archivoTipoMime,'pdf')) ? 'pdf' :
+                              (e.archivoTipoMime != null and (#strings.contains(e.archivoTipoMime,'spreadsheet') or #strings.contains(e.archivoTipoMime,'excel') or #strings.contains(e.archivoTipoMime,'vnd.ms-excel'))) ? 'excel' :
+                              (e.archivoTipoMime != null and (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword') or #strings.contains(e.archivoTipoMime,'vnd.ms-word'))) ? 'word' :
+                              (e.archivoTipoMime != null and (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'pptx') or #strings.contains(e.archivoTipoMime,'powerpoint') or #strings.contains(e.archivoTipoMime,'vnd.ms-powerpoint'))) ? 'ppt' : 'otro'}">
                 <td style="font-weight:600;color:#1B3A5C;">
                   <span
                     style="background:rgba(46,204,113,.1);color:#27AE60;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Estudio</span>
@@ -587,7 +591,11 @@
                 <td th:text="${e.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="badge-pdf">PDF</span>
+                    <span th:if="${tipo == 'pdf'}" class="badge-pdf">PDF</span>
+                    <span th:if="${tipo == 'excel'}" class="badge-excel">Excel</span>
+                    <span th:if="${tipo == 'word'}" class="badge-word">Word</span>
+                    <span th:if="${tipo == 'ppt'}" class="badge-pptx">PPTX</span>
+                    <span th:if="${tipo == 'otro'}" class="badge-otro">Otro</span>
                   </div>
                 </td>
                 <td><span class="badge-solo"><i class="fas fa-eye" style="font-size:8px;"></i> Solo lectura</span></td>
@@ -604,7 +612,11 @@
                 </td>
               </tr>
               <tr th:each="n : ${normativas}" class="doc-row" th:data-nombre="${n.titulo}" th:data-seccion="'Normativa'"
-                th:data-categoria="${n.tematicaCodigo}" th:data-mime="${n.archivoTipoMime}">
+                th:data-categoria="${n.tematicaCodigo}" th:data-mime="${n.archivoTipoMime}"
+                th:with="tipo=${n.archivoTipoMime != null and (#strings.contains(n.archivoTipoMime,'pdf')) ? 'pdf' :
+                              (n.archivoTipoMime != null and (#strings.contains(n.archivoTipoMime,'spreadsheet') or #strings.contains(n.archivoTipoMime,'excel') or #strings.contains(n.archivoTipoMime,'vnd.ms-excel'))) ? 'excel' :
+                              (n.archivoTipoMime != null and (#strings.contains(n.archivoTipoMime,'wordprocessing') or #strings.contains(n.archivoTipoMime,'msword') or #strings.contains(n.archivoTipoMime,'vnd.ms-word'))) ? 'word' :
+                              (n.archivoTipoMime != null and (#strings.contains(n.archivoTipoMime,'presentation') or #strings.contains(n.archivoTipoMime,'pptx') or #strings.contains(n.archivoTipoMime,'powerpoint') or #strings.contains(n.archivoTipoMime,'vnd.ms-powerpoint'))) ? 'ppt' : 'otro'}">
                 <td style="font-weight:600;color:#1B3A5C;">
                   <span
                     style="background:rgba(52,152,219,.1);color:#2471A3;margin-right:6px;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;">Normativa</span>
@@ -614,7 +626,11 @@
                 <td th:text="${n.anio}">—</td>
                 <td>
                   <div style="display:flex;gap:4px;">
-                    <span class="badge-pdf">PDF</span>
+                    <span th:if="${tipo == 'pdf'}" class="badge-pdf">PDF</span>
+                    <span th:if="${tipo == 'excel'}" class="badge-excel">Excel</span>
+                    <span th:if="${tipo == 'word'}" class="badge-word">Word</span>
+                    <span th:if="${tipo == 'ppt'}" class="badge-pptx">PPTX</span>
+                    <span th:if="${tipo == 'otro'}" class="badge-otro">Otro</span>
                   </div>
                 </td>
                 <td><span class="badge-publico"><i class="fas fa-globe" style="font-size:8px;"></i> Público</span></td>
@@ -639,7 +655,7 @@
           </div>
         </div>
 
-        <!-- Modal Subir Documento -->
+
         <div id="uploadModal"
           style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
           <div
@@ -673,7 +689,7 @@
           </div>
         </div>
 
-        <!-- Modal Editar Documento -->
+
         <div id="editModal"
           style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
           <div
@@ -712,7 +728,7 @@
           </div>
         </div>
 
-        <!-- Modal Eliminar Documento -->
+
         <div id="deleteModal"
           style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
           <div
@@ -749,7 +765,8 @@
             var total = rows.length, pdf = 0, pptx = 0;
             rows.forEach(function (r) {
               var mime = (r.dataset.mime || '').toLowerCase();
-              if (mime.indexOf('pdf') > -1) pdf++; else pptx++;
+              if (mime.indexOf('pdf') > -1) pdf++;
+              else if (mime.indexOf('pptx') > -1 || mime.indexOf('presentation') > -1 || mime.indexOf('vnd.ms-powerpoint') > -1) pptx++;
             });
             function animateCount(id, target) {
               var el = document.getElementById(id);

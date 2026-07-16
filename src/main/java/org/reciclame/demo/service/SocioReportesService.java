@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Gatherers;
+import java.util.stream.IntStream;
 
 @Service
 public class SocioReportesService {
@@ -95,22 +97,25 @@ public class SocioReportesService {
                             + " – "
                             + fin.format(DateTimeFormatter.ofPattern("d MMM", LOCALE_PE)));
         }
-        int[] buckets = new int[8];
-        for (DocumentosReciente dr : recientesChart) {
-            if (dr.getUltimaVista() == null) {
-                continue;
-            }
-            LocalDate d = LocalDate.ofInstant(dr.getUltimaVista(), ZONA);
-            LocalDate lunesDoc = d.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-            long w = ChronoUnit.WEEKS.between(lunes0, lunesDoc);
-            if (w >= 0 && w < 8) {
-                buckets[(int) w]++;
-            }
-        }
-        List<Integer> valoresSemanas = new ArrayList<>(8);
-        for (int v : buckets) {
-            valoresSemanas.add(v);
-        }
+        // ── Bucketing semanal con Stream Gatherers (JDK 22+) ────────────────
+        // Una sola pasada sobre recientesChart: el Gatherer.fold mantiene un
+        // acumulador int[8] y emite el array final al cerrar el stream.
+        final int[] buckets = recientesChart.stream()
+                .filter(dr -> dr.getUltimaVista() != null)
+                .gather(Gatherers.fold(
+                        () -> new int[8],
+                        (acc, dr) -> {
+                            LocalDate d = LocalDate.ofInstant(dr.getUltimaVista(), ZONA);
+                            LocalDate lunesDoc = d.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+                            long w = ChronoUnit.WEEKS.between(lunes0, lunesDoc);
+                            if (w >= 0 && w < 8) {
+                                acc[(int) w]++;
+                            }
+                            return acc;
+                        }))
+                .findFirst()
+                .orElse(new int[8]);
+        List<Integer> valoresSemanas = IntStream.of(buckets).boxed().toList();
 
         long nNorm = recientesChart.stream().filter(r -> MiUnidadItem.TIPO_NORMATIVA.equals(r.getDocumentoTipo())).count();
         long nEst = recientesChart.stream().filter(r -> MiUnidadItem.TIPO_ESTUDIO.equals(r.getDocumentoTipo())).count();
@@ -208,10 +213,8 @@ public class SocioReportesService {
                     + " – "
                     + fin.format(DateTimeFormatter.ofPattern("d MMM", LOCALE_PE)));
         }
-        List<Integer> zeros = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            zeros.add(0);
-        }
+        // JDK 9+: IntStream para listas numéricas sin boxing manual
+        List<Integer> zeros = IntStream.generate(() -> 0).limit(8).boxed().toList();
         return SocioReportesView.builder()
                 .documentosUltimaVistaEnMes(0)
                 .itemsMiUnidad(0)

@@ -1,5 +1,6 @@
 package org.reciclame.demo.config;
 
+import org.reciclame.demo.service.AuthFailureHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -12,8 +13,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -22,14 +26,23 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final AuthenticationSuccessHandler successHandler;
+    private final AuthenticationFailureHandler failureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
+    private final ForzarCambioPasswordFilter forzarCambioPasswordFilter;
+    private final LogoutHandler auditLogoutHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
                           AuthenticationSuccessHandler successHandler,
-                          AccessDeniedHandler accessDeniedHandler) {
+                          AuthFailureHandler authFailureHandler,
+                          AccessDeniedHandler accessDeniedHandler,
+                          ForzarCambioPasswordFilter forzarCambioPasswordFilter,
+                          LogoutHandler auditLogoutHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
+        this.failureHandler = authFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
+        this.forzarCambioPasswordFilter = forzarCambioPasswordFilter;
+        this.auditLogoutHandler = auditLogoutHandler;
     }
 
     @Bean
@@ -84,12 +97,15 @@ public class SecurityConfig {
                         .loginPage("/service/repositorio/login")
                         .loginProcessingUrl("/service/repositorio/login")
                         .successHandler(successHandler)
-                        .failureUrl("/service/repositorio/login?error=true")
+                        .failureHandler(failureHandler)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/service/repositorio/login?logout=true")
+                        // Handler de auditoría: registra el LOGOUT antes de
+                        // que SecurityContextLogoutHandler invalide la sesión.
+                        .addLogoutHandler(auditLogoutHandler)
                         // Support both container sessions (dev) and Spring Session cookie (prod)
                         .deleteCookies("JSESSIONID", "SESSION")
                         .invalidateHttpSession(true)
@@ -118,7 +134,8 @@ public class SecurityConfig {
                         // Permite embeber rutas same-origin como /api/documentos/inline dentro del visor.
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> csrf.disable())
+                .addFilterAfter(forzarCambioPasswordFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -537,7 +537,7 @@
       <main class="water-bg"
         style="flex:1;background: url('https://reciclame.org/wp-content/uploads/2025/12/1-Poryecto-reciclaje.jpg') no-repeat center center fixed; background-size: cover;overflow-y:auto;padding:32px;">
 
-        <!-- ══ HERO ══ -->
+
         <div class="form-hero">
           <div style="position:relative;z-index:1;display:flex;align-items:center;gap:14px;">
             <a href="/admin/estudios" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);
@@ -560,29 +560,30 @@
           </div>
         </div>
 
-        <!-- ══ ERROR BANNER ══ -->
+
         <div id="form-error"></div>
 
-        <!-- ══ INFO: ESCANEO VIRUS TOTAL ══ -->
+
         <div style="background:#e7f1ff;border:1px solid #b6d4fe;color:#052c65;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:13px;display:flex;align-items:center;gap:10px;">
           <i class="fas fa-shield-alt"></i>
           <span>Todo archivo adjunto se escanea automáticamente contra <strong>VirusTotal</strong> antes de almacenarse. Si el antivirus detecta malware, la subida será rechazada.</span>
         </div>
 
-        <!-- ══ FORM GRID ══ -->
+
         <div class="form-grid">
 
-          <!-- ── Columna izquierda: campos principales ── -->
+
           <div>
 
-            <!-- INFORMACIÓN BÁSICA -->
+
             <div class="form-card">
               <div class="card-title">
                 <i class="fas fa-info-circle"></i> Información Básica
               </div>
               <div class="field">
                 <label>Título <span class="req">*</span></label>
-                <input id="f-titulo" type="text" maxlength="300" placeholder="Ej: Informe de Economía Circular 2024"
+                <input id="f-titulo" type="text" maxlength="300" minlength="5" required
+                  placeholder="Ej: Informe de Economía Circular 2024"
                   th:value="${isEdit ? estudio.titulo : ''}" />
                 <div class="char-count"><span id="cnt-titulo">0</span>/300</div>
               </div>
@@ -600,7 +601,7 @@
               </div>
             </div>
 
-            <!-- METADATOS -->
+
             <div class="form-card" style="animation-delay:.08s">
               <div class="card-title">
                 <i class="fas fa-list-alt"></i> Metadatos
@@ -641,7 +642,7 @@
               </div>
             </div>
 
-            <!-- ETIQUETAS -->
+
             <div class="form-card" style="animation-delay:.14s">
               <div class="card-title">
                 <i class="fas fa-tags"></i> Etiquetas
@@ -665,16 +666,16 @@
 
           </div>
 
-          <!-- ── Columna derecha: archivo + visibilidad + acciones ── -->
+
           <div>
 
-            <!-- ARCHIVO -->
+
             <div class="form-card">
               <div class="card-title">
                 <i class="fas fa-file-upload"></i> Archivo del Documento
               </div>
 
-              <!-- Vista previa del archivo existente (solo en edición) -->
+
               <div th:if="${isEdit and estudio.archivoUrl != null}" class="existing-file">
                 <i class="fas fa-file-pdf"></i>
                 <div class="info">
@@ -703,7 +704,7 @@
               </div>
             </div>
 
-            <!-- VISIBILIDAD -->
+
             <div class="form-card" style="animation-delay:.06s">
               <div class="card-title">
                 <i class="fas fa-eye"></i> Visibilidad
@@ -722,13 +723,13 @@
               </p>
             </div>
 
-            <!-- ACCIÓN -->
+
             <div class="form-card" style="animation-delay:.1s">
               <div class="card-title">
                 <i class="fas fa-save"></i> Guardar
               </div>
 
-              <!-- Errores de validación del backend -->
+
               <div id="errores-validacion" style="display:none;margin-bottom:14px;padding:12px 14px;
                background:#FEF2F2;border:1px solid rgba(231,76,60,.25);border-radius:10px;
                color:#B91C1C;font-size:12px;line-height:1.6;"></div>
@@ -745,30 +746,26 @@
             </div>
 
           </div>
-        </div><!-- /form-grid -->
+        </div> 
 
         <th:block th:replace="~{navbar/footer :: footer}"></th:block>
       </main>
     </div>
 
-    <!-- ══ CHATBOT ══ -->
+
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
   </div>
 
-  <!-- ══ TOAST ══ -->
+
   <div id="ef-toast"></div>
 
-  <!-- ════════════════════════════════════════════════════════════
-     DATA ISLANDS  (Thymeleaf → JavaScript)
-════════════════════════════════════════════════════════════ -->
+
   <script th:inline="javascript">
     var IS_EDIT = /*[[${isEdit}]]*/ false;
     var ESTUDIO_ID = /*[[${isEdit ? estudio.id : null}]]*/ null;
   </script>
 
-  <!-- ════════════════════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════════════════════ -->
+
   <script>
     // ─── Contador de caracteres ────────────────────────────────────
     function initCharCounter(inputId, counterId) {
@@ -848,6 +845,72 @@
     }
 
     // ─── Submit ───────────────────────────────────────────────────
+    // ── Validación integral (cliente) ────────────────────────────
+    // Cubre EstudioRequestDTO + CHECK constraints de la BD.
+    function validarEstudio() {
+      var errores = [];
+      var titulo = document.getElementById('f-titulo').value.trim();
+      var tematica = document.getElementById('f-tematica').value;
+      var anioStr  = document.getElementById('f-anio').value;
+      var autor    = document.getElementById('f-autor').value.trim();
+      var fecha    = document.getElementById('f-fecha').value;
+      var archivo  = selectedFile || document.getElementById('f-archivo').files[0];
+
+      if (!titulo) {
+        errores.push({ campo: 'titulo', mensaje: 'El título es obligatorio.' });
+      } else if (titulo.length < 5) {
+        errores.push({ campo: 'titulo', mensaje: 'El título debe tener al menos 5 caracteres.' });
+      } else if (titulo.length > 300) {
+        errores.push({ campo: 'titulo', mensaje: 'El título no puede superar los 300 caracteres.' });
+      }
+      if (!tematica) {
+        errores.push({ campo: 'tematicaId', mensaje: 'Debes seleccionar una temática.' });
+      }
+      if (autor && autor.length > 200) {
+        errores.push({ campo: 'autor', mensaje: 'El autor no puede superar los 200 caracteres.' });
+      }
+
+      // Año opcional pero si llega, tiene que estar en rango
+      if (anioStr) {
+        var anioNum = parseInt(anioStr, 10);
+        if (isNaN(anioNum) || anioNum < 1900 || anioNum > 2100) {
+          errores.push({ campo: 'anio', mensaje: 'El año debe estar entre 1900 y 2100.' });
+        }
+      }
+
+      // Coherencia año-fecha
+      if (anioStr && fecha) {
+        var anioFecha = parseInt(fecha.substring(0, 4), 10);
+        var anioInput = parseInt(anioStr, 10);
+        if (!isNaN(anioFecha) && anioFecha !== anioInput) {
+          errores.push({ campo: 'fechaEstudio',
+            mensaje: 'El año de la fecha exacta no coincide con el año indicado (' + anioInput + ').' });
+        }
+      }
+
+      if (!IS_EDIT && !archivo) {
+        errores.push({ campo: 'archivo', mensaje: 'El archivo es obligatorio para crear un estudio.' });
+      }
+
+      return { ok: errores.length === 0, errores: errores };
+    }
+
+    function pintarErroresValidacion(errores) {
+      var errBanner = document.getElementById('form-error');
+      if (!errBanner) return;
+      if (errores.length === 1) {
+        errBanner.textContent = errores[0].mensaje;
+      } else {
+        var ul = '<ul style="margin:6px 0 0 18px;padding:0;">';
+        errores.forEach(function (e) {
+          ul += '<li><strong>' + (LABELS_ESTUDIO[e.campo] || e.campo) + '</strong>: ' + e.mensaje + '</li>';
+        });
+        ul += '</ul>';
+        errBanner.innerHTML = errores[0].mensaje + ul;
+      }
+      errBanner.style.display = 'block';
+    }
+
     async function submitForm() {
       // Limpiar errores anteriores
       var errBanner = document.getElementById('form-error');
@@ -856,31 +919,21 @@
       errDetalle.style.display = 'none';
       errDetalle.innerHTML = '';
 
-      // Validación client-side básica (evita round-trip innecesario)
-      var titulo = document.getElementById('f-titulo').value.trim();
-      var tematica = document.getElementById('f-tematica').value;
-      var archivo = selectedFile || document.getElementById('f-archivo').files[0];
-
-      if (!titulo) {
-        errBanner.textContent = 'El título es obligatorio.';
-        errBanner.style.display = 'block';
+      // Validación integral (cliente)
+      var v = validarEstudio();
+      if (!v.ok) {
+        pintarErroresValidacion(v.errores);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
-      if (!tematica) {
-        errBanner.textContent = 'Debes seleccionar una temática.';
-        errBanner.style.display = 'block';
-        return;
-      }
-      if (!IS_EDIT && !archivo) {
-        errBanner.textContent = 'El archivo es obligatorio para crear un estudio.';
-        errBanner.style.display = 'block';
         return;
       }
 
       // Recoger etiquetas seleccionadas
       var etiquetasIds = Array.from(document.querySelectorAll('.etiq-input:checked'))
         .map(function (cb) { return parseInt(cb.value, 10); });
+
+      var titulo = document.getElementById('f-titulo').value.trim();
+      var tematica = document.getElementById('f-tematica').value;
+      var archivo = selectedFile || document.getElementById('f-archivo').files[0];
 
       var estudioData = {
         titulo: titulo,
@@ -908,7 +961,7 @@
         : '<i class="fas fa-plus-circle"></i> Crear estudio';
 
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando…';
+      btn.innerHTML = '<i class="fas fa-cloud-upload-alt fa-spin"></i> Subiendo…';
 
       try {
         var url = IS_EDIT ? '/api/estudios/' + ESTUDIO_ID : '/api/estudios';
@@ -923,16 +976,32 @@
           data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
         }
 
+        // ── 202 Accepted: flujo NUEVO con staging asíncrono ──
+        if (res.status === 202) {
+          exito = true;
+          try {
+            if (data.taskId) {
+              var pending = JSON.parse(sessionStorage.getItem('pendingUploads') || '[]');
+              pending.push({ taskId: data.taskId, tipo: 'ESTUDIO', refId: data.refId, ts: Date.now() });
+              sessionStorage.setItem('pendingUploads', JSON.stringify(pending));
+            }
+          } catch (e) { /* ignore */ }
+          showToast(data.mensaje || 'Subida en validación. Te avisamos al terminar.',
+                    'info', { duration: 2200 });
+          window.location.href = '/admin/estudios';
+          return;
+        }
+
         if (!res.ok) {
           // ── El backend devolvió 400 ──────────────────────────────
           if (data.tipo === 'VALIDACION' && data.errores) {
             // Errores campo por campo del @Valid
             mostrarErroresBackend(data.errores);
             showToast('Revisa los campos marcados.', 'error');
-          } else if (data.tipo === 'VIRUS_DETECTADO') {
+          } else if (data.tipo === 'VIRUS_DETECTADO' || (data.mensaje && /antivirus|virus|malicioso/i.test(data.mensaje))) {
             var detalle = '';
             if (data.malicious) detalle += data.malicious + ' motores marcaron el archivo como malicioso';
-            if (data.suspicious) detalle += (detalle ? ' · ' : '') + data.suspicious + ' como sospechoso';
+            if (data.suspicious) detalle += (detalle ? ' · ' + data.suspicious + ' como sospechoso' : '');
             errBanner.innerHTML =
               '<i class="fas fa-shield-virus" style="color:#dc3545;margin-right:8px;"></i>' +
               '<strong>Archivo rechazado por VirusTotal.</strong> ' +
@@ -953,7 +1022,7 @@
           return; // finally se ejecuta igualmente
         }
 
-        // ── Éxito ──────────────────────────────────────────────────
+        // ── Éxito ─────────────────────────────────────────────────
         exito = true;
         showToast(IS_EDIT ? 'Estudio actualizado correctamente.' : 'Estudio creado correctamente.', 'success');
         setTimeout(function () { window.location.href = '/admin/estudios'; }, 1200);

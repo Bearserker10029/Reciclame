@@ -7,6 +7,7 @@ import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.NotificacionRepository;
 import org.reciclame.demo.repository.PreferenciasNotificacionRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,25 +19,32 @@ import java.util.stream.Collectors;
 @Service
 public class NotificacionService {
 
+    // Tope de notificaciones traídas por el dropdown/lista; evita que la consulta
+    // crezca sin límite con el historial completo del usuario.
+    private static final int LIMITE_LISTADO = 50;
+
     private final NotificacionRepository notificacionRepository;
     private final PreferenciasNotificacionRepository preferenciasRepository;
     private final UsuarioRepository usuarioRepository;
     private final CentrifugoService centrifugoService;
+    private final EmailNotificationService emailNotificationService;
 
     public NotificacionService(NotificacionRepository notificacionRepository,
                                PreferenciasNotificacionRepository preferenciasRepository,
                                UsuarioRepository usuarioRepository,
-                               CentrifugoService centrifugoService) {
+                               CentrifugoService centrifugoService,
+                               EmailNotificationService emailNotificationService) {
         this.notificacionRepository = notificacionRepository;
         this.preferenciasRepository = preferenciasRepository;
         this.usuarioRepository = usuarioRepository;
         this.centrifugoService = centrifugoService;
+        this.emailNotificationService = emailNotificationService;
     }
 
     // ── READ ──────────────────────────────────────────────────
     public List<NotificacionResponseDTO> listarPorUsuario(Long usuarioId) {
         return notificacionRepository
-                .findByUsuarioIdAndEstadoActivoTrueOrderByCreatedAtDesc(usuarioId)
+                .findByUsuarioIdAndEstadoActivoTrueOrderByCreatedAtDesc(usuarioId, PageRequest.of(0, LIMITE_LISTADO))
                 .stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
@@ -51,49 +59,55 @@ public class NotificacionService {
     public void crearNotificacion(Long usuarioId, String titulo, String mensaje, String tipo) {
         Usuario u = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + usuarioId));
-        Notificacione n = new Notificacione();
-        n.setUsuario(u);
-        n.setTipo(tipo != null ? tipo : "MENSAJE_ADMIN");
-        n.setTitulo(titulo);
-        n.setMensaje(mensaje);
-        n.setLeida(false);
-        n.setEstadoActivo(true);
-        n.setCreatedAt(Instant.now());
+        Notificacione n = buildNotif(u, tipo != null ? tipo : "MENSAJE_ADMIN", titulo, mensaje, null);
         notificacionRepository.save(n);
+        pushNotif(u.getId(), titulo, mensaje, n.getTipo(), null);
+        enviarEmailSiHabilitado(u, titulo, mensaje);
     }
 
     @Transactional
     public int enviarNotificacionGlobal(String titulo, String mensaje, String tipo) {
         List<Usuario> usuarios = usuarioRepository.findAll();
         for (Usuario u : usuarios) {
-            Notificacione n = new Notificacione();
-            n.setUsuario(u);
-            n.setTipo(tipo != null ? tipo : "MENSAJE_ADMIN");
-            n.setTitulo(titulo);
-            n.setMensaje(mensaje);
-            n.setLeida(false);
-            n.setEstadoActivo(true);
-            n.setCreatedAt(Instant.now());
+            Notificacione n = buildNotif(u, tipo != null ? tipo : "MENSAJE_ADMIN", titulo, mensaje, null);
             notificacionRepository.save(n);
+            pushNotif(u.getId(), titulo, mensaje, n.getTipo(), null);
+            enviarEmailSiHabilitado(u, titulo, mensaje);
         }
         return usuarios.size();
     }
 
     // ── MARCAR COMO LEÍDA ─────────────────────────────────────
-    public void marcarComoLeida(Long id) {
-        Notificacione notif = notificacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notificación no encontrada con id: " + id));
+    /**
+     * Marca como leída solo si la notificación pertenece a {@code usuarioId}.
+     * Evita que un usuario marque (o descubra la existencia de) notificaciones ajenas.
+     */
+    @Transactional
+    public boolean marcarComoLeida(Long id, Long usuarioId) {
+        Notificacione notif = notificacionRepository.findById(id).orElse(null);
+        if (notif == null || !notif.getUsuario().getId().equals(usuarioId)) {
+            return false;
+        }
         notif.setLeida(true);
         notif.setFechaLectura(Instant.now());
         notificacionRepository.save(notif);
+        return true;
     }
 
     // ── DELETE lógico ─────────────────────────────────────────
-    public void eliminarNotificacion(Long id) {
-        Notificacione notif = notificacionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notificación no encontrada con id: " + id));
+    /**
+     * Igual que {@link #marcarComoLeida}: solo borra (lógicamente) si la
+     * notificación pertenece al usuario que la solicita.
+     */
+    @Transactional
+    public boolean eliminarNotificacion(Long id, Long usuarioId) {
+        Notificacione notif = notificacionRepository.findById(id).orElse(null);
+        if (notif == null || !notif.getUsuario().getId().equals(usuarioId)) {
+            return false;
+        }
         notif.setEstadoActivo(false);
         notificacionRepository.save(notif);
+        return true;
     }
 
     // ── PREFERENCIAS ──────────────────────────────────────────
@@ -155,6 +169,7 @@ public class NotificacionService {
                     "/admin/estudios");
             notificacionRepository.save(n);
             pushNotif(u.getId(), "Nuevo estudio disponible", "Se ha publicado: " + titulo, "NUEVO_ESTUDIO", "/socio/estudios");
+            enviarEmailSiHabilitado(u, "Nuevo estudio disponible", "Se ha publicado el estudio: " + titulo);
         });
     }
 
@@ -171,7 +186,53 @@ public class NotificacionService {
                     "/admin/normativo");
             notificacionRepository.save(n);
             pushNotif(u.getId(), "Nueva normativa disponible", "Se agregó: " + titulo, "NUEVA_NORMATIVA", "/socio/normativo");
+            enviarEmailSiHabilitado(u, "Nueva normativa disponible", "Se ha agregado al repositorio: " + titulo);
         });
+    }
+
+    @Transactional
+    public void notificarEstudioActualizado(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevosEstudios()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVO_ESTUDIO",
+                    "Estudio actualizado",
+                    "Se ha actualizado el estudio: " + titulo,
+                    "/admin/estudios");
+            notificacionRepository.save(n);
+            pushNotif(u.getId(), "Estudio actualizado", "Se actualizó: " + titulo, "NUEVO_ESTUDIO", "/socio/estudios");
+            enviarEmailSiHabilitado(u, "Estudio actualizado", "Se ha actualizado el estudio: " + titulo);
+        });
+    }
+
+    @Transactional
+    public void notificarNormativaActualizada(String titulo) {
+        usuarioRepository.findAll().forEach(u -> {
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifNuevasNormativas()))
+                    .orElse(true);
+            if (!enviar) return;
+            Notificacione n = buildNotif(u, "NUEVA_NORMATIVA",
+                    "Normativa actualizada",
+                    "Se ha actualizado en el repositorio: " + titulo,
+                    "/admin/normativo");
+            notificacionRepository.save(n);
+            pushNotif(u.getId(), "Normativa actualizada", "Se actualizó: " + titulo, "NUEVA_NORMATIVA", "/socio/normativo");
+            enviarEmailSiHabilitado(u, "Normativa actualizada", "Se ha actualizado en el repositorio: " + titulo);
+        });
+    }
+
+    @Transactional
+    public void notificarDocumentoCompartido(Usuario destinatario, String compartidoPorNombre,
+                                             String titulo, String enlace) {
+        String mensaje = compartidoPorNombre + " te dio acceso a: " + titulo;
+        Notificacione n = buildNotif(destinatario, "DOCUMENTO_COMPARTIDO",
+                "Te compartieron un documento", mensaje, enlace);
+        notificacionRepository.save(n);
+        pushNotif(destinatario.getId(), "Te compartieron un documento", mensaje, "DOCUMENTO_COMPARTIDO", enlace);
+        enviarEmailSiHabilitado(destinatario, "Te compartieron un documento", mensaje);
     }
 
     @Transactional
@@ -205,6 +266,24 @@ public class NotificacionService {
             payload.put("mensaje", mensaje);
             payload.put("enlace", enlace != null ? enlace : "");
             centrifugoService.publicar("chat#" + usuarioId, payload);
+        } catch (Exception ex) { /* no rollback */ }
+    }
+
+    /**
+     * Envía copia por correo si el usuario tiene emailHabilitado=true y
+     * frecuenciaEmail != 'NUNCA'. No implementa digesto real (agrupar por
+     * DIARIA/SEMANAL requeriría un job programado); por ahora cualquier
+     * frecuencia distinta de NUNCA envía de inmediato, igual que INMEDIATA.
+     */
+    private void enviarEmailSiHabilitado(Usuario u, String titulo, String mensaje) {
+        try {
+            if (u.getCorreoCorporativo() == null) return;
+            PreferenciasNotificacion prefs = preferenciasRepository.findByUsuarioId(u.getId()).orElse(null);
+            boolean habilitado = prefs == null || Boolean.TRUE.equals(prefs.getEmailHabilitado());
+            boolean nunca = prefs != null && "NUNCA".equalsIgnoreCase(prefs.getFrecuenciaEmail());
+            if (!habilitado || nunca) return;
+            emailNotificationService.sendEmail(u.getCorreoCorporativo(), titulo,
+                    "<p>" + mensaje + "</p><p style=\"color:#9CA3AF;font-size:12px;\">Recíclame — puedes desactivar estos avisos en Configuración de notificaciones.</p>");
         } catch (Exception ex) { /* no rollback */ }
     }
 

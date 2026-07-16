@@ -145,11 +145,35 @@
         box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
       }
 
-      .form-group input:disabled {
-        background: #F9FAFB;
-        color: #9CA3AF;
-        cursor: not-allowed;
-      }
+    .form-group input:disabled {
+      background: #F9FAFB;
+      color: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    /* Wrapper para inputs bloqueados (DNI, Nombre, etc.).
+       Muestra un candado al hacer hover para señalar que no son editables,
+       igual que el campo DNI. */
+    .input-locked {
+      position: relative;
+    }
+    .input-locked input {
+      padding-right: 36px; /* deja espacio al icono a la derecha */
+    }
+    .input-lock-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9CA3AF;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity .2s ease;
+      pointer-events: none;
+    }
+    .input-locked:hover .input-lock-icon {
+      opacity: 1;
+    }
 
       .btn-save {
         padding: 11px 24px;
@@ -303,10 +327,10 @@
 
     <div style="display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;">
 
-      <!-- Columna izquierda -->
+
       <div style="display:flex;flex-direction:column;gap:20px;">
 
-        <!-- Información personal -->
+
         <div class="form-card">
           <div class="section-title">
             <div class="icon-dot" style="background:rgba(46,204,113,.12);">
@@ -328,12 +352,19 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
               <div class="form-group">
                 <label>Nombre completo</label>
-                <input type="text" name="nombreCompleto" th:value="${usuario != null ? usuario.nombreCompleto : ''}"
-                  required />
+                <div class="input-locked">
+                  <input type="text" name="nombreCompleto" th:value="${usuario != null ? usuario.nombreCompleto : ''}"
+                    disabled title="Vinculado al DNI: no editable" />
+                  <i class="fas fa-lock input-lock-icon" title="Vinculado al DNI: no editable"></i>
+                </div>
               </div>
               <div class="form-group">
                 <label>DNI</label>
-                <input type="text" th:value="${usuario != null ? usuario.dni : 'N/A'}" disabled />
+                <div class="input-locked">
+                  <input type="text" th:value="${usuario != null ? usuario.dni : 'N/A'}" disabled
+                    title="Campo bloqueado" />
+                  <i class="fas fa-lock input-lock-icon" title="Campo bloqueado"></i>
+                </div>
               </div>
               <div class="form-group">
                 <label>Correo corporativo</label>
@@ -367,7 +398,7 @@
           </form>
         </div>
 
-        <!-- Cambiar contraseña -->
+
         <div class="form-card">
           <div class="section-title">
             <div class="icon-dot" style="background:rgba(27,58,92,.1);">
@@ -415,10 +446,10 @@
 
       </div>
 
-      <!-- Columna derecha -->
+
       <div style="display:flex;flex-direction:column;gap:20px;">
 
-        <!-- Credencial -->
+
         <div class="form-card">
           <div class="section-title">
             <div class="icon-dot" style="background:rgba(46,204,113,.12);">
@@ -471,9 +502,7 @@
       </div>
     </div>
 
-    <!-- Cerrar sesión (solo mobile): el sidebar está oculto en ≤767px,
-         así que el botón de logout no es accesible desde la UI mobile.
-         Esta card lo expone directamente en la página de perfil. -->
+
     <div class="form-card logout-card-mobile" style="margin-top:20px;">
       <div class="section-title">
         <div class="icon-dot" style="background:rgba(231,76,60,.12);">
@@ -486,7 +515,7 @@
       </button>
     </div>
 
-    <!-- Modal cambio de correo -->
+
     <div id="correoModal"
       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
       <div

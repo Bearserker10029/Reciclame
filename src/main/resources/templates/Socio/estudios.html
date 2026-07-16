@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <link rel="stylesheet" href="https://unpkg.com/vis-timeline@7.7.3/styles/vis-timeline-graph2d.min.css" />
+  <script src="https://unpkg.com/vis-timeline@7.7.3/standalone/umd/vis-timeline-graph2d.min.js"></script>
   <script>if (typeof navTo === 'undefined') { function navTo(p) { var map = { 'admin-docs': 'documentos' }; window.location.href = '/socio/' + (map[p] || p); } }</script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -283,6 +285,22 @@
       outline: none;
       border-color: #2ECC71;
       box-shadow: 0 0 0 3px rgba(46, 204, 113, .1);
+    }
+
+    .filter-row-search-wrap {
+      position: relative;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .filter-row-search-wrap input {
+      width: 100%;
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .filter-row select {
+      flex-shrink: 0;
     }
 
     .table-card {
@@ -988,7 +1006,7 @@
         </div>
 
         <div class="filter-row">
-          <div style="position:relative;flex:1;min-width:220px;">
+          <div class="filter-row-search-wrap">
             <i class="fas fa-search"
               style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;pointer-events:none;"></i>
             <input id="search-estudios" placeholder="Buscar por título u objetivo..." />
@@ -1010,6 +1028,9 @@
             </button>
             <button class="vista-toggle-btn" id="btn-vista-grid" onclick="setVista('grid')" title="Cuadrícula">
               <i class="fas fa-th"></i>
+            </button>
+            <button class="vista-toggle-btn" id="btn-vista-timeline" onclick="setVista('timeline')" title="Línea de tiempo">
+              <i class="fas fa-stream"></i>
             </button>
           </div>
           <button
@@ -1045,7 +1066,9 @@
                                     (#strings.contains(e.archivoTipoMime,'wordprocessing') or #strings.contains(e.archivoTipoMime,'msword')) ? 'word' :
                                     (#strings.contains(e.archivoTipoMime,'presentation') or #strings.contains(e.archivoTipoMime,'powerpoint')) ? 'ppt' : 'otro'}"
                       th:data-id="${e.id}" th:data-titulo="${e.titulo}" th:data-descripcion="${e.descripcionBreve}"
-                      th:data-tematica="${e.tematicaCodigo}"
+                      th:data-tematica="${e.tematicaCodigo}" th:data-tema-nombre="${e.tematicaNombre}"
+                      th:data-tema-color="${e.tematicaColor}"
+                      th:data-fecha="${e.fechaEstudio != null ? e.fechaEstudio : ''}"
                       th:data-anio="${e.anio}" th:data-tipo="${tipo}" th:data-mime="${e.archivoTipoMime}"
                       th:data-url="${e.archivoUrl}" th:style="'animation-delay:' + ${iStat.index * 50} + 'ms'">
                       <td>
@@ -1099,7 +1122,7 @@
                             th:href="@{/api/documentos/descargar(url=${e.archivoUrl},titulo=${e.titulo},tipo='ESTUDIO',docId=${e.id})}">
                             <i class="fas fa-download"></i>
                           </a>
-                          <button class="btn-action-icon" title="Compartir" th:attr="onclick=|driveShareEstudio('${e.titulo}')|">
+                          <button class="btn-action-icon" title="Compartir" th:attr="onclick=|shareEstudioRow([[${e.id}]])|">
                             <i class="fas fa-share-alt"></i>
                           </button>
                           <button class="btn-action-icon" title="Añadir a carpeta" th:attr="onclick=|openModalCarpetaFromData('ESTUDIO', '${e.id}', &quot;${e.titulo}&quot;)|">
@@ -1128,6 +1151,8 @@
             </div>
 
             <div id="estudios-grid" class="grid-container" style="display:none;"></div>
+
+            <th:block th:replace="~{components/doc-timeline :: docTimeline}"></th:block>
           </div>
 
           <div>
@@ -1221,12 +1246,15 @@
             }
           }
 
-          window.driveShareEstudio = function (titulo) {
-            var text = window.location.origin + '/socio/estudios — ' + titulo;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard.writeText(text).then(function () { alert('Copiado al portapapeles.'); }).catch(function () { window.prompt('Copia manualmente:', text); });
-            } else { window.prompt('Copia manualmente:', text); }
-          };
+          function shareEstudioRow(id) {
+            var row = document.querySelector('.estudio-row[data-id="' + id + '"]');
+            if (!row) return;
+            var tit = row.dataset.titulo || '';
+            window.__compartirDocTitulo = tit;
+            window.__compartirDocTipo = 'ESTUDIO';
+            window.__compartirDocId = id;
+            openModalCompartir(tit);
+          }
 
           (function () {
             var rows = document.querySelectorAll('tr[data-titulo]');
@@ -1390,6 +1418,7 @@
             inicializarPaginacion();
             mostrarPagina(1);
             if (vistaActual === 'grid') renderGrid();
+            if (vistaActual === 'timeline') renderEstTimelineFragment();
           }
 
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
@@ -1398,34 +1427,82 @@
             document.querySelectorAll('.estudio-row').forEach(function (tr) {
               if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';
             });
-            inicializarPaginacion();
-            mostrarPagina(1);
+            var savedVista = null;
+            try { savedVista = sessionStorage.getItem('reciclameEstudiosVista'); } catch (e) { }
+            if (savedVista === 'grid' || savedVista === 'timeline') {
+              setVista(savedVista);
+            } else {
+              inicializarPaginacion();
+              mostrarPagina(1);
+            }
           });
 
           var vistaActual = 'lista';
 
+          var _tipoLabel = { pdf: 'PDF', excel: 'Excel', word: 'Word', ppt: 'PowerPoint', otro: 'Documento' };
+
+          function renderEstTimelineFragment() {
+            if (!window.ReciclameTimeline) return;
+            var filas = Array.from(document.querySelectorAll('.estudio-row')).filter(function (tr) {
+              return tr.dataset.filtrado !== '0';
+            });
+            ReciclameTimeline.render({
+              rows: filas,
+              clickBase: '/socio/estudios/',
+              heading: 'Línea de tiempo de estudios',
+              subtitle: 'Publicaciones por temática y año',
+              countLabel: 'estudios',
+              read: function (row) {
+                return {
+                  id: row.dataset.id,
+                  title: row.dataset.titulo || '',
+                  year: row.dataset.anio || '',
+                  date: (row.dataset.fecha || '').trim(),
+                  group: (row.dataset.tematica || 'OTRO'),
+                  groupName: row.dataset.temaNombre || '',
+                  color: row.dataset.temaColor || '',
+                  status: _tipoLabel[row.dataset.tipo] || ''
+                };
+              }
+            });
+          }
+
           function setVista(vista) {
             var listaDiv = document.getElementById('estudios-lista');
             var gridDiv = document.getElementById('estudios-grid');
+            var timelineWrap = document.getElementById('doc-timeline-wrap');
             var btnLista = document.getElementById('btn-vista-lista');
             var btnGrid = document.getElementById('btn-vista-grid');
+            var btnTimeline = document.getElementById('btn-vista-timeline');
             var pagWrapper = document.getElementById('paginacion-wrapper');
 
             vistaActual = vista;
+            try { sessionStorage.setItem('reciclameEstudiosVista', vista); } catch (e) { }
+
+            btnLista.classList.remove('active');
+            btnGrid.classList.remove('active');
+            if (btnTimeline) btnTimeline.classList.remove('active');
 
             if (vista === 'grid') {
               listaDiv.style.display = 'none';
               gridDiv.style.display = 'grid';
+              if (timelineWrap) timelineWrap.style.display = 'none';
               if (pagWrapper) pagWrapper.style.display = 'none';
-              btnLista.classList.remove('active');
               btnGrid.classList.add('active');
               renderGrid();
+            } else if (vista === 'timeline') {
+              listaDiv.style.display = 'none';
+              gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = '';
+              if (pagWrapper) pagWrapper.style.display = 'none';
+              if (btnTimeline) btnTimeline.classList.add('active');
+              renderEstTimelineFragment();
             } else {
               listaDiv.style.display = '';
               gridDiv.style.display = 'none';
+              if (timelineWrap) timelineWrap.style.display = 'none';
               if (pagWrapper) pagWrapper.style.display = '';
               btnLista.classList.add('active');
-              btnGrid.classList.remove('active');
               inicializarPaginacion();
               mostrarPagina(1);
             }
@@ -1514,6 +1591,172 @@
     <th:block th:replace="~{components/chatbot :: chatbot}"></th:block>
     <th:block th:replace="~{fragments/mi-unidad-add-submenu :: miUnidadAddSubmenu}"></th:block>
   </div>
+
+
+<div id="modalCompartir" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;width:95%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;animation:modalCompIn .25s ease;">
+    <div style="padding:24px 28px 4px;display:flex;align-items:flex-start;gap:12px;">
+      <h3 style="margin:0;color:#1B3A5C;font-size:19px;font-weight:700;flex:1;">Compartir "<span id="compartirTitulo"></span>"</h3>
+      <button onclick="closeModalCompartir()" style="background:none;border:none;color:#9CA3AF;font-size:18px;cursor:pointer;padding:4px;" title="Cerrar">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div style="padding:16px 28px 8px;">
+      <div style="display:flex;gap:8px;">
+        <input id="compartirCorreoInput" type="email" placeholder="Añadir personas por correo..."
+          style="flex:1;padding:11px 14px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:13px;outline:none;transition:border .2s;"
+          onfocus="this.style.borderColor='#3498DB'" onblur="this.style.borderColor='#E2E8F0'"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();agregarPersonaCompartir();}" />
+        <button id="btnAgregarPersona" onclick="agregarPersonaCompartir()"
+          style="padding:0 18px;border:none;border-radius:10px;background:#1B3A5C;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+          Agregar
+        </button>
+      </div>
+      <div id="compartirError" style="display:none;margin-top:8px;padding:8px 12px;background:#FFF5F5;border-left:3px solid #E53E3E;border-radius:0 8px 8px 0;color:#C53030;font-size:12px;font-weight:600;"></div>
+    </div>
+    <div style="padding:8px 28px;">
+      <p style="margin:0 0 8px;font-size:12px;font-weight:700;color:#718096;text-transform:uppercase;letter-spacing:.4px;">Personas con acceso</p>
+      <div id="compartirListaPersonas" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;">
+        <div style="padding:14px 0;text-align:center;color:#9CA3AF;font-size:12px;">Cargando...</div>
+      </div>
+    </div>
+    <div style="padding:12px 28px 20px;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#F9FAFB;border-radius:10px;border:1px solid #F3F4F6;">
+        <i class="fas fa-lock" style="color:#6B7280;font-size:15px;"></i>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#374151;">Restringido</div>
+          <div style="font-size:11px;color:#9CA3AF;">Solo los usuarios con acceso pueden abrir el enlace</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 28px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <button id="btnCopiarEnlace" onclick="copiarEnlaceCompartir()"
+        style="padding:10px 16px;border:1px solid #E2E8F0;border-radius:10px;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+        <i class="fas fa-link"></i> Copiar enlace
+      </button>
+      <button onclick="closeModalCompartir()"
+        style="padding:10px 26px;border:none;border-radius:10px;background:linear-gradient(135deg,#1B3A5C,#0F2236);color:#fff;font-size:13px;font-weight:600;cursor:pointer;">
+        Hecho
+      </button>
+    </div>
+  </div>
+</div>
+<style>
+  @keyframes modalCompIn { from { opacity:0; transform:scale(.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+  .drive-share-person { display:flex; align-items:center; gap:10px; padding:8px 0; }
+  .drive-share-avatar { width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,#3498DB,#2980B9); color:#fff; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .drive-share-avatar.owner { background:linear-gradient(135deg,#2ECC71,#27AE60); }
+  .drive-share-person-name { font-size:13px; font-weight:600; color:#1B3A5C; line-height:1.3; }
+  .drive-share-person-email { font-size:11px; color:#9CA3AF; line-height:1.3; }
+  .drive-share-person-role { font-size:12px; color:#6B7280; margin-left:auto; white-space:nowrap; }
+  .drive-share-remove { background:none; border:none; color:#9CA3AF; cursor:pointer; padding:4px 6px; font-size:12px; }
+  .drive-share-remove:hover { color:#E53E3E; }
+</style>
+<script>
+  function openModalCompartir(titulo) {
+    document.getElementById('compartirTitulo').textContent = titulo;
+    document.getElementById('compartirCorreoInput').value = '';
+    document.getElementById('compartirError').style.display = 'none';
+    document.getElementById('modalCompartir').style.display = 'flex';
+    cargarPersonasCompartir();
+  }
+  function closeModalCompartir() {
+    document.getElementById('modalCompartir').style.display = 'none';
+  }
+  document.getElementById('modalCompartir').addEventListener('click', function(e) {
+    if (e.target === this) closeModalCompartir();
+  });
+
+  function iniciales(nombre) {
+    var partes = (nombre || '?').trim().split(/\s+/);
+    return (partes[0] ? partes[0][0] : '') + (partes[1] ? partes[1][0] : '');
+  }
+
+  function personaRowHtml(nombre, correo, rolTexto, usuarioId, esOwner) {
+    var avatarClass = esOwner ? 'drive-share-avatar owner' : 'drive-share-avatar';
+    var quitarBtn = usuarioId
+      ? '<button class="drive-share-remove" title="Quitar acceso" onclick="quitarPersonaCompartir(' + usuarioId + ')"><i class="fas fa-times"></i></button>'
+      : '';
+    return '<div class="drive-share-person">' +
+      '<div class="' + avatarClass + '">' + iniciales(nombre).toUpperCase() + '</div>' +
+      '<div><div class="drive-share-person-name">' + nombre + (esOwner ? ' (tú lo compartes desde aquí)' : '') + '</div>' +
+      '<div class="drive-share-person-email">' + (correo || '') + '</div></div>' +
+      '<span class="drive-share-person-role">' + rolTexto + '</span>' + quitarBtn +
+      '</div>';
+  }
+
+  function cargarPersonasCompartir() {
+    var tipo = window.__compartirDocTipo, id = window.__compartirDocId;
+    window.__compartirEnlace = window.location.origin +
+      (tipo === 'ESTUDIO' ? '/socio/estudios/' : '/socio/normativo/') + id + '/ver';
+    fetch('/socio/compartir/' + tipo.toLowerCase() + '/' + id + '/personas', { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var cont = document.getElementById('compartirListaPersonas');
+        var html = personaRowHtml(data.propietarioNombre, data.propietarioCorreo, 'Propietario', null, true);
+        (data.personas || []).forEach(function (p) {
+          html += personaRowHtml(p.nombreCompleto, p.correo, 'Puede ver', p.usuarioId, false);
+        });
+        cont.innerHTML = html;
+      })
+      .catch(function () {
+        document.getElementById('compartirListaPersonas').innerHTML =
+          '<div style="padding:14px 0;text-align:center;color:#E53E3E;font-size:12px;">No se pudo cargar la lista</div>';
+      });
+  }
+
+  function agregarPersonaCompartir() {
+    var input = document.getElementById('compartirCorreoInput');
+    var correo = input.value.trim();
+    var errDiv = document.getElementById('compartirError');
+    errDiv.style.display = 'none';
+    if (!correo) return;
+    var btn = document.getElementById('btnAgregarPersona');
+    btn.disabled = true;
+    fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ correo: correo, enlace: window.__compartirEnlace })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        if (!res.ok) {
+          errDiv.textContent = res.data.error || 'No se pudo compartir el documento';
+          errDiv.style.display = 'block';
+          return;
+        }
+        input.value = '';
+        cargarPersonasCompartir();
+      })
+      .catch(function () {
+        btn.disabled = false;
+        errDiv.textContent = 'Error de conexión, intenta de nuevo';
+        errDiv.style.display = 'block';
+      });
+  }
+
+  function quitarPersonaCompartir(usuarioId) {
+    fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas/' + usuarioId,
+      { method: 'DELETE', credentials: 'same-origin' })
+      .then(function () { cargarPersonasCompartir(); });
+  }
+
+  function copiarEnlaceCompartir() {
+    var url = window.__compartirEnlace;
+    var btn = document.getElementById('btnCopiarEnlace');
+    var original = btn.innerHTML;
+    var marcarCopiado = function () {
+      btn.innerHTML = '<i class="fas fa-check" style="color:#2ECC71;"></i> Copiado';
+      setTimeout(function () { btn.innerHTML = original; }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(marcarCopiado).catch(function () { window.prompt('Copia manualmente:', url); });
+    } else {
+      window.prompt('Copia manualmente:', url);
+    }
+  }
+</script>
 </body>
 
 </html>

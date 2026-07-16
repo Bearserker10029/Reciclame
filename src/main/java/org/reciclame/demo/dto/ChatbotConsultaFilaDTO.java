@@ -10,6 +10,7 @@ import java.util.List;
 public class ChatbotConsultaFilaDTO {
 
     private Long conversacionId;
+    private String titulo;
     private Instant fechaInicio;
     private Instant fechaUltimoMensaje;
     private Long usuarioId;
@@ -24,6 +25,7 @@ public class ChatbotConsultaFilaDTO {
     private Integer errores;
     private Boolean derivadoSoporte;
     private String idioma;
+    private String ipOrigen;
     private List<MensajeDetalleDTO> mensajes;
 
     public static class MensajeDetalleDTO {
@@ -33,6 +35,12 @@ public class ChatbotConsultaFilaDTO {
         private String intentDetectado;
         private Long duracionMs;
         private Integer tokensEstimados;
+        private String modelo;
+        private String mensajeError;
+        private String sqlEjecutado;
+        private Integer filasDevueltas;
+        private String metadata;
+        private String ipAddress;
         private Boolean esError;
         private Instant createdAt;
 
@@ -48,6 +56,18 @@ public class ChatbotConsultaFilaDTO {
         public void setDuracionMs(Long duracionMs) { this.duracionMs = duracionMs; }
         public Integer getTokensEstimados() { return tokensEstimados; }
         public void setTokensEstimados(Integer tokensEstimados) { this.tokensEstimados = tokensEstimados; }
+        public String getModelo() { return modelo; }
+        public void setModelo(String modelo) { this.modelo = modelo; }
+        public String getMensajeError() { return mensajeError; }
+        public void setMensajeError(String mensajeError) { this.mensajeError = mensajeError; }
+        public String getSqlEjecutado() { return sqlEjecutado; }
+        public void setSqlEjecutado(String sqlEjecutado) { this.sqlEjecutado = sqlEjecutado; }
+        public Integer getFilasDevueltas() { return filasDevueltas; }
+        public void setFilasDevueltas(Integer filasDevueltas) { this.filasDevueltas = filasDevueltas; }
+        public String getMetadata() { return metadata; }
+        public void setMetadata(String metadata) { this.metadata = metadata; }
+        public String getIpAddress() { return ipAddress; }
+        public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
         public Boolean getEsError() { return esError; }
         public void setEsError(Boolean esError) { this.esError = esError; }
         public Instant getCreatedAt() { return createdAt; }
@@ -56,6 +76,8 @@ public class ChatbotConsultaFilaDTO {
 
     public Long getConversacionId() { return conversacionId; }
     public void setConversacionId(Long conversacionId) { this.conversacionId = conversacionId; }
+    public String getTitulo() { return titulo; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
     public Instant getFechaInicio() { return fechaInicio; }
     public void setFechaInicio(Instant fechaInicio) { this.fechaInicio = fechaInicio; }
     public Instant getFechaUltimoMensaje() { return fechaUltimoMensaje; }
@@ -84,6 +106,8 @@ public class ChatbotConsultaFilaDTO {
     public void setDerivadoSoporte(Boolean derivadoSoporte) { this.derivadoSoporte = derivadoSoporte; }
     public String getIdioma() { return idioma; }
     public void setIdioma(String idioma) { this.idioma = idioma; }
+    public String getIpOrigen() { return ipOrigen; }
+    public void setIpOrigen(String ipOrigen) { this.ipOrigen = ipOrigen; }
     public List<MensajeDetalleDTO> getMensajes() { return mensajes; }
     public void setMensajes(List<MensajeDetalleDTO> mensajes) { this.mensajes = mensajes; }
 }

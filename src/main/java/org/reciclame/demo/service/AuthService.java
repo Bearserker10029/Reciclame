@@ -26,6 +26,7 @@ public class AuthService {
     private final UsuarioRepository usuarioRepository;
     private final EmailNotificationService emailService;
     private final PasswordEncoder passwordEncoder;
+    private final ParametrosSistemaService parametrosService;
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -33,11 +34,13 @@ public class AuthService {
     public AuthService(PasswordResetTokenRepository tokenRepository,
                        UsuarioRepository usuarioRepository,
                        EmailNotificationService emailService,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       ParametrosSistemaService parametrosService) {
         this.tokenRepository    = tokenRepository;
         this.usuarioRepository  = usuarioRepository;
         this.emailService       = emailService;
         this.passwordEncoder    = passwordEncoder;
+        this.parametrosService  = parametrosService;
     }
 
     /**
@@ -56,12 +59,13 @@ public class AuthService {
         // Eliminar tokens anteriores del mismo usuario
         tokenRepository.deleteByUsuarioId(usuario.getId());
 
-        // Generar nuevo token con expiración de 1 hora
+        // Generar nuevo token con expiración parametrizable (parametros_sistema.recovery_expiracion_min)
+        int minutosExpiracion = parametrosService.getIntegerOrDefault("recovery_expiracion_min", 60);
         String token = UUID.randomUUID().toString();
         PasswordResetToken prt = new PasswordResetToken();
         prt.setToken(token);
         prt.setUsuario(usuario);
-        prt.setExpiresAt(Instant.now().plus(1, ChronoUnit.HOURS));
+        prt.setExpiresAt(Instant.now().plus(minutosExpiracion, ChronoUnit.MINUTES));
         tokenRepository.save(prt);
 
         String link = baseUrl + "/auth/restablecer?token=" + token;
@@ -88,10 +92,26 @@ public class AuthService {
 
         Usuario usuario = prt.getUsuario();
         usuario.setPasswordHash(passwordEncoder.encode(nuevaContrasena));
+        usuario.setDebeCambiarPassword(false);
         usuarioRepository.save(usuario);
 
         prt.setUsado(true);
         tokenRepository.save(prt);
         log.info("[Auth] Contraseña restablecida para {}", usuario.getCorreoCorporativo());
+    }
+
+    /**
+     * Cambio obligatorio de contraseña en el primer login (cuando la actual es
+     * una temporal). A diferencia de {@link #restablecerContrasena}, no requiere
+     * token: el usuario ya está autenticado con la temporal, solo se le exige
+     * elegir una propia antes de poder usar el resto del sistema.
+     */
+    public void cambiarPasswordInicial(Long usuarioId, String nuevaContrasena) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + usuarioId));
+        usuario.setPasswordHash(passwordEncoder.encode(nuevaContrasena));
+        usuario.setDebeCambiarPassword(false);
+        usuarioRepository.save(usuario);
+        log.info("[Auth] Contraseña inicial definida por el propio usuario para {}", usuario.getCorreoCorporativo());
     }
 }
