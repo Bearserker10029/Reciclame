@@ -184,6 +184,20 @@ public class AuditoriaService {
         return auditoriaRepository.findTop100ByOrderByFechaAccionDesc();
     }
 
+    /**
+     * Para exports (CSV/PDF/XLSX) del ADMIN: mismo filtro que
+     * {@link #listarAuditoriasParaTrazabilidadAdmin} (excluye módulo SEGURIDAD
+     * y acciones de SUPERADMIN), no el más laxo de
+     * {@link #listarAuditoriasUltimas100ExcluyendoSuperadmin} (que solo excluye
+     * acciones de SUPERADMIN). Sin esto, el ADMIN podía exportar eventos de
+     * SEGURIDAD/ELIMINAR_USUARIO que la pantalla de trazabilidad le oculta
+     * a propósito.
+     */
+    public List<Auditoria> listarAuditoriasParaExportAdmin(int size) {
+        return auditoriaRepository.findAllExcludingSeguridadYAccionesDeSuperadmin(
+                org.springframework.data.domain.PageRequest.of(0, size)).getContent();
+    }
+
     public List<Auditoria> listarAuditoriasPorUsuario(Long usuarioId) {
         return auditoriaRepository.findByUsuarioId(usuarioId);
     }

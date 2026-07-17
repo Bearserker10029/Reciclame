@@ -64,10 +64,14 @@ public class UploadStagingScanner {
      * @param archivoStagingUrl  URL con marker {@code staging://<objectName>}.
      * @param archivoTipoMime MIME del archivo (propagado al bucket docs al promover).
      * @param correoAutor     Correo del autor (solo para logs).
+     * @param idAntiguoAEliminar id del registro que este upload reemplaza (edición con
+     *                           archivo nuevo), o {@code null} si es una creación nueva.
+     *                           Solo se elimina si el escaneo aprueba el archivo nuevo —
+     *                           ver comentario en {@link #procesar}.
      */
     @Async("stagingScannerExecutor")
     public void procesarAsync(String tipo, Long refId, String archivoStagingUrl,
-                              String archivoTipoMime, String correoAutor) {
+                              String archivoTipoMime, String correoAutor, Long idAntiguoAEliminar) {
         log.info("Scanner async iniciando: tipo={} refId={} staging={} autor={}",
                 tipo, refId, archivoStagingUrl, correoAutor);
         String stagingObject = EstadoValidacion.extractStagingObjectName(archivoStagingUrl);
@@ -75,13 +79,21 @@ public class UploadStagingScanner {
             log.error("archivoStagingUrl inválido para escaneo: {}", archivoStagingUrl);
             return;
         }
-        procesar(tipo, refId, stagingObject, archivoTipoMime, correoAutor);
+        procesar(tipo, refId, stagingObject, archivoTipoMime, correoAutor, idAntiguoAEliminar);
     }
 
     /**
      * Versión bloqueante (usada por el @Scheduled de recuperación).
+     *
+     * <p><b>idAntiguoAEliminar:</b> cuando una edición reemplaza el archivo de una
+     * Normativa/Estudio existente, el registro viejo YA NO se borra antes de subir
+     * (eso perdía el documento si el archivo nuevo resultaba malicioso o el scanner
+     * fallaba). En su lugar se crea el registro nuevo en PENDIENTE y el viejo se
+     * elimina acá, solo si {@code verdict.isAllowed()} — es decir, solo después de
+     * confirmar que el reemplazo es seguro y ya fue promovido.</p>
      */
-    public void procesar(String tipo, Long refId, String stagingObject, String archivoTipoMime, String correoAutor) {
+    public void procesar(String tipo, Long refId, String stagingObject, String archivoTipoMime,
+                         String correoAutor, Long idAntiguoAEliminar) {
         Instant started = Instant.now();
         VirusTotalVerdict verdict = null;
         String urlFinal = archivoStagingUrlFor(tipo, stagingObject);
@@ -100,9 +112,15 @@ public class UploadStagingScanner {
                     String promoteResult = stagingService.promoteToDocs(stagingObject, archivoTipoMime);
                     urlFinal = promoteResult;
                     log.info("Archivo promovido a docs: tipo={} refId={} url={}", tipo, refId, promoteResult);
+
+                    // Recién acá, con el reemplazo ya confirmado seguro y promovido,
+                    // se elimina el registro/archivo viejo que este upload reemplaza.
+                    if (idAntiguoAEliminar != null) {
+                        eliminarRegistroAntiguo(tipo, idAntiguoAEliminar);
+                    }
                 } else {
-                    log.warn("Archivo NO promovido (MALICIOUS u otro rechazo), queda en staging: tipo={} refId={}",
-                            tipo, refId);
+                    log.warn("Archivo NO promovido (MALICIOUS u otro rechazo), queda en staging: tipo={} refId={}. "
+                            + "El registro anterior (si aplica) se conserva intacto.", tipo, refId);
                 }
             } finally {
                 if (tmpFile != null && tmpFile.exists()) {
@@ -139,6 +157,20 @@ public class UploadStagingScanner {
         }
         log.info("Scanner async finalizado: tipo={} refId={} estado={} elapsedMs={}",
                 tipo, refId, verdict.getVerdict(), java.time.Duration.between(started, Instant.now()).toMillis());
+    }
+
+    private void eliminarRegistroAntiguo(String tipo, Long idAntiguo) {
+        try {
+            if ("NORMATIVA".equalsIgnoreCase(tipo)) {
+                normativaService.eliminarNormativa(idAntiguo, null, "Sistema", null, "Scanner-Async/1.0");
+            } else if ("ESTUDIO".equalsIgnoreCase(tipo)) {
+                estudioService.eliminarEstudio(idAntiguo, null, "Sistema", null, "Scanner-Async/1.0");
+            }
+            log.info("Registro anterior {} eliminado tras confirmar reemplazo seguro: tipo={}", idAntiguo, tipo);
+        } catch (Exception ex) {
+            log.error("No se pudo eliminar el registro anterior {} (tipo={}) tras promover el reemplazo: {}",
+                    idAntiguo, tipo, ex.getMessage(), ex);
+        }
     }
 
     private String archivoStagingUrlFor(String tipo, String stagingObject) {

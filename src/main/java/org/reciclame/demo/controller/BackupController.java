@@ -112,10 +112,22 @@ public class BackupController {
         }
 
         try {
-            backupService.restaurarBackup(id, usuario, crearBackupSeguridad);
+            SolicitudesRespaldo backup = backupService.findById(id);
+            if (backup == null) {
+                return ResponseEntity.notFound().build();
+            }
+            if (!"COMPLETADO".equals(backup.getEstado())) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("error", "Solo se pueden restaurar backups completados");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            backupService.restaurarBackupAsync(id, usuario, crearBackupSeguridad);
+
             Map<String, Object> response = new HashMap<>();
-            response.put("mensaje", "Restauración completada exitosamente");
-            return ResponseEntity.ok(response);
+            response.put("id", id);
+            response.put("mensaje", "Restauración iniciada. El sistema entrará en modo mantenimiento hasta que termine.");
+            return ResponseEntity.accepted().body(response);
         } catch (Exception e) {
             Map<String, Object> response = new HashMap<>();
             response.put("error", e.getMessage());

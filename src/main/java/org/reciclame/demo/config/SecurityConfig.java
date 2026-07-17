@@ -29,6 +29,7 @@ public class SecurityConfig {
     private final AuthenticationFailureHandler failureHandler;
     private final AccessDeniedHandler accessDeniedHandler;
     private final ForzarCambioPasswordFilter forzarCambioPasswordFilter;
+    private final MantenimientoGlobalFilter mantenimientoGlobalFilter;
     private final LogoutHandler auditLogoutHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
@@ -36,12 +37,14 @@ public class SecurityConfig {
                           AuthFailureHandler authFailureHandler,
                           AccessDeniedHandler accessDeniedHandler,
                           ForzarCambioPasswordFilter forzarCambioPasswordFilter,
+                          MantenimientoGlobalFilter mantenimientoGlobalFilter,
                           LogoutHandler auditLogoutHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
         this.failureHandler = authFailureHandler;
         this.accessDeniedHandler = accessDeniedHandler;
         this.forzarCambioPasswordFilter = forzarCambioPasswordFilter;
+        this.mantenimientoGlobalFilter = mantenimientoGlobalFilter;
         this.auditLogoutHandler = auditLogoutHandler;
     }
 
@@ -135,7 +138,8 @@ public class SecurityConfig {
                         .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 )
                 .csrf(csrf -> csrf.disable())
-                .addFilterAfter(forzarCambioPasswordFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(forzarCambioPasswordFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(mantenimientoGlobalFilter, ForzarCambioPasswordFilter.class);
 
         return http.build();
     }

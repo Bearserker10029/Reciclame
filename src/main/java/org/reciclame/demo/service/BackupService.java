@@ -103,6 +103,7 @@ public class BackupService {
     private final AuditoriaRepository auditoriaRepository;
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notificacionService;
+    private final MantenimientoGlobalService mantenimientoService;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -120,12 +121,14 @@ public class BackupService {
                          ProgramacionBackupRepository programacionRepository,
                          AuditoriaRepository auditoriaRepository,
                          UsuarioRepository usuarioRepository,
-                         NotificacionService notificacionService) {
+                         NotificacionService notificacionService,
+                         MantenimientoGlobalService mantenimientoService) {
         this.backupRepository = backupRepository;
         this.programacionRepository = programacionRepository;
         this.auditoriaRepository = auditoriaRepository;
         this.usuarioRepository = usuarioRepository;
         this.notificacionService = notificacionService;
+        this.mantenimientoService = mantenimientoService;
     }
 
     @Transactional(readOnly = true)
@@ -291,7 +294,25 @@ public class BackupService {
         }
     }
 
-    @Transactional
+    @Async
+    public CompletableFuture<Void> restaurarBackupAsync(Long backupId, Usuario usuario, boolean crearBackupSeguridad) {
+        mantenimientoService.activar("Restauración de backup en curso");
+        try {
+            restaurarBackup(backupId, usuario, crearBackupSeguridad);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception e) {
+            log.error("Error restaurando backup {}: {}", backupId, e.getMessage(), e);
+            return CompletableFuture.failedFuture(e);
+        } finally {
+            mantenimientoService.desactivar();
+        }
+    }
+
+    // Nota: sin @Transactional a propósito. La restauración ejecuta DDL/DML
+    // crudo vía JDBC directo (ejecutarSqlViaJdbc) sobre una conexión aparte
+    // del pool de Hibernate; envolverla en una transacción de Spring solo
+    // mantenía una conexión del pool abierta e inútil durante todo el
+    // proceso (varios minutos), sin ningún beneficio de atomicidad real.
     public void restaurarBackup(Long backupId, Usuario usuario, boolean crearBackupSeguridad) {
         SolicitudesRespaldo backup = backupRepository.findById(backupId).orElse(null);
         if (backup == null) {
@@ -408,12 +429,15 @@ public class BackupService {
     }
 
     private List<String> parsearSql(Path archivoPath) throws IOException {
-        List<String> sentencias = new ArrayList<>();
+        List<String> crudas = new ArrayList<>();
         StringBuilder current = new StringBuilder();
         boolean inString = false;
         char stringChar = 0;
-        boolean skipSolicitudesRespaldo = false;
 
+        // Paso 1: partir el archivo en sentencias completas (respetando strings
+        // y saltando LOCK/UNLOCK TABLES, que toman locks de tabla en vivo y
+        // bloquean cualquier otra conexión del pool mientras dura la restauración,
+        // innecesario en una restauración secuencial de una sola conexión).
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(archivoPath.toFile())))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -423,25 +447,7 @@ public class BackupService {
                 }
 
                 String upperLine = line.toUpperCase();
-
-                if (upperLine.contains("`SOLICITUDES_RESPALDO`") || upperLine.contains("SOLICITUDES_RESPALDO")) {
-                    if (upperLine.startsWith("LOCK TABLES")) {
-                        skipSolicitudesRespaldo = true;
-                        continue;
-                    }
-                    if (upperLine.startsWith("UNLOCK TABLES")) {
-                        skipSolicitudesRespaldo = false;
-                        continue;
-                    }
-                    if (upperLine.startsWith("DROP TABLE") || upperLine.startsWith("CREATE TABLE") || upperLine.startsWith("INSERT INTO")) {
-                        skipSolicitudesRespaldo = true;
-                    }
-                    if (skipSolicitudesRespaldo) {
-                        continue;
-                    }
-                }
-
-                if (upperLine.startsWith("DROP TABLE")) {
+                if (upperLine.startsWith("LOCK TABLES") || upperLine.startsWith("UNLOCK TABLES")) {
                     continue;
                 }
 
@@ -461,7 +467,7 @@ public class BackupService {
                         } else if (c == ';') {
                             String stmt = current.toString().trim();
                             if (!stmt.isEmpty()) {
-                                sentencias.add(stmt);
+                                crudas.add(stmt);
                             }
                             current = new StringBuilder();
                         } else {
@@ -478,7 +484,24 @@ public class BackupService {
 
         String remaining = current.toString().trim();
         if (!remaining.isEmpty()) {
-            sentencias.add(remaining);
+            crudas.add(remaining);
+        }
+
+        // Paso 2: descartar sentencias completas que toquen solicitudes_respaldo
+        // (nunca se recrea/trunca esa tabla: es donde vive el propio historial
+        // de backups/restauraciones). Se filtra sobre la sentencia ya armada,
+        // no línea por línea, para no partir un CREATE TABLE multilínea a la
+        // mitad (eso generaba fragmentos de columnas sueltos con error de
+        // sintaxis, ver historial de este método).
+        List<String> sentencias = new ArrayList<>();
+        for (String stmt : crudas) {
+            String upperStmt = stmt.toUpperCase();
+            boolean esSolicitudesRespaldo = upperStmt.contains("SOLICITUDES_RESPALDO")
+                    && (upperStmt.startsWith("DROP TABLE") || upperStmt.startsWith("CREATE TABLE") || upperStmt.startsWith("INSERT INTO"));
+            if (esSolicitudesRespaldo) {
+                continue;
+            }
+            sentencias.add(stmt);
         }
 
         return sentencias;

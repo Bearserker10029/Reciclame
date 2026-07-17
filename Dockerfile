@@ -28,7 +28,7 @@ RUN apk add --no-cache mysql-client fontconfig ttf-dejavu tzdata && \
     cp /usr/share/zoneinfo/America/Lima /etc/localtime && \
     echo "America/Lima" > /etc/timezone
 
-RUN chown -R reciclame:reciclame /app
+RUN mkdir -p /backups && chown -R reciclame:reciclame /app /backups
 
 USER reciclame
 

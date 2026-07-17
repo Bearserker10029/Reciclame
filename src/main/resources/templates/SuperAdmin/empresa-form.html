@@ -275,8 +275,11 @@
                   <i class="fas fa-search"></i> Verificar
                 </button>
               </div>
+              <!-- readonly (no disabled): un input disabled nunca se envía en el
+                   submit, lo que hacía que ruc llegara vacío al servidor y fallara
+                   siempre la validación @NotBlank en cada edición de empresa. -->
               <input th:if="${empresa != null}" type="text" name="ruc" th:value="${empresa?.ruc}"
-                disabled readonly th:classappend="${error_ruc != null} ? 'input-error'" />
+                readonly th:classappend="${error_ruc != null} ? 'input-error'" />
               <div id="ruc-feedback" style="font-size:11px;margin-top:4px;display:none;"></div>
               <small style="color:#9CA3AF;font-size:12px;" th:if="${empresa == null}">El RUC no podrá ser modificado después de crear</small>
               <span class="error-message" th:if="${error_ruc}" th:text="${error_ruc}"></span>
