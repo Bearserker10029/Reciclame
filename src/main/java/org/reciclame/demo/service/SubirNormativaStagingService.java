@@ -88,13 +88,15 @@ public class SubirNormativaStagingService {
                         : "documento"));
             throw e;
         }
-        scanner.procesarAsync("NORMATIVA", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor);
+        scanner.procesarAsync("NORMATIVA", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor, null);
         return new ResultadoSubida(uuid, resp.getId());
     }
 
     /**
-     * Para PUT con archivo nuevo: actualiza el registro apuntando al nuevo staging
-     * (el archivo viejo en MinIO docs se elimina en {@link NormativaService.actualizarNormativa}).
+     * Para PUT con archivo nuevo: crea el registro nuevo apuntando al staging y
+     * conserva el registro viejo hasta que el scanner confirme que el reemplazo
+     * es seguro (ver {@link UploadStagingScanner}) — antes se borraba de entrada,
+     * lo que perdía el documento si el archivo nuevo resultaba malicioso.
      */
     public ResultadoSubida subirYPendientarNormativaEnUpdate(Long id,
                                                             NormativaRequestDTO dto,
@@ -112,13 +114,10 @@ public class SubirNormativaStagingService {
         } catch (IOException e) {
             throw new RuntimeException("No se pudo subir el archivo al bucket staging: " + e.getMessage(), e);
         }
-        // Primero creamos/actualizamos el registro apuntando al staging.
-        // Reusamos el flujo CREAR para simplificar: borramos el viejo, creamos el nuevo.
-        normativaService.eliminarNormativa(id, auditorId, auditorNombre, ip, userAgent);
         NormativaResponseDTO resp = normativaService.crearNormativaPendiente(
                 dto, stagingMarker, archivo.getContentType(),
                 correoAutor, auditorId, auditorNombre, ip, userAgent);
-        scanner.procesarAsync("NORMATIVA", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor);
+        scanner.procesarAsync("NORMATIVA", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor, id);
         return new ResultadoSubida(uuid, resp.getId());
     }
 }

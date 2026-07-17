@@ -525,8 +525,10 @@
           <div class="form-group">
             <label>Nombre completo</label>
             <div class="input-locked">
+              <!-- readonly (no disabled): un input disabled nunca se envía en el
+                   submit, y el controller exige nombreCompleto -> 400 en cada guardado. -->
               <input type="text" name="nombreCompleto" th:value="${usuario != null ? usuario.nombreCompleto : ''}"
-                disabled title="Vinculado al DNI: no editable" />
+                readonly title="Vinculado al DNI: no editable" />
               <i class="fas fa-lock input-lock-icon" title="Vinculado al DNI: no editable"></i>
             </div>
           </div>

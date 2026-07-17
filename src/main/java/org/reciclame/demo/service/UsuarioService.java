@@ -9,6 +9,8 @@ import org.reciclame.demo.repository.EmpresaRepository;
 import org.reciclame.demo.repository.RolRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.session.FindByIndexNameSessionRepository;
+import org.springframework.session.Session;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,11 +34,13 @@ public class UsuarioService {
     private final NotificacionService notificacionService;
     private final EmailNotificationService emailService;
     private final ObjectMapper objectMapper;
+    private final FindByIndexNameSessionRepository<? extends Session> sessionRepository;
 
     public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository,
                          EmpresaRepository empresaRepository, AuditoriaService auditoriaService,
                          PasswordEncoder passwordEncoder, NotificacionService notificacionService,
-                         EmailNotificationService emailService) {
+                         EmailNotificationService emailService,
+                         FindByIndexNameSessionRepository<? extends Session> sessionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.empresaRepository = empresaRepository;
@@ -44,12 +48,61 @@ public class UsuarioService {
         this.passwordEncoder = passwordEncoder;
         this.notificacionService = notificacionService;
         this.emailService = emailService;
+        this.sessionRepository = sessionRepository;
 
         this.objectMapper = new ObjectMapper();
         this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         this.objectMapper.configure(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
+
+    // ── Guarda de privilegios: solo SUPERADMIN puede otorgar el rol
+    // SUPERADMIN o tocar una cuenta que ya es SUPERADMIN. Sin esto, el
+    // combo de rol en /admin/usuarios incluía SUPERADMIN como opción
+    // seleccionable y cualquier ADMINISTRADOR podía auto-asignárselo (o
+    // asignárselo a otro), o editar/degradar a un SuperAdmin existente
+    // adivinando su id. auditorUsuarioId == null significa llamada
+    // interna del sistema (los overloads "sin auditoría"), no HTTP: se
+    // deja pasar.
+    private void verificarPermisoAsignacionRol(Long auditorUsuarioId, Rol rolDestino, Usuario usuarioObjetivo) {
+        if (auditorUsuarioId == null) {
+            return;
+        }
+        boolean esSuperadmin = usuarioRepository.findById(auditorUsuarioId)
+                .map(u -> u.getRol() != null && "SUPERADMIN".equals(u.getRol().getNombre()))
+                .orElse(false);
+        if (esSuperadmin) {
+            return;
+        }
+        if (rolDestino != null && "SUPERADMIN".equals(rolDestino.getNombre())) {
+            throw new RuntimeException("No tienes permisos para asignar el rol SUPERADMIN.");
+        }
+        if (usuarioObjetivo != null && usuarioObjetivo.getRol() != null
+                && "SUPERADMIN".equals(usuarioObjetivo.getRol().getNombre())) {
+            throw new RuntimeException("No tienes permisos para modificar una cuenta SUPERADMIN.");
+        }
+    }
+
+    // ── Invalidación de sesión activa ───────────────────────────
+    // Los authorities de Spring Security se fijan en el login y quedan
+    // cacheados en la sesión (HttpSession vía Spring Session JDBC/Redis según
+    // el perfil). Si un SuperAdmin cambia el rol de un usuario, lo bloquea o
+    // lo desactiva mientras ese usuario tiene una sesión abierta, sin esto
+    // seguía operando con sus privilegios viejos hasta que la sesión
+    // expirara sola o volviera a loguearse. Se apoya en el índice por
+    // "principal name" que Spring Session expone out-of-the-box (el
+    // principal es el correo corporativo, ver GestionUsuarioService).
+    private void invalidarSesionesDe(String correoCorporativo) {
+        if (correoCorporativo == null) {
+            return;
+        }
+        try {
+            sessionRepository.findByPrincipalName(correoCorporativo).keySet()
+                    .forEach(sessionRepository::deleteById);
+        } catch (Exception ex) {
+            // No bloquear la operación administrativa si falla la invalidación.
+        }
     }
 
     // ── CREATE ────────────────────────────────────────────────
@@ -72,6 +125,7 @@ public class UsuarioService {
 
         Rol rol = rolRepository.findById(dto.getRolId())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
+        verificarPermisoAsignacionRol(auditorUsuarioId, rol, null);
 
         Empresa empresa = null;
         if (dto.getEmpresaId() != null) {
@@ -246,6 +300,7 @@ public class UsuarioService {
     public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        verificarPermisoAsignacionRol(auditorUsuarioId, null, usuario);
 
         String datosAnteriores = null;
         String datosNuevos = null;
@@ -264,7 +319,12 @@ public class UsuarioService {
         if (dto.getRolId() != null) {
             Rol rol = rolRepository.findById(dto.getRolId())
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
+            verificarPermisoAsignacionRol(auditorUsuarioId, rol, null);
+            boolean cambioDeRol = usuario.getRol() == null || !usuario.getRol().getId().equals(rol.getId());
             usuario.setRol(rol);
+            if (cambioDeRol) {
+                invalidarSesionesDe(usuario.getCorreoCorporativo());
+            }
         }
         if (dto.getEmpresaId() != null) {
             Empresa empresa = empresaRepository.findById(dto.getEmpresaId())
@@ -308,6 +368,7 @@ public class UsuarioService {
         usuario.setEstadoCuenta("INACTIVO");
         usuario.setUpdatedAt(Instant.now());
         usuarioRepository.save(usuario);
+        invalidarSesionesDe(usuario.getCorreoCorporativo());
 
         auditoriaService.registrarAccion(auditorUsuarioId, auditorUsuarioNombre,
             AuditoriaService.ACCION_ELIMINAR_USUARIO, AuditoriaService.MODULO_USUARIOS,
@@ -358,6 +419,7 @@ public class UsuarioService {
         if (rolId != null) {
             Rol rol = rolRepository.findById(rolId)
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + rolId));
+            verificarPermisoAsignacionRol(auditorUsuarioId, rol, null);
             usuario.setRol(rol);
         }
         if (empresaId != null) {
@@ -429,6 +491,9 @@ public class UsuarioService {
         }
         usuario.setUpdatedAt(Instant.now());
         Usuario usuarioGuardado = usuarioRepository.save(usuario);
+        if (bloquear) {
+            invalidarSesionesDe(usuarioGuardado.getCorreoCorporativo());
+        }
 
         String accion = bloquear ? AuditoriaService.ACCION_BLOQUEAR_USUARIO : AuditoriaService.ACCION_DESBLOQUEAR_USUARIO;
         String descripcion = (bloquear ? "Bloquear" : "Desbloquear") + " usuario: " + usuario.getNombreCompleto() + " (ID: " + id + ")";

@@ -37,14 +37,21 @@ public class NormativaRestController {
     }
 
     // ── READ ALL ──────────────────────────────────────────────
-    @PreAuthorize("isAuthenticated()")
+    // Devuelve TODAS las normativas (públicas y no públicas), sin filtrar
+    // por esPublica. Solo Admin/SuperAdmin la usan desde el frontend
+    // (Socio/Visualizador consumen listarNormativasPublicas() vía páginas
+    // Thymeleaf aparte) — restringir el rol evita que un Socio/Visualizador
+    // llame esta API directamente y vea/lea normativas no públicas.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<NormativaResponseDTO>> listar() {
         return ResponseEntity.ok(normativaService.listarNormativas());
     }
 
     // ── READ ONE ──────────────────────────────────────────────
-    @PreAuthorize("isAuthenticated()")
+    // Mismo motivo que listar(): sin filtro de esPublica, así que se
+    // restringe a los roles que legítimamente la consumen.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
         try {

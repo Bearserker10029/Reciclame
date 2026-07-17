@@ -68,13 +68,24 @@ public class NotificacionService {
     @Transactional
     public int enviarNotificacionGlobal(String titulo, String mensaje, String tipo) {
         List<Usuario> usuarios = usuarioRepository.findAll();
+        int enviados = 0;
         for (Usuario u : usuarios) {
+            // A diferencia de esta, el resto de notificadores (notificarNuevoEstudio,
+            // etc.) respetan la preferencia correspondiente antes de crear la
+            // notificación in-app/push. Este broadcast manual no lo hacía: un
+            // usuario que desactivó "mensajes de admin" igual recibía el mensaje
+            // en la campanita y el push cada vez que un SuperAdmin mandaba uno.
+            boolean enviar = preferenciasRepository.findByUsuarioId(u.getId())
+                    .map(p -> Boolean.TRUE.equals(p.getNotifMensajesAdmin()))
+                    .orElse(true);
+            if (!enviar) continue;
             Notificacione n = buildNotif(u, tipo != null ? tipo : "MENSAJE_ADMIN", titulo, mensaje, null);
             notificacionRepository.save(n);
             pushNotif(u.getId(), titulo, mensaje, n.getTipo(), null);
             enviarEmailSiHabilitado(u, titulo, mensaje);
+            enviados++;
         }
-        return usuarios.size();
+        return enviados;
     }
 
     // ── MARCAR COMO LEÍDA ─────────────────────────────────────

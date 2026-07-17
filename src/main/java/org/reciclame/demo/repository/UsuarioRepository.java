@@ -29,10 +29,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     List<Usuario> findTop100ByOrderByCreatedAtDesc();
 
-    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.estadoActivo = true")
+    // Excluye SUPERADMIN: solo AdminController usa estos dos para los widgets
+    // de crecimiento del dashboard, donde el resto de listados (usuariosActivos,
+    // todosUsuarios) ya excluyen SUPERADMIN — sin esto, crear/dar de baja una
+    // cuenta SUPERADMIN en la ventana de tiempo inflaba el % de crecimiento
+    // mostrado junto a una lista que nunca la muestra.
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.estadoActivo = true "
+            + "AND (u.rol IS NULL OR u.rol.nombre <> 'SUPERADMIN')")
     long contarNuevosDesde(@Param("desde") Instant desde);
 
-    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.createdAt < :hasta AND u.estadoActivo = true")
+    @Query("SELECT COUNT(u) FROM Usuario u WHERE u.createdAt >= :desde AND u.createdAt < :hasta AND u.estadoActivo = true "
+            + "AND (u.rol IS NULL OR u.rol.nombre <> 'SUPERADMIN')")
     long contarEntreFechas(@Param("desde") Instant desde, @Param("hasta") Instant hasta);
 
     List<Usuario> findByRolNombre(String nombre);
