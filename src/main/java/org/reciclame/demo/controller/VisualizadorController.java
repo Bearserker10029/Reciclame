@@ -99,7 +99,7 @@ public class VisualizadorController {
             List<NotificacionResponseDTO> notifs = notificacionService.listarPorUsuario(u.getId());
             model.addAttribute("notificacionesRecientes", notifs.stream().limit(5).collect(java.util.stream.Collectors.toList()));
             model.addAttribute("documentosVistos", documentosRecientesService.contarDocumentosVistos(u.getId()));
-            model.addAttribute("recientesUsuario", documentosRecientesService.listarUltimos(u.getId(), 5));
+            model.addAttribute("recientesUsuario", documentosRecientesService.listarUltimos(u.getId(), 5, "visualizador"));
         });
 
         return "Visualizador/inicio";
@@ -111,7 +111,7 @@ public class VisualizadorController {
         model.addAttribute("normativas", normativaService.listarNormativasPublicas());
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                model.addAttribute("ultimosAccesos", documentosRecientesService.listarUltimos(u.getId(), 4));
+                model.addAttribute("ultimosAccesos", documentosRecientesService.listarUltimos(u.getId(), 4, "visualizador"));
             });
         } catch (Exception e) {
             model.addAttribute("ultimosAccesos", java.util.Collections.emptyList());
@@ -126,7 +126,7 @@ public class VisualizadorController {
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                model.addAttribute("ultimosAccesos", documentosRecientesService.listarUltimos(u.getId(), 4));
+                model.addAttribute("ultimosAccesos", documentosRecientesService.listarUltimos(u.getId(), 4, "visualizador"));
             });
         } catch (Exception e) {
             model.addAttribute("ultimosAccesos", java.util.Collections.emptyList());
