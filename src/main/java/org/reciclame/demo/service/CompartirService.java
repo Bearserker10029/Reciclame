@@ -105,6 +105,13 @@ public class CompartirService {
         if (destinatario.getId().equals(compartidoPorId)) {
             throw new IllegalArgumentException("No puedes compartir el documento contigo mismo");
         }
+        // "Compartir" es una señal social entre socios/administradores sobre un
+        // documento; no tiene sentido (y expone la cuenta a notificaciones/ruido
+        // innecesario) permitir apuntarla a un SUPERADMIN.
+        String rolDestinatario = destinatario.getRol() != null ? destinatario.getRol().getNombre() : null;
+        if ("SUPERADMIN".equals(rolDestinatario)) {
+            throw new IllegalArgumentException("No se puede compartir documentos con una cuenta SUPERADMIN");
+        }
 
         String tipoUpper = tipo.toUpperCase();
         Optional<DocumentoCompartido> existente = compartidoRepository
@@ -137,9 +144,29 @@ public class CompartirService {
         return m;
     }
 
+    /**
+     * Solo puede quitar el acceso quien lo otorgó (compartidoPor) o el propio
+     * destinatario (quitándose su propio acceso). Antes esto era un delete
+     * directo sin ningún chequeo: cualquier Socio autenticado podía revocarle
+     * el acceso a cualquier otro usuario en cualquier documento con solo
+     * conocer/adivinar el id.
+     */
     @Transactional
-    public void quitarPersona(String tipo, Long documentoId, Long usuarioId) {
+    public void quitarPersona(String tipo, Long documentoId, Long usuarioId, Long callerId) {
         validarTipo(tipo);
-        compartidoRepository.deleteByTipoDocumentoAndDocumentoIdAndUsuarioId(tipo.toUpperCase(), documentoId, usuarioId);
+        String tipoUpper = tipo.toUpperCase();
+        DocumentoCompartido registro = compartidoRepository
+                .findByTipoDocumentoAndDocumentoIdAndUsuarioId(tipoUpper, documentoId, usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el registro de compartido"));
+
+        boolean esQuienCompartio = registro.getCompartidoPor() != null
+                && registro.getCompartidoPor().getId().equals(callerId);
+        boolean esElDestinatario = registro.getUsuario() != null
+                && registro.getUsuario().getId().equals(callerId);
+        if (!esQuienCompartio && !esElDestinatario) {
+            throw new IllegalArgumentException("No tienes permiso para quitar este acceso compartido");
+        }
+
+        compartidoRepository.deleteByTipoDocumentoAndDocumentoIdAndUsuarioId(tipoUpper, documentoId, usuarioId);
     }
 }

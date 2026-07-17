@@ -81,6 +81,16 @@ public class DocumentosRecientesService {
     }
 
     public List<MiUnidadUltimoAcceso> listarUltimos(Long usuarioId, int max) {
+        return listarUltimos(usuarioId, max, "socio");
+    }
+
+    /**
+     * @param rolBase prefijo de ruta para las tarjetas ("socio" o "visualizador").
+     *                Antes estaba hardcodeado a "/socio/...", así que las tarjetas
+     *                de "vistos recientemente" de un VISUALIZADOR apuntaban a rutas
+     *                que ese rol no puede usar (403/404 al hacer clic).
+     */
+    public List<MiUnidadUltimoAcceso> listarUltimos(Long usuarioId, int max, String rolBase) {
         if (usuarioId == null || max <= 0) {
             return List.of();
         }
@@ -92,21 +102,23 @@ public class DocumentosRecientesService {
             if (out.size() >= max) {
                 break;
             }
-            construirTarjeta(dr, usuarioId, ahora).ifPresent(out::add);
+            construirTarjeta(dr, usuarioId, ahora, rolBase).ifPresent(out::add);
         }
         return out;
     }
 
-    private Optional<MiUnidadUltimoAcceso> construirTarjeta(DocumentosReciente dr, Long usuarioId, Instant ahora) {
+    private Optional<MiUnidadUltimoAcceso> construirTarjeta(DocumentosReciente dr, Long usuarioId, Instant ahora, String rolBase) {
         String tipo = dr.getDocumentoTipo();
         Long docId = dr.getDocumentoId();
+        // "visualizador" no tiene módulo Mi Unidad, así que no aplica el ?from=mi-unidad.
+        String sufijo = "socio".equals(rolBase) ? "/ver?from=mi-unidad" : "/ver";
         if (MiUnidadItem.TIPO_NORMATIVA.equals(tipo)) {
             return normativaRepository.findById(docId).map(n -> new MiUnidadUltimoAcceso(
                     tipo,
                     docId,
                     miUnidadService.tituloParaTarjetaAccesoReciente(usuarioId, tipo, docId, n.getTitulo()),
                     tiempoRelativo(dr.getUltimaVista(), ahora),
-                    "/socio/normativo/" + docId + "/ver?from=mi-unidad",
+                    "/" + rolBase + "/normativo/" + docId + sufijo,
                     urlDescarga(n.getArchivoUrl(), n.getTitulo()),
                     iconVariantDesdeUrl(n.getArchivoUrl())
             ));
@@ -117,7 +129,7 @@ public class DocumentosRecientesService {
                     docId,
                     miUnidadService.tituloParaTarjetaAccesoReciente(usuarioId, tipo, docId, e.getTitulo()),
                     tiempoRelativo(dr.getUltimaVista(), ahora),
-                    "/socio/estudios/" + docId + "/ver?from=mi-unidad",
+                    "/" + rolBase + "/estudios/" + docId + sufijo,
                     urlDescarga(e.getArchivoUrl(), e.getTitulo()),
                     iconVariantDesdeUrl(e.getArchivoUrl())
             ));

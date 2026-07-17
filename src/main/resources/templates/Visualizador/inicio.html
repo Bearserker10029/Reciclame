@@ -493,11 +493,8 @@
   </div>
 
   <script th:inline="javascript">
-    function navTo(page) {
-      var map = { 'admin-docs': 'documentos' };
-      var prefix = window.location.pathname.startsWith('/visualizador') ? '/visualizador' : '/socio';
-      window.location.href = prefix + '/' + (map[page] || page);
-    }
+    // navTo ya está definido arriba en el <head> (guardado con typeof === 'undefined');
+    // esta segunda definición idéntica era redundante.
     function goLogin() { window.location.href = '/service/repositorio/login'; }
 
     document.addEventListener('DOMContentLoaded', function () {

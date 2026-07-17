@@ -44,7 +44,13 @@ public class UploadStatusRestController {
         this.stagingService = stagingService;
     }
 
-    @PreAuthorize("isAuthenticated()")
+    // Antes isAuthenticated() a secas: cualquier usuario autenticado (incluido
+    // Visualizador, que ni siquiera puede subir documentos) podía consultar el
+    // estado/veredicto VT de una subida ajena adivinando el taskId. Solo
+    // Admin/SuperAdmin suben documentos y son los únicos que llaman esto (ver
+    // Admin/SuperAdmin estudios.html y normativo.html) — mismo alcance que el
+    // DELETE de acá abajo.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{tipo}/{taskId}")
     public ResponseEntity<?> status(@PathVariable String tipo, @PathVariable String taskId) {
         String tipoUpper = tipo.toUpperCase();

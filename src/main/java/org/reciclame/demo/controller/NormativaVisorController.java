@@ -77,8 +77,13 @@ public class NormativaVisorController {
         model.addAttribute("rolNombre", "Visualizador");
         model.addAttribute("notifUrl", "/visualizador/notificaciones");
         try {
-            usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
-                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId())));
+            usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
+                // Faltaba esta llamada (sí existe en el equivalente de Socio, arriba):
+                // sin ella, "Documentos vistos" y "Vistos recientemente" quedaban
+                // permanentemente en cero para Visualizador.
+                documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id);
+            });
         } catch (Exception e) {
             model.addAttribute("noLeidasCount", 0);
         }

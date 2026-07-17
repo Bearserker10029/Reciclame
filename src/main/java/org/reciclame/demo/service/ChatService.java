@@ -71,6 +71,17 @@ public class ChatService {
         Usuario otro = usuarioRepo.findById(otroId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario destino no existe"));
 
+        // "SUPERADMIN no participa en el chat" solo se aplicaba en el listado de
+        // contactos (contactosDisponibles) — nada impedía iniciar/enviar una
+        // conversación directo por id si alguien adivinaba/conocía el id de un
+        // SUPERADMIN. Se aplica la misma regla acá, donde realmente se crea la
+        // conversación.
+        String rolActual = actual.getRol() != null ? actual.getRol().getNombre() : "";
+        String rolOtro = otro.getRol() != null ? otro.getRol().getNombre() : "";
+        if (!puedenChatear(rolActual, rolOtro)) {
+            throw new IllegalArgumentException("No puedes chatear con este usuario");
+        }
+
         Long uA = Math.min(actual.getId(), otro.getId());
         Long uB = Math.max(actual.getId(), otro.getId());
 
@@ -83,7 +94,25 @@ public class ChatService {
     }
 
     public List<ChatMensaje> historial(Long convId, Long usuarioId) {
+        verificarParticipante(convId, usuarioId);
         return mensajeRepo.findByConversacionIdOrderByCreatedAtAsc(convId);
+    }
+
+    /**
+     * usuarioId se recibía pero nunca se usaba para verificar nada — cualquier
+     * usuario autenticado podía leer el historial completo de CUALQUIER
+     * conversación ajena con solo adivinar el id (entero secuencial). Mismo
+     * problema en marcarLeidos: sin este check, un no-participante podía
+     * marcar como leídos los mensajes de una conversación ajena.
+     */
+    private void verificarParticipante(Long convId, Long usuarioId) {
+        ChatConversacion conv = conversacionRepo.findById(convId)
+                .orElseThrow(() -> new IllegalArgumentException("Conversación no existe"));
+        boolean esParticipante = conv.getUsuarioA().getId().equals(usuarioId)
+                || conv.getUsuarioB().getId().equals(usuarioId);
+        if (!esParticipante) {
+            throw new IllegalArgumentException("No participas en esta conversación");
+        }
     }
 
     @Transactional
@@ -131,6 +160,7 @@ public class ChatService {
 
     @Transactional
     public int marcarLeidos(Long convId, Long usuarioId) {
+        verificarParticipante(convId, usuarioId);
         int actualizados = mensajeRepo.marcarComoLeidos(convId, usuarioId);
         if (actualizados > 0) {
             // Avisar al otro participante (el remitente) que sus mensajes fueron leídos
