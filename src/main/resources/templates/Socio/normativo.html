@@ -50,7 +50,10 @@
       /* Mostrar distribución debajo del contenido principal en mobile */
       .norm-layout { display: flex !important; flex-direction: column !important; }
       .norm-layout > aside { display: block !important; order: 2; margin-top: 16px; }
-      .norm-layout > div:first-child { order: 1; }
+      /* Los flex items tampoco se encogen por debajo del ancho natural de su
+         contenido por defecto (min-width:auto), mismo bug que en el resto
+         de roles pero vía flexbox en vez de grid acá. */
+      .norm-layout > div:first-child { order: 1; min-width: 0 !important; }
     }
 
     @keyframes fadeUp {

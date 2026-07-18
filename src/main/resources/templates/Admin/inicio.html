@@ -220,6 +220,17 @@
       .bottom-grid {
         grid-template-columns: 1fr !important;
       }
+
+      /* Mismo bug de siempre: los grid items no se encogen por debajo del
+         ancho natural de su contenido (min-width:auto por defecto). Acá el
+         culpable es el texto white-space:nowrap de "Actividad reciente" —
+         su ancho de línea completa "ganaba" el cálculo de tamaño mínimo del
+         grid item, empujando toda la tarjeta (y "Solicitudes pendientes"
+         al lado) fuera del viewport. El botón "Ver todas las solicitudes"
+         terminaba cortado por la misma razón. */
+      .bottom-grid > div {
+        min-width: 0 !important;
+      }
     }
 
     @media (max-width: 767px) {

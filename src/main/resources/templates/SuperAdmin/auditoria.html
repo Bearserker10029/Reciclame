@@ -145,6 +145,24 @@
     .audit-row:hover { background: #FFF5F5; }
     .audit-row td { padding: 12px 16px; vertical-align: middle; }
     .audit-row:last-child { border-bottom: none; }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      /* .estudios-hero + main sin reducir dejaban ~190px de ancho real
+         para 4 stat-chips -> cabía solo 1 por fila. */
+      .estudios-hero { padding: 20px 16px !important; }
+      .stat-chip { min-width: unset !important; flex: 1 1 calc(50% - 6px) !important; padding: 10px 12px !important; }
+      .stat-chip .val { font-size: 22px !important; }
+
+      /* .table-card fuerza overflow:hidden, bloqueando el scroll
+         horizontal por completo (tabla quedaba cortada sin forma de
+         alcanzar el resto de columnas). */
+      .table-card { overflow-x: auto !important; }
+      .table th:nth-child(3), .table td:nth-child(3),
+      .table th:nth-child(5), .table td:nth-child(5) { display: none !important; }
+      .table { min-width: unset !important; font-size: 12px !important; }
+    }
   </style>
 </head>
 

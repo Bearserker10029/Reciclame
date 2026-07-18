@@ -29,6 +29,15 @@
       div[style*="grid-template-columns:repeat(4"] { grid-template-columns: 1fr 1fr !important; }
       .tr-grid { grid-template-columns: 1fr !important; }
       .tr-cards { grid-template-columns: 1fr 1fr !important; }
+
+      /* Los grid items no se encogen por debajo del ancho natural de su
+         contenido (min-width:auto por defecto). El texto white-space:nowrap
+         de "Actividad reciente" empujaba esa tarjeta (y "Solicitudes
+         pendientes" al lado) fuera del viewport, cortando el botón "Ver
+         todas las solicitudes". Mismo bug ya arreglado en Admin/inicio.html. */
+      div[style*="grid-template-columns:1fr 1fr"] > div {
+        min-width: 0 !important;
+      }
     }
 
     @keyframes waterWave {
