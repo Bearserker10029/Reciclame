@@ -422,6 +422,11 @@
     }
     @media (max-width: 767px) {
       body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      /* Grid items no se encogen por debajo del ancho natural de su
+         contenido por defecto (min-width:auto) — mismo bug de siempre. */
+      div[style*="grid-template-columns:2fr 1fr"] > div,
+      div[style*="grid-template-columns:1fr 1fr"] > div { min-width: 0 !important; }
 
       /* Stats 4 cols → 1 col en mobile (más espacio para texto) */
       div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }

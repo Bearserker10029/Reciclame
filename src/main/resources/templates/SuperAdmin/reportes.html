@@ -420,6 +420,33 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(52, 152, 219, .2) 0%, transparent 70%);
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      /* Grid items no se encogen por debajo del ancho natural de su
+         contenido por defecto (min-width:auto). */
+      div[style*="grid-template-columns:2fr 1fr"] > div,
+      div[style*="grid-template-columns:1fr 1fr"] > div { min-width: 0 !important; }
+
+      div[style*="grid-template-columns:repeat(4,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      div[style*="grid-template-columns:repeat(5,1fr)"] { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+      div[style*="grid-template-columns:2fr 1fr"] { grid-template-columns: 1fr !important; }
+      div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+
+      canvas { width: 100% !important; max-width: 100% !important; }
+
+      /* Tabla chatbot: ocultar Rol(3), Empresa(4), Idioma(6), Errores(8), Duracion(9) */
+      #chat-tabla { width: max-content !important; min-width: 100% !important; }
+      #chat-tabla th:nth-child(3), #chat-tabla td:nth-child(3),
+      #chat-tabla th:nth-child(4), #chat-tabla td:nth-child(4),
+      #chat-tabla th:nth-child(6), #chat-tabla td:nth-child(6),
+      #chat-tabla th:nth-child(8), #chat-tabla td:nth-child(8),
+      #chat-tabla th:nth-child(9), #chat-tabla td:nth-child(9) { display: none !important; }
+      #chat-tabla-body { font-size: 11px !important; }
+
+      select[style*="min-width"] { min-width: unset !important; width: 100% !important; }
+    }
   </style>
 </head>
 

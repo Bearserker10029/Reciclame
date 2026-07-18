@@ -485,10 +485,15 @@
     }
     @media (max-width: 767px) {
       body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
       /* Tabla documentos: ocultar Descripción(2) y Formatos(4) */
       .table th:nth-child(2), .table td:nth-child(2),
       .table th:nth-child(4), .table td:nth-child(4) { display: none !important; }
       .table { min-width: unset !important; font-size: 12px !important; }
+      /* .table-card fuerza overflow:hidden (para las esquinas redondeadas),
+         que también bloqueaba el scroll horizontal por completo — la
+         columna "Acción" quedaba cortada sin ninguna forma de alcanzarla. */
+      .table-card { overflow-x: auto !important; }
     }
   </style>
 </head>

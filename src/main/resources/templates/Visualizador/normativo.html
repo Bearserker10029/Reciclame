@@ -32,6 +32,14 @@
       main { padding: 12px !important; padding-bottom: 80px !important; }
       .norm-layout { grid-template-columns: 1fr !important; }
       .norm-layout > aside { display: none; }
+      /* Bug real: los grid items tienen min-width:auto por defecto, así que
+         no se encogían por debajo del ancho natural de la tabla (365px+)
+         aunque su columna del grid solo medía ~292px. Eso hacía que la
+         tarjeta de la tabla se saliera del viewport y el botón "Ver" quedara
+         cortado sin ninguna forma de hacer scroll para alcanzarlo (el
+         overflow-x:auto interno nunca se activaba porque el contenedor ya
+         era tan ancho como la tabla). */
+      .norm-layout > div { min-width: 0 !important; }
       .filter-row { flex-wrap: wrap; gap: 8px !important; }
       .filter-row > * { flex: 1 1 calc(50% - 4px) !important; min-width: 120px; }
       .norm-card { flex-direction: column !important; }

@@ -449,6 +449,27 @@
       font-weight: 600;
       border-radius: 4px;
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      .estudios-hero { padding: 20px 16px !important; }
+      .stat-chip { min-width: unset !important; flex: 1 1 calc(50% - 6px) !important; padding: 10px 12px !important; }
+      .stat-chip .val { font-size: 22px !important; }
+
+      /* .user-card era una sola fila (avatar + info + status + botón ancho
+         "Entrar como este usuario"): en ~320-375px el botón se salía del
+         viewport y el nombre/badges se superponían con el status pill. */
+      .user-card { flex-wrap: wrap !important; padding: 16px !important; }
+      .user-info { flex: 1 1 100% !important; order: 1; }
+      .user-status { margin-right: 0 !important; order: 2; }
+      .btn-impersonate {
+        order: 3;
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 

@@ -403,6 +403,26 @@
         box-shadow: 0 0 0 8px rgba(46, 204, 113, 0);
       }
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      .estudios-hero { padding: 20px 16px !important; }
+      /* 3 tabs (Administrador/Socio/Visualizador) con texto nowrap no
+         entraban en ~320-375px y quedaban cortados/superpuestos. */
+      .rol-tabs {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap !important;
+      }
+      .rol-tab {
+        padding: 8px 14px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+    }
   </style>
 </head>
 
