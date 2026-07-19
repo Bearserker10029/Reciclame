@@ -959,34 +959,35 @@
                       —
                     </td>
                     <td>
-                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}" style="display:flex;gap:6px;align-items:center;">
-                        <span th:if="${currentUserId != null and currentUserId == usuario.id}"
+                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}"
+                           th:with="esMio=${currentUserId != null and currentUserId == usuario.id},
+                                    bloqueado=${usuario.cuentaBloqueada != null and usuario.cuentaBloqueada},
+                                    tituloBloqueo=${esMio ? 'No puedes bloquearte a ti mismo' : (bloqueado ? 'Desbloquear usuario' : 'Bloquear usuario')}"
+                           style="display:flex;gap:6px;align-items:center;">
+                        <span th:if="${esMio}"
                           class="pill" style="background:rgba(52,152,219,.14);color:#2471A3;font-size:10px;padding:2px 8px;"
                           title="Esta es tu propia cuenta. Usa la vista de Perfil para cambios sobre tu usuario.">
                           <i class="fas fa-user" style="font-size:8px;"></i> Tú
                         </span>
-                        <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
+                        <button th:unless="${esMio}" onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
                           th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
                           th:data-correo="${usuario.correoCorporativo}"
                           th:data-cargo="${usuario.cargo != null ? usuario.cargo : ''}"
                           th:data-rol-id="${usuario.rolId != null ? usuario.rolId : ''}"
                           th:data-empresa-id="${usuario.empresaId != null ? usuario.empresaId : ''}"
-                          th:disabled="${currentUserId != null and currentUserId == usuario.id}"
-                          th:title="${currentUserId != null and currentUserId == usuario.id} ? 'Edita tus datos desde la vista de Perfil' : 'Editar usuario'"
+                          title="Editar usuario"
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                           <i class="fas fa-edit" style="color:#3498DB;"></i>
                         </button>
-                        <button onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
-                          th:data-bloqueado="${usuario.cuentaBloqueada != null ? usuario.cuentaBloqueada : false}"
-                          th:disabled="${currentUserId != null and currentUserId == usuario.id}"
-                          th:title="${currentUserId != null and currentUserId == usuario.id} ? 'No puedes bloquearte a ti mismo' : ((usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Desbloquear usuario' : 'Bloquear usuario')"
+                        <button th:unless="${esMio}" onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
+                          th:data-bloqueado="${bloqueado}"
+                          th:title="${tituloBloqueo}"
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
-                          <i th:class="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'fas fa-unlock' : 'fas fa-ban'}"
-                            th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
+                          <i th:class="${bloqueado ? 'fas fa-unlock' : 'fas fa-ban'}"
+                            th:style="${bloqueado ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
                         </button>
-                        <button sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
-                          th:disabled="${currentUserId != null and currentUserId == usuario.id}"
-                          th:title="${currentUserId != null and currentUserId == usuario.id} ? 'No puedes eliminarte a ti mismo' : 'Eliminar usuario'"
+                        <button th:unless="${esMio}" sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
+                          title="Eliminar usuario"
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                           <i class="fas fa-trash" style="color:#E74C3C;"></i>
                         </button>
