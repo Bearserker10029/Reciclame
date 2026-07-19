@@ -186,6 +186,8 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("currentUserId", u.getId()));
         model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));

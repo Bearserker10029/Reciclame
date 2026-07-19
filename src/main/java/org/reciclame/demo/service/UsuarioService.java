@@ -84,6 +84,24 @@ public class UsuarioService {
         }
     }
 
+    // ── Guarda anti auto-acción ──────────────────────────────
+    // Evita que un administrador se desactive, se bloquee, se elimine
+    // o se cambie el rol a sí mismo desde el panel admin. El mismo
+    // SUPERADMIN queda cubierto: si bien puede modificar a otros
+    // SUPERADMIN, no debe sacarse a sí mismo del sistema.
+    // aud == null indica llamada interna del sistema (no HTTP), se
+    // permite. La edición de datos básicos (nombre, cargo) NO entra
+    // acá: el usuario puede actualizar su propio nombre/cargo desde
+    // la vista de perfil.
+    private void verificarNoAutoAccion(Long auditorUsuarioId, Long objetivoUsuarioId, String accion) {
+        if (auditorUsuarioId == null || objetivoUsuarioId == null) {
+            return;
+        }
+        if (auditorUsuarioId.equals(objetivoUsuarioId)) {
+            throw new RuntimeException("No puedes " + accion + " tu propia cuenta desde el panel de administración. Usa la vista de Perfil para cambios sobre tu usuario.");
+        }
+    }
+
     // ── Invalidación de sesión activa ───────────────────────────
     // Los authorities de Spring Security se fijan en el login y quedan
     // cacheados en la sesión (HttpSession vía Spring Session JDBC/Redis según
@@ -321,6 +339,9 @@ public class UsuarioService {
                     .orElseThrow(() -> new RuntimeException("Rol no encontrado con id: " + dto.getRolId()));
             verificarPermisoAsignacionRol(auditorUsuarioId, rol, null);
             boolean cambioDeRol = usuario.getRol() == null || !usuario.getRol().getId().equals(rol.getId());
+            if (cambioDeRol) {
+                verificarNoAutoAccion(auditorUsuarioId, id, "cambiar el rol de");
+            }
             usuario.setRol(rol);
             if (cambioDeRol) {
                 invalidarSesionesDe(usuario.getCorreoCorporativo());
@@ -364,6 +385,7 @@ public class UsuarioService {
     public void eliminarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        verificarNoAutoAccion(auditorUsuarioId, id, "eliminar");
         usuario.setEstadoActivo(false);
         usuario.setEstadoCuenta("INACTIVO");
         usuario.setUpdatedAt(Instant.now());
@@ -387,7 +409,8 @@ public class UsuarioService {
     public UsuarioResponseDTO reactivarUsuario(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
-        
+        verificarNoAutoAccion(auditorUsuarioId, id, "reactivar");
+
         usuario.setEstadoActivo(true);
         usuario.setEstadoCuenta("ACTIVO");
         usuario.setUpdatedAt(Instant.now());
@@ -479,6 +502,7 @@ public class UsuarioService {
     public UsuarioResponseDTO toggleBloquear(Long id, Long auditorUsuarioId, String auditorUsuarioNombre, String ipAddress, String userAgent) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+        verificarNoAutoAccion(auditorUsuarioId, id, "bloquear/desbloquear");
         boolean bloquear = !Boolean.TRUE.equals(usuario.getCuentaBloqueada());
         if (bloquear) {
             usuario.setCuentaBloqueada(true);

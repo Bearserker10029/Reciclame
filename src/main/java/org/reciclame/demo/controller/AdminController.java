@@ -214,6 +214,8 @@ public class AdminController extends BaseReportesController {
     @GetMapping("/admin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("currentUserId", u.getId()));
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));

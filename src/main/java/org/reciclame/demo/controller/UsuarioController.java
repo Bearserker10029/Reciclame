@@ -226,8 +226,16 @@ public class UsuarioController {
 
     // ── MANEJO DE ERRORES ─────────────────────────────────────
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
+        String msg = ex.getMessage() == null ? "" : ex.getMessage();
+        // Auto-acciones (administrador modificando su propia cuenta desde el
+        // panel admin) → 403 Forbidden. La UI usa este código para mostrar el
+        // mensaje como "no permitido" en vez de "datos inválidos".
+        HttpStatus status = msg.startsWith("No puedes ") ? HttpStatus.FORBIDDEN : HttpStatus.BAD_REQUEST;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("error", status == HttpStatus.FORBIDDEN ? "AUTO_ACCION_DENEGADA" : "BAD_REQUEST");
+        body.put("mensaje", msg);
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
