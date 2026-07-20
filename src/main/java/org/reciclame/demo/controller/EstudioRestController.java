@@ -37,14 +37,21 @@ public class EstudioRestController {
     }
 
     // ── READ ALL ──────────────────────────────────────────────
-    @PreAuthorize("isAuthenticated()")
+    // Devuelve TODOS los estudios (públicos y no públicos), sin filtrar
+    // por esPublico. Solo Admin/SuperAdmin la usan desde el frontend
+    // (Socio/Visualizador consumen listarEstudiosPublicos() vía páginas
+    // Thymeleaf aparte) — restringir el rol evita que un Socio/Visualizador
+    // llame esta API directamente y vea/lea estudios no públicos.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<EstudioResponseDTO>> listar() {
         return ResponseEntity.ok(estudioService.listarEstudios());
     }
 
     // ── READ ONE ──────────────────────────────────────────────
-    @PreAuthorize("isAuthenticated()")
+    // Mismo motivo que listar(): sin filtro de esPublico, así que se
+    // restringe a los roles que legítimamente la consumen.
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
         try {

@@ -70,6 +70,17 @@ public abstract class BaseReportesController {
         return true; // default seguro: ADMIN
     }
 
+    /**
+     * Indica si la IP de origen debe incluirse en los reportes de auditoría
+     * (PDF/XLSX/export unificado). exportarAuditoriaCsv ya ocultaba la IP para
+     * ADMIN explícitamente ("dato sensible: solo el SUPERADMIN la ve"), pero
+     * los exports PDF/XLSX heredados de esta clase no tenían el mismo filtro y
+     * sí la incluían — mismo patrón que {@link #excluirSuperadminEnAuditoria()}.
+     */
+    protected boolean mostrarIpEnAuditoria() {
+        return false; // default seguro: ADMIN
+    }
+
     protected List<UsuarioResponseDTO> usuariosFiltradosParaReporte(int limite) {
         var base = (limite > 0)
                 ? usuarioService().listarUsuariosLimit(limite)
@@ -249,7 +260,7 @@ public abstract class BaseReportesController {
             @AuthenticationPrincipal UserDetails user) throws IOException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
         List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
-                ? auditoriaService().listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                ? auditoriaService().listarAuditoriasParaExportAdmin(5000)
                 : auditoriaService().listarAuditoriasUltimas100();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new HashMap<>();
@@ -258,7 +269,7 @@ public abstract class BaseReportesController {
             row.put("modulo", a.getModulo());
             row.put("estado", a.getEstado());
             row.put("usuarioNombre", a.getUsuarioNombre());
-            row.put("ipAddress", a.getIpAddress());
+            row.put("ipAddress", mostrarIpEnAuditoria() ? a.getIpAddress() : "");
             row.put("descripcion", a.getDescripcion());
             return row;
         }).toList();
@@ -301,7 +312,7 @@ public abstract class BaseReportesController {
             @AuthenticationPrincipal UserDetails user) throws IOException {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
         List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
-                ? auditoriaService().listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                ? auditoriaService().listarAuditoriasParaExportAdmin(5000)
                 : auditoriaService().listarAuditoriasUltimas100();
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new HashMap<>();
@@ -310,7 +321,7 @@ public abstract class BaseReportesController {
             row.put("modulo", a.getModulo());
             row.put("estado", a.getEstado());
             row.put("usuario", a.getUsuarioNombre());
-            row.put("ip", a.getIpAddress());
+            row.put("ip", mostrarIpEnAuditoria() ? a.getIpAddress() : "");
             row.put("descripcion", a.getDescripcion());
             return row;
         }).toList();
@@ -780,7 +791,7 @@ public abstract class BaseReportesController {
         String accion = req.accion != null ? req.accion.toLowerCase() : "download";
 
         List<Auditoria> auditorias = excluirSuperadminEnAuditoria()
-                ? auditoriaService().listarAuditoriasLimitExcluyendoSuperadmin(limite)
+                ? auditoriaService().listarAuditoriasParaExportAdmin(limite)
                 : auditoriaService().listarAuditoriasLimit(limite);
         byte[] archivo;
         String nombreArchivo;
@@ -902,7 +913,7 @@ public abstract class BaseReportesController {
             row.put("modulo", a.getModulo());
             row.put("estado", a.getEstado());
             row.put("usuarioNombre", a.getUsuarioNombre());
-            row.put("ipAddress", a.getIpAddress());
+            row.put("ipAddress", mostrarIpEnAuditoria() ? a.getIpAddress() : "");
             row.put("descripcion", a.getDescripcion());
             return row;
         }).toList();
@@ -930,7 +941,7 @@ public abstract class BaseReportesController {
             row.put("modulo", a.getModulo());
             row.put("estado", a.getEstado());
             row.put("usuario", a.getUsuarioNombre());
-            row.put("ip", a.getIpAddress());
+            row.put("ip", mostrarIpEnAuditoria() ? a.getIpAddress() : "");
             row.put("descripcion", a.getDescripcion());
             return row;
         }).toList();

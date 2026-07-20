@@ -590,6 +590,36 @@
       color: #E74C3C;
       border: 1px solid rgba(231, 76, 60, .3);
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      .estudios-hero { padding: 20px 16px !important; }
+      .stat-chip { min-width: unset !important; flex: 1 1 calc(50% - 6px) !important; padding: 10px 12px !important; }
+      .stat-chip .val { font-size: 22px !important; }
+
+      /* 5 tabs (Todos/Completados/En Proceso/Fallidos/Programaciones) con
+         texto nowrap no entran en ~320-375px: quedaban amontonadas y
+         superpuestas, ilegibles. */
+      .norm-tab-bar {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap !important;
+      }
+      .norm-tab {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+      }
+
+      .norm-table-card { overflow-x: auto !important; }
+      #tabla-backups { min-width: unset !important; font-size: 12px !important; }
+      #tabla-backups th:nth-child(4), #tabla-backups td:nth-child(4),
+      #tabla-backups th:nth-child(5), #tabla-backups td:nth-child(5),
+      #tabla-backups th:nth-child(6), #tabla-backups td:nth-child(6),
+      #tabla-backups th:nth-child(7), #tabla-backups td:nth-child(7) { display: none !important; }
+      #tabla-programaciones { min-width: unset !important; font-size: 12px !important; }
+    }
   </style>
 </head>
 

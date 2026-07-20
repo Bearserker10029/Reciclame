@@ -186,6 +186,8 @@ public class SuperAdminController extends AdminController {
     @GetMapping("/superadmin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("currentUserId", u.getId()));
         model.addAttribute("usuariosActivos", usuarioService.listarUsuarios());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
@@ -310,7 +312,13 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 100);
         model.addAttribute("auditorias", auditoriasPage.getContent());
+        // totalElements = total real en el sistema (para el stat-chip informativo).
+        // El filtro de la tabla, sin embargo, es 100% client-side sobre las filas
+        // ya cargadas (ver filtrarTraza() en este mismo template) — nunca busca
+        // más allá de esas 100. registrosCargados deja eso explícito en el footer
+        // para que el SuperAdmin no crea que está filtrando sobre todo el histórico.
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+        model.addAttribute("registrosCargados", auditoriasPage.getContent().size());
 
         // Chips por módulo
         var conteoPorModulo = auditoriasPage.getContent().stream()
@@ -506,11 +514,17 @@ return "redirect:/superadmin/notificaciones";
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
-                if (ok) {
-                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
-                } else {
-                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                try {
+                    boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                    if (ok) {
+                        ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                    } else {
+                        ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Validación de negocio (ej. nueva contraseña = actual).
+                    // Se muestra tal cual, sin el prefijo genérico de error.
+                    ra.addFlashAttribute("errorPassword", e.getMessage());
                 }
             });
         } catch (Exception e) {
@@ -616,7 +630,13 @@ return "redirect:/superadmin/notificaciones";
                                       @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
-        var auditorias = auditoriaService.listarAuditoriasUltimas100();
+        // Antes exportaba listarAuditoriasUltimas100() (últimas 100 de TODA la
+        // auditoría, sin filtro) mientras la pantalla muestra listarEventosSeguridad
+        // (filtrado a acciones de seguridad, paginado). El CSV traía un dataset
+        // totalmente distinto al que el SuperAdmin estaba viendo/filtrando. Ahora
+        // exporta el mismo filtro de eventos de seguridad, acotado a un límite
+        // generoso para no disparar una consulta sin cota.
+        var auditorias = auditoriaService.listarEventosSeguridad(0, 5000).getContent();
         var pw = response.getWriter();
         pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
         for (var a : auditorias) {
@@ -1069,6 +1089,12 @@ return "redirect:/superadmin/notificaciones";
     @Override
     protected boolean excluirSuperadminEnAuditoria() {
         return false;
+    }
+
+    // Solo el SuperAdmin ve la IP de origen en los reportes de auditoría.
+    @Override
+    protected boolean mostrarIpEnAuditoria() {
+        return true;
     }
 
     // El SuperAdmin también ve las conversaciones/mensajes del chatbot de cualquier usuario,

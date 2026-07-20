@@ -491,9 +491,12 @@ public class SocioController {
     @org.springframework.web.bind.annotation.DeleteMapping("/socio/compartir/{tipo}/{id}/personas/{usuarioId}")
     @org.springframework.web.bind.annotation.ResponseBody
     public ResponseEntity<?> quitarPersonaCompartido(
-            @PathVariable String tipo, @PathVariable Long id, @PathVariable Long usuarioId) {
+            @PathVariable String tipo, @PathVariable Long id, @PathVariable Long usuarioId,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "Usuario no encontrado"));
         try {
-            compartirService.quitarPersona(tipo, id, usuarioId);
+            compartirService.quitarPersona(tipo, id, usuarioId, uOpt.get().getId());
             return ResponseEntity.ok(Map.of("eliminado", true));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -567,11 +570,17 @@ public class SocioController {
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
-                if (ok) {
-                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
-                } else {
-                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                try {
+                    boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                    if (ok) {
+                        ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                    } else {
+                        ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Validación de negocio (ej. nueva contraseña = actual).
+                    // Se muestra tal cual, sin el prefijo genérico de error.
+                    ra.addFlashAttribute("errorPassword", e.getMessage());
                 }
             });
         } catch (Exception e) {

@@ -189,6 +189,23 @@
       padding: 12px 20px; background: #FAFBFC; border-top: 1px solid #F3F4F6;
       display: flex; align-items: center; justify-content: space-between;
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      #paginacion-traza { max-width: 100%; overflow-x: auto !important; }
+      /* Tabla: cols Fecha(1) Usuario(2) Acción(3) Módulo(4) Descripción(5) IP(6) Resultado(7) Detalle(8) */
+      /* Ocultar: Módulo(4), Descripción(5), IP(6), Detalle(8) */
+      .table th:nth-child(4), .table td:nth-child(4),
+      .table th:nth-child(5), .table td:nth-child(5),
+      .table th:nth-child(6), .table td:nth-child(6),
+      .table th:nth-child(8), .table td:nth-child(8) { display: none !important; }
+      .table { min-width: unset !important; font-size: 11px !important; }
+      .table td { padding: 8px 6px !important; }
+      div[style*="flex-wrap:wrap"] { gap: 6px !important; }
+      div[style*="min-width:200px"] { min-width: unset !important; width: 100% !important; }
+      .traza-footer { flex-direction: column !important; gap: 8px !important; align-items: flex-start !important; }
+    }
   </style>
 </head>
 
@@ -359,7 +376,12 @@
               <span style="font-size:12px;color:#9CA3AF;">Actualizado automáticamente</span>
             </div>
             <div th:if="${totalElements != null and totalElements > 0}" style="font-size:12px;color:#6B7280;">
-              Total: <strong style="color:#1B3A5C;" th:text="${totalElements}">0</strong> registros
+              Mostrando y filtrando sobre los últimos
+              <strong style="color:#1B3A5C;" th:text="${registrosCargados}">0</strong> registros
+              <span th:if="${totalElements > registrosCargados}">
+                (de <strong style="color:#1B3A5C;" th:text="${totalElements}">0</strong> en total en el sistema —
+                los más antiguos no se buscan aquí)
+              </span>
             </div>
           </div>
         </div>

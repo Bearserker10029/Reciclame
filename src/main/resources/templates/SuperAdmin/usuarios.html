@@ -36,8 +36,23 @@
       .table-responsive { overflow-x: auto; }
       table { min-width: unset !important; font-size: 12px !important; }
       table th:nth-child(3), table td:nth-child(3),
-      table th:nth-child(5), table td:nth-child(5) { display: none !important; }
+      table th:nth-child(5), table td:nth-child(5),
+      table th:nth-child(6), table td:nth-child(6) { display: none !important; }
       .filter-row, div[style*="display:flex"][style*="gap"][style*="flex-wrap"] { flex-wrap: wrap !important; }
+      .norm-table-card { overflow-x: auto !important; }
+
+      /* Barra de tabs: 4 botones nowrap con ícono+texto+badge no entran en
+         ~320-375px y quedaban amontonados/superpuestos, ilegibles. */
+      .norm-tab-bar {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap !important;
+      }
+      .norm-tab {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+        flex-shrink: 0;
+      }
     }
 
     @keyframes fadeUp {
@@ -939,8 +954,17 @@
                       —
                     </td>
                     <td>
-                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}" style="display:flex;gap:6px;">
-                        <button onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
+                      <div th:if="${usuario.estadoActivo != null and usuario.estadoActivo}"
+                           th:with="esMio=${currentUserId != null and currentUserId == usuario.id},
+                                    bloqueado=${usuario.cuentaBloqueada != null and usuario.cuentaBloqueada},
+                                    tituloBloqueo=${esMio ? 'No puedes bloquearte a ti mismo' : (bloqueado ? 'Desbloquear usuario' : 'Bloquear usuario')}"
+                           style="display:flex;gap:6px;align-items:center;justify-content:center;">
+                        <span th:if="${esMio}"
+                          class="pill" style="background:rgba(52,152,219,.14);color:#2471A3;font-size:10px;padding:2px 8px;"
+                          title="Esta es tu propia cuenta. Usa la vista de Perfil para cambios sobre tu usuario.">
+                          <i class="fas fa-user" style="font-size:8px;"></i> Tú
+                        </span>
+                        <button th:unless="${esMio}" onclick="abrirModalEditar(this)" th:data-id="${usuario.id}"
                           th:data-nombre="${usuario.nombreCompleto}" th:data-dni="${usuario.dni}"
                           th:data-correo="${usuario.correoCorporativo}"
                           th:data-cargo="${usuario.cargo != null ? usuario.cargo : ''}"
@@ -950,14 +974,14 @@
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                           <i class="fas fa-edit" style="color:#3498DB;"></i>
                         </button>
-                        <button onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
-                          th:data-bloqueado="${usuario.cuentaBloqueada != null ? usuario.cuentaBloqueada : false}"
-                          th:title="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'Desbloquear usuario' : 'Bloquear usuario'}"
+                        <button th:unless="${esMio}" onclick="toggleBloquear(this)" th:data-id="${usuario.id}"
+                          th:data-bloqueado="${bloqueado}"
+                          th:title="${tituloBloqueo}"
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
-                          <i th:class="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'fas fa-unlock' : 'fas fa-ban'}"
-                            th:style="${(usuario.cuentaBloqueada != null and usuario.cuentaBloqueada) ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
+                          <i th:class="${bloqueado ? 'fas fa-unlock' : 'fas fa-ban'}"
+                            th:style="${bloqueado ? 'color:#27AE60;' : 'color:#E74C3C;'}"></i>
                         </button>
-                        <button sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
+                        <button th:unless="${esMio}" sec:authorize="hasRole('SUPERADMIN')" th:onclick="|eliminarUsuario(${usuario.id})|"
                           title="Eliminar usuario"
                           style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;cursor:pointer;font-size:11px;font-family:inherit;">
                           <i class="fas fa-trash" style="color:#E74C3C;"></i>
@@ -1622,7 +1646,7 @@
           function guardarNuevoUsuario() { var nombre = document.getElementById('crear-nombre').value.trim(); var dni = document.getElementById('crear-dni').value.trim(); var correo = document.getElementById('crear-correo').value.trim(); var password = document.getElementById('crear-password').value; var password2 = document.getElementById('crear-password2').value; var rolId = document.getElementById('crear-rol').value; var empresaId = document.getElementById('crear-empresa').value; var cargo = document.getElementById('crear-cargo').value.trim(); var errorEl = document.getElementById('crear-error'); if (!nombre || !dni || !correo || !password || !password2 || !rolId) { errorEl.textContent = 'Completa los campos obligatorios (*)'; errorEl.style.display = 'block'; return; } if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) { errorEl.textContent = 'El nombre solo debe contener letras y espacios'; errorEl.style.display = 'block'; return; } if (dni.length !== 8 || !/^\d+$/.test(dni)) { errorEl.textContent = 'El DNI debe tener exactamente 8 dígitos numéricos'; errorEl.style.display = 'block'; return; } if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) { errorEl.textContent = 'El correo electrónico no tiene un formato válido'; errorEl.style.display = 'block'; return; } if (password.length < 8) { errorEl.textContent = 'La contraseña debe tener al menos 8 caracteres'; errorEl.style.display = 'block'; return; } if (crearPwStrength(password) < 40) { errorEl.textContent = 'La contraseña es muy débil. Agrega números o mayúsculas'; errorEl.style.display = 'block'; return; } if (password !== password2) { errorEl.textContent = 'Las contraseñas no coinciden'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, dni: dni, correoCorporativo: correo, password: password, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { r.json().then(function (data) { cerrarModalCrear(); location.href = getBaseUrl() + '/usuarios?nuevo=' + (data.id || ''); }); } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al crear el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
           function abrirModalEditar(btn) { document.getElementById('edit-id').value = btn.dataset.id || ''; document.getElementById('edit-nombre').value = btn.dataset.nombre || ''; document.getElementById('edit-dni').value = btn.dataset.dni || ''; document.getElementById('edit-correo').value = btn.dataset.correo || ''; document.getElementById('edit-cargo').value = btn.dataset.cargo || ''; document.getElementById('editar-error').style.display = 'none'; document.getElementById('edit-subtitulo').textContent = btn.dataset.correo || ''; var rolSelect = document.getElementById('edit-rol'); rolSelect.value = btn.dataset.rolId || ''; var empSelect = document.getElementById('edit-empresa'); empSelect.value = btn.dataset.empresaId || ''; document.getElementById('modal-editar').style.display = 'flex'; }
           function cerrarModalEditar() { document.getElementById('modal-editar').style.display = 'none'; }
-          function guardarEdicionUsuario() { var id = document.getElementById('edit-id').value; var nombre = document.getElementById('edit-nombre').value.trim(); var rolId = document.getElementById('edit-rol').value; var empresaId = document.getElementById('edit-empresa').value; var cargo = document.getElementById('edit-cargo').value.trim(); var errorEl = document.getElementById('editar-error'); if (!nombre || !rolId) { errorEl.textContent = 'El nombre y el rol son obligatorios'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { cerrarModalEditar(); location.href = getBaseUrl() + '/usuarios'; } else { r.text().then(function (msg) { errorEl.textContent = msg || 'Error al actualizar el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
+          function guardarEdicionUsuario() { var id = document.getElementById('edit-id').value; var nombre = document.getElementById('edit-nombre').value.trim(); var rolId = document.getElementById('edit-rol').value; var empresaId = document.getElementById('edit-empresa').value; var cargo = document.getElementById('edit-cargo').value.trim(); var errorEl = document.getElementById('editar-error'); if (!nombre || !rolId) { errorEl.textContent = 'El nombre y el rol son obligatorios'; errorEl.style.display = 'block'; return; } var payload = { nombreCompleto: nombre, cargo: cargo || null, rolId: parseInt(rolId), empresaId: empresaId ? parseInt(empresaId) : null }; fetch('/api/usuarios/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }).then(function (r) { if (r.ok) { cerrarModalEditar(); location.href = getBaseUrl() + '/usuarios'; } else { extraerMensajeError(r).then(function (msg) { errorEl.textContent = msg || 'Error al actualizar el usuario'; errorEl.style.display = 'block'; }); } }).catch(function () { errorEl.textContent = 'Error de conexión. Intenta de nuevo.'; errorEl.style.display = 'block'; }); }
           var _bloqueoId = null;
           var _bloqueoAccion = null;
 
@@ -1674,6 +1698,16 @@
           }
           function cerrarModalError() {
             document.getElementById('modal-error').style.display = 'none';
+          }
+          // Lee el `mensaje` del JSON que devuelve el backend en errores 403/400.
+          // Si la respuesta no es JSON, devuelve el texto plano. Si está vacía,
+          // devuelve un mensaje genérico con el código HTTP.
+          function extraerMensajeError(r) {
+            return r.text().then(function (txt) {
+              if (!txt) return 'Error ' + r.status;
+              try { var j = JSON.parse(txt); return j.mensaje || j.message || j.error || txt; }
+              catch (e) { return txt; }
+            });
           }
           var _aprobarId = null;
           function aprobarSolicitud(id) {
@@ -1750,11 +1784,7 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Eliminado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido marcado como inactivo.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else if (r.status === 403) {
-                    mostrarErrorModal('Sin permisos para eliminar este usuario.');
-                  } else {
-                    mostrarErrorModal('Error al eliminar el usuario (código: ' + r.status + ')');
-                  }
+                  } else { extraerMensajeError(r).then(mostrarErrorModal); }
                 })
                 .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
@@ -1769,7 +1799,7 @@
                     document.getElementById('modal-exito-titulo').textContent = 'Usuario Reactivado';
                     document.getElementById('modal-exito-msg').textContent = 'El usuario ha sido reactivado correctamente.';
                     document.getElementById('modal-exito').style.display = 'flex';
-                  } else { mostrarErrorModal('Error al reactivar el usuario.'); }
+                  } else { extraerMensajeError(r).then(mostrarErrorModal); }
                 })
                 .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };
@@ -1799,7 +1829,7 @@
                 .then(function (r) {
                   cerrarModalBloqueo();
                   if (r.ok) { location.href = getBaseUrl() + '/usuarios'; }
-                  else { mostrarErrorModal('Error al ' + (_bloqueoAccion || 'actualizar') + ' el usuario.'); }
+                  else { extraerMensajeError(r).then(mostrarErrorModal); }
                 })
                 .catch(function () { mostrarErrorModal('Error de conexión. Intenta de nuevo.'); });
             };

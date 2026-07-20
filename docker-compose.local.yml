@@ -13,6 +13,7 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/00-fix-auth-plugin.sql:/docker-entrypoint-initdb.d/00-fix-auth-plugin.sql:ro
       - ./src/main/resources/db/reciclame_db.sql:/docker-entrypoint-initdb.d/01-reciclame_db.sql:ro
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
@@ -36,6 +37,8 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
       SPRING_PROFILES_ACTIVE: local
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/reciclame_db?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true
@@ -56,6 +59,8 @@ services:
 
       APP_BASE_URL: http://localhost:8080
       APP_KK_ACCESSIBLE_URL: http://reciclame-app:8080
+    volumes:
+      - backup_data:/backups
     networks:
       - reciclame-local
 
@@ -157,3 +162,4 @@ volumes:
   mysql_data:
   minio_data:
   n8n_data:
+  backup_data:

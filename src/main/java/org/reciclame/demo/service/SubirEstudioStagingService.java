@@ -78,7 +78,7 @@ public class SubirEstudioStagingService {
                         : "documento"));
             throw e;
         }
-        scanner.procesarAsync("ESTUDIO", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor);
+        scanner.procesarAsync("ESTUDIO", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor, null);
         return new ResultadoSubida(uuid, resp.getId());
     }
 
@@ -98,11 +98,14 @@ public class SubirEstudioStagingService {
         } catch (IOException e) {
             throw new RuntimeException("No se pudo subir el archivo al bucket staging: " + e.getMessage(), e);
         }
-        estudioService.eliminarEstudio(id, auditorId, auditorNombre, ip, userAgent);
+        // El estudio anterior (id) NO se borra acá: se crea el nuevo en PENDIENTE
+        // y el viejo se elimina recién cuando el scanner confirme que el archivo
+        // nuevo es seguro y ya fue promovido (ver UploadStagingScanner). Si el
+        // archivo resulta malicioso, el estudio original queda intacto y publicado.
         EstudioResponseDTO resp = estudioService.crearEstudioPendiente(
                 dto, stagingMarker, archivo.getContentType(),
                 correoAutor, auditorId, auditorNombre, ip, userAgent);
-        scanner.procesarAsync("ESTUDIO", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor);
+        scanner.procesarAsync("ESTUDIO", resp.getId(), stagingMarker, archivo.getContentType(), correoAutor, id);
         return new ResultadoSubida(uuid, resp.getId());
     }
 }

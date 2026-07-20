@@ -214,13 +214,21 @@ public class AdminController extends BaseReportesController {
     @GetMapping("/admin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
+        usuarioService.findByCorreo(user.getUsername()).ifPresent(u ->
+                model.addAttribute("currentUserId", u.getId()));
         model.addAttribute("usuariosActivos", usuarioService.listarUsuariosActivos());
         model.addAttribute("usuariosPendientes", usuarioService.listarUsuariosPendientes());
         model.addAttribute("solicitudesPendientes", solicitudesRepo.findByEstadoOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("solicitudesResueltas", solicitudesRepo.findByEstadoNotOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         model.addAttribute("empresas", empresaService.listarEmpresas());
-        model.addAttribute("roles", rolService.listarRoles());
+        // SUPERADMIN nunca debe ser una opción asignable desde el panel de
+        // Admin: un Administrador no puede otorgarse (ni a nadie) el rol de
+        // mayor privilegio. La validación real está en UsuarioService, esto
+        // solo evita mostrarlo como opción en el combo.
+        model.addAttribute("roles", rolService.listarRoles().stream()
+                .filter(r -> !"SUPERADMIN".equals(r.getNombre()))
+                .toList());
         return "Admin/usuarios";
     }
 
@@ -416,7 +424,7 @@ public class AdminController extends BaseReportesController {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
         var auditorias = excluirSuperadminEnAuditoria()
-                ? auditoriaService.listarAuditoriasUltimas100ExcluyendoSuperadmin()
+                ? auditoriaService.listarAuditoriasParaExportAdmin(5000)
                 : auditoriaService.listarAuditoriasUltimas100();
         // Para el ADMIN se omite la columna IP (dato sensible: solo el
         // SUPERADMIN la ve en su exportación). Mismo principio que en la
@@ -450,7 +458,12 @@ public class AdminController extends BaseReportesController {
                         .map(AuditoriaTrazabilidadAdminDTO::from)
                         .collect(Collectors.toList());
         model.addAttribute("auditorias", auditoriasDto);
+        // totalElements = total real en el sistema (informativo). El filtro de
+        // la tabla es client-side sobre las filas ya cargadas (ver filtrarTraza()
+        // en el template) — nunca busca más allá de esas 100. registrosCargados
+        // deja eso explícito en el footer (mismo fix aplicado en SuperAdmin).
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
+        model.addAttribute("registrosCargados", auditoriasDto.size());
 
         if (!auditoriasDto.isEmpty()) {
             var conteoPorModulo = auditoriasDto.stream()
@@ -628,11 +641,17 @@ public class AdminController extends BaseReportesController {
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
-                if (ok) {
-                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
-                } else {
-                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                try {
+                    boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                    if (ok) {
+                        ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                    } else {
+                        ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Validación de negocio (ej. nueva contraseña = actual).
+                    // Se muestra tal cual, sin el prefijo genérico de error.
+                    ra.addFlashAttribute("errorPassword", e.getMessage());
                 }
             });
         } catch (Exception e) {

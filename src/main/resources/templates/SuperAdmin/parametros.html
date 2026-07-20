@@ -250,6 +250,19 @@
       align-items: center;
       gap: 10px;
     }
+
+    @media (max-width: 767px) {
+      body > div > div[style*="display:flex"][style*="flex:1"] { flex-direction: column !important; }
+      main { padding: 12px !important; }
+      .estudios-hero { padding: 20px 16px !important; }
+      .stat-chip { min-width: unset !important; flex: 1 1 calc(50% - 6px) !important; padding: 10px 12px !important; }
+      .stat-chip .val { font-size: 22px !important; }
+
+      #tabla-parametros { min-width: unset !important; font-size: 12px !important; }
+      #tabla-parametros th:nth-child(4), #tabla-parametros td:nth-child(4),
+      #tabla-parametros th:nth-child(5), #tabla-parametros td:nth-child(5),
+      #tabla-parametros th:nth-child(7), #tabla-parametros td:nth-child(7) { display: none !important; }
+    }
   </style>
 </head>
 
