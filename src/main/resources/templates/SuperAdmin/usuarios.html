@@ -1468,7 +1468,7 @@
             });
           }
 
-          // ─── Ver motivo de rechazo ───────────────────────────────
+          
           function verMotivoRechazo(id) {
             fetch('/api/solicitudes/' + id, { credentials: 'same-origin' })
               .then(function (r) { if (!r.ok) throw new Error('No se pudo cargar'); return r.json(); })
@@ -1699,9 +1699,9 @@
           function cerrarModalError() {
             document.getElementById('modal-error').style.display = 'none';
           }
-          // Lee el `mensaje` del JSON que devuelve el backend en errores 403/400.
-          // Si la respuesta no es JSON, devuelve el texto plano. Si está vacía,
-          // devuelve un mensaje genérico con el código HTTP.
+          
+          
+          
           function extraerMensajeError(r) {
             return r.text().then(function (txt) {
               if (!txt) return 'Error ' + r.status;
@@ -1735,12 +1735,12 @@
             document.getElementById('modal-eliminar').style.display = 'flex';
           }
 
-          // Variables compartidas entre funciones de modales
+          
           var idUsuarioReactivar = null;
           var idUsuarioDesbloquear = null;
           var idUsuarioEliminar = null;
 
-          // Declaraciones de funciones (accesibles desde onclick en el HTML)
+          
           function cerrarModalEliminar() {
             document.getElementById('modal-eliminar').style.display = 'none';
             idUsuarioEliminar = null;
@@ -1773,7 +1773,7 @@
             location.reload();
           }
 
-          // Setup de event listeners después de que todo el DOM esté listo
+          
           window.addEventListener('load', function () {
             document.getElementById('btn-confirmar-eliminar').onclick = function () {
               if (!idUsuarioEliminar) return;
@@ -1872,7 +1872,7 @@
               tr.dataset.filtrado = '1';
             });
 
-            // ─── Destacar usuario recién creado ───────────────────
+            
             var params = new URLSearchParams(window.location.search);
             var nuevoId = params.get('nuevo');
             if (nuevoId) {

@@ -67,7 +67,7 @@
     if (sessionStorage.getItem(SESSION_KEY)) return;
     sessionStorage.setItem(SESSION_KEY, '1');
 
-    const notifs = /*[[${notificaciones}]]*/ [];
+    const notifs =  [];
     const container = document.getElementById('notif-toast-container');
     if (!container || !notifs || notifs.length === 0) return;
 
@@ -112,7 +112,7 @@
       setTimeout(() => dismiss(item), 6000 + idx * 1500);
     });
 
-    // Badge de resumen si hay más de 3
+    
     const extra = notifs.filter(n => !n.leida).length - 3;
     if (extra > 0) {
       const summary = document.createElement('div');

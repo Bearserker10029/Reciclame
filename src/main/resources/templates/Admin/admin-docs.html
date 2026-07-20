@@ -678,14 +678,14 @@
   </div>
 
   <script>
-    /* ═══ MODAL SUBIR DOCUMENTO ═══ */
+    
     var _tipoActual = 'estudio';
 
     function abrirModalSubir() {
       _tipoActual = 'estudio';
       switchTipoDoc('estudio');
       document.getElementById('subir-error').style.display = 'none';
-      // reset estudio
+      
       ['e-titulo','e-descripcion','e-autor'].forEach(function(id){ document.getElementById(id).value=''; });
       document.getElementById('e-anio').value = '';
       document.getElementById('e-tematica').value = '';
@@ -693,7 +693,7 @@
       document.getElementById('e-archivo').value = '';
       document.getElementById('e-archivo-label').textContent = 'Haz clic para seleccionar un archivo PDF o PPTX';
       document.getElementById('zone-estudio').classList.remove('has-file');
-      // reset normativa
+      
       ['n-titulo','n-descripcion'].forEach(function(id){ document.getElementById(id).value=''; });
       document.getElementById('n-anio').value = '';
       document.getElementById('n-tematica').value = '';
@@ -811,10 +811,7 @@
       });
     });
 
-    /*
-     * navTo: en esta página standalone redirige por URL.
-     * El sidebar siempre llama navTo(), así que debe estar definido.
-     */
+    
     function navTo(page) {
       var map = {
         'inicio': '/admin/inicio',
@@ -831,7 +828,7 @@
       window.location.href = map[page] || ('/admin/' + page);
     }
 
-    /* ══ Paginación ══ */
+    
     var ITEMS_POR_PAGINA = 5;
     var paginaActual = 1;
 
@@ -913,7 +910,7 @@
       }
     }
 
-    /* Filtrado client-side de la tabla — ahora usa dataset.filtrado */
+    
     function filtrarDocumentos() {
       try {
         var texto = (document.getElementById('search-docs').value || '').toLowerCase().trim();
@@ -935,15 +932,15 @@
       filtrarDocumentos();
     }
 
-    /* Inicialización al cargar */
+    
     document.addEventListener('DOMContentLoaded', function () {
-      /* Limpiar artefactos Bootstrap */
+      
       document.body.classList.remove('modal-open');
       document.querySelectorAll('.modal-backdrop').forEach(function (el) { el.remove(); });
       document.body.style.overflow = '';
       document.body.style.paddingRight = '';
 
-      /* Marcar todas las filas como visibles e iniciar paginación */
+      
       document.querySelectorAll('.doc-row').forEach(function (tr) {
         tr.dataset.filtrado = '1';
       });

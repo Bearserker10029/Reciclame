@@ -435,7 +435,7 @@
       <script src="https://unpkg.com/centrifuge@5.3.5/dist/centrifuge.js"></script>
       <script th:inline="javascript">
         (function () {
-          const WS_URL = /*[[${@environment.getProperty('centrifugo.ws.url', 'ws://localhost:8001/connection/websocket')}]]*/ 'ws://localhost:8001/connection/websocket';
+          const WS_URL =  'ws://localhost:8001/connection/websocket';
 
           let centrifuge = null, suscripcion = null;
           let miId = null;
@@ -446,7 +446,7 @@
 
           const $ = (id) => document.getElementById(id);
 
-          // ── Notificación sonora + del navegador ──────────────
+          
           let audioCtx = null;
           function reproducirDing() {
             try {
@@ -460,7 +460,7 @@
               gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
               osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } catch (e) { /* silencioso */ }
+            } catch (e) {  }
           }
           function pedirPermisoNotif() {
             if (!('Notification' in window)) return;
@@ -482,7 +482,7 @@
               });
               n.onclick = () => { window.focus(); abrirChatSide(); n.close(); };
               setTimeout(() => n.close(), 6000);
-            } catch (e) { /* silencioso */ }
+            } catch (e) {  }
           }
 
           function setEstado(online) {
@@ -552,7 +552,7 @@
               const convs = await r.json();
               const total = convs.reduce((acc, c) => acc + (c.noLeidos || 0), 0);
               pintarBadge(total);
-            } catch (e) { /* silencioso */ }
+            } catch (e) {  }
           }
           function actualizarBadgeGlobal(delta) {
             const el = $('chat-side-badge');
@@ -567,7 +567,7 @@
             else el.style.display = 'none';
           }
 
-          // ── Notificaciones push del sistema ──────────────────────
+          
           function incrementarBadgeNotif() {
             const el = document.getElementById('notif-badge');
             if (!el) return;
@@ -798,7 +798,7 @@
     </th:block>
 
     <script>
-      // Helper global compartido por ambos IIFE (notif + search)
+      
       function escHtml(s) {
         return String(s == null ? '' : s)
           .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');

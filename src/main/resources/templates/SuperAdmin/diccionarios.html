@@ -984,7 +984,7 @@
 
 
   <script>
-    // ─── Contadores hero ──────────────────────────────────────────
+    
     (function initHero() {
       var rows = document.querySelectorAll('.dic-row[data-activo]');
       var total = rows.length;
@@ -997,7 +997,7 @@
       if (ael) ael.textContent = activos;
     })();
 
-    // ─── Cambio de pestaña ────────────────────────────────────────
+    
     function switchDicTab(tab) {
       ['tematicas', 'etiquetas', 'tipos', 'estados'].forEach(function (t) {
         var btn = document.getElementById('dtab-' + t);
@@ -1012,7 +1012,7 @@
       });
     }
 
-    // ─── Toast helper ─────────────────────────────────────────────
+    
     function showToast(msg, type) {
       var t = document.getElementById('dic-toast');
       t.textContent = '';
@@ -1027,12 +1027,12 @@
       t._timer = setTimeout(function () { t.classList.remove('show'); }, 3200);
     }
 
-    // ─── Recargar página (más simple y correcto en MPA) ───────────
+    
     function recargar() {
       window.location.reload();
     }
 
-    // ─── Fetch helper ─────────────────────────────────────────────
+    
     async function apiFetch(url, method, body) {
       var opts = {
         method: method,
@@ -1047,9 +1047,9 @@
       });
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  TEMÁTICAS
-    // ══════════════════════════════════════════════════════════════
+    
+    
+    
     var _modalTm;
     function abrirModalTematica(btn) {
       document.getElementById('tm-error').style.display = 'none';
@@ -1125,9 +1125,9 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  ETIQUETAS
-    // ══════════════════════════════════════════════════════════════
+    
+    
+    
     var _modalEt;
     function abrirModalEtiqueta(btn) {
       document.getElementById('et-error').style.display = 'none';
@@ -1186,9 +1186,9 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  TIPOS DE NORMATIVA
-    // ══════════════════════════════════════════════════════════════
+    
+    
+    
     var _modalTp;
     function abrirModalTipo(btn) {
       document.getElementById('tp-error').style.display = 'none';
@@ -1244,9 +1244,9 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  ESTADOS DE NORMATIVA
-    // ══════════════════════════════════════════════════════════════
+    
+    
+    
     var _modalEs;
     function abrirModalEstado(btn) {
       document.getElementById('es-error').style.display = 'none';
@@ -1302,13 +1302,13 @@
       }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  PAGINACIÓN — fábrica genérica para las 4 tablas
-    // ══════════════════════════════════════════════════════════════
+    
+    
+    
     var ITEMS_POR_PAGINA = 5;
 
     function crearPaginacion(cfg) {
-      // cfg = { tbodyId, conteoId, paginacionId }
+      
       var paginaActual = 1;
 
       function getFilasActivas() {
@@ -1396,7 +1396,7 @@
       return { inicializar: inicializar, mostrarPagina: mostrarPagina };
     }
 
-    // ─── Instancias por tabla ─────────────────────────────────────
+    
     var paginacionTematicas = crearPaginacion({
       tbodyId: 'tbody-tematicas',
       conteoId: 'conteo-tematicas',
@@ -1418,9 +1418,9 @@
       paginacionId: 'paginacion-estados'
     });
 
-    // ─── Inicialización al cargar ─────────────────────────────────
+    
     document.addEventListener('DOMContentLoaded', function () {
-      // Marcar todas las filas como visibles
+      
       ['tbody-tematicas', 'tbody-etiquetas', 'tbody-tipos', 'tbody-estados'].forEach(function (id) {
         document.querySelectorAll('#' + id + ' tr.dic-row').forEach(function (tr) {
           tr.dataset.filtrado = '1';

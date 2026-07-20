@@ -1256,7 +1256,7 @@
             animateCount('stats-otros', otros);
           })();
 
-          /* ── Paginación ── */
+          
           var ITEMS_POR_PAGINA = 5;
           var paginaActual = 1;
 
@@ -1360,7 +1360,7 @@
           }
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
-          /* ── Inicializar al cargar ── */
+          
           window.addEventListener('load', function () {
             document.querySelectorAll('.estudio-row').forEach(function (tr) {
               tr.dataset.filtrado = '1';
@@ -1429,7 +1429,7 @@
             icon.style.background = iconMap[tipo].bg;
             iconI.className = iconMap[tipo].cls;
 
-            // Renderizar bloque VirusTotal
+            
             var vtBlock = document.getElementById('modal-vt-block');
             if (vtBlock && vt) {
               var hasVt = vt.verdict || vt.sha256;
@@ -1455,7 +1455,7 @@
               vtBlock.style.display = 'none';
             }
 
-            // Vista previa kkfileview
+            
             var previewSection = document.getElementById('modal-visor-preview');
             var iframe = document.getElementById('modal-visor-iframe');
             var verCompletoBtn = document.getElementById('modal-ver-completo');
@@ -1475,7 +1475,7 @@
               previewSection.style.display = 'none';
             }
 
-            // Incrementar contador (silencioso)
+            
             if (id) {
               fetch('/api/estudios/' + id + '/visualizar', { method: 'POST' }).catch(function () { });
             }
@@ -1700,7 +1700,7 @@
             });
           });
 
-          // ── Populate year filter ──
+          
           (function populateAnios() {
             var rows = document.querySelectorAll('.estudio-row');
             var years = new Set();

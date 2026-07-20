@@ -435,7 +435,7 @@
           var fechaCelda = row.querySelector('td:first-child')?.textContent || '';
           var fechaStr = fechaCelda.trim();
           if (fechaStr && fechaStr !== '—') {
-            // La celda viene en formato "yyyy-MM-dd HH:mm:ss" (render Thymeleaf).
+            
             var fechaParts = fechaStr.split(' ')[0].split('-');
             if (fechaParts.length === 3) {
               var fechaRow = new Date(fechaParts[0], fechaParts[1] - 1, fechaParts[2]);

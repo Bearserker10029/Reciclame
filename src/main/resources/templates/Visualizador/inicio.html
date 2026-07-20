@@ -493,15 +493,15 @@
   </div>
 
   <script th:inline="javascript">
-    // navTo ya está definido arriba en el <head> (guardado con typeof === 'undefined');
-    // esta segunda definición idéntica era redundante.
+    
+    
     function goLogin() { window.location.href = '/service/repositorio/login'; }
 
     document.addEventListener('DOMContentLoaded', function () {
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
 
-      var donutData = /*[[${donutData}]]*/[];
+      var donutData = [];
 
       var labels = [];
       var data = [];
