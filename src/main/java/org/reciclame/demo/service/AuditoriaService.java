@@ -538,10 +538,18 @@ public class AuditoriaService {
     public static final String ACCION_EDITAR_ESTUDIO = "EDITAR_ESTUDIO";
     public static final String ACCION_ELIMINAR_ESTUDIO = "ELIMINAR_ESTUDIO";
 
+    // ── BACKUPS ─────────────────────────────────────────────────
+    public static final String ACCION_CREAR_BACKUP       = "CREAR_BACKUP";
+    public static final String ACCION_EJECUTAR_BACKUP    = "EJECUTAR_BACKUP";
+    public static final String ACCION_REINTENTAR_BACKUP  = "REINTENTAR_BACKUP";
+    public static final String ACCION_RESTAURO_BACKUP    = "RESTAURAR_BACKUP";
+    public static final String ACCION_ELIMINAR_BACKUP    = "ELIMINAR_BACKUP";
+
     public static final String MODULO_USUARIOS = "USUARIOS";
     public static final String MODULO_NORMATIVAS = "NORMATIVAS";
     public static final String MODULO_ESTUDIOS = "ESTUDIOS";
     public static final String MODULO_EMPRESAS = "EMPRESAS";
+    public static final String MODULO_BACKUPS = "BACKUPS";
     public static final String MODULO_SISTEMA = "SISTEMA";
     public static final String MODULO_SEGURIDAD = "SEGURIDAD";
 }
