@@ -26,6 +26,7 @@ public class EstudioService {
     private final NormativaRepository         normativaRepository;
     private final UsuarioRepository           usuarioRepository;
     private final MinioStorageService         minioStorageService;
+    private final MinioPendingDeletionService minioPendingDeletionService;
     private final NotificacionService         notificacionService;
     private final AuditoriaService            auditoriaService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
@@ -37,17 +38,19 @@ public class EstudioService {
                           NormativaRepository normativaRepository,
                           UsuarioRepository usuarioRepository,
                           MinioStorageService minioStorageService,
+                          MinioPendingDeletionService minioPendingDeletionService,
                           NotificacionService notificacionService,
                           AuditoriaService auditoriaService) {
-        this.estudioRepository          = estudioRepository;
-        this.estudiosEtiquetaRepository = estudiosEtiquetaRepository;
-        this.tematicaRepository         = tematicaRepository;
-        this.etiquetaRepository         = etiquetaRepository;
-        this.normativaRepository        = normativaRepository;
-        this.usuarioRepository          = usuarioRepository;
-        this.minioStorageService        = minioStorageService;
-        this.notificacionService        = notificacionService;
-        this.auditoriaService           = auditoriaService;
+        this.estudioRepository           = estudioRepository;
+        this.estudiosEtiquetaRepository  = estudiosEtiquetaRepository;
+        this.tematicaRepository          = tematicaRepository;
+        this.etiquetaRepository          = etiquetaRepository;
+        this.normativaRepository         = normativaRepository;
+        this.usuarioRepository           = usuarioRepository;
+        this.minioStorageService         = minioStorageService;
+        this.minioPendingDeletionService = minioPendingDeletionService;
+        this.notificacionService         = notificacionService;
+        this.auditoriaService            = auditoriaService;
         this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
         this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -294,16 +297,24 @@ public class EstudioService {
         Estudio e = estudioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Estudio no encontrado con id: " + id));
 
-        // Si llega un archivo nuevo y es distinto al actual, eliminar el viejo de MinIO
-        // para evitar archivos huérfanos y (en combinación con el nonce del visor) forzar
-        // que kkFileView sirva el archivo nuevo, no uno cacheado por fullfilename.
+        // Si llega un archivo nuevo y es distinto al actual, programar purga del viejo
+        // en MinIO con 72h de gracia (no se borra inmediato: si el reemplazo fue
+        // accidental, hay margen para recuperar el archivo antes de que el scheduler
+        // lo purgue físicamente). El nonce del visor sigue siendo el mecanismo que
+        // fuerza a kkFileView a servir el archivo nuevo, no uno cacheado por fullfilename.
         if (archivoUrl != null && e.getArchivoUrl() != null
                 && !archivoUrl.equals(e.getArchivoUrl())
                 && !e.getArchivoUrl().isBlank()) {
             try {
-                minioStorageService.eliminarArchivo(e.getArchivoUrl());
+                String objectName = minioStorageService.getObjectNameFromUrl(e.getArchivoUrl());
+                minioPendingDeletionService.programarEliminacion(
+                        e.getArchivoUrl(),
+                        objectName,
+                        MinioPendingDeletion.TIPO_ESTUDIO,
+                        id,
+                        MinioPendingDeletion.MOTIVO_REEMPLAZO);
             } catch (Exception ex) {
-                System.err.println("Advertencia: no se pudo eliminar archivo anterior de MinIO: " + ex.getMessage());
+                System.err.println("Advertencia: no se pudo programar purga de archivo anterior de MinIO: " + ex.getMessage());
             }
         }
 
@@ -411,8 +422,23 @@ public class EstudioService {
         estudiosEtiquetaRepository.deleteByEstudioId(id);
         estudioRepository.deleteById(id);
 
-        // Eliminar archivo de MinIO (fuera de la transacción JPA, no revierte el DELETE)
-        minioStorageService.eliminarArchivo(archivoUrl);
+        // Programar purga del archivo en MinIO con 72h de gracia.
+        // El archivo sigue accesible durante el período de gracia, lo que da margen
+        // para recuperar un documento borrado por error. El scheduler (MinioCleanupScheduler)
+        // se encarga del borrado físico cuando vence fechaProgramada.
+        if (archivoUrl != null && !archivoUrl.isBlank()) {
+            try {
+                String objectName = minioStorageService.getObjectNameFromUrl(archivoUrl);
+                minioPendingDeletionService.programarEliminacion(
+                        archivoUrl,
+                        objectName,
+                        MinioPendingDeletion.TIPO_ESTUDIO,
+                        id,
+                        MinioPendingDeletion.MOTIVO_ELIMINACION);
+            } catch (Exception ex) {
+                System.err.println("Advertencia: no se pudo programar purga de archivo de MinIO tras eliminar estudio: " + ex.getMessage());
+            }
+        }
     }
 
     // ── DELETE (overload sin auditoría para compatibilidad) ────────────

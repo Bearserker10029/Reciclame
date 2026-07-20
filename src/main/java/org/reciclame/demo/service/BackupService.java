@@ -1,10 +1,8 @@
 package org.reciclame.demo.service;
 
-import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.model.ProgramacionBackup;
 import org.reciclame.demo.model.SolicitudesRespaldo;
 import org.reciclame.demo.model.Usuario;
-import org.reciclame.demo.repository.AuditoriaRepository;
 import org.reciclame.demo.repository.BackupRepository;
 import org.reciclame.demo.repository.ProgramacionBackupRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
@@ -100,7 +98,7 @@ public class BackupService {
 
     private final BackupRepository backupRepository;
     private final ProgramacionBackupRepository programacionRepository;
-    private final AuditoriaRepository auditoriaRepository;
+    private final AuditoriaService auditoriaService;
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notificacionService;
     private final MantenimientoGlobalService mantenimientoService;
@@ -119,13 +117,13 @@ public class BackupService {
 
     public BackupService(BackupRepository backupRepository,
                          ProgramacionBackupRepository programacionRepository,
-                         AuditoriaRepository auditoriaRepository,
+                         AuditoriaService auditoriaService,
                          UsuarioRepository usuarioRepository,
                          NotificacionService notificacionService,
                          MantenimientoGlobalService mantenimientoService) {
         this.backupRepository = backupRepository;
         this.programacionRepository = programacionRepository;
-        this.auditoriaRepository = auditoriaRepository;
+        this.auditoriaService = auditoriaService;
         this.usuarioRepository = usuarioRepository;
         this.notificacionService = notificacionService;
         this.mantenimientoService = mantenimientoService;
@@ -194,7 +192,18 @@ public class BackupService {
         backup.setEstado("PENDIENTE");
         backup.setNotas(notas);
         backup.setEsBackupPreRestauracion(false);
-        return backupRepository.save(backup);
+        SolicitudesRespaldo saved = backupRepository.save(backup);
+
+        // Auditoría: quién pidió el backup y de qué tipo. Notas como contexto.
+        Long usuarioId = solicitante != null ? solicitante.getId() : null;
+        String usuarioNombre = solicitante != null ? solicitante.getNombreCompleto() : "Sistema";
+        String descripcion = "Solicitar backup tipo=" + saved.getTipo()
+                + (notas != null && !notas.isBlank() ? " — notas: " + notas : "");
+        auditoriaService.registrarAccion(usuarioId, usuarioNombre,
+                AuditoriaService.ACCION_CREAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
+                descripcion);
+
+        return saved;
     }
 
     @Async
@@ -268,10 +277,19 @@ public class BackupService {
 
             log.info("Backup {} completado: {} ({} bytes, exit code: {})", backup.getId(), filename, tamanhoBytes, exitCode);
 
+            // Auditoría: backup ejecutado OK. Atribuimos al usuario que lo solicitó
+            // (en el caso de los programados, es el superAdmin que figure como solicitante;
+            // si fue un reintento, sigue siendo el solicitante original).
+            registrarAuditoriaEjecucion(backup, "EXITOSO", null);
+
         } catch (Exception e) {
             backup.setEstado("FALLIDO");
             backupRepository.save(backup);
             log.error("Backup {} falló: {}", backup.getId(), e.getMessage(), e);
+
+            // Auditoría: backup falló. El error.message queda en mensajeError para diagnóstico.
+            registrarAuditoriaEjecucion(backup, "FALLIDO", e.getMessage());
+
             throw new RuntimeException("Backup falló: " + e.getMessage(), e);
         }
     }
@@ -290,6 +308,17 @@ public class BackupService {
         if (backup != null && "FALLIDO".equals(backup.getEstado())) {
             backup.setEstado("PENDIENTE");
             backupRepository.save(backup);
+
+            // Auditoría: quién pidió el reintento. Si tenemos un usuario contexto
+            // (vía controller), lo ideal sería pasarlo, pero la firma actual no lo
+            // recibe, así que atribuimos al solicitante original del backup.
+            Usuario solicitante = backup.getSolicitadoPor();
+            Long usuarioId = solicitante != null ? solicitante.getId() : null;
+            String usuarioNombre = solicitante != null ? solicitante.getNombreCompleto() : "Sistema";
+            auditoriaService.registrarAccion(usuarioId, usuarioNombre,
+                    AuditoriaService.ACCION_REINTENTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
+                    "Reintento de backup ID: " + backupId + " (tipo=" + backup.getTipo() + ")");
+
             ejecutarBackupAsync(backup);
         }
     }
@@ -346,7 +375,8 @@ public class BackupService {
             backup.setEstado("COMPLETADO");
             backupRepository.save(backup);
 
-            registrarAuditoria(usuario, "RESTAURAR_BACKUP", "BACKUPS",
+            registrarAuditoria(usuario, AuditoriaService.ACCION_RESTAURO_BACKUP,
+                    AuditoriaService.MODULO_BACKUPS,
                     "Restauración desde backup ID: " + backupId + " (" + backup.getStorageKey() + ")");
 
             log.info("Restauración completada desde backup {} por usuario {}", backupId, usuario.getNombreCompleto());
@@ -575,6 +605,20 @@ public class BackupService {
             }
             backup.setEstadoActivo(false);
             backupRepository.save(backup);
+
+            // Auditoría: quién eliminó el backup. Como la firma del método no recibe
+            // usuario, atribuimos al solicitante original del backup (o "Sistema" si
+            // no hay). Si en el futuro el controller pasa el usuario actual, se puede
+            // refactorizar para tener un campo 'eliminadoPor' en la entidad.
+            Usuario solicitante = backup.getSolicitadoPor();
+            Long usuarioId = solicitante != null ? solicitante.getId() : null;
+            String usuarioNombre = solicitante != null ? solicitante.getNombreCompleto() : "Sistema";
+            String descripcion = "Eliminar backup ID: " + id
+                    + " (storageKey=" + backup.getStorageKey()
+                    + ", tipo=" + backup.getTipo() + ")";
+            auditoriaService.registrarAccion(usuarioId, usuarioNombre,
+                    AuditoriaService.ACCION_ELIMINAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
+                    descripcion);
         });
     }
 
@@ -647,16 +691,39 @@ public class BackupService {
         return "backup_" + tipo.toLowerCase() + "_" + timestamp + ".sql";
     }
 
+    /**
+     * Audita el resultado de ejecutar un backup (manual, programado o por reintento).
+     * Centralizado en {@link AuditoriaService} para que entre al hash chain con el
+     * resto de la auditoría del sistema.
+     */
+    private void registrarAuditoriaEjecucion(SolicitudesRespaldo backup, String estado, String mensajeError) {
+        Usuario solicitante = backup.getSolicitadoPor();
+        Long usuarioId = solicitante != null ? solicitante.getId() : null;
+        String usuarioNombre = solicitante != null ? solicitante.getNombreCompleto() : "Sistema";
+        String descripcion = "Ejecutar backup ID: " + backup.getId()
+                + " (tipo=" + backup.getTipo()
+                + ", tamaño=" + (backup.getTamanioBytes() != null ? backup.getTamanioBytes() + " bytes" : "n/a")
+                + ", storageKey=" + backup.getStorageKey() + ")";
+        if ("FALLIDO".equals(estado)) {
+            auditoriaService.registrarAccionFallida(usuarioId, usuarioNombre,
+                    AuditoriaService.ACCION_EJECUTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
+                    descripcion, mensajeError, null, null);
+        } else {
+            auditoriaService.registrarAccion(usuarioId, usuarioNombre,
+                    AuditoriaService.ACCION_EJECUTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
+                    descripcion);
+        }
+    }
+
+    /**
+     * Wrapper de compatibilidad para la única llamada histórica (restaurarBackup).
+     * Mantiene la firma para no tocar el call site; delega en {@link AuditoriaService}.
+     */
     private void registrarAuditoria(Usuario usuario, String accion, String modulo, String descripcion) {
         try {
-            Auditoria auditoria = new Auditoria();
-            auditoria.setUsuarioId(usuario.getId());
-            auditoria.setUsuarioNombre(usuario.getNombreCompleto());
-            auditoria.setAccion(accion);
-            auditoria.setModulo(modulo);
-            auditoria.setDescripcion(descripcion);
-            auditoria.setEstado("EXITOSO");
-            auditoriaRepository.save(auditoria);
+            Long usuarioId = usuario != null ? usuario.getId() : null;
+            String usuarioNombre = usuario != null ? usuario.getNombreCompleto() : "Sistema";
+            auditoriaService.registrarAccion(usuarioId, usuarioNombre, accion, modulo, descripcion);
         } catch (Exception e) {
             log.warn("No se pudo registrar auditoría: {}", e.getMessage());
         }

@@ -2383,3 +2383,37 @@ SET @sql := IF(
     'CREATE INDEX idx_hash_actual ON auditoria (hash_actual)',
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- ============================================================
+-- Migración: cola de purga diferida de MinIO (TTL 72h)
+-- Fecha: 2026-07-20
+--
+-- Cuando un estudio o normativa reemplaza su archivo (o se
+-- elimina), el archivo viejo en MinIO NO se borra de inmediato.
+-- Se registra en esta cola y un job (MinioCleanupScheduler)
+-- corre cada hora y purga los registros cuya fecha_programada
+-- ya venció. Esto da una ventana de 72h para revertir
+-- eliminaciones o reemplazos accidentales.
+--
+-- La columna object_name es la clave lógica del archivo en el
+-- bucket. Un índice en ella permite lookup rápido cuando se
+-- programa una nueva purga (idempotente por objectName).
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `minio_pending_deletion` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `object_name` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Key del objeto en el bucket (sin host/bucket prefix)',
+    `archivo_url` varchar(500) COLLATE utf8mb4_unicode_ci NULL COMMENT 'URL completa guardada al programar, para logs/debug',
+    `documento_tipo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'ESTUDIO o NORMATIVA',
+    `documento_id` bigint NULL COMMENT 'FK lógica al documento (sin constraint para permitir purgas tras delete físico de la fila)',
+    `motivo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'REEMPLAZO o ELIMINACION',
+    `fecha_programada` timestamp NOT NULL COMMENT 'Instante en que el scheduler debe purgar el archivo',
+    `estado` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDIENTE' COMMENT 'PENDIENTE, PURGADO, CANCELADO, FALLIDO',
+    `purgado_at` timestamp NULL DEFAULT NULL COMMENT 'Instante en que se borró físicamente de MinIO',
+    `error_message` varchar(1000) COLLATE utf8mb4_unicode_ci NULL COMMENT 'Último error si la purga falló',
+    `intentos` int NOT NULL DEFAULT 0 COMMENT 'Cantidad de intentos de purga fallidos',
+    `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_minio_pending_fecha` (`fecha_programada`),
+    KEY `idx_minio_pending_estado` (`estado`),
+    KEY `idx_minio_pending_object` (`object_name`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Cola de archivos de MinIO con purga diferida (TTL 72h por defecto)';

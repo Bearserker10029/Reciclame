@@ -37,6 +37,7 @@ public class NormativaService {
     private final NotificacionService            notificacionService;
     private final AuditoriaService               auditoriaService;
     private final MinioStorageService            minioStorageService;
+    private final MinioPendingDeletionService    minioPendingDeletionService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     public NormativaService(NormativaRepository normativaRepository,
@@ -48,17 +49,19 @@ public class NormativaService {
                             UsuarioRepository usuarioRepository,
                             NotificacionService notificacionService,
                             AuditoriaService auditoriaService,
-                            MinioStorageService minioStorageService) {
-        this.normativaRepository          = normativaRepository;
-        this.normativasEtiquetaRepository = normativasEtiquetaRepository;
-        this.tematicaRepository           = tematicaRepository;
-        this.tiposNormativaRepository     = tiposNormativaRepository;
-        this.estadosNormativaRepository   = estadosNormativaRepository;
-        this.etiquetaRepository           = etiquetaRepository;
-        this.usuarioRepository            = usuarioRepository;
-        this.notificacionService          = notificacionService;
-        this.auditoriaService             = auditoriaService;
-        this.minioStorageService          = minioStorageService;
+                            MinioStorageService minioStorageService,
+                            MinioPendingDeletionService minioPendingDeletionService) {
+        this.normativaRepository           = normativaRepository;
+        this.normativasEtiquetaRepository  = normativasEtiquetaRepository;
+        this.tematicaRepository            = tematicaRepository;
+        this.tiposNormativaRepository      = tiposNormativaRepository;
+        this.estadosNormativaRepository    = estadosNormativaRepository;
+        this.etiquetaRepository            = etiquetaRepository;
+        this.usuarioRepository             = usuarioRepository;
+        this.notificacionService           = notificacionService;
+        this.auditoriaService              = auditoriaService;
+        this.minioStorageService           = minioStorageService;
+        this.minioPendingDeletionService   = minioPendingDeletionService;
         this.objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
         this.objectMapper.findAndRegisterModules(); // java.time.Instant (JSR-310), etc.
         this.objectMapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -384,16 +387,24 @@ public class NormativaService {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
 
-        // Si llega un archivo nuevo y es distinto al actual, eliminar el viejo de MinIO
-        // para evitar archivos huérfanos y (en combinación con el nonce del visor) forzar
-        // que kkFileView sirva el archivo nuevo, no uno cacheado por fullfilename.
+        // Si llega un archivo nuevo y es distinto al actual, programar purga del viejo
+        // en MinIO con 72h de gracia. El archivo viejo NO se borra inmediato: si el
+        // reemplazo fue accidental, hay margen para recuperarlo. El nonce del visor
+        // sigue siendo lo que fuerza a kkFileView a servir el archivo nuevo, no uno
+        // cacheado por fullfilename.
         if (archivoUrl != null && n.getArchivoUrl() != null
                 && !archivoUrl.equals(n.getArchivoUrl())
                 && !n.getArchivoUrl().isBlank()) {
             try {
-                minioStorageService.eliminarArchivo(n.getArchivoUrl());
+                String objectName = minioStorageService.getObjectNameFromUrl(n.getArchivoUrl());
+                minioPendingDeletionService.programarEliminacion(
+                        n.getArchivoUrl(),
+                        objectName,
+                        MinioPendingDeletion.TIPO_NORMATIVA,
+                        id,
+                        MinioPendingDeletion.MOTIVO_REEMPLAZO);
             } catch (Exception ex) {
-                System.err.println("Advertencia: no se pudo eliminar archivo anterior de MinIO: " + ex.getMessage());
+                System.err.println("Advertencia: no se pudo programar purga de archivo anterior de MinIO: " + ex.getMessage());
             }
         }
 
@@ -452,6 +463,7 @@ public class NormativaService {
                                   String userAgent) {
         Normativa n = normativaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Normativa no encontrada con id: " + id));
+        String archivoUrl = n.getArchivoUrl();
         n.setEstadoActivo(false);
         n.setUpdatedAt(Instant.now());
         normativaRepository.save(n);
@@ -460,6 +472,22 @@ public class NormativaService {
             AuditoriaService.ACCION_ELIMINAR_NORMATIVA, AuditoriaService.MODULO_NORMATIVAS,
             "Eliminar normativa: " + n.getTitulo() + " (ID: " + id + ")",
             null, null, "EXITOSO", null, ipAddress, userAgent);
+
+        // Programar purga del archivo de MinIO con 72h de gracia. Igual que en el
+        // update, esto da margen para revertir la eliminación si fue un error.
+        if (archivoUrl != null && !archivoUrl.isBlank()) {
+            try {
+                String objectName = minioStorageService.getObjectNameFromUrl(archivoUrl);
+                minioPendingDeletionService.programarEliminacion(
+                        archivoUrl,
+                        objectName,
+                        MinioPendingDeletion.TIPO_NORMATIVA,
+                        id,
+                        MinioPendingDeletion.MOTIVO_ELIMINACION);
+            } catch (Exception ex) {
+                System.err.println("Advertencia: no se pudo programar purga de archivo de MinIO tras eliminar normativa: " + ex.getMessage());
+            }
+        }
     }
 
     // ── DELETE (overload sin auditoría para compatibilidad) ────────────
