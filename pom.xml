@@ -115,22 +115,22 @@
 		<dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
-			<version>7.0.6</version>
+			<version>7.0.7</version>
         </dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-functions</artifactId>
-			<version>7.0.6</version>
+			<version>7.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-pdf</artifactId>
-			<version>7.0.6</version>
+			<version>7.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.jasperreports</groupId>
 			<artifactId>jasperreports-charts</artifactId>
-			<version>7.0.6</version>
+			<version>7.0.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jfree</groupId>
@@ -150,7 +150,7 @@
 		<dependency>
 			<groupId>io.minio</groupId>
 			<artifactId>minio</artifactId>
-			<version>8.5.7</version>
+			<version>8.6.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.squareup.okhttp3</groupId>
