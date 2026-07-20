@@ -388,12 +388,7 @@
   </div> 
 
   <script>
-    /**
-     * navTo(page)
-     * Lee el prefijo de rol desde <meta name="rol-prefix"> (ej. "socio", "admin", "superadmin")
-     * y construye la URL de navegación correspondiente.
-     * La etiqueta la genera Thymeleaf dinámicamente a partir de configuracionUrl.
-     */
+    
     function navTo(page) {
       var map = { 'admin-docs': 'documentos' };
       var meta = document.querySelector('meta[name="rol-prefix"]');
@@ -401,11 +396,7 @@
       window.location.href = '/' + prefix + '/' + (map[page] || page);
     }
 
-    /**
-     * toggleFrecuencia(checkbox)
-     * Habilita / deshabilita visualmente el selector de frecuencia
-     * según el estado del toggle de correo.
-     */
+    
     function toggleFrecuencia(cb) {
       var row = document.getElementById('frecuencia-row');
       if (!row) return;
@@ -413,7 +404,7 @@
       row.querySelector('select').disabled = !cb.checked;
     }
 
-    // Inicialización al cargar el DOM
+    
     document.addEventListener('DOMContentLoaded', function () {
       var emailToggle = document.getElementById('emailToggle');
       if (emailToggle) toggleFrecuencia(emailToggle);

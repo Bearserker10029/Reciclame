@@ -761,13 +761,13 @@
 
 
   <script th:inline="javascript">
-    var IS_EDIT = /*[[${isEdit}]]*/ false;
-    var ESTUDIO_ID = /*[[${isEdit ? estudio.id : null}]]*/ null;
+    var IS_EDIT =  false;
+    var ESTUDIO_ID =  null;
   </script>
 
 
   <script>
-    // ─── Contador de caracteres ────────────────────────────────────
+    
     function initCharCounter(inputId, counterId) {
       var el = document.getElementById(inputId);
       var cnt = document.getElementById(counterId);
@@ -778,14 +778,14 @@
     initCharCounter('f-titulo', 'cnt-titulo');
     initCharCounter('f-descripcion', 'cnt-desc');
 
-    // ─── Toggle label ─────────────────────────────────────────────
+    
     document.getElementById('f-publico').addEventListener('change', function () {
       document.getElementById('publico-label').textContent =
         this.checked ? 'Estudio público' : 'Borrador (no visible)';
     });
 
-    // ─── File handlers ────────────────────────────────────────────
-    var selectedFile = null; // input.files es read-only en Firefox; usamos esta variable
+    
+    var selectedFile = null; 
 
     function onFileChange(input) {
       if (input.files && input.files[0]) {
@@ -808,7 +808,7 @@
       preview.style.display = 'block';
     }
 
-    // ─── Toast ────────────────────────────────────────────────────
+    
     function showToast(msg, type) {
       var t = document.getElementById('ef-toast');
       t.innerHTML = '<i class="fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle') + '"></i><span>' + msg + '</span>';
@@ -817,7 +817,7 @@
       t._timer = setTimeout(function () { t.classList.remove('show'); }, 3500);
     }
 
-    // ─── Labels legibles para los campos del DTO ──────────────────
+    
     var LABELS_ESTUDIO = {
       titulo: 'Título',
       descripcionBreve: 'Descripción breve',
@@ -829,7 +829,7 @@
       etiquetasIds: 'Etiquetas'
     };
 
-    // ─── Pinta los errores de validación del backend ──────────────
+    
     function mostrarErroresBackend(errores) {
       var div = document.getElementById('errores-validacion');
       var html = '<strong><i class="fas fa-exclamation-triangle" style="margin-right:5px;"></i>'
@@ -844,9 +844,9 @@
       div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // ─── Submit ───────────────────────────────────────────────────
-    // ── Validación integral (cliente) ────────────────────────────
-    // Cubre EstudioRequestDTO + CHECK constraints de la BD.
+    
+    
+    
     function validarEstudio() {
       var errores = [];
       var titulo = document.getElementById('f-titulo').value.trim();
@@ -870,7 +870,7 @@
         errores.push({ campo: 'autor', mensaje: 'El autor no puede superar los 200 caracteres.' });
       }
 
-      // Año opcional pero si llega, tiene que estar en rango
+      
       if (anioStr) {
         var anioNum = parseInt(anioStr, 10);
         if (isNaN(anioNum) || anioNum < 1900 || anioNum > 2100) {
@@ -878,7 +878,7 @@
         }
       }
 
-      // Coherencia año-fecha
+      
       if (anioStr && fecha) {
         var anioFecha = parseInt(fecha.substring(0, 4), 10);
         var anioInput = parseInt(anioStr, 10);
@@ -912,14 +912,14 @@
     }
 
     async function submitForm() {
-      // Limpiar errores anteriores
+      
       var errBanner = document.getElementById('form-error');
       var errDetalle = document.getElementById('errores-validacion');
       errBanner.style.display = 'none';
       errDetalle.style.display = 'none';
       errDetalle.innerHTML = '';
 
-      // Validación integral (cliente)
+      
       var v = validarEstudio();
       if (!v.ok) {
         pintarErroresValidacion(v.errores);
@@ -927,7 +927,7 @@
         return;
       }
 
-      // Recoger etiquetas seleccionadas
+      
       var etiquetasIds = Array.from(document.querySelectorAll('.etiq-input:checked'))
         .map(function (cb) { return parseInt(cb.value, 10); });
 
@@ -969,14 +969,14 @@
 
         var res = await fetch(url, { method: method, body: formData });
 
-        // Parsear JSON de forma segura: si el server devuelve 401 con HTML o body vacío,
-        // evitamos el "Unexpected end of JSON input" y mostramos un mensaje claro.
+        
+        
         var data = {};
         try { data = await res.json(); } catch (_) {
           data = { mensaje: 'Respuesta vacía del servidor (HTTP ' + res.status + '). Probable corte de conexión o sesión expirada.' };
         }
 
-        // ── 202 Accepted: flujo NUEVO con staging asíncrono ──
+        
         if (res.status === 202) {
           exito = true;
           try {
@@ -985,7 +985,7 @@
               pending.push({ taskId: data.taskId, tipo: 'ESTUDIO', refId: data.refId, ts: Date.now() });
               sessionStorage.setItem('pendingUploads', JSON.stringify(pending));
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {  }
           showToast(data.mensaje || 'Subida en validación. Te avisamos al terminar.',
                     'info', { duration: 2200 });
           window.location.href = '/admin/estudios';
@@ -993,9 +993,9 @@
         }
 
         if (!res.ok) {
-          // ── El backend devolvió 400 ──────────────────────────────
+          
           if (data.tipo === 'VALIDACION' && data.errores) {
-            // Errores campo por campo del @Valid
+            
             mostrarErroresBackend(data.errores);
             showToast('Revisa los campos marcados.', 'error');
           } else if (data.tipo === 'VIRUS_DETECTADO' || (data.mensaje && /antivirus|virus|malicioso/i.test(data.mensaje))) {
@@ -1014,32 +1014,32 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             showToast('Archivo rechazado por antivirus.', 'error');
           } else {
-            // Error de negocio genérico (RuntimeException del servicio)
+            
             errBanner.textContent = data.mensaje || 'Error al guardar.';
             errBanner.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
-          return; // finally se ejecuta igualmente
+          return; 
         }
 
-        // ── Éxito ─────────────────────────────────────────────────
+        
         exito = true;
         showToast(IS_EDIT ? 'Estudio actualizado correctamente.' : 'Estudio creado correctamente.', 'success');
         setTimeout(function () { window.location.href = '/admin/estudios'; }, 1200);
 
       } catch (err) {
-        // Error de red (sin conexión, timeout, etc.)
+        
         errBanner.textContent = 'Error de red: ' + err.message;
         errBanner.style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
       } finally {
-        // ── SIEMPRE se ejecuta: éxito, error o excepción ───────────
-        // En éxito: el botón queda como "Guardado ✓" hasta el redirect.
-        // En error: el botón vuelve a su estado original para reintento.
+        
+        
+        
         if (exito) {
           btn.innerHTML = '<i class="fas fa-check"></i> Guardado';
-          // btn queda disabled para evitar doble envío durante el redirect
+          
         } else {
           btn.disabled = false;
           btn.innerHTML = btnOrig;

@@ -971,9 +971,9 @@
         </div>
 
         <script>
-          // ════════════════════════════════════════════════════════
-          //  INIT COUNTS (hero stats)
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           (function () {
             var rows = document.querySelectorAll('.estudio-row');
             var total = rows.length, pdf = 0, otros = 0;
@@ -997,9 +997,9 @@
             animateCount('stats-otros', otros);
           })();
 
-          // ════════════════════════════════════════════════════════
-          //  PAGINACIÓN
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var ITEMS_POR_PAGINA = 5;
           var paginaActual = 1;
 
@@ -1078,9 +1078,9 @@
             }
           }
 
-          // ════════════════════════════════════════════════════════
-          //  FILTRO
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           function filtrarEstudios() {
             var q = (document.getElementById('search-estudios').value || '').toLowerCase();
             var fmt = (document.getElementById('filter-formato').value || '').toLowerCase();
@@ -1107,9 +1107,9 @@
 
           document.getElementById('search-estudios')?.addEventListener('input', filtrarEstudios);
 
-          // ════════════════════════════════════════════════════════
-          //  VISTA LISTA / GRID
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var vistaActual = 'lista';
 
           var _tipoLabel = { pdf: 'PDF', excel: 'Excel', word: 'Word', ppt: 'PowerPoint', otro: 'Documento' };
@@ -1245,9 +1245,9 @@
             return div.innerHTML;
           }
 
-          // ════════════════════════════════════════════════════════
-          //  SIDEBAR KPIs
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           (function initSidebarKpis() {
             var rows = document.querySelectorAll('.estudio-row');
             var total = rows.length;
@@ -1301,7 +1301,7 @@
             }
           })();
 
-          // ── Populate year filter ──
+          
           (function populateAnios() {
             var rows = document.querySelectorAll('.estudio-row');
             var years = new Set();
@@ -1316,7 +1316,7 @@
             });
           })();
 
-          // ── Init on load ──
+          
           window.addEventListener('load', function () {
             document.querySelectorAll('.estudio-row').forEach(function (tr) {
               if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';

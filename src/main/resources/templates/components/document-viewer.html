@@ -79,28 +79,28 @@
       var subMsgEl  = document.getElementById('docViewerSubMsg');
       var retryBtn  = document.getElementById('docViewerRetryBtn');
 
-      // iframeEl puede ser null al inicio: el iframe se CREA dinámicamente
-      // solo cuando el archivo existe en MinIO.
+      
+      
       var iframeEl  = null;
       var currentIframeUrl = '';
 
-      // URL base del endpoint de visor (NO se asigna al iframe hasta validar
-      // que el archivo existe en MinIO).
-      var visorUrl = /*[[@{/api/documentos/visor(url=${archivoUrl},titulo=${titulo},mime=${mime})}]]*/ '';
+      
+      
+      var visorUrl =  '';
 
-      var FAST_TIMEOUT   = 30000;   // 30s → mensaje "tardando más de lo normal"
-      var RETRY_TIMEOUT  = 120000;  // 2 min → ofrecer reintentar
+      var FAST_TIMEOUT   = 30000;   
+      var RETRY_TIMEOUT  = 120000;  
       var fastTimer, retryTimer;
       var retryCount = 0;
       var MAX_RETRIES = 3;
 
       function showError(mensaje, subMensaje) {
         clearTimers();
-        // Si por algo quedara un iframe previo, lo destruimos.
+        
         removeIframe();
-        // Ocultamos el wrap completo: la página del visor (estudios-visor.html
-        // / normativo-visor.html) ya tiene su propio error UI con botón
-        // "Editar estudio/normativa". Mostrar el overlay acá duplica el mensaje.
+        
+        
+        
         if (wrap) wrap.style.display = 'none';
       }
 
@@ -140,7 +140,7 @@
         if (retryTimer) clearTimeout(retryTimer);
       }
 
-      /** Crea el iframe en el DOM y le asigna la URL. */
+      
       function createIframe(url) {
         removeIframe();
         iframeEl = document.createElement('iframe');
@@ -154,7 +154,7 @@
         currentIframeUrl = url;
       }
 
-      /** Quita el iframe del DOM si existe. */
+      
       function removeIframe() {
         if (iframeEl && iframeEl.parentNode) {
           iframeEl.parentNode.removeChild(iframeEl);
@@ -163,22 +163,17 @@
         currentIframeUrl = '';
       }
 
-      /**
-       * Valida que el archivo exista antes de abrir el visor. Hace un
-       * fetch al endpoint /api/documentos/visor y, si la respuesta es
-       * 200 OK o 302 (FOUND), crea el iframe con esa URL. Si es 404
-       * u otro error, muestra un mensaje claro y NO crea el iframe.
-       */
+      
       function openVisor() {
         showLoading('Preparando visualización...',
                     'Los documentos Office (.docx, .pptx) pueden tardar unos segundos la primera vez.');
         var bustUrl = visorUrl + '&_r=' + Date.now();
         fetch(bustUrl, { method: 'GET', redirect: 'manual', credentials: 'same-origin' })
           .then(function (resp) {
-            // 'opaqueredirect' / 'manual' puede dar opaqueredirect en algunos browsers
+            
             if (resp.type === 'opaqueredirect' || resp.status === 0) {
-              // No podemos leer Location ni body en redirects manuales con opaqueredirect.
-              // Asumimos OK y dejamos que el iframe se cargue desde la URL original.
+              
+              
               createIframe(bustUrl);
               startTimers();
               return null;
@@ -188,14 +183,14 @@
               startTimers();
               return null;
             }
-            // 404 / 400 / 500 → el backend ya devolvió un JSON con "mensaje".
-            // En estos casos NO creamos el iframe, queda solo el overlay.
+            
+            
             return resp.text().then(function (txt) {
               var msg = 'No se pudo abrir el documento.';
               try {
                 var body = JSON.parse(txt);
                 if (body && body.mensaje) msg = body.mensaje;
-              } catch (e) { /* no era JSON */ }
+              } catch (e) {  }
               if (resp.status === 404) {
                 showError('Archivo no disponible', msg);
               } else if (resp.status === 400) {
@@ -212,14 +207,14 @@
 
       window.docViewerOnLoad = function () {
         try {
-          // Si el iframe carga una página de error de kkfileview, no ocultar el overlay.
+          
           if (!iframeEl) return;
           var doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
           var body = doc && doc.body ? doc.body.innerText : '';
           if (body && (body.includes('error') || body.length < 50)) {
-            return; // posible página de error — dejar timers corriendo
+            return; 
           }
-        } catch (e) { /* cross-origin → el iframe cargó algo */ }
+        } catch (e) {  }
         clearTimers();
         loadingEl.classList.add('hidden');
         setTimeout(function () { loadingEl.style.display = 'none'; }, 300);
@@ -240,7 +235,7 @@
         openVisor();
       };
 
-      // Arranca: valida que el archivo exista y, si sí, crea el iframe.
+      
       openVisor();
     })();
   </script>

@@ -60,12 +60,18 @@ public class CompartirService {
         if (TIPO_ESTUDIO.equalsIgnoreCase(tipo)) {
             Estudio e = estudioRepository.findById(documentoId)
                     .orElseThrow(() -> new RuntimeException("Estudio no encontrado: " + documentoId));
+            if (!Boolean.TRUE.equals(e.getEstadoActivo())) {
+                throw new IllegalStateException("No se puede compartir un estudio que está inactivo (eliminado)");
+            }
             info.put("titulo", e.getTitulo());
             info.put("propietarioNombre", e.getSubidaPor() != null ? e.getSubidaPor().getNombreCompleto() : "Recíclame");
             info.put("propietarioCorreo", e.getSubidaPor() != null ? e.getSubidaPor().getCorreoCorporativo() : null);
         } else {
             Normativa n = normativaRepository.findById(documentoId)
                     .orElseThrow(() -> new RuntimeException("Normativa no encontrada: " + documentoId));
+            if (!Boolean.TRUE.equals(n.getEstadoActivo())) {
+                throw new IllegalStateException("No se puede compartir una normativa que está inactiva (eliminada)");
+            }
             info.put("titulo", n.getTitulo());
             info.put("propietarioNombre", n.getCreadaPor() != null ? n.getCreadaPor().getNombreCompleto() : "Recíclame");
             info.put("propietarioCorreo", n.getCreadaPor() != null ? n.getCreadaPor().getCorreoCorporativo() : null);
@@ -97,6 +103,25 @@ public class CompartirService {
     public Map<String, Object> agregarPersona(String tipo, Long documentoId, String correo,
                                               Long compartidoPorId, String enlace) {
         validarTipo(tipo);
+
+        // Defensa: no se puede compartir un documento inactivo aunque el cliente
+        // haya esquivado la validación del modal. obtenerInfoDocumento ya valida,
+        // pero la duplicamos acá para que un POST directo no pueda saltarse el check.
+        String tipoUpper = tipo.toUpperCase();
+        if (TIPO_ESTUDIO.equals(tipoUpper)) {
+            Estudio e = estudioRepository.findById(documentoId)
+                    .orElseThrow(() -> new RuntimeException("Estudio no encontrado: " + documentoId));
+            if (!Boolean.TRUE.equals(e.getEstadoActivo())) {
+                throw new IllegalStateException("No se puede compartir un estudio que está inactivo (eliminado)");
+            }
+        } else {
+            Normativa n = normativaRepository.findById(documentoId)
+                    .orElseThrow(() -> new RuntimeException("Normativa no encontrada: " + documentoId));
+            if (!Boolean.TRUE.equals(n.getEstadoActivo())) {
+                throw new IllegalStateException("No se puede compartir una normativa que está inactiva (eliminada)");
+            }
+        }
+
         String correoNormalizado = correo == null ? "" : correo.trim().toLowerCase();
         Usuario destinatario = usuarioRepository.findByCorreoCorporativo(correoNormalizado)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -113,7 +138,6 @@ public class CompartirService {
             throw new IllegalArgumentException("No se puede compartir documentos con una cuenta SUPERADMIN");
         }
 
-        String tipoUpper = tipo.toUpperCase();
         Optional<DocumentoCompartido> existente = compartidoRepository
                 .findByTipoDocumentoAndDocumentoIdAndUsuarioId(tipoUpper, documentoId, destinatario.getId());
         if (existente.isPresent()) {

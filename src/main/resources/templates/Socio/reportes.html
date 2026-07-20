@@ -603,12 +603,12 @@
   </div>
 
   <script th:inline="javascript" th:if="${reporte != null}">
-    /*<![CDATA[*/
-    window.__repLineLabels = /*[[${reporte.chartSemanasEtiquetas}]]*/[];
-    window.__repLineData = /*[[${reporte.chartSemanasValores}]]*/[];
-    window.__repDonutN = /*[[${reporte.donutNormativas}]]*/ 0;
-    window.__repDonutE = /*[[${reporte.donutEstudios}]]*/ 0;
-    /*]]>*/
+    
+    window.__repLineLabels = [];
+    window.__repLineData = [];
+    window.__repDonutN =  0;
+    window.__repDonutE =  0;
+    
   </script>
   <script>
     function repSwitchDetailTab(name) {
@@ -784,7 +784,7 @@
     var _expSocioLimite = 50;
 
     function abrirModalExportSocio() {
-      // Detecta el tab activo y preselecciona
+      
       var activeTab = document.querySelector('.rep-tab-btn.active');
       if (activeTab) {
         var t = activeTab.dataset.repTab;

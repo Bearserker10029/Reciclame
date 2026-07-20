@@ -1262,9 +1262,9 @@
         </div>
 
         <script>
-          // ════════════════════════════════════════════════════════
-          //  Drive-style dropdown helpers
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           window.closeAllDriveDropdowns = function () {
             document.querySelectorAll('.drive-dropdown.is-open').forEach(function (el) {
               el.classList.remove('is-open');
@@ -1302,9 +1302,9 @@
             document.addEventListener('click', function () { window.closeAllDriveDropdowns(); });
           }
 
-          // ════════════════════════════════════════════════════════
-          //  INICIALIZACIÓN: computa contadores desde las filas DOM
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           function setText(id, val) {
             var el = document.getElementById(id);
             if (el) el.textContent = val;
@@ -1379,7 +1379,7 @@
             updateTematicaPanel('todos');
           })();
 
-          // ── Populate year filter ──
+          
           (function populateAnios() {
             var rows = document.querySelectorAll('.norm-row');
             var years = new Set();
@@ -1394,9 +1394,9 @@
             });
           })();
 
-          // ════════════════════════════════════════════════════════
-          //  TAB SWITCHING
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           function showNormativoTab(tab) {
             ['todos', 'nacional', 'internacional'].forEach(function (t) {
               document.getElementById('ntab-' + t).classList.remove('active');
@@ -1408,9 +1408,9 @@
           }
           window.showNormativoTab = showNormativoTab;
 
-          // ════════════════════════════════════════════════════════
-          //  FILTRO COMBINADO
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           function applyNormFilter() {
             var activeBtn = document.querySelector('.norm-tab.active');
             var tab = activeBtn ? activeBtn.id.replace('ntab-', '') : 'todos';
@@ -1462,9 +1462,9 @@
             applyNormFilter();
           }
 
-          // ════════════════════════════════════════════════════════
-          //  PAGINACIÓN
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var ITEMS_POR_PAGINA = 5;
           var paginaActual = 1;
 
@@ -1545,9 +1545,9 @@
             }
           }
 
-          // ════════════════════════════════════════════════════════
-          //  VISTA LISTA / GRID
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var normVistaActual = 'lista';
 
           function renderNormTimelineFragment() {
@@ -1675,9 +1675,9 @@
             return div.innerHTML;
           }
 
-          // ════════════════════════════════════════════════════════
-          //  VISOR MODAL
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var _normVisorModal = null;
 
           function openNormVisorFromRow(btn) {
@@ -1707,9 +1707,9 @@
             if (modal && e.target === modal) closeVisorViz();
           });
 
-          // ════════════════════════════════════════════════════════
-          //  SHARE
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           function shareNormRow(id) {
             var row = document.querySelector('.norm-row[data-id="' + id + '"]');
             if (!row) return;
@@ -1722,7 +1722,7 @@
             }
           }
 
-          // ── Init pagination on load ──
+          
           window.addEventListener('load', function () {
             document.querySelectorAll('.norm-row').forEach(function (tr) {
               if (tr.dataset.filtrado === undefined) tr.dataset.filtrado = '1';

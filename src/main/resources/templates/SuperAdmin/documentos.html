@@ -842,7 +842,7 @@
             filtrarDocumentos();
           }
 
-          // Paginación de Documentos (5 por página)
+          
           const DOCUMENTOS_POR_PAGINA = 5;
           let paginaDocumentosActual = 1;
 
@@ -907,7 +907,7 @@
             }
           }
 
-          // Inicializar paginación al cargar
+          
           window.addEventListener('load', function () {
             document.querySelectorAll('#documentos-tbody tr.doc-row').forEach(function (tr) {
               tr.dataset.filtrado = '1';

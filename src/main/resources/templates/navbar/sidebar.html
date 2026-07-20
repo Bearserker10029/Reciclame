@@ -8,12 +8,12 @@
 <body>
 <th:block th:fragment="sidebar">
   <script>
-    document.body.setAttribute('data-rol', /*[[${rol}]]*/ 'default');
+    document.body.setAttribute('data-rol',  'default');
 
-    // Shim global de navTo() para los onclick del sidebar.
-    // Detecta el prefijo de la URL actual (no depende de ${rol} para no
-    // acoplarse a cómo cada controller setea esa variable).
-    // Si un template ya define navTo() más adelante, este check lo respeta.
+    
+    
+    
+    
     if (typeof window.navTo === 'undefined') {
       window.navTo = function (page) {
         var map = { 'admin-docs': 'documentos' };
@@ -310,7 +310,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Marcar item activo en el dock
+      
       var path = window.location.pathname;
       document.querySelectorAll('#mobile-dock .dock-item').forEach(function(a) {
         var href = a.getAttribute('href');
@@ -321,16 +321,16 @@
         }
       });
 
-      // Si estamos en Admin: el botón "Alertas" fue reemplazado por "Más".
-      // Mantener el contador de notificaciones en el badge del item "Notificaciones"
-      // dentro del sidebar (no en el dock).
+      
+      
+      
       var rol = document.body.getAttribute('data-rol');
       if (rol === 'ADMIN' && window.innerWidth <= 767) {
         var sidebarNotif = document.getElementById('nav-notificaciones');
         if (sidebarNotif) {
           var badge = sidebarNotif.querySelector('span[style*="E74C3C"], span[style*="background:#E74C3C"]');
           if (badge && badge.textContent && parseInt(badge.textContent, 10) > 0) {
-            // Asegurar que el badge sea visible al menos en mobile
+            
             badge.style.display = 'flex';
           }
         }
@@ -341,11 +341,7 @@
 
   <script>
     (function () {
-      /* Funciones unificadas para Admin y SuperAdmin.
-         El sidebar-nav en mobile está oculto por el media query de Sergio
-         (`display:none !important`). Al abrir el drawer forzamos visibilidad
-         y posición fija con !important inline; al cerrar quitamos los overrides
-         para que el media query vuelva a ocultar el sidebar. */
+      
       function _abrirDrawer() {
         if (window.innerWidth > 767) return;
         var sb = document.querySelector('.sidebar-nav');
@@ -387,14 +383,14 @@
         document.body.style.overflow = '';
       }
 
-      /* Exponer con los nombres unificados (compatibilidad con dock.html de SuperAdmin) */
+      
       window.reciclameAbrirDrawer = _abrirDrawer;
       window.reciclameCerrarDrawer = _cerrarDrawer;
-      /* Mantener también el alias usado desde sidebar.html */
+      
       window.reciclameAbrirDrawerAdmin = _abrirDrawer;
       window.reciclameCerrarDrawerAdmin = _cerrarDrawer;
 
-      /* Cerrar el drawer al hacer click en cualquier nav-item del sidebar (mobile) */
+      
       document.addEventListener('click', function (e) {
         if (window.innerWidth > 767) return;
         var rol = document.body.getAttribute('data-rol');
@@ -404,7 +400,7 @@
         setTimeout(_cerrarDrawer, 50);
       }, true);
 
-      /* Cerrar con Escape */
+      
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && window.innerWidth <= 767) {
           var rol = document.body.getAttribute('data-rol');
@@ -424,7 +420,7 @@
             window.__normativoTab = storedTab;
           }
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {  }
       var navMap = {
         '/admin': 'nav-inicio', '/admin/inicio': 'nav-inicio',
         '/admin/estudios': 'nav-estudios', '/admin/estudios/crear': 'nav-estudios',
@@ -494,7 +490,7 @@
 
       sincronizarSubnavNormativo();
 
-      // ── Sincronizar tab de normativo cuando cambia en otra parte ──
+      
       window.addEventListener('storage', function(e) {
         if (e.key === 'reciclameNormativoTab') {
           var val = e.newValue;
@@ -505,8 +501,8 @@
         }
       });
 
-      // ── Aplicar config de módulos del sidebar (solo socio/visualizador) ──
-      var _uiModulos = /*[[${uiModulosSidebar}]]*/ null;
+      
+      var _uiModulos =  null;
       if (_uiModulos && Array.isArray(_uiModulos)) {
         document.querySelectorAll('[data-module]').forEach(function(el) {
           var mod = el.getAttribute('data-module');

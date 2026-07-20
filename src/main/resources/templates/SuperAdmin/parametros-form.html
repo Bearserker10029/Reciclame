@@ -345,9 +345,9 @@
       window.location.href = map[page] || ('/superadmin/' + page);
     }
 
-    // ── Validación del valor según el tipo_dato del parámetro ───
-    // Cubre la misma regla que ParametrosSistemaRequestDTO + la
-    // CHECK constraint chk_parametros_tipo_dato de la BD.
+    
+    
+    
     function validarValorPorTipo(valor, tipo) {
       var v = (valor || '').trim();
       if (v === '') return 'El valor es obligatorio.';
@@ -384,12 +384,12 @@
 
     document.addEventListener('DOMContentLoaded', function() {
       var valor   = document.querySelector('textarea[name="valor"]');
-      var tipo    /* se inyecta vía Thymeleaf más abajo */;
-      // Detectamos el tipo desde el badge de tipo que ya pinta la plantilla
+      var tipo    ;
+      
       var badgeTipo = document.querySelector('.badge-tipo');
       if (badgeTipo) tipo = (badgeTipo.textContent || '').trim();
 
-      // Mensaje de ayuda bajo el textarea
+      
       var hint = document.getElementById('valor-hint');
       function actualizarHint() {
         if (!hint || !tipo) return;
@@ -417,7 +417,7 @@
         validar();
       }
 
-      // Interceptar submit
+      
       var form = document.querySelector('form');
       if (form) {
         form.addEventListener('submit', function(e) {

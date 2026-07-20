@@ -275,9 +275,7 @@
                   <i class="fas fa-search"></i> Verificar
                 </button>
               </div>
-              <!-- readonly (no disabled): un input disabled nunca se envía en el
-                   submit, lo que hacía que ruc llegara vacío al servidor y fallara
-                   siempre la validación @NotBlank en cada edición de empresa. -->
+              
               <input th:if="${empresa != null}" type="text" name="ruc" th:value="${empresa?.ruc}"
                 readonly th:classappend="${error_ruc != null} ? 'input-error'" />
               <div id="ruc-feedback" style="font-size:11px;margin-top:4px;display:none;"></div>
@@ -327,11 +325,11 @@
   </div>
 
   <script>
-    // ── Reglas de validación (cliente) ───────────────────────────
+    
     var RUC_RE     = /^[0-9]{11}$/;
-    var RAZON_RE   = /^[\s\S]{3,200}$/; // cualquier caracter, 3-200
+    var RAZON_RE   = /^[\s\S]{3,200}$/; 
 
-    // ── Utilidad: pintar/quitar error en un campo ────────────────
+    
     function setFieldError(inputId, errMsgId, msg) {
       var input = document.getElementById(inputId);
       var err   = errMsgId ? document.getElementById(errMsgId) : null;
@@ -350,10 +348,10 @@
       }
     }
 
-    // ── Validación de RUC ───────────────────────────────────────
+    
     function validateRuc() {
       var input = document.getElementById('input-ruc');
-      if (!input) return true; // En modo edición el RUC no es editable
+      if (!input) return true; 
       var v = (input.value || '').trim();
       if (v === '') {
         setFieldError('input-ruc', null, '');
@@ -371,7 +369,7 @@
       return true;
     }
 
-    // ── Validación de Razón Social ──────────────────────────────
+    
     function validateRazonSocial() {
       var input = document.getElementById('input-razon-social');
       if (!input) return true;
@@ -395,14 +393,14 @@
       return true;
     }
 
-    // ── Validación global del formulario ────────────────────────
+    
     function evaluarFormulario() {
       var rucOk   = validateRuc();
       var razonOk = validateRazonSocial();
       return rucOk && razonOk;
     }
 
-    // ── Consultar RUC en SUNAT ──────────────────────────────────
+    
     function verificarRuc() {
       var ruc = document.getElementById('input-ruc').value.trim();
       var fb = document.getElementById('ruc-feedback');
@@ -424,7 +422,7 @@
         .then(function(data) {
           var razonInput = document.getElementById('input-razon-social');
           if (razonInput) razonInput.value = data.razonSocial || '';
-          validateRazonSocial(); // refresca estado del campo tras autollenado
+          validateRazonSocial(); 
           fb.style.display = 'block'; fb.style.color = '#16A34A';
           var extra = data.estadoContribuyente ? ' · ' + data.estadoContribuyente : '';
           fb.textContent = '✓ Razón social completada desde SUNAT.' + extra;
@@ -440,7 +438,7 @@
         });
     }
 
-    // ── Hooks en input ──────────────────────────────────────────
+    
     document.addEventListener('DOMContentLoaded', function() {
       var ruc = document.getElementById('input-ruc');
       if (ruc) {
@@ -456,13 +454,13 @@
         razon.addEventListener('blur', validateRazonSocial);
       }
 
-      // Interceptar submit
+      
       var form = document.querySelector('form');
       if (form) {
         form.addEventListener('submit', function(e) {
           if (!evaluarFormulario()) {
             e.preventDefault();
-            // Scroll al primer error
+            
             var firstErr = document.querySelector('.input-error');
             if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
           }

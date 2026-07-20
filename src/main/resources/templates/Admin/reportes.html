@@ -923,20 +923,20 @@
               document.getElementById('rtab-chatbot').classList.add('active');
             }
           }
-          // Exponer al scope global para que los onclick inline (que se resuelven
-          // contra window) lo encuentren pase lo que pase con th:inline processing.
+          
+          
           window.switchReportTab = switchReportTab;
 
           function initCharts() {
-            // Usamos los arrays pre-procesados del controller (Strings e Integers) en lugar
-            // de inyectar los DTOs completos. Antes inyectabamos `normativas` y `tematicas`,
-            // que contienen LocalDate/Instant, y el inline JS de Thymeleaf reventaba al
-            // serializarlos → todo el <script> quedaba inválido y ningún botón funcionaba.
-            var aLabels = /*[[${chartIngresosLabels}]]*/ [];
-            var aData   = /*[[${chartIngresosData}]]*/   [];
-            var tLabels = /*[[${chartTematicaLabels}]]*/ [];
-            var tData   = /*[[${chartTematicaData}]]*/   [];
-            // Colores fijos por temática — mantiene la paleta original sin depender del DTO.
+            
+            
+            
+            
+            var aLabels =  [];
+            var aData   =    [];
+            var tLabels =  [];
+            var tData   =    [];
+            
             var tColorMap = { 'EC': '#2ECC71', 'GR': '#3498DB', 'EE': '#F39C12', 'REP': '#9B59B6' };
             var tColors = tLabels.map(function (k) { return tColorMap[k] || '#95A5A6'; });
 
@@ -1015,9 +1015,9 @@
 
           initCharts();
 
-          // ====================================================================
-          //  CHATBOT ANALYTICS — JS
-          // ====================================================================
+          
+          
+          
           (function () {
             var chatCtx = {
               api: '/api/chatbot',
@@ -1312,25 +1312,25 @@
               if (chatCtx.page + 1 < chatCtx.totalPages) { chatCtx.page++; cargarConversaciones(); }
             });
 
-            // Exponer para que se llame desde switchReportTab al abrir el tab
+            
             window.__chatbotInit = aplicarFiltros;
 
-            // Inicializar los hrefs de los botones de export del chatbot al cargar la página,
-            // para que estén listos sin necesidad de entrar al tab "Chatbot Analytics" primero.
+            
+            
             actualizarLinksExport();
 
-            // Cerrar modal al click fuera
+            
             document.getElementById('chat-modal').addEventListener('click', function (e) {
               if (e.target === this) this.style.display = 'none';
             });
 
-            // Si el server render ya paso data (en el primer paint), los KPIs ya están.
-            // Igual lanzamos la carga inicial cuando se abra el tab chatbot.
+            
+            
             var originalSwitch = window.switchReportTab;
             window.switchReportTab = function (tab) {
               if (originalSwitch) originalSwitch(tab);
               if (tab === 'chatbot' && window.__chatbotInit) {
-                // Pequeño delay para que el canvas tenga tamaño visible antes de pintar
+                
                 setTimeout(window.__chatbotInit, 30);
               }
             };
@@ -1422,9 +1422,9 @@
     </div>
 
     <script>
-      // Exponemos en window para que los onclick inline las encuentren incluso si otro
-      // bloque <script th:inline> de la misma página falla por un problema de
-      // serialización de Thymeleaf (LocalDate/Instant).
+      
+      
+      
       var _expFormato = 'pdf';
       var _expLimite = 100;
       var _expEntidad = 'usuarios';
@@ -1436,7 +1436,7 @@
         document.getElementById('modal-export-usuarios').style.display = 'flex';
       }
       window.abrirModalExport = abrirModalExport;
-      // Backwards compat
+      
       function abrirModalExportUsuarios() { abrirModalExport('usuarios', 'Usuarios'); }
       function cerrarModalExportUsuarios() {
         document.getElementById('modal-export-usuarios').style.display = 'none';
