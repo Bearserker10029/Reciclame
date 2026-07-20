@@ -356,6 +356,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
+      min-width: 0;
     }
 
     /* ── Table card ── */
@@ -871,32 +872,49 @@
       align-items: center;
       justify-content: space-between;
       padding: 18px 24px;
-      border-bottom: 1px solid #E5E7EB;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #0d2340 0%, #1B3A5C 55%, #1a4a72 100%);
+    }
+
+    .modal-header-viz::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(46,204,113,.18) 0%, transparent 70%);
+      border-radius: 50%;
     }
 
     .modal-title-viz {
       font-size: 16px;
       font-weight: 700;
-      color: #1B3A5C;
+      color: #fff;
       margin: 0;
+      position: relative;
+      z-index: 1;
     }
 
     .modal-close-viz {
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      border: none;
-      background: #F3F4F6;
-      color: #6B7280;
+      border: 1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.65);
       cursor: pointer;
       font-size: 18px;
       transition: all .15s;
       font-family: inherit;
+      position: relative;
+      z-index: 1;
     }
 
     .modal-close-viz:hover {
-      background: #E5E7EB;
-      color: #1B3A5C;
+      background: rgba(255,255,255,.18);
+      color: #fff;
     }
 
     .modal-body-viz {

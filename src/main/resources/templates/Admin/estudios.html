@@ -26,6 +26,12 @@
       background: #F0F4F8;
     }
 
+    /* El grid item no se encoge por debajo del ancho natural de su
+       contenido por defecto, asi que en anchos intermedios (tablet
+       horizontal) la tabla empuja a la columna del donut fuera de la
+       pantalla en vez de scrollear internamente. */
+    div[style*="grid-template-columns:1fr 280px"] > div { min-width: 0; }
+
     @media (max-width: 767px) {
       body > div > div[style*="display:flex;flex:1"] { flex-direction: column !important; }
       main { padding: 12px !important; padding-bottom: 80px !important; }
@@ -395,6 +401,10 @@
       border-radius: 999px;
       font-size: 10px;
       font-weight: 600;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
 
     /* ── Badges VirusTotal ── */

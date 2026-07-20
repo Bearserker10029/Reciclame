@@ -34,6 +34,8 @@ import java.util.Map;
 @RequestMapping("/api/solicitudes")
 public class SolicitudController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SolicitudController.class);
+
     // Sin 0/O/1/I/l — son los caracteres que la gente confunde al copiar
     // la contraseña temporal a mano desde el correo.
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -136,7 +138,12 @@ public class SolicitudController {
                 null, null, "EXITOSO", null,
                 HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
-        try { notificacionService.notificarAprobacion(guardado.getId()); } catch (Exception ex) {  }
+        try {
+            notificacionService.notificarAprobacion(guardado.getId());
+        } catch (Exception ex) {
+            log.warn("No se pudo crear la notificación de aprobación para usuario {}: {}",
+                    guardado.getId(), ex.getMessage());
+        }
 
         try {
             emailService.enviarCredenciales(
@@ -144,7 +151,10 @@ public class SolicitudController {
                     guardado.getNombreCompleto(),
                     guardado.getCorreoCorporativo(),
                     tempPassword);
-        } catch (Exception ex) {  }
+        } catch (Exception ex) {
+            log.warn("No se pudo enviar el correo de credenciales a {}: {}",
+                    guardado.getCorreoCorporativo(), ex.getMessage());
+        }
 
         return ResponseEntity.ok(Map.of("success", true, "usuarioId", guardado.getId()));
     }
@@ -188,7 +198,10 @@ public class SolicitudController {
                     solicitud.getCorreoCorporativo(),
                     solicitud.getNombreCompleto(),
                     motivo != null && !motivo.isBlank() ? motivo : "No se proporcionó un motivo");
-        } catch (Exception ex) {  }
+        } catch (Exception ex) {
+            log.warn("No se pudo enviar el correo de rechazo a {}: {}",
+                    solicitud.getCorreoCorporativo(), ex.getMessage());
+        }
 
         return ResponseEntity.ok(Map.of("success", true));
     }

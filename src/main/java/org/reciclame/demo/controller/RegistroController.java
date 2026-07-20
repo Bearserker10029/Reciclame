@@ -23,6 +23,8 @@ import java.util.regex.Pattern;
 @Controller
 public class RegistroController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RegistroController.class);
+
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$");
 
@@ -159,7 +161,11 @@ public class RegistroController {
         repository.save(s);
         // La solicitud ya quedó guardada; que falle el correo de bienvenida
         // (SMTP caído, etc.) no debería tumbarle el registro al usuario.
-        try { emailService.enviarBienvenida(correo, nombre); } catch (Exception ex) {  }
+        try {
+            emailService.enviarBienvenida(correo, nombre);
+        } catch (Exception ex) {
+            log.warn("No se pudo enviar el correo de bienvenida a {}: {}", correo, ex.getMessage());
+        }
     }
 
     private String error(Model model, String nombre, String dni,

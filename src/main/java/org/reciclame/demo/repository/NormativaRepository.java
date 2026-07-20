@@ -22,6 +22,15 @@ public interface NormativaRepository extends JpaRepository<Normativa, Long> {
 
     List<Normativa> findTop100ByOrderByCreatedAtDesc();
 
+    // Registros cuyo archivo sigue en el bucket staging (estado PENDIENTE):
+    // los usa el scheduler de recuperación para re-lanzar escaneos que
+    // quedaron colgados (hilo async muerto, pool saturado o reinicio).
+    List<Normativa> findByArchivoUrlStartingWith(String prefix);
+
+    // Lookup directo por URL de staging para el polling de estado de subida
+    // (antes recorría findAll() en memoria en cada request).
+    List<Normativa> findByArchivoUrl(String archivoUrl);
+
     List<Normativa> findTop5ByEstadoActivoTrueAndEsPublicaTrueOrderByVisualizacionesCountDesc();
 
     /**

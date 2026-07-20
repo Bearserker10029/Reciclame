@@ -21,6 +21,13 @@ public interface EstudioRepository extends JpaRepository<Estudio, Long> {
 
     List<Estudio> findTop100ByOrderByCreatedAtDesc();
 
+    // Registros cuyo archivo sigue en el bucket staging (estado PENDIENTE):
+    // los usa el scheduler de recuperación para re-lanzar escaneos colgados.
+    List<Estudio> findByArchivoUrlStartingWith(String prefix);
+
+    // Lookup directo por URL de staging para el polling de estado de subida.
+    List<Estudio> findByArchivoUrl(String archivoUrl);
+
     @Query("SELECT COUNT(e) FROM Estudio e WHERE e.createdAt >= :desde")
     long contarNuevosDesde(@Param("desde") Instant desde);
 

@@ -363,7 +363,7 @@
                   <span
                     style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;">PPTX</span>
                   <span
-                    style="background:rgba(231,76,60,.2);color:#FCA5A5;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;"><i
+                    style="background:rgba(231,76,60,.2);color:#FCA5A5;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;white-space:nowrap;"><i
                       class="fas fa-eye" style="font-size:9px;margin-right:3px;"></i>Solo lectura</span>
                 </div>
                 <div
@@ -703,7 +703,7 @@
       var ctx = document.getElementById('donut-admin');
       if (!ctx) return;
 
-      var donutData = [];
+      var donutData = /*[[${donutData}]]*/[];
 
       var labels = [];
       var data = [];

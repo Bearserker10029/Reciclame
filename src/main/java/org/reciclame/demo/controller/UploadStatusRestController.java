@@ -97,8 +97,7 @@ public class UploadStatusRestController {
 
     private Optional<UploadTaskStatusDTO> buscarNormativa(String stagingObject) {
         String expected = EstadoValidacion.stagingMarker(stagingObject);
-        return normativaRepository.findAll().stream()
-                .filter(n -> expected.equals(n.getArchivoUrl()))
+        return normativaRepository.findByArchivoUrl(expected).stream()
                 .findFirst()
                 .map(n -> UploadTaskStatusDTO.builder()
                         .tipo("NORMATIVA")
@@ -118,8 +117,7 @@ public class UploadStatusRestController {
 
     private Optional<UploadTaskStatusDTO> buscarEstudio(String stagingObject) {
         String expected = EstadoValidacion.stagingMarker(stagingObject);
-        return estudioRepository.findAll().stream()
-                .filter(e -> expected.equals(e.getArchivoUrl()))
+        return estudioRepository.findByArchivoUrl(expected).stream()
                 .findFirst()
                 .map(e -> UploadTaskStatusDTO.builder()
                         .tipo("ESTUDIO")

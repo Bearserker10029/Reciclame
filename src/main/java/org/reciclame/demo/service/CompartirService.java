@@ -79,11 +79,19 @@ public class CompartirService {
         return info;
     }
 
-    /** Personas con acceso señalado (sin contar al propietario). */
-    public List<Map<String, Object>> listarPersonas(String tipo, Long documentoId) {
+    /**
+     * Personas con las que {@code callerId} compartió este documento (sin contar
+     * al propietario). Se filtra por quién compartió a propósito: si devolviéramos
+     * todos los registros del documento, un socio vería con qué correos lo comparte
+     * OTRA empresa socia solo cambiando el id en la URL (fuga de datos entre socios).
+     */
+    public List<Map<String, Object>> listarPersonas(String tipo, Long documentoId, Long callerId) {
         validarTipo(tipo);
         List<DocumentoCompartido> registros = compartidoRepository.findByDocumento(tipo.toUpperCase(), documentoId);
-        return registros.stream().map(r -> {
+        return registros.stream()
+                .filter(r -> callerId == null
+                        || (r.getCompartidoPor() != null && callerId.equals(r.getCompartidoPor().getId())))
+                .map(r -> {
             Map<String, Object> m = new LinkedHashMap<>();
             Usuario u = r.getUsuario();
             m.put("usuarioId", u.getId());

@@ -451,10 +451,14 @@ public class SocioController {
 
     @GetMapping("/socio/compartir/{tipo}/{id}/personas")
     @org.springframework.web.bind.annotation.ResponseBody
-    public ResponseEntity<?> listarPersonasCompartido(@PathVariable String tipo, @PathVariable Long id) {
+    public ResponseEntity<?> listarPersonasCompartido(@PathVariable String tipo, @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails user) {
+        var uOpt = usuarioService.findByCorreo(user.getUsername());
+        if (uOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "Usuario no encontrado"));
         try {
             Map<String, Object> info = compartirService.obtenerInfoDocumento(tipo, id);
-            info.put("personas", compartirService.listarPersonas(tipo, id));
+            // Solo las personas que ESTE socio compartió, no las de otros (ver CompartirService).
+            info.put("personas", compartirService.listarPersonas(tipo, id, uOpt.get().getId()));
             return ResponseEntity.ok(info);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
