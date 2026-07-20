@@ -514,11 +514,17 @@ return "redirect:/superadmin/notificaciones";
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
-                if (ok) {
-                    ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
-                } else {
-                    ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                try {
+                    boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                    if (ok) {
+                        ra.addFlashAttribute("exitoPassword", "Contraseña actualizada correctamente");
+                    } else {
+                        ra.addFlashAttribute("errorPassword", "La contraseña actual es incorrecta");
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Validación de negocio (ej. nueva contraseña = actual).
+                    // Se muestra tal cual, sin el prefijo genérico de error.
+                    ra.addFlashAttribute("errorPassword", e.getMessage());
                 }
             });
         } catch (Exception e) {

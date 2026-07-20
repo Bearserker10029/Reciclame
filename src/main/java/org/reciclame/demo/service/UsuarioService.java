@@ -597,6 +597,15 @@ public class UsuarioService {
             return false;
         }
 
+        // Defensa del lado servidor: la nueva contraseña NO puede ser igual
+        // a la actual. El frontend (password-validator) ya bloquea este caso
+        // en cliente, pero esto protege contra JS deshabilitado, peticiones
+        // forjadas o cualquier ruta que se salte la validación visual.
+        if (passwordEncoder.matches(nuevaPassword, usuario.getPasswordHash())) {
+            throw new IllegalArgumentException(
+                    "La nueva contraseña no puede ser igual a la contraseña actual");
+        }
+
         usuario.setPasswordHash(hashPassword(nuevaPassword));
         usuario.setUpdatedAt(Instant.now());
         usuarioRepository.save(usuario);
