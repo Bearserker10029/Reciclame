@@ -176,9 +176,32 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
             """)
     Page<Auditoria> findAllExcluyendoAccionesDeSuperadminP(Pageable pageable);
 
+    /**
+     * Eventos relevantes para el panel de Auditoría de Seguridad del SuperAdmin.
+     *
+     * <p>Reglas:</p>
+     * <ul>
+     *   <li>Todo lo del módulo {@code SEGURIDAD} (cambio de password, bloqueos
+     *       automáticos, etc.) — siempre es un evento de seguridad.</li>
+     *   <li>Todo evento con {@code estado='FALLIDO'} — los intentos de login
+     *       fallidos que se registran desde {@code AuthFailureHandler} entran
+     *       por aquí.</li>
+     *   <li>Acciones críticas: {@code IMPERSONAR_USUARIO},
+     *       {@code SALIR_IMPERSONACION}, {@code BLOQUEAR_USUARIO},
+     *       {@code ELIMINAR_USUARIO}, {@code CAMBIAR_PASSWORD}.</li>
+     * </ul>
+     *
+     * <p><b>Nota:</b> {@code LOGIN} y {@code LOGOUT} NO se incluyen aquí a
+     * propósito. Esos eventos pertenecen a la pantalla de Trazabilidad (el
+     * módulo del registro es {@code AUTENTICACION}, no {@code SEGURIDAD}),
+     * no a la de Auditoría. Antes aparecían en Auditoría por error y se
+     * quitaron del IN clause para respetar la separación trazabilidad vs
+     * seguridad. Si en el futuro hace falta verlos también desde auditoría,
+     * moverlos a una pestaña aparte en lugar de mezclarlos aquí.</p>
+     */
     @Query("SELECT a FROM Auditoria a WHERE (a.modulo = 'SEGURIDAD' OR a.estado = 'FALLIDO' " +
            "OR a.accion IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'BLOQUEAR_USUARIO', " +
-           "'ELIMINAR_USUARIO', 'CAMBIAR_PASSWORD', 'LOGIN', 'LOGOUT')) " +
+           "'ELIMINAR_USUARIO', 'CAMBIAR_PASSWORD')) " +
            "AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findEventosSeguridad(Pageable pageable);
 

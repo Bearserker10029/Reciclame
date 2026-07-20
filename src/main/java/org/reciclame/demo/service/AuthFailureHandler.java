@@ -43,15 +43,37 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
                                         HttpServletResponse response,
                                         AuthenticationException exception) throws IOException {
         String username = request.getParameter("username");
+        String ip = HttpClientIpResolver.resolve(request);
+        String userAgent = request.getHeader("User-Agent");
         boolean locked = false;
         if (username != null && !username.isBlank()) {
-            var maybeUser = usuarioRepository.findByCorreoCorporativo(username.trim().toLowerCase());
+            String correoNormalizado = username.trim().toLowerCase();
+            var maybeUser = usuarioRepository.findByCorreoCorporativo(correoNormalizado);
             if (maybeUser.isPresent()) {
                 Usuario u = maybeUser.get();
                 usuarioRepository.incrementarIntentosFallidos(u.getId());
 
-                int maxIntentos = parametrosService.getIntegerOrDefault("max_intentos_login", 5);
                 int intentos = u.getIntentosFallidos() == null ? 0 : u.getIntentosFallidos() + 1;
+
+                // ── Auditoría: registrar el intento fallido individual ──
+                // Aparece en la pantalla de Auditoría porque la query
+                // findEventosSeguridad incluye estado='FALLIDO'. Módulo
+                // AUTENTICACION (no SEGURIDAD) para que sea consistente
+                // con el LOGIN exitoso del LoginController.
+                try {
+                    auditoriaService.registrarAccion(
+                            u.getId(),
+                            u.getNombreCompleto(),
+                            AuditoriaService.ACCION_LOGIN,
+                            "AUTENTICACION",
+                            "Intento de login fallido (" + intentos + "º intento) — " +
+                                    exception.getClass().getSimpleName() + ": " + exception.getMessage(),
+                            null, null, "FALLIDO",
+                            exception.getClass().getSimpleName() + ": " + exception.getMessage(),
+                            ip, userAgent);
+                } catch (Exception ignore) { /* auditoría no debe tumbar el login */ }
+
+                int maxIntentos = parametrosService.getIntegerOrDefault("max_intentos_login", 5);
                 if (intentos >= maxIntentos) {
                     usuarioRepository.bloquearCuenta(u.getId());
                     locked = true;
@@ -63,10 +85,24 @@ public class AuthFailureHandler implements AuthenticationFailureHandler {
                                 AuditoriaService.MODULO_SEGURIDAD,
                                 "Cuenta bloqueada automáticamente tras " + intentos +
                                         " intentos fallidos de login (max_intentos_login=" + maxIntentos + ").",
-                                null, null, "EXITOSO", null,
-                                HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
+                                null, null, "EXITOSO", null, ip, userAgent);
                     } catch (Exception ignore) { /* auditoría no debe tumbar el login */ }
                 }
+            } else {
+                // Usuario inexistente: registrar como FALLIDO sin poder
+                // asociarlo a un id (el panel mostrará "Sistema").
+                try {
+                    auditoriaService.registrarAccion(
+                            null,
+                            correoNormalizado,
+                            AuditoriaService.ACCION_LOGIN,
+                            "AUTENTICACION",
+                            "Intento de login con usuario inexistente: " + correoNormalizado +
+                                    " — " + exception.getClass().getSimpleName(),
+                            null, null, "FALLIDO",
+                            "Usuario no encontrado: " + correoNormalizado,
+                            ip, userAgent);
+                } catch (Exception ignore) { /* auditoría no debe tumbar el login */ }
             }
         }
 

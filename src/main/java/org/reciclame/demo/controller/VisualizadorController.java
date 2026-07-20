@@ -244,11 +244,17 @@ public class VisualizadorController {
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
-                boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
-                if (ok) {
-                    ra.addFlashAttribute("exitoPassword", "Contrasenia actualizada correctamente");
-                } else {
-                    ra.addFlashAttribute("errorPassword", "La contrasenia actual es incorrecta");
+                try {
+                    boolean ok = usuarioService.cambiarPassword(u.getId(), currentPassword, newPassword);
+                    if (ok) {
+                        ra.addFlashAttribute("exitoPassword", "Contrasenia actualizada correctamente");
+                    } else {
+                        ra.addFlashAttribute("errorPassword", "La contrasenia actual es incorrecta");
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Validación de negocio (ej. nueva contraseña = actual).
+                    // Se muestra tal cual, sin el prefijo genérico de error.
+                    ra.addFlashAttribute("errorPassword", e.getMessage());
                 }
             });
         } catch (Exception e) {
