@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <script th:inline="javascript">
     if (typeof navTo === 'undefined') {
-      var ROL_BASE = /*[[${rol}]]*/ 'ADMIN';
+      var ROL_BASE =  'ADMIN';
       var navBase = ROL_BASE === 'SUPERADMIN' ? '/superadmin'
                   : ROL_BASE === 'SOCIO'      ? '/socio'
                   : ROL_BASE === 'VISUALIZADOR' ? '/visualizador'
@@ -187,7 +187,7 @@
 
   <script th:inline="javascript">
     (function () {
-      var query = /*[[${query}]]*/ '';
+      var query =  '';
       if (!query) return;
       var marks = document.querySelectorAll('.result-snippet');
       marks.forEach(function (el) {

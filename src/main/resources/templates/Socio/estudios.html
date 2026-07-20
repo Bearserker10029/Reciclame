@@ -1677,8 +1677,9 @@
 
   function personaRowHtml(nombre, correo, rolTexto, usuarioId, esOwner) {
     var avatarClass = esOwner ? 'drive-share-avatar owner' : 'drive-share-avatar';
+    var nombreEscapado = (nombre || '').replace(/'/g, '\\\'').replace(/"/g, '&quot;');
     var quitarBtn = usuarioId
-      ? '<button class="drive-share-remove" title="Quitar acceso" onclick="quitarPersonaCompartir(' + usuarioId + ')"><i class="fas fa-times"></i></button>'
+      ? '<button class="drive-share-remove" title="Quitar acceso" onclick="quitarPersonaCompartir(' + usuarioId + ',\'' + nombreEscapado + '\')"><i class="fas fa-times"></i></button>'
       : '';
     return '<div class="drive-share-person">' +
       '<div class="' + avatarClass + '">' + iniciales(nombre).toUpperCase() + '</div>' +
@@ -1690,12 +1691,17 @@
 
   function cargarPersonasCompartir() {
     var tipo = window.__compartirDocTipo, id = window.__compartirDocId;
-    window.__compartirEnlace = window.location.origin +
-      (tipo === 'ESTUDIO' ? '/socio/estudios/' : '/socio/normativo/') + id + '/ver';
+    window.__compartirEnlace = construirEnlaceDocumento(tipo, id);
     fetch('/socio/compartir/' + tipo.toLowerCase() + '/' + id + '/personas', { credentials: 'same-origin' })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
         var cont = document.getElementById('compartirListaPersonas');
+        if (!res.ok) {
+          cont.innerHTML = '<div style="padding:14px 0;text-align:center;color:#E53E3E;font-size:12px;">'
+            + (res.data.error || 'No se pudo cargar la lista') + '</div>';
+          return;
+        }
+        var data = res.data;
         var html = personaRowHtml(data.propietarioNombre, data.propietarioCorreo, 'Propietario', null, true);
         (data.personas || []).forEach(function (p) {
           html += personaRowHtml(p.nombreCompleto, p.correo, 'Puede ver', p.usuarioId, false);
@@ -1708,12 +1714,36 @@
       });
   }
 
+  function construirEnlaceDocumento(tipo, id) {
+    var path = window.location.pathname || '';
+    if (path.charAt(path.length - 1) === '/') path = path.slice(0, -1);
+    var segmentos = path.split('/').filter(Boolean);
+    if (segmentos.length >= 2) {
+      return window.location.origin + '/' + segmentos[0] + '/' + segmentos[1] + '/' + id + '/ver';
+    }
+    return window.location.origin + (tipo === 'ESTUDIO' ? '/socio/estudios/' : '/socio/normativo/') + id + '/ver';
+  }
+
+  function correoValido(correo) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+  }
+
+  function mostrarErrorCompartir(msg) {
+    var errDiv = document.getElementById('compartirError');
+    errDiv.textContent = msg;
+    errDiv.style.display = 'block';
+  }
+
   function agregarPersonaCompartir() {
     var input = document.getElementById('compartirCorreoInput');
     var correo = input.value.trim();
     var errDiv = document.getElementById('compartirError');
     errDiv.style.display = 'none';
     if (!correo) return;
+    if (!correoValido(correo)) {
+      mostrarErrorCompartir('Ingresa un correo electrónico válido');
+      return;
+    }
     var btn = document.getElementById('btnAgregarPersona');
     btn.disabled = true;
     fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas', {
@@ -1725,8 +1755,7 @@
       .then(function (res) {
         btn.disabled = false;
         if (!res.ok) {
-          errDiv.textContent = res.data.error || 'No se pudo compartir el documento';
-          errDiv.style.display = 'block';
+          mostrarErrorCompartir(res.data.error || 'No se pudo compartir el documento');
           return;
         }
         input.value = '';
@@ -1734,15 +1763,27 @@
       })
       .catch(function () {
         btn.disabled = false;
-        errDiv.textContent = 'Error de conexión, intenta de nuevo';
-        errDiv.style.display = 'block';
+        mostrarErrorCompartir('Error de conexión, intenta de nuevo');
       });
   }
 
-  function quitarPersonaCompartir(usuarioId) {
+  function quitarPersonaCompartir(usuarioId, nombrePersona) {
+    if (!window.confirm('¿Quitar el acceso de ' + (nombrePersona || 'este usuario') + ' al documento?')) {
+      return;
+    }
     fetch('/socio/compartir/' + window.__compartirDocTipo.toLowerCase() + '/' + window.__compartirDocId + '/personas/' + usuarioId,
       { method: 'DELETE', credentials: 'same-origin' })
-      .then(function () { cargarPersonasCompartir(); });
+      .then(function (r) {
+        if (!r.ok) {
+          return r.json().then(function (data) {
+            mostrarErrorCompartir(data.error || 'No se pudo quitar el acceso');
+          });
+        }
+        cargarPersonasCompartir();
+      })
+      .catch(function () {
+        mostrarErrorCompartir('Error de conexión al quitar el acceso');
+      });
   }
 
   function copiarEnlaceCompartir() {

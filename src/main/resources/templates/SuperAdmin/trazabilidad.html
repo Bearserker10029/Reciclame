@@ -511,7 +511,7 @@
                 && (!estado || (row.dataset.estado || '').toLowerCase().includes(estado));
               if (ok && (fechaDesde || fechaHasta)) {
                 var fechaCelda = row.querySelector('td:first-child div:first-child')?.textContent || '';
-                // La celda viene en formato "yyyy-MM-dd HH:mm:ss" (render Thymeleaf).
+                
                 var fechaParts = fechaCelda.substring(0, 10).split('-');
                 if (fechaParts.length === 3) {
                   var fechaRow = fechaParts[0] + '-' + fechaParts[1] + '-' + fechaParts[2];

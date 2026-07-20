@@ -1253,10 +1253,10 @@
         </div> 
 
         <script>
-          // ════════════════════════════════════════════════════════
-          //  INICIALIZACIÓN: computa contadores desde las filas DOM
-          //  (no hardcodeados — refleja los datos reales de ${normativas})
-          // ════════════════════════════════════════════════════════
+          
+          
+          
+          
           var donutNormChart = null;
 
           function setText(id, val) {
@@ -1289,20 +1289,20 @@
               if (tema === 'REP') cREP++;
             });
 
-            // Sidebar KPIs
+            
             setText('kpi-ec', cEC);
             setText('kpi-gr', cGR);
             setText('kpi-ee', cEE);
             setText('kpi-rep', cREP);
 
-            // Sidebar resumen
+            
             setText('sum-total', total);
             setText('sum-nac', nac);
             setText('sum-intl', intl);
             setText('sum-vig', vig);
             setText('sum-consulta', consulta);
 
-            // Donut center
+            
             setText('donut-center-val', total);
 
             if (donutNormChart) {
@@ -1324,18 +1324,18 @@
               if (estado.includes('vigente')) vig++;
             });
 
-            // Hero stats
+            
             setText('hs-total', total);
             setText('hs-nacional', nac);
             setText('hs-intl', intl);
             setText('hs-vigentes', vig);
 
-            // Tab badges
+            
             setText('badge-todos', total);
             setText('badge-nacional', nac);
             setText('badge-intl', intl);
 
-            // Donut chart
+            
             var ctx = document.getElementById('donut-norm');
             if (ctx && window.Chart) {
               donutNormChart = new Chart(ctx, {
@@ -1360,7 +1360,7 @@
             updateTematicaPanel('todos');
           })();
 
-          // ── Populate year filter ──
+          
           (function populateAnios() {
             var rows = document.querySelectorAll('.norm-row');
             var years = new Set();
@@ -1375,11 +1375,11 @@
             });
           })();
 
-          // ════════════════════════════════════════════════════════
-          //  TAB SWITCHING
-          //  No oculta/muestra panes: hay UNA sola tabla.
-          //  El tab activo determina el filtro de ámbito en applyNormFilter().
-          // ════════════════════════════════════════════════════════
+          
+          
+          
+          
+          
           function showNormativoTab(tab) {
             ['todos', 'nacional', 'internacional'].forEach(function (t) {
               document.getElementById('ntab-' + t).classList.remove('active');
@@ -1391,10 +1391,10 @@
           }
           window.showNormativoTab = showNormativoTab;
 
-          // ════════════════════════════════════════════════════════
-          //  FILTRO COMBINADO: pestaña (ámbito) + columnas
-          //  Lee atributos data-* en lugar de textContent → más preciso
-          // ════════════════════════════════════════════════════════
+          
+          
+          
+          
           function applyNormFilter() {
             var activeBtn = document.querySelector('.norm-tab.active');
             var tab = activeBtn ? activeBtn.id.replace('ntab-', '') : 'todos';
@@ -1447,23 +1447,23 @@
             applyNormFilter();
           }
 
-          // ════════════════════════════════════════════════════════
-          //  LIMPIEZA DE BACKDROP (previene página congelada)
-          //  Llama cada vez que un modal se cierra o al montar la vista.
-          // ════════════════════════════════════════════════════════
+          
+          
+          
+          
           function limpiarModales() {
             document.querySelectorAll('.modal-backdrop').forEach(function (el) { el.remove(); });
             document.body.style.overflow = '';
             document.body.classList.remove('modal-open');
           }
 
-          // Limpieza preventiva al cargar la vista (por si el chatbot dejó backdrop)
-          // El script está al final del body: el DOM ya está listo, llamamos directamente.
+          
+          
           limpiarModales();
 
-          // ════════════════════════════════════════════════════════
-          //  VISOR MODAL — instancia única en caché
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var _normVisorModal = null;
 
           function openNormVisorFromRow(btn) {
@@ -1503,7 +1503,7 @@
               }
 
               var el = document.getElementById('modal-norma');
-              // Reutilizar instancia existente; nunca crear dos sobre el mismo elemento
+              
               if (!_normVisorModal) {
                 _normVisorModal = new bootstrap.Modal(el, { backdrop: true, keyboard: true });
               }
@@ -1514,7 +1514,7 @@
             }
           }
 
-          // Limpiar backdrop cada vez que el modal se cierra
+          
           document.addEventListener('DOMContentLoaded', function () {
             var modalEl = document.getElementById('modal-norma');
             if (modalEl) {
@@ -1524,9 +1524,9 @@
             }
           });
 
-          // ════════════════════════════════════════════════════════
-          //  VISTA LISTA / GRID
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var normVistaActual = 'lista';
 
           function renderNormTimelineFragment() {
@@ -1650,9 +1650,9 @@
             return div.innerHTML;
           }
 
-          // ════════════════════════════════════════════════════════
-          //  ELIMINAR normativa (borrado lógico)
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var _idEliminarNormativa = null;
           function abrirModalEliminarNormativa(id) {
             _idEliminarNormativa = id;
@@ -1694,9 +1694,9 @@
             });
           });
 
-          // ════════════════════════════════════════════════════════
-          //  PAGINACIÓN (5 por página) — patrón idéntico al Admin
-          // ════════════════════════════════════════════════════════
+          
+          
+          
           var ITEMS_POR_PAGINA = 5;
           var paginaActual = 1;
 
@@ -1778,12 +1778,12 @@
             }
           }
 
-          // ── Estado inicial: marca todas las filas y aplica filtro/paginación ──
+          
           document.querySelectorAll('.norm-row').forEach(function (tr) {
             tr.dataset.filtrado = '1';
           });
 
-          // Restaurar tab desde sidebar navigation
+          
           var storedTab = null;
           try { storedTab = sessionStorage.getItem('reciclameNormativoTab'); } catch (e) { }
           if (!storedTab && window.__normativoTab) { storedTab = window.__normativoTab; }

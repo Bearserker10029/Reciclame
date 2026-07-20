@@ -1340,10 +1340,10 @@
               aspectRatio: 1.0
             };
             html5QrInstance.start(
-              { facingMode: 'environment' }, // cámara trasera
+              { facingMode: 'environment' }, 
               config,
               onQrDetectado,
-              function () { /* ignorar errores de cada frame */ }
+              function () {  }
             ).catch(function (err) {
               mostrarError('No se pudo acceder a la cámara: ' + (err && err.message ? err.message : err));
             });
@@ -1368,14 +1368,14 @@
         if (procesandoToken) return;
         procesandoToken = true;
 
-        // El QR debe contener una URL con /auth/qr?token=... del mismo origen.
+        
         var urlValida = null;
         try {
           var parsed = new URL(decodedText, window.location.origin);
           if (parsed.pathname === '/auth/qr' && parsed.searchParams.get('token')) {
             urlValida = parsed.toString();
           }
-        } catch (e) { /* QR no es una URL válida */ }
+        } catch (e) {  }
 
         if (!urlValida) {
           procesandoToken = false;
@@ -1383,7 +1383,7 @@
           return;
         }
 
-        // Detener cámara y redirigir al endpoint que crea la sesión
+        
         if (html5QrInstance) {
           html5QrInstance.stop().catch(function () {}).finally(function () {
             window.location.href = urlValida;

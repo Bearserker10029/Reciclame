@@ -1197,7 +1197,7 @@
       }).join('');
     }
 
-    // --- MODAL HANDLERS ---
+    
     function abrirModalNuevoBackup() {
       document.getElementById('nuevo-tipo').value = 'COMPLETO';
       document.getElementById('nuevo-notas').value = '';
@@ -1413,14 +1413,14 @@
       setTimeout(() => t.className = '', 3200);
     }
 
-    // Close modals on backdrop click
+    
     ['modal-nuevo-backup', 'modal-confirmar-restaurar', 'modal-confirmar-restaurar-paso2', 'modal-programar'].forEach(id => {
       document.getElementById(id)?.addEventListener('click', function (e) {
         if (e.target === this) this.style.display = 'none';
       });
     });
 
-    // Init
+    
     document.addEventListener('DOMContentLoaded', function () {
       switchBkpTab('todos');
       cargarBackups();

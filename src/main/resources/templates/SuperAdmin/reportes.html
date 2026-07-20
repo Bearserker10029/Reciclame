@@ -912,14 +912,14 @@
               document.getElementById('rtab-chatbot').classList.add('active');
             }
           }
-          // Exponer al scope global para que los onclick inline (que se resuelven
-          // contra window) lo encuentren pase lo que pase con th:inline processing.
+          
+          
           window.switchReportTab = switchReportTab;
 
           function initCharts() {
-            var normasData = /*[[${normativas}]]*/[];
-            var tematicasData = /*[[${tematicas}]]*/[];
-            var actividadData = /*[[${actividadDiaria}]]*/[];
+            var normasData = [];
+            var tematicasData = [];
+            var actividadData = [];
             var colorMap = {};
             if (tematicasData) {
               tematicasData.forEach(function (t) {
@@ -1021,9 +1021,9 @@
 
           initCharts();
 
-          // ====================================================================
-          //  CHATBOT ANALYTICS — JS (SuperAdmin)
-          // ====================================================================
+          
+          
+          
           (function () {
             var chatCtx = {
               api: '/api/chatbot',
@@ -1317,8 +1317,8 @@
 
             window.__chatbotInit = aplicarFiltros;
 
-            // Inicializar los hrefs de los botones de export del chatbot al cargar la página,
-            // para que estén listos sin necesidad de entrar al tab "Chatbot Analytics" primero.
+            
+            
             actualizarLinksExport();
 
             document.getElementById('chat-modal').addEventListener('click', function (e) {
@@ -1329,7 +1329,7 @@
             window.switchReportTab = function (tab) {
               if (originalSwitch) originalSwitch(tab);
               if (tab === 'chatbot' && window.__chatbotInit) {
-                // Pequeño delay para que el canvas tenga tamaño visible antes de pintar
+                
                 setTimeout(window.__chatbotInit, 30);
               }
             };

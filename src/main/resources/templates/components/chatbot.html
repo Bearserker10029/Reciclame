@@ -96,13 +96,13 @@
   </div>
 
   <script th:inline="javascript">
-    /* <![CDATA[ */
-    window.CHATBOT_WEBHOOK_URL = /*[[${@environment.getProperty('n8n.chatbot.webhook.url', 'http://localhost:5678/webhook/chatbot-reciclame')}]]*/ 'http://localhost:5678/webhook/chatbot-reciclame';
-    window.CHATBOT_CALLBACK_URL = /*[[${@environment.getProperty('app.base-url', 'http://localhost:8080') + '/api/chatbot/registrar'}]]*/ '/api/chatbot/registrar';
-    window.USUARIO_ROL = /*[[${session.usuarioSesion?.rolNombre ?: 'ANONYMOUS'}]]*/ 'ANONYMOUS';
-    window.USUARIO_ID = /*[[${session.usuarioSesion?.id ?: 0}]]*/ 0;
-    window.USUARIO_NOMBRE = /*[[${session.usuarioSesion?.nombreCompleto ?: 'Anonimo'}]]*/ 'Anonimo';
-    /* ]]> */
+    
+    window.CHATBOT_WEBHOOK_URL =  'http://localhost:5678/webhook/chatbot-reciclame';
+    window.CHATBOT_CALLBACK_URL =  '/api/chatbot/registrar';
+    window.USUARIO_ROL =  'ANONYMOUS';
+    window.USUARIO_ID =  0;
+    window.USUARIO_NOMBRE =  'Anonimo';
+    
   </script>
 
 
@@ -110,10 +110,10 @@
   (function () {
     'use strict';
 
-    // ── Cargar marked y DOMPurify dinámicamente ──
-    // El fragment no tiene <head> propio, así que los <script> no se cargan
-    // por Thymeleaf al hacer th:replace. Los inyectamos manualmente en
-    // <head> y esperamos a que estén listos antes de procesar respuestas.
+    
+    
+    
+    
     function ensureScriptLoaded(src) {
       return new Promise(function (resolve) {
         if (document.querySelector('script[src="' + src + '"]')) { resolve(); return; }
@@ -125,7 +125,7 @@
         document.head.appendChild(s);
       });
     }
-    // Cola de promesas para esperar a que las libs estén listas
+    
     window.__chatbotLibsReady = window.__chatbotLibsReady || (function () {
       var pending = [];
       if (typeof DOMPurify === 'undefined') {
@@ -137,8 +137,8 @@
       return pending.length ? Promise.all(pending) : Promise.resolve();
     })();
 
-    // ── Render markdown del bot a HTML seguro ──
-    // marked convierte markdown → HTML; DOMPurify elimina XSS antes de inyectar.
+    
+    
     function renderBotMarkdown(text) {
       if (!text) return '';
       try {
@@ -156,7 +156,7 @@
         return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
     }
-    // Versión async de renderBotMarkdown que espera a que las libs estén listas
+    
     function renderBotMarkdownAsync(text) {
       if (window.__chatbotLibsReady && typeof window.__chatbotLibsReady.then === 'function') {
         return window.__chatbotLibsReady.then(function () { return renderBotMarkdown(text); });
@@ -164,12 +164,12 @@
       return Promise.resolve(renderBotMarkdown(text));
     }
 
-    // Callback al backend para registrar la conversacion (fire-and-forget).
-    // Se ejecuta despues de cada respuesta del bot. Si falla, no rompe el chat.
+    
+    
     function enviarCallbackRegistro(datos) {
       try {
         if (!datos || !window.CHATBOT_CALLBACK_URL) return;
-        // No bloqueamos la UI: usamos sendBeacon cuando sea posible.
+        
         var payload = JSON.stringify(datos);
         if (navigator.sendBeacon) {
           var blob = new Blob([payload], { type: 'application/json' });
@@ -181,11 +181,11 @@
           body: payload,
           credentials: 'same-origin',
           keepalive: true
-        }).catch(function () { /* silencioso */ });
-      } catch (e) { /* silencioso */ }
+        }).catch(function () {  });
+      } catch (e) {  }
     }
 
-    // ── Persistencia de la sesión (sessionStorage, por usuario) ──
+    
     var SS_MSGS  = 'chatbot:msgs:' + (window.USUARIO_ID || '0');
     var SS_OPEN  = 'chatbot:open:' + (window.USUARIO_ID || '0');
 
@@ -193,7 +193,7 @@
       try {
         var msgs = document.getElementById('chat-messages');
         if (msgs) sessionStorage.setItem(SS_MSGS, msgs.innerHTML);
-      } catch (e) { /* silencioso */ }
+      } catch (e) {  }
     }
     function restaurarMensajes() {
       try {
@@ -203,10 +203,10 @@
           msgs.innerHTML = saved;
           msgs.scrollTop = msgs.scrollHeight;
         }
-      } catch (e) { /* silencioso */ }
+      } catch (e) {  }
     }
 
-    // Mostrar el bubble al cargar + restaurar mensajes y estado del panel
+    
     function initChatbot() {
       var bubble = document.getElementById('chatbot-bubble');
       var panel  = document.getElementById('chatbot-panel');
@@ -224,7 +224,7 @@
       }
     }
 
-    // Definir toggleChatbot solo si no está ya declarada
+    
     if (typeof window.toggleChatbot === 'undefined') {
       window.toggleChatbot = function () {
         var panel  = document.getElementById('chatbot-panel');
@@ -238,7 +238,7 @@
       };
     }
 
-    // Definir sendChatMessage solo si no está ya declarada
+    
     if (typeof window.sendChatMessage === 'undefined') {
       window.sendChatMessage = function () {
         var input = document.getElementById('chat-input');
@@ -278,7 +278,7 @@
                      ? json.choices[0].message.content
                      : (json.response || content);
           } catch (e) {}
-          // Esperar a que las libs de markdown estén cargadas antes de renderizar
+          
           renderBotMarkdownAsync(content).then(function (rendered) {
             var botMsgHtml = '<div class="chat-msg bot"><div class="bubble bot-markdown">' + rendered + '</div></div>';
             msgs.innerHTML += botMsgHtml;
@@ -331,7 +331,7 @@
       };
     }
 
-    // Inicializar cuando el DOM esté listo
+    
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initChatbot);
     } else {
