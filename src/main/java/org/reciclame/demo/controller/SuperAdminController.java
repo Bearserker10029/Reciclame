@@ -55,6 +55,12 @@ import java.time.Instant;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
+// Extiende AdminController porque SuperAdmin ve todo lo que ve Admin, más lo
+// exclusivo: impersonación, empresas, parámetros del sistema, backups y la
+// auditoría/reportes SIN el filtro que le esconde a Admin las acciones del
+// propio SuperAdmin (ver los overrides de excluirSuperadmin* al final del
+// archivo). La mayoría de los @Override de acá solo repintan la misma
+// vista bajo /superadmin/** en vez de /admin/**.
 @Controller
 public class SuperAdminController extends AdminController {
 
@@ -180,8 +186,6 @@ public class SuperAdminController extends AdminController {
 
     @Override
     
-    // Kent,FullStack Developer https://github.com/Bearserker10029
-    // Si no se muestra los usuarios, este es el culpable:
     
     @GetMapping("/superadmin/usuarios")
     public String usuarios(Model model, @AuthenticationPrincipal UserDetails user) {
@@ -284,8 +288,6 @@ public class SuperAdminController extends AdminController {
         model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
         model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
 
-        // Chatbot Analytics — KPIs por defecto (ultimos 30 dias)
-        // Envuelto en try/catch para que un fallo en el modulo del chatbot NO tumbe la pagina de reportes.
         try {
             Instant hace30dChat = Instant.now().minus(Duration.ofDays(30));
             var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now());
@@ -312,15 +314,9 @@ public class SuperAdminController extends AdminController {
         setupCommonAttributes(model, user.getUsername());
         var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidad(0, 100);
         model.addAttribute("auditorias", auditoriasPage.getContent());
-        // totalElements = total real en el sistema (para el stat-chip informativo).
-        // El filtro de la tabla, sin embargo, es 100% client-side sobre las filas
-        // ya cargadas (ver filtrarTraza() en este mismo template) — nunca busca
-        // más allá de esas 100. registrosCargados deja eso explícito en el footer
-        // para que el SuperAdmin no crea que está filtrando sobre todo el histórico.
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
         model.addAttribute("registrosCargados", auditoriasPage.getContent().size());
 
-        // Chips por módulo
         var conteoPorModulo = auditoriasPage.getContent().stream()
                 .filter(a -> a.getModulo() != null)
                 .collect(java.util.stream.Collectors.groupingBy(
@@ -335,7 +331,6 @@ public class SuperAdminController extends AdminController {
                 .collect(java.util.stream.Collectors.toList());
         model.addAttribute("conteoPorModulo", conteoPorModulo);
 
-        // Actividad últimos 7 días
         Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
         var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace7d, Instant.now());
         model.addAttribute("actividadDiaria", actividadDiaria != null ? actividadDiaria : java.util.Collections.emptyList());
@@ -478,12 +473,6 @@ return "redirect:/superadmin/notificaciones";
                         u.getNombreCompleto(),
                         HttpClientIpResolver.resolve(request),
                         request.getHeader("User-Agent"));
-                // Si NO hay una impersonación activa, refrescar usuarioSesion con los datos nuevos
-                // (caso normal: el SuperAdmin edita su propio perfil).
-                // Si SÍ hay impersonación activa, NO pisar usuarioSesion: los datos editados
-                // corresponden al impersonado, pero el "usuario real" de la sesión sigue siendo
-                // el SuperAdmin; pisar aquí causaría que el topbar se quede con datos del
-                // impersonado incluso después de salir de la impersonación.
                 if (session.getAttribute("IMPERSONATED_USER") == null) {
                     session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
                             updated.getId(), updated.getNombreCompleto(), updated.getCorreoCorporativo(),
@@ -630,12 +619,6 @@ return "redirect:/superadmin/notificaciones";
                                       @AuthenticationPrincipal UserDetails user) throws java.io.IOException {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"auditoria.csv\"");
-        // Antes exportaba listarAuditoriasUltimas100() (últimas 100 de TODA la
-        // auditoría, sin filtro) mientras la pantalla muestra listarEventosSeguridad
-        // (filtrado a acciones de seguridad, paginado). El CSV traía un dataset
-        // totalmente distinto al que el SuperAdmin estaba viendo/filtrando. Ahora
-        // exporta el mismo filtro de eventos de seguridad, acotado a un límite
-        // generoso para no disparar una consulta sin cota.
         var auditorias = auditoriaService.listarEventosSeguridad(0, 5000).getContent();
         var pw = response.getWriter();
         pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado,IP");
@@ -664,35 +647,31 @@ return "redirect:/superadmin/notificaciones";
         return "SuperAdmin/impersonar";
     }
 
+    // Impersonar = el SuperAdmin ve el sistema exactamente como lo vería el
+    // usuario target, sin pedirle su contraseña. Se arma un Authentication
+    // nuevo a mano con el rol del usuario target + un ROLE_IMPERSONATOR extra
+    // (para que la UI pueda mostrar el banner "estás impersonando a X" y
+    // para poder auditar la acción como lo que es). Los datos originales del
+    // SuperAdmin (id/nombre/correo/sesión) quedan guardados en la sesión para
+    // poder volver exactamente a donde estaba con salirImpersonacion().
     @PostMapping("/superadmin/impersonar/{id}")
     public String impersonarUsuario(@PathVariable Long id, HttpServletRequest request,
             HttpServletResponse response, HttpSession session, RedirectAttributes redirectAttributes) {
-        // Para auditoría necesitamos el nombre REAL del SuperAdmin que
-        // está ejecutando la acción. NO usar SecurityContextHolder.getName()
-        // porque durante una impersonación anidada (o si el flow recarga
-        // el contexto) ese getter devuelve el correo del usuario
-        // impersonado. Usamos los atributos inmutables fijados al login.
         Long superAdminId = (Long) session.getAttribute("SUPERADMIN_ORIGINAL_ID");
         String superAdminNombre = (String) session.getAttribute("SUPERADMIN_ORIGINAL_NOMBRE");
         String superAdminCorreo = (String) session.getAttribute("SUPERADMIN_ORIGINAL_CORREO");
         if (superAdminId == null || superAdminNombre == null) {
-            // Sesión rota: no debería pasar (solo SUPERADMIN llega aquí), pero
-            // caemos al SecurityContext por defensa.
             String fallback = SecurityContextHolder.getContext().getAuthentication().getName();
             superAdminNombre = fallback;
             superAdminCorreo = fallback;
         }
 
-        // ORIGINAL_USER se mantiene con el correo por compatibilidad con
-        // el flujo de salirImpersonacion que ya lo usa como lookup key.
         session.setAttribute("ORIGINAL_USER", superAdminCorreo);
 
         Usuario usuarioTarget = usuarioService.obtenerUsuarioEntityPorId(id);
 
         session.setAttribute("IMPERSONATED_USER", usuarioTarget.getNombreCompleto());
 
-        // Preservar el usuarioSesion original del SuperAdmin para restaurarlo al salir.
-        // Si ya hay una sesión ORIGINAL guardada de una impersonación previa anidada, no la pisamos.
         if (session.getAttribute("ORIGINAL_USUARIO_SESION") == null) {
             Object originalSesion = session.getAttribute("usuarioSesion");
             if (originalSesion != null) {
@@ -700,8 +679,6 @@ return "redirect:/superadmin/notificaciones";
             }
         }
 
-        // Setear usuarioSesion con los datos del usuario impersonado para que el topbar
-        // (que lee de session.usuarioSesion) muestre nombre/rol correctos durante la impersonación.
         session.setAttribute("usuarioSesion", new org.reciclame.demo.dto.UsuarioSesion(
                 usuarioTarget.getId(),
                 usuarioTarget.getNombreCompleto(),
@@ -728,12 +705,9 @@ return "redirect:/superadmin/notificaciones";
         authToken.setDetails(new org.springframework.security.web.authentication.WebAuthenticationDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        // Spring Security 6 no guarda el contexto automáticamente — hay que persistirlo a la sesión
-        // para que las llamadas AJAX posteriores usen el auth del usuario impersonado.
         new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
                 .saveContext(SecurityContextHolder.getContext(), request, response);
 
-        // Auditoría con la IP real del cliente (no null como antes).
         String ipAddress = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         auditoriaService.registrarAccion(superAdminId, superAdminNombre,
@@ -752,12 +726,13 @@ return "redirect:/superadmin/notificaciones";
         return "redirect:" + redirectUrl;
     }
 
+    // Camino inverso de impersonarUsuario(): reconstruye el Authentication
+    // del SuperAdmin original y restaura su UsuarioSesion guardada. El
+    // fallback buscando por ORIGINAL_USER (correo) es por si
+    // SUPERADMIN_ORIGINAL_ID no quedó seteado (sesión vieja / edge case).
     @PostMapping("/superadmin/impersonar/salir")
     public String salirImpersonacion(HttpSession session, RedirectAttributes redirectAttributes,
                                      HttpServletRequest request, HttpServletResponse response) {
-        // Misma idea que en impersonarUsuario: leer el SuperAdmin real desde
-        // los atributos inmutables de sesión, no desde el SecurityContext
-        // (que ahora contiene la auth del usuario impersonado).
         Long superAdminId = (Long) session.getAttribute("SUPERADMIN_ORIGINAL_ID");
         String superAdminNombre = (String) session.getAttribute("SUPERADMIN_ORIGINAL_NOMBRE");
         String superAdminCorreo = (String) session.getAttribute("SUPERADMIN_ORIGINAL_CORREO");
@@ -765,7 +740,6 @@ return "redirect:/superadmin/notificaciones";
         String impersonatedUser = (String) session.getAttribute("IMPERSONATED_USER");
 
         if (superAdminId == null || superAdminNombre == null) {
-            // Defensa: caer al lookup antiguo.
             if (originalUser != null) {
                 org.reciclame.demo.model.Usuario u = usuarioService.findByCorreo(originalUser)
                         .map(x -> usuarioService.obtenerUsuarioEntityPorId(x.getId()))
@@ -777,7 +751,6 @@ return "redirect:/superadmin/notificaciones";
             }
         }
 
-        // Restaurar el auth del SuperAdmin original en el SecurityContext.
         if (superAdminId != null) {
             org.reciclame.demo.model.Usuario usuarioOriginal = usuarioService.obtenerUsuarioEntityPorId(superAdminId);
             if (usuarioOriginal != null) {
@@ -799,7 +772,6 @@ return "redirect:/superadmin/notificaciones";
             }
         }
 
-        // Auditoría con IP real y nombre real del SuperAdmin.
         String ipAddress = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
         String userAgent = request.getHeader("User-Agent");
         if (superAdminId != null && superAdminNombre != null) {
@@ -812,9 +784,6 @@ return "redirect:/superadmin/notificaciones";
         session.removeAttribute("ORIGINAL_USER");
         session.removeAttribute("IMPERSONATED_USER");
 
-        // Restaurar el usuarioSesion del SuperAdmin original (guardado al impersonar).
-        // Si por alguna razón ORIGINAL_USUARIO_SESION es null, regenerarlo desde la BD
-        // para que el topbar nunca quede con datos del impersonado.
         Object originalSesion = session.getAttribute("ORIGINAL_USUARIO_SESION");
         if (originalSesion != null) {
             session.setAttribute("usuarioSesion", originalSesion);
@@ -1017,9 +986,6 @@ return "redirect:/superadmin/notificaciones";
         super.exportarNormativasXLSX(response, user);
     }
 
-    // ====================================================================
-    //  CHATBOT ANALYTICS — overrides para ruta /superadmin/...
-    // ====================================================================
 
     @Override
     @GetMapping("/superadmin/reportes/export/chatbot.pdf")
@@ -1039,9 +1005,6 @@ return "redirect:/superadmin/notificaciones";
         super.exportarChatbotXLSX(response, desde, hasta);
     }
 
-    // ====================================================================
-    //  Endpoints unificados POST — overrides para ruta /superadmin/...
-    // ====================================================================
 
     @Override
     @org.springframework.web.bind.annotation.PostMapping("/superadmin/reportes/export/usuarios")
@@ -1079,26 +1042,26 @@ return "redirect:/superadmin/notificaciones";
         return super.exportarChatbotUnificado(req, user);
     }
 
-    // El SuperAdmin sí ve a los usuarios SuperAdmin en sus reportes.
+    // Estos 4 flags son la diferencia real entre lo que ve Admin y lo que ve
+    // SuperAdmin en reportes/auditoría: Admin (clase base) los tiene en true
+    // (se esconde a sí mismo la actividad de SuperAdmin), acá van todos en
+    // false/true según corresponda para que SuperAdmin vea el panorama completo,
+    // IPs incluidas.
     @Override
     protected boolean excluirSuperadminEnUsuarios() {
         return false;
     }
 
-    // El SuperAdmin también ve las acciones hechas por superadmin en la auditoría.
     @Override
     protected boolean excluirSuperadminEnAuditoria() {
         return false;
     }
 
-    // Solo el SuperAdmin ve la IP de origen en los reportes de auditoría.
     @Override
     protected boolean mostrarIpEnAuditoria() {
         return true;
     }
 
-    // El SuperAdmin también ve las conversaciones/mensajes del chatbot de cualquier usuario,
-    // incluidos los superadmin (al hacer pruebas o revisión de calidad).
     @Override
     protected boolean excluirSuperadminEnChatbot() {
         return false;

@@ -20,14 +20,11 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Endpoints REST para que el frontend haga polling del estado de validación de los
- * archivos subidos vía flujo asíncrono (caché staging → VirusTotal → MinIO docs).
- *
- * <p>El frontend invoca {@code GET /api/uploads/{tipo}/{taskId}} cada ~3 segundos sobre
- * las filas marcadas como PENDIENTE. Cuando el estado deja de ser PENDIENTE, se elimina
- * el listener y se actualiza el badge en sitio.</p>
- */
+// El frontend hace polling acá mientras un archivo recién subido está
+// "pendiente" (staging + escaneo VirusTotal en curso, ver UploadStagingScanner).
+// Ojo: no hay job de recuperación automática si el escaneo se cae a medias —
+// si un registro se queda pendiente para siempre, cancelar() es la única
+// forma de destrabarlo desde acá.
 @RestController
 @RequestMapping("/api/uploads")
 public class UploadStatusRestController {
@@ -44,12 +41,6 @@ public class UploadStatusRestController {
         this.stagingService = stagingService;
     }
 
-    // Antes isAuthenticated() a secas: cualquier usuario autenticado (incluido
-    // Visualizador, que ni siquiera puede subir documentos) podía consultar el
-    // estado/veredicto VT de una subida ajena adivinando el taskId. Solo
-    // Admin/SuperAdmin suben documentos y son los únicos que llaman esto (ver
-    // Admin/SuperAdmin estudios.html y normativo.html) — mismo alcance que el
-    // DELETE de acá abajo.
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{tipo}/{taskId}")
     public ResponseEntity<?> status(@PathVariable String tipo, @PathVariable String taskId) {
@@ -66,10 +57,6 @@ public class UploadStatusRestController {
         return ResponseEntity.ok(result.get());
     }
 
-    /**
-     * Cancelación manual de un archivo pendiente. Solo ADMIN/SUPERADMIN. Útil si el
-     * admin sube por error y quiere abortar la validación.
-     */
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/{tipo}/{taskId}")
     public ResponseEntity<?> cancelar(@PathVariable String tipo, @PathVariable String taskId) {
@@ -88,7 +75,6 @@ public class UploadStatusRestController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("mensaje", "El archivo ya no está pendiente (estado=" + current.getEstado() + ")"));
         }
-        // Marcar como inactivo para que no aparezca en listados; limpiar staging en MinIO.
         if ("NORMATIVA".equals(tipoUpper)) {
             Normativa n = normativaRepository.findById(current.getRefId()).orElse(null);
             if (n != null) {
@@ -108,10 +94,8 @@ public class UploadStatusRestController {
         return ResponseEntity.ok(Map.of("mensaje", "Cancelado", "taskId", taskId));
     }
 
-    // ── Helpers ──────────────────────────────────────────────
 
     private Optional<UploadTaskStatusDTO> buscarNormativa(String stagingObject) {
-        // Buscamos por archivo_url = 'staging://<stagingObject>'
         String expected = EstadoValidacion.stagingMarker(stagingObject);
         return normativaRepository.findAll().stream()
                 .filter(n -> expected.equals(n.getArchivoUrl()))

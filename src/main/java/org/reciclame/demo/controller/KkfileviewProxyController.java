@@ -19,18 +19,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
-/**
- * Proxy sin sesión para que kkfileview (en Docker) descargue archivos de MinIO.
- * kkfileview no puede acceder directamente a localhost:9000 desde dentro del contenedor,
- * por lo que delega la descarga a este endpoint de Spring Boot, que sí tiene acceso a MinIO.
- * El objectName es un identificador aleatorio ({8-hex}_{nombre}) no adivinable.
- */
+// kkFileView necesita una URL http "normal" para poder previsualizar el
+// documento, pero nuestros archivos están en MinIO detrás de credenciales.
+// Este controller hace de intermediario: valida un token firmado de corta
+// duración y recién ahí genera la URL presignada real hacia MinIO y
+// streamea el archivo, sin exponer jamás las credenciales ni el bucket.
 @RestController
 public class KkfileviewProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(KkfileviewProxyController.class);
 
-    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
     private static final int STREAM_BUFFER_BYTES = 256 * 1024;
 
     @Value("${minio.bucket}")
@@ -68,7 +66,8 @@ public class KkfileviewProxyController {
                                String fileName,
                                String token,
                                HttpServletResponse response) throws IOException, InterruptedException {
-        // Validate: plain filename only, no path traversal
+        // Bloquea path traversal (../, barras, nulls) antes de tocar MinIO —
+        // objectName y fileName vienen de la URL, no hay que confiar en ellos.
         if (objectName == null || objectName.isBlank()
                 || objectName.contains("/") || objectName.contains("\\")
                 || objectName.contains("..") || objectName.contains("\0")) {
@@ -128,8 +127,6 @@ public class KkfileviewProxyController {
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
-        // kkfileview puede reintentar varias veces (preview/imágenes). Permitimos cache HTTP
-        // por 5 minutos en cliente y 10 en CDN/proxy, dado que la URL firmada dura 10 min.
         response.setHeader("Cache-Control", "private, max-age=300");
 
         try (InputStream is = upstream.body();

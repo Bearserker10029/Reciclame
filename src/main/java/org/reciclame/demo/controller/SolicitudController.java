@@ -27,10 +27,15 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Map;
 
+// Aprobar/rechazar las solicitudes de /registro. Aprobar crea el Usuario ya
+// mismo con una contraseña temporal random y debeCambiarPassword=true, y se
+// la manda por correo — el usuario la cambia en su primer login.
 @RestController
 @RequestMapping("/api/solicitudes")
 public class SolicitudController {
 
+    // Sin 0/O/1/I/l — son los caracteres que la gente confunde al copiar
+    // la contraseña temporal a mano desde el correo.
     private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
     private static final SecureRandom RNG = new SecureRandom();
 
@@ -64,7 +69,6 @@ public class SolicitudController {
         this.usuarioService = usuarioService;
     }
 
-    // POST /api/solicitudes/{id}/aprobar?rolId=X&empresaId=Y
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/aprobar")
     public ResponseEntity<?> aprobar(
@@ -81,7 +85,6 @@ public class SolicitudController {
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE)
             return ResponseEntity.badRequest().body("La solicitud ya fue procesada");
 
-        // Evitar duplicados de correo o DNI
         if (usuarioRepo.existsByCorreoCorporativo(solicitud.getCorreoCorporativo()))
             return ResponseEntity.badRequest().body("Ya existe un usuario con ese correo");
         if (usuarioRepo.existsByDni(solicitud.getDni()))
@@ -96,10 +99,8 @@ public class SolicitudController {
         if (empresaId != null)
             empresa = empresaRepo.findById(empresaId).orElse(null);
 
-        // Generar contraseña temporal
         String tempPassword = generarPassword(10);
 
-        // Crear usuario
         Usuario usuario = new Usuario();
         usuario.setNombreCompleto(solicitud.getNombreCompleto());
         usuario.setDni(solicitud.getDni());
@@ -117,7 +118,6 @@ public class SolicitudController {
         usuario.setUpdatedAt(Instant.now());
         Usuario guardado = usuarioRepo.save(usuario);
 
-        // Marcar solicitud como aprobada
         solicitud.setEstado(EstadoSolicitud.APROBADA);
         solicitud.setFechaResolucion(Instant.now());
         if (userDetails != null) {
@@ -127,7 +127,6 @@ public class SolicitudController {
         }
         solicitudRepo.save(solicitud);
 
-        // Auditoría
         String[] auditor = resolverAuditor(userDetails);
         auditoriaService.registrarAccion(
                 auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1],
@@ -137,22 +136,19 @@ public class SolicitudController {
                 null, null, "EXITOSO", null,
                 HttpClientIpResolver.resolve(request), request.getHeader("User-Agent"));
 
-        // Notificación in-app
-        try { notificacionService.notificarAprobacion(guardado.getId()); } catch (Exception ex) { /* no rollback */ }
+        try { notificacionService.notificarAprobacion(guardado.getId()); } catch (Exception ex) {  }
 
-        // Email con credenciales
         try {
             emailService.enviarCredenciales(
                     guardado.getCorreoCorporativo(),
                     guardado.getNombreCompleto(),
                     guardado.getCorreoCorporativo(),
                     tempPassword);
-        } catch (Exception ex) { /* no rollback */ }
+        } catch (Exception ex) {  }
 
         return ResponseEntity.ok(Map.of("success", true, "usuarioId", guardado.getId()));
     }
 
-    // POST /api/solicitudes/{id}/rechazar?motivo=...
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/rechazar")
     public ResponseEntity<?> rechazar(
@@ -192,12 +188,11 @@ public class SolicitudController {
                     solicitud.getCorreoCorporativo(),
                     solicitud.getNombreCompleto(),
                     motivo != null && !motivo.isBlank() ? motivo : "No se proporcionó un motivo");
-        } catch (Exception ex) { /* no rollback */ }
+        } catch (Exception ex) {  }
 
         return ResponseEntity.ok(Map.of("success", true));
     }
 
-    // GET /api/solicitudes/{id}
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<SolicitudRegistroDTO> obtener(@PathVariable Long id) {
@@ -222,7 +217,6 @@ public class SolicitudController {
         return dto;
     }
 
-    // ── helpers ─────────────────────────────────────────────────
 
     private String generarPassword(int longitud) {
         StringBuilder sb = new StringBuilder(longitud);

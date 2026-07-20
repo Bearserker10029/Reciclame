@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+// Deja que el SuperAdmin prenda/apague módulos del sidebar por rol sin tocar
+// código (feature exclusiva de SuperAdmin, ver requerimiento "algo diferenciador
+// respecto al administrador"). Los labels de acá abajo son solo para pintar
+// bonito los checkboxes; la lista real de qué módulos EXISTEN por rol vive
+// en ConfiguracionUiRolService (DEFAULT_MODULOS_*).
 @Controller
 public class ConfiguracionUiRolController {
 
@@ -47,7 +52,6 @@ public class ConfiguracionUiRolController {
         this.service = service;
     }
 
-    // ── Vista superadmin ───────────────────────────────────────────────────
 
     @GetMapping("/superadmin/configuracion-vistas")
     @PreAuthorize("hasRole('SUPERADMIN')")
@@ -66,7 +70,6 @@ public class ConfiguracionUiRolController {
         return "SuperAdmin/configuracion-vistas";
     }
 
-    // ── API REST ───────────────────────────────────────────────────────────
 
     @GetMapping("/api/ui-config/{rol}")
     @PreAuthorize("hasRole('SUPERADMIN')")

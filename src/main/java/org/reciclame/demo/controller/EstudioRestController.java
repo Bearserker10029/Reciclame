@@ -20,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+// CRUD de estudios. Igual que en NormativaRestController: si viene archivo,
+// crear/actualizar responden 202 (no 201/200) porque el archivo recién queda
+// disponible después de pasar el escaneo antivirus en staging.
 @RestController
 @RequestMapping("/api/estudios")
 public class EstudioRestController {
@@ -36,21 +39,12 @@ public class EstudioRestController {
         this.usuarioService = usuarioService;
     }
 
-    // ── READ ALL ──────────────────────────────────────────────
-    // Devuelve TODOS los estudios (públicos y no públicos), sin filtrar
-    // por esPublico. Solo Admin/SuperAdmin la usan desde el frontend
-    // (Socio/Visualizador consumen listarEstudiosPublicos() vía páginas
-    // Thymeleaf aparte) — restringir el rol evita que un Socio/Visualizador
-    // llame esta API directamente y vea/lea estudios no públicos.
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<EstudioResponseDTO>> listar() {
         return ResponseEntity.ok(estudioService.listarEstudios());
     }
 
-    // ── READ ONE ──────────────────────────────────────────────
-    // Mismo motivo que listar(): sin filtro de esPublico, así que se
-    // restringe a los roles que legítimamente la consumen.
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
@@ -62,7 +56,6 @@ public class EstudioRestController {
         }
     }
 
-    // ── CREATE ────────────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
@@ -99,7 +92,6 @@ public class EstudioRestController {
         }
     }
 
-    // ── UPDATE ────────────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
@@ -136,7 +128,6 @@ public class EstudioRestController {
         }
     }
 
-    // ── DELETE físico ─────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id,
@@ -155,7 +146,6 @@ public class EstudioRestController {
         }
     }
 
-    // ── Registrar visualización ───────────────────────────────
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/{id}/visualizar")
     public ResponseEntity<?> registrarVisualizacion(@PathVariable Long id) {

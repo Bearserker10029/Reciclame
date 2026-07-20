@@ -16,6 +16,10 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+// Dos formas de llegar a "pedir acceso": la página dedicada /registro (form
+// urlencoded, procesarFormulario) y el panel embebido en el login (JSON,
+// procesarJson — no pide "empresa" el form clásico, pero el panel del login
+// sí). Ambas caen en el mismo guardar().
 @Controller
 public class RegistroController {
 
@@ -37,8 +41,6 @@ public class RegistroController {
         this.apiPeruDevService = apiPeruDevService;
     }
 
-    // ── Consulta de DNI para autocompletar el nombre en /registro ─
-    // Público (bajo /registro/**, permitAll en SecurityConfig).
     @GetMapping("/registro/consulta-dni/{dni}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> consultarDni(@PathVariable String dni) {
@@ -47,7 +49,6 @@ public class RegistroController {
                 .orElseGet(() -> ResponseEntity.ok(Map.of("encontrado", false)));
     }
 
-    // ── Dedicated registration page ───────────────────────────
 
     @GetMapping("/registro")
     public String mostrarFormulario(Model model) {
@@ -97,7 +98,6 @@ public class RegistroController {
         return "pendiente-registro";
     }
 
-    // ── Public legal pages (no authentication required) ──────
 
     @GetMapping("/legal/terminos")
     public String legalTerminos() {
@@ -119,7 +119,6 @@ public class RegistroController {
         return "legal/nosotros";
     }
 
-    // ── JSON endpoint — keeps AC1 (login.html panel) working ──
 
     @PostMapping(value = "/registro", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
@@ -147,7 +146,6 @@ public class RegistroController {
         return ResponseEntity.ok(Map.of("success", true));
     }
 
-    // ── Helpers ───────────────────────────────────────────────
 
     private void guardar(String nombre, String dni, String correo, String empresa) {
         SolicitudesRegistro s = new SolicitudesRegistro();
@@ -159,7 +157,9 @@ public class RegistroController {
         s.setEstadoActivo(true);
         s.setCreatedAt(Instant.now());
         repository.save(s);
-        try { emailService.enviarBienvenida(correo, nombre); } catch (Exception ex) { /* no rollback */ }
+        // La solicitud ya quedó guardada; que falle el correo de bienvenida
+        // (SMTP caído, etc.) no debería tumbarle el registro al usuario.
+        try { emailService.enviarBienvenida(correo, nombre); } catch (Exception ex) {  }
     }
 
     private String error(Model model, String nombre, String dni,

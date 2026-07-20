@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+// CRUD de los 4 catálogos que alimentan los selects de normativas/estudios
+// (temáticas, etiquetas, tipos y estados). Los GET son para cualquier
+// usuario logueado porque se usan para pintar filtros hasta en las vistas
+// de Socio/Visualizador; crear/editar/borrar el catálogo en sí queda
+// restringido a Admin/SuperAdmin. Los 4 bloques son básicamente el mismo
+// CRUD copiado y pegado — si se agrega un catálogo nuevo, seguir el patrón.
 @RestController
 @RequestMapping("/api")
 public class DiccionariosRestController {
@@ -32,9 +38,6 @@ public class DiccionariosRestController {
         this.estadosNormativaService = estadosNormativaService;
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  TEMÁTICAS
-    // ══════════════════════════════════════════════════════════════
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/tematicas")
@@ -73,9 +76,6 @@ public class DiccionariosRestController {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  ETIQUETAS
-    // ══════════════════════════════════════════════════════════════
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/etiquetas")
@@ -114,9 +114,6 @@ public class DiccionariosRestController {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  TIPOS DE NORMATIVA
-    // ══════════════════════════════════════════════════════════════
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/tipos-normativa")
@@ -155,9 +152,6 @@ public class DiccionariosRestController {
         }
     }
 
-    // ══════════════════════════════════════════════════════════════
-    //  ESTADOS DE NORMATIVA
-    // ══════════════════════════════════════════════════════════════
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/estados-normativa")

@@ -10,11 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-/**
- * Vista de búsqueda global ("/buscar?q=...").
- * Renderiza una página dedicada con los resultados agrupados por tipo,
- * usando el rol del usuario en sesión para filtrar.
- */
 @Controller
 public class SearchViewController {
 
@@ -40,8 +35,6 @@ public class SearchViewController {
 
         model.addAttribute("query", queryLimpio);
         model.addAttribute("rolEfectivo", resp.getRolEfectivo());
-        // El sidebar único compara con 'ADMIN' / 'SOCIO' / 'SUPERADMIN' / 'VISUALIZADOR'.
-        // El session trae el nombre completo ('ADMINISTRADOR'), por eso normalizamos aquí.
         model.addAttribute("rol", normalizarRolCorto(resp.getRolEfectivo()));
         model.addAttribute("tiposPermitidos", resp.getTiposPermitidos());
         model.addAttribute("resultados", resp.getResultados());
@@ -49,12 +42,6 @@ public class SearchViewController {
         return "buscar";
     }
 
-    /**
-     * Mapea el nombre completo del rol (como viene en sesión y de la BD) al
-     * alias corto que espera el sidebar compartido (navbar/sidebar.html) y
-     * el fragmento del dock. Si el rol no se reconoce, devuelve "" para que
-     * el sidebar/dock se omitan en vez de mostrar opciones incorrectas.
-     */
     private String normalizarRolCorto(String rolCompleto) {
         if (rolCompleto == null) return "";
         String r = rolCompleto.trim().toUpperCase(java.util.Locale.ROOT);
@@ -67,10 +54,12 @@ public class SearchViewController {
         };
     }
 
-    // ─────────────────────────────────────────────────────────
-    //  Render HTML server-side (separación de tipos, secciones colapsables)
-    // ─────────────────────────────────────────────────────────
 
+    // El fragment de resultados se arma acá a mano (no con Thymeleaf) porque
+    // el buscador también lo consume por AJAX para el dropdown de la topbar,
+    // y era más simple reusar este mismo HTML en los dos lugares. Todo texto
+    // que viene del usuario/BD pasa por esc() antes de insertarse — sin eso
+    // sería XSS fácil vía título de normativa/estudio.
     private String renderResultsHtml(SearchResponseDTO resp) {
         var resultados = resp.getResultados();
         if (resultados == null || resultados.isEmpty()) {
@@ -78,7 +67,6 @@ public class SearchViewController {
                  + "No se encontraron resultados para \"" + esc(resp.getQuery()) + "\".</div>";
         }
 
-        // Agrupar por tipo conservando orden de aparición
         java.util.LinkedHashMap<String, java.util.List<SearchItemDTO>> grouped = new java.util.LinkedHashMap<>();
         for (SearchItemDTO it : resultados) {
             grouped.computeIfAbsent(it.getTipo(), k -> new java.util.ArrayList<>()).add(it);

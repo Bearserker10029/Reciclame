@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// API de solo lectura sobre la tabla de auditoría (logins, descargas,
+// cambios). Cada registro va firmado con un hash encadenado al anterior
+// (ver AuditoriaHashChainService), así que si alguien edita o borra una fila
+// directo en la BD, /verificar-integridad lo detecta.
 @RestController
 @RequestMapping("/api/auditoria")
 @CrossOrigin(origins = "*")
@@ -25,20 +29,17 @@ public class AuditoriaController {
         this.auditoriaService = auditoriaService;
     }
 
-    // ── LISTAR TODAS ─────────────────────────────────────────────────
     @GetMapping
     public ResponseEntity<List<Auditoria>> listarAuditorias() {
         return ResponseEntity.ok(auditoriaService.listarAuditorias());
     }
 
-    // ── LISTAR CON PAGINACIÓN ────────────────────────────────────────
     @GetMapping("/pagina")
     public ResponseEntity<Page<Auditoria>> listarAuditoriasPaginado(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPaginado(page, size));
     }
-    // ── LISTAR POR USUARIO ───────────────────────────────────────────
     @GetMapping("/usuario/{usuarioId}")
     public ResponseEntity<List<Auditoria>> listarPorUsuario(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorUsuario(usuarioId));
@@ -52,7 +53,6 @@ public class AuditoriaController {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorUsuarioPaginado(usuarioId, page, size));
     }
 
-    // ── LISTAR POR MÓDULO ────────────────────────────────────────────
     @GetMapping("/modulo/{modulo}")
     public ResponseEntity<List<Auditoria>> listarPorModulo(@PathVariable String modulo) {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorModulo(modulo));
@@ -66,7 +66,6 @@ public class AuditoriaController {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorModuloPaginado(modulo, page, size));
     }
 
-    // ── LISTAR POR ACCIÓN ────────────────────────────────────────────
     @GetMapping("/accion/{accion}")
     public ResponseEntity<List<Auditoria>> listarPorAccion(@PathVariable String accion) {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorAccion(accion));
@@ -80,20 +79,11 @@ public class AuditoriaController {
         return ResponseEntity.ok(auditoriaService.listarAuditoriasPorAccionPaginado(accion, page, size));
     }
 
-    // ── OBTENER POR ID ───────────────────────────────────────────────
     @GetMapping("/{id}")
     public ResponseEntity<Auditoria> obtenerPorId(@PathVariable Long id) {
         return ResponseEntity.ok(auditoriaService.obtenerAuditoriaPorId(id));
     }
 
-    // ── VERIFICACIÓN DE INTEGRIDAD (HASH CHAIN) ────────────────────────
-    /**
-     * Recorre toda la cadena y devuelve el primer registro que rompa la
-     * integridad, junto con los hashes esperados y encontrados. Status
-     * 200 incluso cuando la verificación falla — la respuesta incluye
-     * {@code integro: false} para que la UI pueda mostrar el detalle
-     * sin tratar el HTTP como error de servidor.
-     */
     @GetMapping("/verificar-integridad")
     public ResponseEntity<Map<String, Object>> verificarIntegridad() {
         AuditoriaHashChainService.ResultadoVerificacion r =
@@ -132,7 +122,6 @@ public class AuditoriaController {
         return ResponseEntity.ok(body);
     }
 
-    // ── MANEJO DE ERRORES ────────────────────────────────────────────
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
         return ResponseEntity.status(400).body(ex.getMessage());

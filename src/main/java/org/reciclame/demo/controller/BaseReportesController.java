@@ -31,6 +31,18 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+// Toda la generación de reportes (PDF vía Jasper, Excel con gráficos nativos
+// POI) que comparten Admin y SuperAdmin. Es abstracta porque cada subclase
+// tiene sus propios services inyectados — acá solo se usan a través de los
+// getters abstractos de abajo, así el código de reportes se escribe una sola
+// vez y no hay que duplicarlo entre AdminController y SuperAdminController.
+//
+// Ojo: hay DOS generaciones de endpoints de export conviviendo — los viejos
+// .../export/{tipo}.pdf y .../export/{tipo}.xlsx (uno por formato, sin opción
+// de mandar por correo) y los nuevos .../export/{tipo} (POST unificado, con
+// ExportRequest.accion = download/email/both). Los nuevos son los que usa la
+// UI actual; los viejos quedaron por compatibilidad — antes de borrarlos,
+// confirmar que nada los siga llamando directo.
 public abstract class BaseReportesController {
 
     protected abstract UsuarioService usuarioService();
@@ -41,44 +53,22 @@ public abstract class BaseReportesController {
     protected abstract ChatbotService chatbotService();
     protected abstract EmailNotificationService emailNotificationService();
 
-    /**
-     * Indica si el export de usuarios debe excluir a los usuarios con rol SUPERADMIN.
-     * <ul>
-     *   <li>{@code true} → rol ADMIN (oculta superadmin en reportes y listados).</li>
-     *   <li>{@code false} → rol SUPERADMIN (los ve todos, incluidos superadmin).</li>
-     * </ul>
-     */
+    // Por default (Admin) todos estos vienen en modo "restringido" —
+    // SuperAdminController los sobreescribe para ver todo sin filtrar.
     protected boolean excluirSuperadminEnUsuarios() {
-        return true; // default seguro: ADMIN
+        return true;
     }
 
-    /**
-     * Indica si los reportes de auditoría deben ocultar las acciones realizadas
-     * por usuarios con rol SUPERADMIN. Mismo comportamiento que
-     * {@link #excluirSuperadminEnUsuarios()}: oculto en ADMIN, visible en SUPERADMIN.
-     */
     protected boolean excluirSuperadminEnAuditoria() {
-        return true; // default seguro: ADMIN
+        return true;
     }
 
-    /**
-     * Indica si los reportes/analytics del chatbot deben ocultar las conversaciones
-     * y mensajes de usuarios con rol SUPERADMIN. Mismo patrón que
-     * {@link #excluirSuperadminEnUsuarios()}: oculto en ADMIN, visible en SUPERADMIN.
-     */
     protected boolean excluirSuperadminEnChatbot() {
-        return true; // default seguro: ADMIN
+        return true;
     }
 
-    /**
-     * Indica si la IP de origen debe incluirse en los reportes de auditoría
-     * (PDF/XLSX/export unificado). exportarAuditoriaCsv ya ocultaba la IP para
-     * ADMIN explícitamente ("dato sensible: solo el SUPERADMIN la ve"), pero
-     * los exports PDF/XLSX heredados de esta clase no tenían el mismo filtro y
-     * sí la incluían — mismo patrón que {@link #excluirSuperadminEnAuditoria()}.
-     */
     protected boolean mostrarIpEnAuditoria() {
-        return false; // default seguro: ADMIN
+        return false;
     }
 
     protected List<UsuarioResponseDTO> usuariosFiltradosParaReporte(int limite) {
@@ -93,12 +83,6 @@ public abstract class BaseReportesController {
         return base;
     }
 
-    /**
-     * Filtra la lista de auditorías para ocultar las acciones ejecutadas por
-     * usuarios con rol SUPERADMIN cuando {@link #excluirSuperadminEnAuditoria()}
-     * devuelve {@code true}. Auditoria solo guarda usuarioId, por lo que se
-     * cruza contra el catálogo actual de usuarios.
-     */
     protected List<Auditoria> auditoriasFiltradasParaReporte(List<Auditoria> original) {
         if (!excluirSuperadminEnAuditoria()) return original;
         var idsSuperadmin = usuarioService().idsUsuariosSuperadmin();
@@ -108,14 +92,11 @@ public abstract class BaseReportesController {
                 .toList();
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // Endpoint unificado de exportación de USUARIOS (descarga + correo)
-    // ══════════════════════════════════════════════════════════════════════
 
     public static class ExportRequest {
-        public String formato;     // "pdf" | "xlsx"
-        public Integer limite;     // 0 = todos
-        public String accion;      // "download" | "email" | "both"
+        public String formato;
+        public Integer limite;
+        public String accion;
     }
 
     public static class ExportResult {
@@ -151,7 +132,6 @@ public abstract class BaseReportesController {
             mime = "application/pdf";
         }
 
-        // Si la acción incluye correo, envía
         if ("email".equals(accion) || "both".equals(accion)) {
             String correo = user != null ? user.getUsername() : null;
             String nombre = correo;
@@ -174,7 +154,6 @@ public abstract class BaseReportesController {
             }
         }
 
-        // Devuelve binario (download o both)
         return ResponseEntity.ok()
                 .header("Content-Type", mime)
                 .header("Content-Disposition", "attachment; filename=\"" + nombreArchivo + "\"")
@@ -659,9 +638,6 @@ public abstract class BaseReportesController {
         return s.replace("\"", "\"\"");
     }
 
-    // ====================================================================
-    //  CHATBOT ANALYTICS — exportes PDF / XLSX / CSV
-    // ====================================================================
 
     protected Instant[] parseRango(LocalDate desde, LocalDate hasta) {
         ZoneId tz = ZoneId.of("America/Lima");
@@ -776,9 +752,6 @@ public abstract class BaseReportesController {
         response.getOutputStream().write(xlsx);
     }
 
-    // ══════════════════════════════════════════════════════════════════════
-    // Endpoints unificados para Auditoría, Normativas y Chatbot
-    // ══════════════════════════════════════════════════════════════════════
 
     @PostMapping("/admin/reportes/export/auditoria")
     @org.springframework.web.bind.annotation.ResponseBody
@@ -904,7 +877,6 @@ public abstract class BaseReportesController {
                 .body(archivo);
     }
 
-    // ── HELPERS auditoría ─────────────────────────────────────────────────
     private byte[] construirAuditoriaPDF(List<Auditoria> auditorias) {
         List<Map<String, Object>> datos = auditorias.stream().map(a -> {
             Map<String, Object> row = new HashMap<>();
@@ -961,7 +933,6 @@ public abstract class BaseReportesController {
                 datos, accionesData, estadoData);
     }
 
-    // ── HELPERS normativas + estudios ─────────────────────────────────────
     private byte[] construirNormativasPDF(List<NormativaResponseDTO> normativas,
                                            List<org.reciclame.demo.dto.EstudioResponseDTO> estudios) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
@@ -1054,7 +1025,6 @@ public abstract class BaseReportesController {
                 datos, tipoData, tematicaData, descargasData);
     }
 
-    // ── HELPERS chatbot ───────────────────────────────────────────────────
     private byte[] construirChatbotPDF(Page<ChatbotConsultaFilaDTO> page, Object stats) {
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss").withZone(ZoneId.of("America/Lima"));
         List<Map<String, Object>> datos = new ArrayList<>();

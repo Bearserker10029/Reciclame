@@ -29,16 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * Endpoints para el login por QR.
- *
- * <ul>
- *   <li>{@code GET /api/perfil/qr-token} — usuario logueado pide un token; se devuelve
- *       la URL completa que se debe codificar en el QR.</li>
- *   <li>{@code GET /auth/qr?token=...} — público, abierto en el navegador del celular:
- *       valida el token, crea la sesión y redirige al home del rol.</li>
- * </ul>
- */
+// Login por QR: el usuario ya logueado en un dispositivo pide un token de
+// un solo uso (generarToken), lo muestra como QR, y otro dispositivo lo
+// "canjea" en /auth/qr para loguearse sin escribir contraseña. Como no hay
+// password de por medio, acá se arma el Authentication a mano en vez de
+// pasar por el AuthenticationManager normal — la confianza viene de que el
+// token ya identifica al usuario de forma única y expira solo.
 @RestController
 public class QrLoginController {
 
@@ -52,9 +48,6 @@ public class QrLoginController {
         this.usuarioRepo = usuarioRepo;
     }
 
-    /**
-     * Devuelve un token y la URL absoluta que el frontend debe pintar en el QR.
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/api/perfil/qr-token")
     public ResponseEntity<Map<String, Object>> generarToken(
@@ -75,10 +68,6 @@ public class QrLoginController {
         ));
     }
 
-    /**
-     * Endpoint público al que apunta el QR. Crea la sesión y redirige al home del rol.
-     * Si el token es inválido/expirado, redirige al login con un parámetro de error.
-     */
     @GetMapping("/auth/qr")
     public RedirectView loginPorQr(@RequestParam("token") String token,
                                    HttpServletRequest request,
@@ -104,11 +93,9 @@ public class QrLoginController {
         authToken.setDetails(new WebAuthenticationDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        // Persistir el SecurityContext en la sesión (Spring Security 6)
         new HttpSessionSecurityContextRepository()
                 .saveContext(SecurityContextHolder.getContext(), request, response);
 
-        // Datos en sesión que el topbar/sidebar consume
         HttpSession session = request.getSession();
         session.setAttribute("usuarioSesion", new UsuarioSesion(
                 u.getId(),
@@ -120,7 +107,6 @@ public class QrLoginController {
                 Boolean.TRUE.equals(u.getDebeCambiarPassword())
         ));
 
-        // Actualizar último login
         try {
             u.setUltimoLogin(Instant.now());
             usuarioRepo.save(u);

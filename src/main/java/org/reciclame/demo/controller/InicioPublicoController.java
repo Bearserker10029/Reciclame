@@ -15,16 +15,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 
-/**
- * Sirve la página REAL de reciclar.org en /inicio, con un parche en runtime
- * que agrega el item "Repositorio" al submenu de "Ejes de Gestión +".
- *
- * El link del item Repositorio se construye con un href ABSOLUTO apuntando al
- * backend local (no relativo, para que el <base href="https://reciclame.org">
- * que necesita la página para cargar sus assets no lo desvíe hacia afuera).
- *
- * Si no se puede contactar el sitio público, devuelve una página de fallback.
- */
+// No tenemos acceso al WordPress de reciclame.org, así que /inicio hace de
+// espejo: baja el HTML público tal cual, le mete un <base href> para que
+// las rutas relativas sigan apuntando al sitio real, y le inyecta un botón
+// "Repositorio" en el menú "Ejes de Gestión" (vía JS, porque no hay forma
+// de tocar el HTML original). Es un parche, no una integración real —
+// si el JP o marketing cambian el markup del menú en WordPress, este script
+// deja de encontrar el <li> y hay que ajustar el selector de nuevo.
 @Controller
 public class InicioPublicoController {
 
@@ -111,31 +108,23 @@ public class InicioPublicoController {
         return s.endsWith("/") ? s.substring(0, s.length() - 1) : s;
     }
 
-    // Iconos del theme original (Consultio + Slider Revolution) que dependen de una
-    // fuente de íconos propietaria que reciclame.org no sirve en todos los contextos;
-    // sin ella se ven como cuadros vacíos. Ninguno tiene función real aquí (el buscador
-    // abre un modal inexistente en esta home, y las flechas navegan un slider de una
-    // sola imagen), así que se ocultan en vez de mostrar el glifo roto.
     private static final String ICON_FIX_STYLE =
             "\n<style id=\"reciclame-icon-fix\">"
             + ".header-right-item.h-btn-search,sr7-arrow{display:none!important}"
             + "</style>";
 
     String patchHtml(String html, String backendBase) {
-        // 1) <base> para que los assets relativos carguen desde reciclar.org
         if (!html.contains("<base ")) {
             html = html.replaceFirst("<head>",
                     Matcher.quoteReplacement("<head>")
                             + "\n<base href=\"" + publicSiteUrl + "\">");
         }
 
-        // 1b) Ocultar íconos rotos (buscador y flechas del slider, ver ICON_FIX_STYLE)
         if (!html.contains("reciclame-icon-fix") && html.contains("</head>")) {
             html = html.replaceFirst("</head>",
                     Matcher.quoteReplacement(ICON_FIX_STYLE) + "\n</head>");
         }
 
-        // 2) Script de parche (con URL absoluta del backend)
         String repoUrl = backendBase + REPOSITORIO_PATH;
         String script = PATCH_SCRIPT_TEMPLATE
                 .replace("__REPO_URL__", Matcher.quoteReplacement(repoUrl))

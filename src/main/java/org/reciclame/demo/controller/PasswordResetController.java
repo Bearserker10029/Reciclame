@@ -26,7 +26,9 @@ public class PasswordResetController {
         this.usuarioService = usuarioService;
     }
 
-    // ── AJAX desde login.html ─────────────────────────────────────────────
+    // Mensaje siempre igual exista o no el correo, a propósito: si decimos
+    // "correo no encontrado" alguien podría usar este endpoint para enumerar
+    // qué correos están registrados.
     @PostMapping("/recuperar")
     @ResponseBody
     public ResponseEntity<Map<String, String>> solicitarRecuperacion(@RequestBody Map<String, String> body) {
@@ -35,11 +37,9 @@ public class PasswordResetController {
             return ResponseEntity.badRequest().body(Map.of("error", "Correo requerido"));
         }
         authService.solicitarRecuperacion(correo);
-        // Respuesta genérica: nunca revelamos si el correo existe
         return ResponseEntity.ok(Map.of("mensaje", "Si el correo existe, recibirás el enlace en breve."));
     }
 
-    // ── Formulario de nueva contraseña ────────────────────────────────────
     @GetMapping("/restablecer")
     public String formularioRestablecimiento(@RequestParam String token,
                                              Model model,
@@ -74,9 +74,6 @@ public class PasswordResetController {
         return "redirect:/service/repositorio/login";
     }
 
-    // ── Cambio obligatorio de contraseña temporal (primer login) ──────────
-    // Requiere sesión activa (el filtro FuerzaCambioPasswordFilter es lo único
-    // que redirige aquí); no hace falta token porque ya sabemos quién es.
 
     @GetMapping("/cambiar-password-inicial")
     public String formularioCambioInicial(@AuthenticationPrincipal UserDetails user, Model model) {
@@ -108,8 +105,9 @@ public class PasswordResetController {
 
         authService.cambiarPasswordInicial(usuario.getId(), password);
 
-        // Refresca el flag en la sesión activa para que el filtro deje de bloquear
-        // sin necesidad de volver a loguearse.
+        // Actualizar también el flag en la sesión que ya está viva, si no,
+        // el usuario sigue viendo el modal forzado de "cambia tu contraseña"
+        // hasta que vuelva a loguearse.
         Object sesionAttr = session.getAttribute("usuarioSesion");
         if (sesionAttr instanceof UsuarioSesion us) {
             us.setDebeCambiarPassword(false);

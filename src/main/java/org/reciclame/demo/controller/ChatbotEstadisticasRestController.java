@@ -26,16 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Endpoints REST para el chatbot Reciclame.
- * <p>
- * - POST /api/chatbot/registrar     -> callback que el frontend hace al recibir la respuesta del webhook n8n.
- *                                      Guardado en conversaciones_chatbot + mensajes_chatbot.
- *                                      Requiere sesion del usuario (la consulta la esta haciendo el propio usuario).
- * - GET  /api/chatbot/estadisticas  -> KPIs y series para el dashboard Admin/SuperAdmin.
- * - GET  /api/chatbot/conversaciones -> listado paginado y filtrable para el dashboard.
- * - GET  /api/chatbot/conversaciones/{id}/mensajes -> detalle de una conversacion.
- */
 @RestController
 @RequestMapping("/api/chatbot")
 public class ChatbotEstadisticasRestController {
@@ -48,16 +38,12 @@ public class ChatbotEstadisticasRestController {
         this.chatbotService = chatbotService;
     }
 
-    // ----------------------------------------------------------------
-    // 1) Callback del frontend (registro de pregunta + respuesta)
-    // ----------------------------------------------------------------
+    // Lo llama el workflow de n8n cuando el chatbot termina una conversación,
+    // no el navegador del usuario — por eso no depende de la sesión web.
     @PostMapping("/registrar")
     public ResponseEntity<?> registrar(@Valid @RequestBody ChatbotRegistroRequestDTO body,
                                        HttpServletRequest req,
                                        Authentication auth) {
-        // Si el usuario autenticado es distinto al del body, usamos el del body
-        // (el chatbot puede ser llamado desde un visor como el Admin revisando un chat)
-        // pero solo permitimos que un usuario con rol registrable (no anonimo) lo envie.
         try {
             ChatbotRegistroResponseDTO out = chatbotService.registrarConversacion(body, req);
             return ResponseEntity.ok(out);
@@ -76,9 +62,6 @@ public class ChatbotEstadisticasRestController {
         }
     }
 
-    // ----------------------------------------------------------------
-    // 2) KPIs / charts para Admin y SuperAdmin
-    // ----------------------------------------------------------------
     @GetMapping("/estadisticas")
     public ResponseEntity<ChatbotEstadisticasDTO> estadisticas(
             @RequestParam(value = "desde", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
@@ -90,9 +73,6 @@ public class ChatbotEstadisticasRestController {
         return ResponseEntity.ok(chatbotService.calcularEstadisticas(desdeI, hastaI, excluirSuperadmin));
     }
 
-    // ----------------------------------------------------------------
-    // 3) Listado paginado y filtrado
-    // ----------------------------------------------------------------
     @GetMapping("/conversaciones")
     public ResponseEntity<Map<String, Object>> listarConversaciones(
             @RequestParam(value = "usuarioId", required = false) Long usuarioId,
@@ -120,10 +100,9 @@ public class ChatbotEstadisticasRestController {
         return ResponseEntity.ok(resp);
     }
 
-    /**
-     * Devuelve true si el solicitante NO es superadmin (es decir, es admin/socio/visualizador,
-     * o no hay auth). La política es: solo SUPERADMIN ve TODO; el resto oculta lo del superadmin.
-     */
+    // Cuando quien mira las estadísticas es un ADMINISTRADOR (no SuperAdmin),
+    // le sacamos del conteo las conversaciones que el propio SuperAdmin haya
+    // tenido con el bot probando cosas — si no, ensucia los números "reales" de uso.
     private boolean esAdministrador(Authentication auth) {
         if (auth == null || auth.getAuthorities() == null) return true;
         for (GrantedAuthority ga : auth.getAuthorities()) {
@@ -133,9 +112,6 @@ public class ChatbotEstadisticasRestController {
         return true;
     }
 
-    // ----------------------------------------------------------------
-    // 4) Detalle de mensajes por conversacion
-    // ----------------------------------------------------------------
     @GetMapping("/conversaciones/{id}/mensajes")
     public ResponseEntity<List<ChatbotConsultaFilaDTO.MensajeDetalleDTO>> mensajes(
             @PathVariable("id") Long conversacionId) {

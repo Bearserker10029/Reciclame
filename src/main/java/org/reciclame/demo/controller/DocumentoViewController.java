@@ -31,12 +31,19 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.Map;
 
+// Varias formas de "acceder" a un documento en MinIO, cada una para un caso
+// distinto: /ver redirige con URL firmada pública (302, rápido pero se ve
+// el link real), /inline la streamea a través nuestro (para embeber sin
+// exponer el link firmado), /descargar hace lo mismo pero fuerza attachment
+// + deja rastro en auditoría + suma al contador de descargas, y /visor es
+// el punto de entrada que usan las páginas -visor.html antes de mandar al
+// visor de documentos (kkFileView) — valida que el archivo exista en MinIO
+// primero para no mandar a un visor con un 404 feo.
 @RestController
 @RequestMapping("/api/documentos")
 public class DocumentoViewController {
 
     private static final int EXPIRY_MINUTOS = 15;
-    /** Buffer de 256 KB para streaming — minimiza syscalls vs default de 8 KB del JDK. */
     private static final int STREAM_BUFFER_BYTES = 256 * 1024;
     private static final Logger log = LoggerFactory.getLogger(DocumentoViewController.class);
 
@@ -64,11 +71,6 @@ public class DocumentoViewController {
         this.httpClient = httpClient;
     }
 
-    /**
-     * Genera una URL presignada temporal y redirige al cliente a ella.
-     *
-     * @param url URL pública almacenada en BD (http://localhost:9000/reciclame-docs/...)
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/ver")
     public ResponseEntity<?> verDocumento(@RequestParam("url") String url) {
@@ -86,10 +88,6 @@ public class DocumentoViewController {
         }
     }
 
-    /**
-     * Sirve el archivo inline desde Spring para poder embeberlo en iframes del mismo origen.
-     * Usa la URL interna firmada de MinIO para que el contenedor de la app alcance al contenedor MinIO.
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/inline")
     public void verDocumentoInline(@RequestParam("url") String url,
@@ -140,7 +138,6 @@ public class DocumentoViewController {
         if (contentLength > 0) {
             response.setContentLengthLong(contentLength);
         }
-        // Cache corto: el navegador puede reusar si el usuario navega atrás/adelante sin re-stripear MinIO.
         response.setHeader("Cache-Control", "private, max-age=300");
 
         try (InputStream is = upstream.body();
@@ -172,12 +169,6 @@ public class DocumentoViewController {
         }
     }
 
-    /**
-     * Descarga segura: solo SUPERADMIN, ADMINISTRADOR y SOCIO.
-     * Streama el archivo desde MinIO a través de Spring con Content-Disposition: attachment.
-     * Usa la URL interna de MinIO para funcionar correctamente en Docker.
-     * Registra auditoría en cada intento (exitoso o fallido).
-     */
     @PreAuthorize("hasAnyRole('SUPERADMIN', 'ADMINISTRADOR', 'SOCIO')")
     @GetMapping("/descargar")
     public void descargarDocumento(
@@ -247,6 +238,9 @@ public class DocumentoViewController {
             return;
         }
 
+        // El título viene de la BD (nombre del estudio/normativa), no de un
+        // input libre, pero igual se sanea antes de meterlo en el header —
+        // un "/" o ":" ahí rompería el nombre de archivo en varios navegadores.
         String ext = extractExtension(url);
         String safeFilename = titulo.replaceAll("[/\\\\:*?\"<>|]", "_") + ext;
 
@@ -262,13 +256,11 @@ public class DocumentoViewController {
             response.setContentLengthLong(contentLength);
         }
 
-        // Auditoría antes de streamear (si el stream falla, ya queda registrado el intento)
         auditoriaService.registrarAccion(usuarioId, usuarioNombre,
                 AuditoriaService.ACCION_DESCARGAR_DOCUMENTO, AuditoriaService.MODULO_ESTUDIOS,
                 "Descarga autorizada: \"" + titulo + "\"",
                 null, null, "EXITOSO", null, ipAddress, userAgent);
 
-        // Incrementar contador de descargas del documento (si se conoce tipo + id)
         if (docId != null && tipo != null) {
             try {
                 if ("NORMATIVA".equalsIgnoreCase(tipo)) {
@@ -293,32 +285,19 @@ public class DocumentoViewController {
         }
     }
 
-    /**
-     * Genera la URL del visor bajo demanda (token fresco).
-     * Requiere autenticación — impide que URLs del visor en el HTML sean reutilizables sin sesión.
-     *
-     * <p>Antes de generar la URL, verifica que el archivo exista en MinIO.
-     * Si el archivo fue borrado del bucket pero la BD todavía lo referencia
-     * (huérfano), se responde 404 con un JSON descriptivo en vez de un
-     * 302 a una URL que kkfileview no podría servir. Esto evita que el iframe
-     * del visor quede abierto mostrando una página de error de kkfileview.</p>
-     */
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/visor")
     public ResponseEntity<?> visorDocumento(
             @RequestParam("url") String url,
             @RequestParam(name = "titulo", required = false, defaultValue = "documento") String titulo,
             @RequestParam(name = "mime", required = false) String mime) {
-        // 1) URL válida (mismo bucket, formato correcto)
         try {
-            // Solo verifica el formato; no hace I/O contra MinIO todavía
             minioStorageService.getObjectNameFromUrl(url);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("mensaje", "URL de documento inválida.", "tipo", "URL_INVALIDA"));
         }
 
-        // 2) El objeto existe físicamente en el bucket
         if (!minioStorageService.existeArchivo(url)) {
             log.warn("Visor bloqueado: archivo no existe en MinIO para url={}", url);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -328,7 +307,6 @@ public class DocumentoViewController {
                             "tipo", "ARCHIVO_NO_ENCONTRADO"));
         }
 
-        // 3) Generar URL del visor y devolver 302
         try {
             String previewUrl = documentPreviewService.buildViewerUrl(url, titulo, mime);
             if (previewUrl == null || previewUrl.isBlank()) {

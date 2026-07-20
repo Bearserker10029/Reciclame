@@ -19,6 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 
+// Gestión de usuarios para Admin/SuperAdmin. Casi todos los endpoints
+// mandan quién hizo la acción (id + nombre) al service para auditoría —
+// de ahí el resolverAuditor() repetido por todos lados. Bloquear/cambiar
+// rol/desactivar invalida la sesión activa del usuario afectado (lo hace
+// el service, no acá). Borrado físico (eliminarUsuario) es el único
+// endpoint restringido solo a SUPERADMIN; el resto acepta también ADMIN.
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
@@ -32,8 +38,6 @@ public class UsuarioController {
         this.auditoriaService = auditoriaService;
     }
 
-    // CREATE
-    // POST /api/usuarios
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping
     public ResponseEntity<UsuarioResponseDTO> crearUsuario(@RequestBody UsuarioRequestDTO dto,
@@ -50,24 +54,18 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(nuevo);
     }
 
-    // READ ALL
-    // GET /api/usuarios
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<UsuarioResponseDTO>> listarUsuarios() {
         return ResponseEntity.ok(usuarioService.listarUsuarios());
     }
 
-    //  READ ONE
-    // GET /api/usuarios/{id}
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UsuarioResponseDTO> obtenerUsuario(@PathVariable Long id) {
         return ResponseEntity.ok(usuarioService.obtenerUsuarioPorId(id));
     }
 
-    // UPDATE
-    // PUT /api/usuarios/{id}
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarUsuario(
@@ -75,8 +73,6 @@ public class UsuarioController {
             @RequestBody UsuarioRequestDTO dto,
             HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        // Guarda: no se puede editar un usuario inactivo. Primero hay
-        // que reactivarlo desde el tab "Historial / Inactivos".
         UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
         if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
             Map<String, Object> err = new LinkedHashMap<>();
@@ -90,15 +86,10 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.actualizarUsuario(id, dto, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
-    // DELETE (lógico)
-    // DELETE /api/usuarios/{id}
     @PreAuthorize("hasRole('SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        // Guarda: tampoco se puede eliminar (lógicamente) un usuario
-        // ya inactivo — está implícito en su estado. Devolvemos 409 para
-        // que la UI no muestre error genérico.
         UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
         if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
             Map<String, Object> err = new LinkedHashMap<>();
@@ -113,8 +104,6 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    // APROBAR solicitud pendiente
-    // POST /api/usuarios/{id}/aprobar?rolId=X&empresaId=Y
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/aprobar")
     public ResponseEntity<UsuarioResponseDTO> aprobarUsuario(
@@ -132,8 +121,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.aprobarUsuario(id, rolId, empresaId, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
-    // RECHAZAR solicitud pendiente
-    // POST /api/usuarios/{id}/rechazar
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/rechazar")
     public ResponseEntity<UsuarioResponseDTO> rechazarUsuario(@PathVariable Long id,
@@ -146,15 +133,10 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.rechazarUsuario(id, motivo, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
-    // BLOQUEAR / DESBLOQUEAR usuario activo
-    // POST /api/usuarios/{id}/bloquear
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/bloquear")
     public ResponseEntity<?> bloquearUsuario(@PathVariable Long id, HttpServletRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
-        // Guarda: bloquear/desbloquear solo aplica a usuarios activos.
-        // Un usuario inactivo no entra ni sale de bloqueo — primero se
-        // lo reactiva.
         UsuarioResponseDTO actual = usuarioService.obtenerUsuarioPorId(id);
         if (actual != null && actual.getEstadoActivo() != null && !actual.getEstadoActivo()) {
             Map<String, Object> err = new LinkedHashMap<>();
@@ -168,8 +150,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.toggleBloquear(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
-    // REACTIVAR USUARIO
-    // POST /api/usuarios/{id}/reactivar
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping("/{id}/reactivar")
     public ResponseEntity<?> reaccionarUsuario(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails,
@@ -180,8 +160,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.reactivarUsuario(id, auditor[0] != null ? Long.parseLong(auditor[0]) : null, auditor[1], ipAddress, userAgent));
     }
 
-    // HISTORIAL DE ACTIVIDAD POR USUARIO
-    // GET /api/usuarios/{id}/historial
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}/historial")
     public ResponseEntity<List<Map<String, Object>>> historialUsuario(@PathVariable Long id) {
@@ -203,8 +181,6 @@ public class UsuarioController {
         return ResponseEntity.ok(result);
     }
 
-    // EXPORTAR CSV
-    // GET /api/usuarios/export.csv
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/export.csv")
     public ResponseEntity<String> exportarCsv() {
@@ -214,9 +190,7 @@ public class UsuarioController {
                 .body(usuarioService.exportarCsv());
     }
 
-    // ── HELPER METHODS ────────────────────────────────────────
 
-    // Retorna [id, nombreCompleto] del usuario autenticado
     private String[] resolverAuditor(UserDetails userDetails) {
         if (userDetails == null) return new String[]{null, "Sistema"};
         UsuarioResponseDTO dto = usuarioService.findByCorreo(userDetails.getUsername()).orElse(null);
@@ -224,7 +198,6 @@ public class UsuarioController {
         return new String[]{String.valueOf(dto.getId()), dto.getNombreCompleto()};
     }
 
-    // ── MANEJO DE ERRORES ─────────────────────────────────────
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>> handleRuntimeException(RuntimeException ex) {
         String msg = ex.getMessage() == null ? "" : ex.getMessage();

@@ -20,6 +20,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Map;
 
+// CRUD de normativas para Admin/SuperAdmin. Ojo con crear/actualizar: si viene
+// archivo, esto NO guarda la normativa todavía — la manda a staging (202
+// Accepted) y el registro final queda pendiente hasta que el escaneo
+// antivirus la apruebe (ver UploadStagingScanner / api/uploads para el polling).
 @RestController
 @RequestMapping("/api/normativas")
 public class NormativaRestController {
@@ -36,21 +40,12 @@ public class NormativaRestController {
         this.usuarioService = usuarioService;
     }
 
-    // ── READ ALL ──────────────────────────────────────────────
-    // Devuelve TODAS las normativas (públicas y no públicas), sin filtrar
-    // por esPublica. Solo Admin/SuperAdmin la usan desde el frontend
-    // (Socio/Visualizador consumen listarNormativasPublicas() vía páginas
-    // Thymeleaf aparte) — restringir el rol evita que un Socio/Visualizador
-    // llame esta API directamente y vea/lea normativas no públicas.
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping
     public ResponseEntity<List<NormativaResponseDTO>> listar() {
         return ResponseEntity.ok(normativaService.listarNormativas());
     }
 
-    // ── READ ONE ──────────────────────────────────────────────
-    // Mismo motivo que listar(): sin filtro de esPublica, así que se
-    // restringe a los roles que legítimamente la consumen.
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Long id) {
@@ -62,19 +57,6 @@ public class NormativaRestController {
         }
     }
 
-    // ── CREATE ────────────────────────────────────────────────
-    /**
-     * <p>Flujo NUEVO (caché staging + validación async):</p>
-     * <ol>
-     *   <li>Si hay archivo: validar extensión, calcular SHA-256, subir a bucket staging.</li>
-     *   <li>INSERT en BD con archivo_url = staging://<uuid>, estado PENDIENTE.</li>
-     *   <li>Encolar scanner async (VirusTotal).</li>
-     *   <li>Devolver 202 inmediatamente con {taskId, statusUrl} para que el frontend
-     *       navegue a la lista y haga polling.</li>
-     * </ol>
-     * <p>El frontend verá la nueva fila con badge PENDIENTE; cuando el scanner termine,
-     * el polling actualizará el badge a "Seguro" o "Rechazado" sin recargar la página.</p>
-     */
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crear(
@@ -90,7 +72,6 @@ public class NormativaRestController {
 
         try {
             if (archivo != null && !archivo.isEmpty()) {
-                // Validación de extensión: pdf, doc, docx (igual que antes).
                 subirStagingService.validarExtension(archivo);
                 SubirNormativaStagingService.ResultadoSubida resultado =
                         subirStagingService.subirYPendientarNormativa(dto, archivo,
@@ -104,7 +85,6 @@ public class NormativaRestController {
                         "mensaje", "Subida recibida. La validación antivirus está en curso."
                 ));
             }
-            // Sin archivo: INSERT directo (sin VT).
             NormativaResponseDTO resultado = normativaService.crearNormativa(
                     dto, null, null,
                     user.getUsername(),
@@ -115,7 +95,6 @@ public class NormativaRestController {
         }
     }
 
-    // ── UPDATE ────────────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> actualizar(
@@ -152,7 +131,6 @@ public class NormativaRestController {
         }
     }
 
-    // ── DELETE lógico ─────────────────────────────────────────
     @PreAuthorize("hasAnyRole('ADMINISTRADOR','SUPERADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Long id,

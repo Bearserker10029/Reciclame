@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
+// Un endpoint "ver" por rol porque cada uno usa su propia plantilla/sidebar,
+// pero el dato de fondo es el mismo documento. Para Visualizador se usa
+// obtenerNormativaPublicaPorId (no la versión completa) — evita que alguien
+// mire una normativa privada solo cambiando el id en la URL.
 @Controller
 public class NormativaVisorController {
 
@@ -40,7 +44,6 @@ public class NormativaVisorController {
         this.notificacionService = notificacionService;
     }
 
-    // ── Admin ─────────────────────────────────────────────────
     @GetMapping("/admin/normativo/{id}/ver")
     public String verNormativaAdmin(@PathVariable Long id, Model model,
                                     @AuthenticationPrincipal UserDetails user) {
@@ -48,7 +51,6 @@ public class NormativaVisorController {
         return cargarVisor(id, model, "Admin/normativo-visor", "/admin/normativo");
     }
 
-    // ── SuperAdmin ────────────────────────────────────────────
     @GetMapping("/superadmin/normativo/{id}/ver")
     public String verNormativaSuperAdmin(@PathVariable Long id, Model model,
                                          @AuthenticationPrincipal UserDetails user) {
@@ -56,7 +58,6 @@ public class NormativaVisorController {
         return cargarVisor(id, model, "SuperAdmin/normativo-visor", "/superadmin/normativo");
     }
 
-    // ── Socio ─────────────────────────────────────────────────
     @GetMapping("/socio/normativo/{id}/ver")
     public String verNormativaSocio(@PathVariable Long id, Model model,
                                     @RequestParam(value = "from", required = false) String from,
@@ -65,11 +66,9 @@ public class NormativaVisorController {
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id));
         String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/normativo";
-        // El socio puede ver TODAS las normativas (públicas y no-públicas).
         return cargarVisor(id, model, "Socio/normativo-visor", urlRetorno);
     }
 
-    // ── Visualizador (solo normativas públicas) ───────────────
     @GetMapping("/visualizador/normativo/{id}/ver")
     public String verNormativaVisualizador(@PathVariable Long id, Model model,
                                            @AuthenticationPrincipal UserDetails user) {
@@ -79,9 +78,6 @@ public class NormativaVisorController {
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
                 model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-                // Faltaba esta llamada (sí existe en el equivalente de Socio, arriba):
-                // sin ella, "Documentos vistos" y "Vistos recientemente" quedaban
-                // permanentemente en cero para Visualizador.
                 documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_NORMATIVA, id);
             });
         } catch (Exception e) {
@@ -90,7 +86,6 @@ public class NormativaVisorController {
         return cargarVisorPublico(id, model, "Visualizador/normativo-visor", "/visualizador/normativo");
     }
 
-    // ── Helpers ───────────────────────────────────────────────
 
     private String cargarVisor(Long id, Model model, String template, String urlRetorno) {
         NormativaResponseDTO normativa;

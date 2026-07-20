@@ -16,15 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Endpoints REST consumidos por el dropdown de notificaciones del topbar.
- *
- * <p>El JS del topbar (templates/navbar/topbar.html) hace fetch a
- * {@code /api/notificaciones} para listar y a
- * {@code /api/notificaciones/{id}/leer} para marcar como leída.
- * Ambos resuelven las notificaciones del usuario autenticado, sin importar
- * su rol (ADMINISTRADOR, SUPERADMIN, SOCIO, VISUALIZADOR, IMPERSONATOR).</p>
- */
 @RestController
 @RequestMapping("/api/notificaciones")
 public class NotificacionRestController {
@@ -38,12 +29,6 @@ public class NotificacionRestController {
         this.usuarioService = usuarioService;
     }
 
-    /**
-     * Devuelve la lista de notificaciones activas del usuario autenticado.
-     * Responde con 204 si el principal no se resuelve a un usuario válido
-     * (caso borde: sesión rota), en vez de 500, para que el dropdown muestre
-     * el estado vacío.
-     */
     @GetMapping
     public ResponseEntity<List<NotificacionResponseDTO>> listar(@AuthenticationPrincipal UserDetails user) {
         if (user == null) {
@@ -54,10 +39,9 @@ public class NotificacionRestController {
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
-    /**
-     * Marca una notificación como leída. Responde 404 si la notificación no
-     * pertenece al usuario autenticado o no existe (evita fugas de IDs).
-     */
+    // El usuarioId se pasa al service a propósito: ahí se valida que la
+    // notificación sea del usuario logueado antes de tocarla (si no, cualquiera
+    // podría marcar/borrar notificaciones ajenas solo adivinando el id).
     @PostMapping("/{id}/leer")
     public ResponseEntity<Map<String, Object>> marcarLeida(@PathVariable Long id,
                                                            @AuthenticationPrincipal UserDetails user) {
@@ -72,10 +56,6 @@ public class NotificacionRestController {
         return ResponseEntity.ok(Map.of("ok", true, "id", id));
     }
 
-    /**
-     * Elimina (lógicamente) una notificación propia. Mismo criterio de
-     * pertenencia que marcarLeida.
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> eliminar(@PathVariable Long id,
                                                          @AuthenticationPrincipal UserDetails user) {

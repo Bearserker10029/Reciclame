@@ -37,6 +37,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+// Todo lo del rol Socio que no tiene su propio controller dedicado: dashboard,
+// perfil, notificaciones, exportar reportes personales y "compartir"
+// documentos por correo (con o sin gente ya invitada, ver /compartir/**).
+// El patrón usuarioService.findByCorreo(user.getUsername()) se repite en casi
+// todos los métodos porque Spring Security solo nos da el correo autenticado;
+// hay que resolverlo a Usuario/id para todo lo demás.
 @Controller
 public class SocioController {
 
@@ -214,8 +220,6 @@ public class SocioController {
     @GetMapping("/socio/normativo")
     public String normativo(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        // El socio ve TODAS las normativas activas en la tabla.
-        // La restricción de visibilidad aplica al abrir el detalle (visor).
         model.addAttribute("normativas", normativaService.listarNormativas());
         return "Socio/normativo";
     }
@@ -223,16 +227,11 @@ public class SocioController {
     @GetMapping("/socio/estudios")
     public String estudios(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
-        // El socio ve TODOS los estudios activos en la tabla.
-        // La restricción de visibilidad aplica al abrir el detalle (visor).
         model.addAttribute("estudios", estudioService.listarEstudios());
         model.addAttribute("tematicas", tematicaService.listarTematicas());
         return "Socio/estudios";
     }
 
-    /**
-     * Reportes personales del socio. Datos de demostración en plantilla hasta conectar KPIs reales.
-     */
     @GetMapping("/socio/reportes")
     public String reportes(Model model, @AuthenticationPrincipal UserDetails user) {
         setupCommonAttributes(model, user.getUsername());
@@ -243,11 +242,10 @@ public class SocioController {
         return "Socio/reportes";
     }
 
-    // ─── Export reportes personales del socio ─────────────────────────
     public static class SocioExportRequest {
-        public String tipo;     // "actividad" | "miunidad" | "notificaciones"
-        public Integer limite;  // 0 = todos
-        public String accion;   // "download" | "email" | "both"
+        public String tipo;
+        public Integer limite;
+        public String accion;
     }
 
     @PostMapping("/socio/reportes/export")
@@ -356,7 +354,6 @@ public class SocioController {
                 .body(archivo);
     }
 
-    // ─── Compartir documento por correo ─────────────────────────
 
     public static class CompartirDocumentoRequest {
         public String para;
@@ -364,7 +361,7 @@ public class SocioController {
         public String asunto;
         public String descripcion;
         public String titulo;
-        public String tipo; // NORMATIVA | ESTUDIO
+        public String tipo;
         public Long documentoId;
     }
 
@@ -381,7 +378,9 @@ public class SocioController {
 
         var remitente = uOpt.get();
 
-        // Obtener archivo desde MinIO
+        // Bajamos el archivo real de MinIO para adjuntarlo al correo (no
+        // mandamos solo un link) — si algo falla acá, seguimos igual y el
+        // correo sale sin adjunto en vez de cancelar todo el envío.
         byte[] archivoBytes = null;
         String nombreArchivo = "documento";
         String archivoMime = "application/octet-stream";
@@ -415,10 +414,8 @@ public class SocioController {
                         : "documento" + ext;
             }
         } catch (Exception e) {
-            // enviar sin adjunto si falla la descarga
         }
 
-        // Parsear CC
         String[] ccArray = null;
         if (req.cc != null && !req.cc.isBlank()) {
             ccArray = java.util.Arrays.stream(req.cc.split("[,;]"))
@@ -451,7 +448,6 @@ public class SocioController {
         return "";
     }
 
-    // ─── Compartir documento con personas (estilo Google Drive) ─────────
 
     @GetMapping("/socio/compartir/{tipo}/{id}/personas")
     @org.springframework.web.bind.annotation.ResponseBody
@@ -529,6 +525,8 @@ public class SocioController {
         }
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
+                // El id viene del form (hidden input); si no coincide con el
+                // usuario logueado, alguien intentó editar el perfil de otro.
                 if (!u.getId().equals(id)) {
                     ra.addFlashAttribute("errorPerfil", "No tienes permiso para editar este usuario");
                     return;

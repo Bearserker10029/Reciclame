@@ -11,12 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * Endpoint REST de búsqueda global consumido por el search box del topbar.
- *
- * <p>El filtrado por tipo (normativa / estudio / usuario) se hace server-side
- * en {@link SearchService}, según el rol efectivo del usuario en sesión.</p>
- */
+// Buscador global (el input de la barra superior). El filtrado real de qué
+// tipos de documento puede ver cada rol pasa por SearchService, acá solo
+// se resuelve quién está preguntando.
 @RestController
 @RequestMapping("/api/search")
 public class SearchRestController {
@@ -39,6 +36,7 @@ public class SearchRestController {
         return resp;
     }
 
+    // Sin sesión = sin rol = SearchService no debería devolver nada restringido.
     private String resolverRolEfectivo(HttpSession session) {
         if (session == null) return "";
         Object attr = session.getAttribute("usuarioSesion");

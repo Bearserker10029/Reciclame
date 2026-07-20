@@ -18,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// Mismo patrón que NormativaVisorController: un "ver" por rol, misma
+// plantilla reutilizada. Acá además se suma 1 a las visualizaciones del
+// estudio cada vez que se abre (para las estadísticas del dashboard).
 @Controller
 public class EstudioVisorController {
 
@@ -41,7 +44,6 @@ public class EstudioVisorController {
         this.notificacionService = notificacionService;
     }
 
-    // ── Admin ─────────────────────────────────────────────────
     @GetMapping("/admin/estudios/{id}/ver")
     public String verEstudioAdmin(@PathVariable Long id, Model model,
                                    @AuthenticationPrincipal UserDetails user) {
@@ -49,7 +51,6 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "Admin/estudios-visor", "/admin/estudios");
     }
 
-    // ── SuperAdmin ────────────────────────────────────────────
     @GetMapping("/superadmin/estudios/{id}/ver")
     public String verEstudioSuperAdmin(@PathVariable Long id, Model model,
                                         @AuthenticationPrincipal UserDetails user) {
@@ -57,7 +58,6 @@ public class EstudioVisorController {
         return cargarVisor(id, model, "SuperAdmin/estudios-visor", "/superadmin/estudios");
     }
 
-    // ── Socio (puede ver todos los estudios) ─────────────────
     @GetMapping("/socio/estudios/{id}/ver")
     public String verEstudioSocio(@PathVariable Long id, Model model,
                                    @RequestParam(value = "from", required = false) String from,
@@ -66,11 +66,9 @@ public class EstudioVisorController {
         usuarioService.findByCorreo(user.getUsername())
                 .ifPresent(u -> documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id));
         String urlRetorno = "mi-unidad".equals(from) ? "/socio/mi-unidad" : "/socio/estudios";
-        // El socio puede ver TODOS los estudios (públicos y no-públicos).
         return cargarVisor(id, model, "Socio/estudios-visor", urlRetorno);
     }
 
-    // ── Visualizador (solo documentos públicos) ───────────────
     @GetMapping("/visualizador/estudios/{id}/ver")
     public String verEstudioVisualizador(@PathVariable Long id, Model model,
                                          @AuthenticationPrincipal UserDetails user) {
@@ -80,9 +78,6 @@ public class EstudioVisorController {
         try {
             usuarioService.findByCorreo(user.getUsername()).ifPresent(u -> {
                 model.addAttribute("noLeidasCount", notificacionService.contarNoLeidas(u.getId()));
-                // Faltaba esta llamada (sí existe en el equivalente de Socio, arriba):
-                // sin ella, "Documentos vistos" y "Vistos recientemente" quedaban
-                // permanentemente en cero para Visualizador.
                 documentosRecientesService.registrarVista(u.getId(), MiUnidadItem.TIPO_ESTUDIO, id);
             });
         } catch (Exception e) {
@@ -91,7 +86,6 @@ public class EstudioVisorController {
         return cargarVisorPublico(id, model, "Visualizador/estudios-visor", "/visualizador/estudios");
     }
 
-    // ── Helpers ───────────────────────────────────────────────
 
     private String cargarVisor(Long id, Model model, String template, String urlRetorno) {
         EstudioResponseDTO estudio;
@@ -125,8 +119,6 @@ public class EstudioVisorController {
 
     private void poblarVisor(Model model, String archivoUrl, String titulo, String archivoTipoMime) {
         model.addAttribute("archivoDisponible", minioStorageService.existeArchivo(archivoUrl));
-        // visorUrl ya no se precomputa: los templates usan /api/documentos/visor
-        // para generar un token fresco en cada carga del iframe.
     }
 
     private void setupAdmin(Model model, String correo) {

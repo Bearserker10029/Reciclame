@@ -23,6 +23,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// Todas las páginas del rol Administrador: dashboard, CRUD de normativas/
+// estudios (los forms, el guardado real vive en los REST controllers),
+// usuarios, trazabilidad, notificaciones y perfil. Hereda de
+// BaseReportesController porque Admin y SuperAdmin comparten casi toda la
+// lógica de reportes/exportación — acá solo se cablean los services propios
+// (ver los métodos @Override de abajo).
 @Controller
 public class AdminController extends BaseReportesController {
 
@@ -135,7 +141,6 @@ public class AdminController extends BaseReportesController {
                 .mapToInt(n -> n.getDescargasCount() != null ? n.getDescargasCount() : 0).sum();
         model.addAttribute("totalDescargas", totalDescargas);
 
-        // ── Tendencias reales ──
         Instant ahora = Instant.now();
         Instant hoyInicio = ahora.truncatedTo(ChronoUnit.DAYS);
         Instant semanaInicio = ahora.minus(7, ChronoUnit.DAYS);
@@ -162,13 +167,15 @@ public class AdminController extends BaseReportesController {
                 ? (int) Math.round((estudiosEsteMes - estudiosMesAnterior) * 100.0 / estudiosMesAnterior)
                 : 0);
 
-        // Descargas mes anterior (aproximado por auditorías)
         long auditoriasMesAnterior = auditoriaService.contarEntreFechas(mesAnteriorInicio, mesInicio);
         long auditoriasEsteMes = auditoriaService.contarEntreFechas(mesInicio, ahora);
         model.addAttribute("pctDescargasCrecimiento", auditoriasMesAnterior > 0
                 ? (int) Math.round((auditoriasEsteMes - auditoriasMesAnterior) * 100.0 / auditoriasMesAnterior)
                 : 0);
 
+        // Un Administrador no debería ver en su propio dashboard lo que hace
+        // el SuperAdmin de fondo (impersonaciones, mantenimiento, etc.) —
+        // excluirSuperadminEnAuditoria() decide eso según el rol de quien mira.
         var auditorias = excluirSuperadminEnAuditoria()
                 ? auditoriaService.findAllExcluyendoAccionesDeSuperadmin(0, 50)
                 : auditoriaService.listarAuditoriasPaginado(0, 50);
@@ -178,7 +185,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("totalPages", auditorias.getTotalPages());
         model.addAttribute("totalElements", auditoriasInicio.size());
 
-        // ── Distribución real por temática para el donut chart ──
         Map<String, Long> byTematica = normativaService.contarPorTematica();
         long normEC   = byTematica.getOrDefault("EC",  0L);
         long normGR   = byTematica.getOrDefault("GR",  0L);
@@ -222,10 +228,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("solicitudesResueltas", solicitudesRepo.findByEstadoNotOrderByCreatedAtDesc(EstadoSolicitud.PENDIENTE));
         model.addAttribute("todosUsuarios", usuarioService.listarUsuariosNoSuperadmin());
         model.addAttribute("empresas", empresaService.listarEmpresas());
-        // SUPERADMIN nunca debe ser una opción asignable desde el panel de
-        // Admin: un Administrador no puede otorgarse (ni a nadie) el rol de
-        // mayor privilegio. La validación real está en UsuarioService, esto
-        // solo evita mostrarlo como opción en el combo.
         model.addAttribute("roles", rolService.listarRoles().stream()
                 .filter(r -> !"SUPERADMIN".equals(r.getNombre()))
                 .toList());
@@ -290,7 +292,6 @@ public class AdminController extends BaseReportesController {
                 .mapToInt(n -> n.getVisualizacionesCount() != null ? n.getVisualizacionesCount() : 0).sum();
         model.addAttribute("kpiDocsVistos", totalVisualizaciones);
 
-        // Daily activity for the last 30 days using real auditoría data
         Instant hace30d = Instant.now().minus(30, ChronoUnit.DAYS);
         var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace30d, Instant.now());
         List<Integer> chartIngresosData = new ArrayList<>();
@@ -308,7 +309,6 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("chartIngresosLabels", chartIngresosLabels);
         model.addAttribute("actividadDiaria", actividadDiaria);
 
-        // Real counts by thematic category
         Map<String, Long> byTematicaReportes = normativaService.contarPorTematica();
         List<Integer> chartTematicaData = new ArrayList<>();
         List<String> chartTematicaLabels = Arrays.asList("EC", "GR", "EE", "REP");
@@ -381,7 +381,6 @@ public class AdminController extends BaseReportesController {
         });
         model.addAttribute("topUsuarios", topUsuariosFinal);
 
-        // Colecciones y valores para JS inline y barras de progreso
         model.addAttribute("normativas", normativas);
         model.addAttribute("estudios", estudios);
         model.addAttribute("tematicas", tematicaService.listarTematicas());
@@ -395,15 +394,12 @@ public class AdminController extends BaseReportesController {
         model.addAttribute("pctUsuariosActivosBar", pctUsuariosActivosBar);
         model.addAttribute("pctDescargasBar", totalDescargas > 0 ? Math.min(100, totalDescargas) : 0);
 
-        // Chatbot Analytics — KPIs por defecto (ultimos 30 dias, sin filtros)
-        // Envuelto en try/catch para que un fallo en el modulo del chatbot NO tumbe la pagina de reportes.
         try {
             Instant hace30dChat = Instant.now().minus(30, ChronoUnit.DAYS);
             var chatStats = chatbotService.calcularEstadisticas(hace30dChat, Instant.now(), excluirSuperadminEnChatbot());
             model.addAttribute("chatStats", chatStats);
         } catch (Exception ex) {
             System.err.println("[reportes] Error cargando chatStats (chatbot): " + ex.getMessage());
-            // KPI vacio para que la UI no se rompa si la BD aun no tiene las tablas/columnas
             model.addAttribute("chatStats", new org.reciclame.demo.dto.ChatbotEstadisticasDTO());
         }
         try {
@@ -426,9 +422,6 @@ public class AdminController extends BaseReportesController {
         var auditorias = excluirSuperadminEnAuditoria()
                 ? auditoriaService.listarAuditoriasParaExportAdmin(5000)
                 : auditoriaService.listarAuditoriasUltimas100();
-        // Para el ADMIN se omite la columna IP (dato sensible: solo el
-        // SUPERADMIN la ve en su exportación). Mismo principio que en la
-        // vista HTML de trazabilidad: mínimo privilegio.
         var pw = response.getWriter();
         pw.println("ID,Fecha,Usuario,Accion,Modulo,Descripcion,Estado");
         for (var a : auditorias) {
@@ -448,20 +441,12 @@ public class AdminController extends BaseReportesController {
         setupCommonAttributes(model, user.getUsername());
         var auditoriasPage = auditoriaService.listarAuditoriasParaTrazabilidadAdmin(0, 100);
 
-        // Mapeamos la entidad Auditoria a un DTO de trazabilidad específico
-        // para ADMIN, que NO expone IP, userAgent, datos anteriores/nuevos,
-        // mensaje de error ni los hashes de la cadena de integridad. Esa
-        // información es exclusiva del SUPERADMIN (trazabilidad de seguridad).
         List<AuditoriaTrazabilidadAdminDTO> auditoriasDto = auditoriasPage.getContent() == null
                 ? java.util.Collections.emptyList()
                 : auditoriasPage.getContent().stream()
                         .map(AuditoriaTrazabilidadAdminDTO::from)
                         .collect(Collectors.toList());
         model.addAttribute("auditorias", auditoriasDto);
-        // totalElements = total real en el sistema (informativo). El filtro de
-        // la tabla es client-side sobre las filas ya cargadas (ver filtrarTraza()
-        // en el template) — nunca busca más allá de esas 100. registrosCargados
-        // deja eso explícito en el footer (mismo fix aplicado en SuperAdmin).
         model.addAttribute("totalElements", auditoriasPage.getTotalElements());
         model.addAttribute("registrosCargados", auditoriasDto.size());
 
@@ -483,7 +468,6 @@ public class AdminController extends BaseReportesController {
             model.addAttribute("conteoPorModulo", java.util.Collections.emptyList());
         }
 
-        // Actividad últimos 7 días
         Instant hace7d = Instant.now().minus(7, ChronoUnit.DAYS);
         var actividadDiaria = auditoriaService.obtenerActividadDiaria(hace7d, Instant.now());
         model.addAttribute("actividadDiaria", actividadDiaria != null ? actividadDiaria : java.util.Collections.emptyList());
@@ -760,44 +744,4 @@ public class AdminController extends BaseReportesController {
         return "Admin/estudios-form";
     }
 
-    /*
-                                                w#dUCw*&r   vd#a*qdoMZ
-                            IW#mzZ8%}          Z#{>><_<<~{oQ,&X+~~~-_?f%;
-                          j&0i!l!!!lfbQ       |a\i}vCOZL\ivb8]+_?{t1}-_ha
-                          8Ll!]|xuux[/a       -q>1/trLXnX[n@}<+trvnzLx][Mv
-                          Bv!?[(nXJJr1o       1k](zZt)/wwtv@]~\z)dwLhdfU#h
-                         dkx]\frttx)jOQ       Qk)(XUuJUUQvqO8/jQ|YXzbbQrvoqaX
-                     {mdYjkr}{fx(\nXUwp  {/"dWdz{]|fvLQCXWm ;ocufLmkqLJ|nCwb#88&#v
-                   *a~_r(/%B[)rr/cnnchwBat]/zX0O)]11(\\\__vW%%8a?[}\JwOp}cmpL/)ftxO%Wn
-                  Uh{1tuYn(x?-{\xYYn\f-!><<?rCZJtxvxzXY\>><<>i!ll+/OZYfcO*X)1(}\1|(/||kM#kOd0
-               n*aMon)\\xuvUY]-]]}{iiii!><!rrU(x~{vXXX(_<>ii~++~<>~-[|w#MMMowLCCCJJLQLCx/t(uCb#O
-         >Y#888hkaaabJvzXC0Qnvvvvnf~iiiiiiil}c!~<<<<<~~~~i~!!-}{}[_1(10kkhha***oooo***#Q)|t|//x*f
-     QU&kv\/jrxxnnnvJ00QQL0OUL0JUYb*bm(i!!i!!>><<<~~~~~~+<~i;~}]]}[}(((Jzct[{uXJ0mwpdbLf)|\\()j@
-    qdx))(\frrrjjf|}}(xXUCQLJC#oaao*o*o\!ii>>>>><<<~~<~<~~<i;I>?11[?[{}]1))))1}[+liuz/)->~_~>-?v&
-   Ld}[}}{1))1{[-{LwbadmJfcXv#&&&&WWWMa?!>i>>><<<><<<<~~~>>!;;i<<_+++_?_--?]]][]_!<a#bYbM#***##Q~
-   Xd1]?????--fXrvOqbhhao*#YXaooh&&&W#q!!!ii>>>>>>>>>>>>>>i!;:I<+~><><~<<>>i><~+_<~#0
-    xbhokbdZn(xYnfuLZqdbhao#WrZ&wuW&W*nlll!!!!iiiiiiii>>ii!l/Wo]>iiiiiii!!!!!!!!!!iX#
-           JZOJ%WYvcLwppdbaoo_UMhroMLa};llIl!!li>i!!!!!i!!!x8Uo{l!!!!!!iiii!!!lllllrh
-               qWJzzJOwqpqpbh0?_(kk-qYiIllllli!!!!!iii!!!l{hk &xl!!i>~+~~~~~~<<!lliZB
-               ]WCXXJOwqdbdkJ|mkn)J]Z?;lI!l!!li>i!!i!!!!l!Uo  Wdl!i<~+++__+++~<>>!>ka
-                BwXXUmqqpdbb+moab|ZrCIIlll!!l!lliii!!!lII~oC  haIlii>_-+__+<<~+_i!!\ho
-                CBYYCmmZpdbbutpp/Oxv1lIIlIl!!!!!l!!!lllIIz%   n&II<>>l>-+>>~>!I!++<?kb
-                C%UYLZZmdkbpqdbwpb(Q~;IllllIlI;llllllllI!%z    B(lI<?+i;<]?+~++>lIi>n*;
-               (#0UCOO0mpdddddkobbqw0l;:;I;IlI!!lllIIII~bL     Bx!<lI_[_ilI<?[]_+~<><aa
-              )baUJQZ00wqdddbkkwqkqbm!>l;;::;IIIlllI;:~p&      ;&Y!>-l;-[[-<!l!~?]]+]8>
-             t%OXUCQ0QZwwqqpppmphpd#Z!i>ii>lII;;;lli<>?b%       mC;;;l~!I<+>~_>>illl(8
-             oMqZmZmmZOmwwpbpqo*wd#*QiiiiIii><<>><<<>>{h*       aX!!iilI><>><<><<+__~&_
-             BwUZwZOLL0Zwppmb*hdoMobm~__-+i+++_-----__)h#ooooooohO\{]>II!!!i>>>l:,l<<8/
-            >8LLYzzCmpbk*%@$$@@@@@@@$$@$$@@@@@@@@@@@@@@$$$$$$$$$$$$$$$@w}IiI!i!i!!!>>hb
-             8bObdpwZJUk@@$$$$$$$$@$$$$$$$$$$$$$$$$$$$$$$$$$$$@@$$$$$8j>>>l!!!l!!>mW
-            O*!>cXCwwwq&@$$$$@&###W@$$$$$$$$$$8#8@$$$$$$$$$$$$$$$BM*@$$$@Xi!!lllll!!!b*
-            hZucccuvJOp%@$$$%" "!!_%$$$$@$$$$$c xB$$$$$$$$$$$z^J$#x|8$$$$bnxxxxnxnnun8c
-                      d&$$$$) }W$BB$hi.  Ik$$$c I; "Z$^   "Zl. ."C<'M$$$$#0
-                      p&$$$$? 1&&- ov {$C .$$$c nBm ~%u:"` rBc X$k! M$$$$#0
-                      p&$$$$a  }t" oZ `U[ -$$$c }U< nC -X1 rBX }Uk! M$$$@#0
-                      QM$$$$$#wmd#m%@ammmbB$$$WwwmmkB@qmm8mo@8wmw&dwB$$$$*x
-                       @@$$$$$$$$@$$$$$$$@$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$@B
-                        B%$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$&M
-                          Q&$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$*J
-    */
 }

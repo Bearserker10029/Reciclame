@@ -25,6 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+// "Mi Unidad" es exclusiva de Socio (explorador tipo Drive por usuario).
+// Todas las operaciones sobre carpetas/items pasan el usuarioId al service
+// junto con el id del recurso — el service valida ahí que sea dueño antes de
+// tocar nada (findCarpetaIfOwned y equivalentes), para que un socio no pueda
+// operar sobre carpetas de otro solo cambiando el id en el request.
 @Controller
 @RequestMapping("/socio/mi-unidad")
 public class MiUnidadController {
@@ -137,9 +142,6 @@ public class MiUnidadController {
         return redirectTrasCarpeta(parentId);
     }
 
-    /**
-     * Añadir documento a Mi Unidad sin redirección (Normativo, Estudios, etc.).
-     */
     @PostMapping(value = "/api/item/agregar", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> apiAgregarItem(
