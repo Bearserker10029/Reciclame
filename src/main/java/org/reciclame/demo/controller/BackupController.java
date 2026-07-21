@@ -66,7 +66,8 @@ public class BackupController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> crearBackup(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody(required = false) Map<String, Object> body) {
+            @RequestBody(required = false) Map<String, Object> body,
+            jakarta.servlet.http.HttpServletRequest request) {
 
         String tipo = body != null && body.get("tipo") != null ? (String) body.get("tipo") : "COMPLETO";
         String notas = body != null && body.get("notas") != null ? (String) body.get("notas") : null;
@@ -77,7 +78,9 @@ public class BackupController {
         }
 
         SolicitudesRespaldo backup = backupService.crearBackupManual(solicitante, tipo, notas);
-        backupService.ejecutarBackupAsync(backup);
+        String ip = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
+        String ua = request.getHeader("User-Agent");
+        backupService.ejecutarBackupAsync(backup, ip, ua);
 
         Map<String, Object> response = new HashMap<>();
         response.put("id", backup.getId());
@@ -104,7 +107,8 @@ public class BackupController {
     public ResponseEntity<Map<String, Object>> restaurarBackup(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestParam(defaultValue = "true") boolean crearBackupSeguridad) {
+            @RequestParam(defaultValue = "true") boolean crearBackupSeguridad,
+            jakarta.servlet.http.HttpServletRequest request) {
 
         Usuario usuario = usuarioRepository.findByCorreoCorporativo(userDetails.getUsername()).orElse(null);
         if (usuario == null || !"SUPERADMIN".equals(usuario.getRol().getNombre())) {
@@ -122,7 +126,9 @@ public class BackupController {
                 return ResponseEntity.badRequest().body(response);
             }
 
-            backupService.restaurarBackupAsync(id, usuario, crearBackupSeguridad);
+            String ip = org.reciclame.demo.util.HttpClientIpResolver.resolve(request);
+            String ua = request.getHeader("User-Agent");
+            backupService.restaurarBackupAsync(id, usuario, crearBackupSeguridad, ip, ua);
 
             Map<String, Object> response = new HashMap<>();
             response.put("id", id);

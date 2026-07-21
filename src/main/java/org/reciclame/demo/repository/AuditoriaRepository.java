@@ -70,7 +70,7 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
     Page<Auditoria> findAllPaginado(Pageable pageable);
 
     @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true " +
-           "AND a.modulo != 'SEGURIDAD' " +
+           "AND a.modulo NOT IN ('SEGURIDAD', 'BACKUPS') " +
            "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO') " +
            "ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findAllExcludingSeguridad(Pageable pageable);
@@ -124,22 +124,11 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
      *  - acciones IMPERSONAR_USUARIO, SALIR_IMPERSONACION, ELIMINAR_USUARIO
      *  - acciones ejecutadas por usuarios con rol SUPERADMIN
      */
-    @Query("""
-            SELECT a FROM Auditoria a
-            WHERE a.estadoActivo = true
-              AND a.modulo != 'SEGURIDAD'
-              AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO')
-              AND (
-                    a.usuarioId IS NULL
-                    OR NOT EXISTS (
-                          SELECT 1 FROM Usuario u
-                          WHERE u.id = a.usuarioId
-                            AND u.rol IS NOT NULL
-                            AND UPPER(u.rol.nombre) = 'SUPERADMIN'
-                    )
-              )
-            ORDER BY a.fechaAccion DESC
-            """)
+    @Query("SELECT a FROM Auditoria a WHERE a.estadoActivo = true " +
+           "AND a.modulo NOT IN ('SEGURIDAD', 'BACKUPS') " +
+           "AND a.accion NOT IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'ELIMINAR_USUARIO') " +
+           "AND a.usuarioId NOT IN (SELECT u.id FROM Usuario u WHERE u.rol.nombre = 'SUPERADMIN') " +
+           "ORDER BY a.fechaAccion DESC")
     Page<Auditoria> findAllExcludingSeguridadYAccionesDeSuperadmin(Pageable pageable);
 
     /**
@@ -199,7 +188,7 @@ public interface AuditoriaRepository extends JpaRepository<Auditoria, Long> {
      * seguridad. Si en el futuro hace falta verlos también desde auditoría,
      * moverlos a una pestaña aparte en lugar de mezclarlos aquí.</p>
      */
-    @Query("SELECT a FROM Auditoria a WHERE (a.modulo = 'SEGURIDAD' OR a.estado = 'FALLIDO' " +
+    @Query("SELECT a FROM Auditoria a WHERE (a.modulo IN ('SEGURIDAD', 'BACKUPS') OR a.estado = 'FALLIDO' " +
            "OR a.accion IN ('IMPERSONAR_USUARIO', 'SALIR_IMPERSONACION', 'BLOQUEAR_USUARIO', " +
            "'ELIMINAR_USUARIO', 'CAMBIAR_PASSWORD')) " +
            "AND a.estadoActivo = true ORDER BY a.fechaAccion DESC")

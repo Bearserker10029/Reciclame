@@ -1,6 +1,8 @@
 package org.reciclame.demo.util;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 public final class HttpClientIpResolver {
 
@@ -31,5 +33,37 @@ public final class HttpClientIpResolver {
             return xri.trim();
         }
         return request.getRemoteAddr();
+    }
+
+    /**
+     * Variante para usar desde cualquier punto del código que esté en el thread
+     * de un request HTTP (controllers, services invocados desde controllers, etc.).
+     * Lee el request actual del {@link RequestContextHolder} que Spring mantiene
+     * por thread durante el ciclo de vida del request.
+     * <p>
+     * Devuelve {@code null} si no hay request activo (ej. scheduler, hilo async
+     * sin contexto propagado, startup). En esos casos el caller debe capturar la
+     * IP en el controller y pasarla explícitamente al service.
+     * </p>
+     */
+    public static String currentIp() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return null;
+        }
+        return resolve(attrs.getRequest());
+    }
+
+    /**
+     * User-Agent del request actual, o {@code null} si no hay request activo.
+     * Complemento de {@link #currentIp()} para auditoría completa.
+     */
+    public static String currentUserAgent() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attrs == null) {
+            return null;
+        }
+        String ua = attrs.getRequest().getHeader("User-Agent");
+        return ua != null && !ua.isBlank() ? ua : null;
     }
 }

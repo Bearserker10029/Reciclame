@@ -2,6 +2,7 @@ package org.reciclame.demo.service;
 
 import org.reciclame.demo.model.Auditoria;
 import org.reciclame.demo.repository.AuditoriaRepository;
+import org.reciclame.demo.util.HttpClientIpResolver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -58,6 +59,20 @@ public class AuditoriaService {
                                     String datosNuevos, String estado, String mensajeError,
                                     String ipAddress, String userAgent) {
         try {
+            // Fallback automático de IP/UA desde el request actual (si estamos en
+            // un thread de HTTP). Permite que los services que llaman a registrarAccion
+            // sin tener HttpServletRequest a mano (los más comunes) capturen
+            // automáticamente la IP pública del usuario que originó la acción.
+            // El caller sigue pudiendo pasar IP/UA explícito (gana sobre el fallback),
+            // que es lo que se usa en @Async y schedulers donde el thread no tiene
+            // un request HTTP activo.
+            if (ipAddress == null) {
+                ipAddress = HttpClientIpResolver.currentIp();
+            }
+            if (userAgent == null) {
+                userAgent = HttpClientIpResolver.currentUserAgent();
+            }
+
             Auditoria auditoria = new Auditoria();
             auditoria.setUsuarioId(usuarioId);
             auditoria.setUsuarioNombre(usuarioNombre != null ? usuarioNombre : "Sistema");

@@ -146,7 +146,7 @@ public class BackupScheduler {
                     notas
             );
 
-            backupService.ejecutarBackupAsync(backup);
+            backupService.ejecutarBackupAsync(backup, null, null);
 
             log.info("Backup programado {} creado exitosamente (tipo={})", backup.getId(), programacion.getTipo());
 

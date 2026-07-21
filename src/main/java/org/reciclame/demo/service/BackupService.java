@@ -223,9 +223,9 @@ public class BackupService {
     }
 
     @Async
-    public CompletableFuture<Void> ejecutarBackupAsync(SolicitudesRespaldo backup) {
+    public CompletableFuture<Void> ejecutarBackupAsync(SolicitudesRespaldo backup, String ipAddress, String userAgent) {
         try {
-            ejecutarBackup(backup);
+            ejecutarBackup(backup, ipAddress, userAgent);
             return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
             log.error("Error ejecutando backup {}: {}", backup.getId(), e.getMessage(), e);
@@ -236,6 +236,11 @@ public class BackupService {
 
     @Transactional
     public void ejecutarBackup(SolicitudesRespaldo backup) {
+        ejecutarBackup(backup, null, null);
+    }
+
+    @Transactional
+    public void ejecutarBackup(SolicitudesRespaldo backup, String ipAddress, String userAgent) {
         backup.setEstado("EN_PROCESO");
         backupRepository.save(backup);
 
@@ -296,7 +301,7 @@ public class BackupService {
             // Auditoría: backup ejecutado OK. Atribuimos al usuario que lo solicitó
             // (en el caso de los programados, es el superAdmin que figure como solicitante;
             // si fue un reintento, sigue siendo el solicitante original).
-            registrarAuditoriaEjecucion(backup, "EXITOSO", null);
+            registrarAuditoriaEjecucion(backup, "EXITOSO", null, ipAddress, userAgent);
 
         } catch (Exception e) {
             backup.setEstado("FALLIDO");
@@ -304,7 +309,7 @@ public class BackupService {
             log.error("Backup {} falló: {}", backup.getId(), e.getMessage(), e);
 
             // Auditoría: backup falló. El error.message queda en mensajeError para diagnóstico.
-            registrarAuditoriaEjecucion(backup, "FALLIDO", e.getMessage());
+            registrarAuditoriaEjecucion(backup, "FALLIDO", e.getMessage(), ipAddress, userAgent);
 
             throw new RuntimeException("Backup falló: " + e.getMessage(), e);
         }
@@ -335,15 +340,16 @@ public class BackupService {
                     AuditoriaService.ACCION_REINTENTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
                     "Reintento de backup ID: " + backupId + " (tipo=" + backup.getTipo() + ")");
 
-            ejecutarBackupAsync(backup);
+            ejecutarBackupAsync(backup, null, null);
         }
     }
 
     @Async
-    public CompletableFuture<Void> restaurarBackupAsync(Long backupId, Usuario usuario, boolean crearBackupSeguridad) {
+    public CompletableFuture<Void> restaurarBackupAsync(Long backupId, Usuario usuario, boolean crearBackupSeguridad,
+                                                        String ipAddress, String userAgent) {
         mantenimientoService.activar("Restauración de backup en curso");
         try {
-            restaurarBackup(backupId, usuario, crearBackupSeguridad);
+            restaurarBackup(backupId, usuario, crearBackupSeguridad, ipAddress, userAgent);
             return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
             log.error("Error restaurando backup {}: {}", backupId, e.getMessage(), e);
@@ -359,6 +365,11 @@ public class BackupService {
     // mantenía una conexión del pool abierta e inútil durante todo el
     // proceso (varios minutos), sin ningún beneficio de atomicidad real.
     public void restaurarBackup(Long backupId, Usuario usuario, boolean crearBackupSeguridad) {
+        restaurarBackup(backupId, usuario, crearBackupSeguridad, null, null);
+    }
+
+    public void restaurarBackup(Long backupId, Usuario usuario, boolean crearBackupSeguridad,
+                                 String ipAddress, String userAgent) {
         SolicitudesRespaldo backup = backupRepository.findById(backupId).orElse(null);
         if (backup == null) {
             throw new RuntimeException("Backup no encontrado");
@@ -399,7 +410,7 @@ public class BackupService {
                     + (purgasCanceladas > 0 ? " — " + purgasCanceladas + " purga(s) de MinIO cancelada(s)" : "");
             registrarAuditoria(usuario, AuditoriaService.ACCION_RESTAURO_BACKUP,
                     AuditoriaService.MODULO_BACKUPS,
-                    descripcionRestore);
+                    descripcionRestore, ipAddress, userAgent);
 
             log.info("Restauración completada desde backup {} por usuario {}", backupId, usuario.getNombreCompleto());
 
@@ -815,6 +826,11 @@ public class BackupService {
      * resto de la auditoría del sistema.
      */
     private void registrarAuditoriaEjecucion(SolicitudesRespaldo backup, String estado, String mensajeError) {
+        registrarAuditoriaEjecucion(backup, estado, mensajeError, null, null);
+    }
+
+    private void registrarAuditoriaEjecucion(SolicitudesRespaldo backup, String estado, String mensajeError,
+                                            String ipAddress, String userAgent) {
         Usuario solicitante = backup.getSolicitadoPor();
         Long usuarioId = solicitante != null ? solicitante.getId() : null;
         String usuarioNombre = solicitante != null ? solicitante.getNombreCompleto() : "Sistema";
@@ -825,11 +841,11 @@ public class BackupService {
         if ("FALLIDO".equals(estado)) {
             auditoriaService.registrarAccionFallida(usuarioId, usuarioNombre,
                     AuditoriaService.ACCION_EJECUTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
-                    descripcion, mensajeError, null, null);
+                    descripcion, mensajeError, ipAddress, userAgent);
         } else {
             auditoriaService.registrarAccion(usuarioId, usuarioNombre,
                     AuditoriaService.ACCION_EJECUTAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
-                    descripcion);
+                    descripcion, null, null, "EXITOSO", null, ipAddress, userAgent);
         }
     }
 
@@ -838,10 +854,16 @@ public class BackupService {
      * Mantiene la firma para no tocar el call site; delega en {@link AuditoriaService}.
      */
     private void registrarAuditoria(Usuario usuario, String accion, String modulo, String descripcion) {
+        registrarAuditoria(usuario, accion, modulo, descripcion, null, null);
+    }
+
+    private void registrarAuditoria(Usuario usuario, String accion, String modulo, String descripcion,
+                                    String ipAddress, String userAgent) {
         try {
             Long usuarioId = usuario != null ? usuario.getId() : null;
             String usuarioNombre = usuario != null ? usuario.getNombreCompleto() : "Sistema";
-            auditoriaService.registrarAccion(usuarioId, usuarioNombre, accion, modulo, descripcion);
+            auditoriaService.registrarAccion(usuarioId, usuarioNombre, accion, modulo, descripcion,
+                    null, null, "EXITOSO", null, ipAddress, userAgent);
         } catch (Exception e) {
             log.warn("No se pudo registrar auditoría: {}", e.getMessage());
         }
