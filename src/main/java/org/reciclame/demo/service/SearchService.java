@@ -34,6 +34,13 @@ import java.util.Locale;
  *       y usuarios con rol SOCIO, VISUALIZADOR o ADMINISTRADOR.</li>
  *   <li>{@code SUPERADMIN} → ve TODO sin filtro, incluyendo usuarios SUPERADMIN.</li>
  * </ul>
+ *
+ * <h3>Filtro por configuración de UI (vía {@code configuracion-vistas.html}):</h3>
+ * Si el SuperAdmin desactivó un módulo (ej. "normativo") para un rol (ej. ADMINISTRADOR),
+ * la búsqueda global NO devuelve resultados de ese módulo para ese rol. Esto evita
+ * que el resultado del buscador sea un link al que el {@code ConfiguracionUiFilter}
+ * después le va a tirar 403 — la lista queda consistente con la sidebar y con el
+ * acceso real.
  */
 @Service
 @Transactional(readOnly = true)
@@ -44,26 +51,31 @@ public class SearchService {
     private static final int MAX_POR_TIPO = 10;
     private static final int QUERY_MIN_LENGTH = 2;
 
-    private static final List<String> SOCIO_TIPOS = Collections.unmodifiableList(
-            Arrays.asList("NORMATIVA", "ESTUDIO"));
-    private static final List<String> VIZ_TIPOS   = Collections.unmodifiableList(
-            Arrays.asList("NORMATIVA", "ESTUDIO"));
+    /** SUPERADMIN ve todos los tipos. Los demás roles los filtran desde la config de UI. */
     private static final List<String> ADMIN_TIPOS = Collections.unmodifiableList(
             Arrays.asList("NORMATIVA", "ESTUDIO", "USUARIO"));
+
+    /** Mapeo de módulo de config → tipo de resultado de búsqueda. */
+    private static final String MOD_NORMATIVA = "normativo";
+    private static final String MOD_ESTUDIOS  = "estudios";
+    private static final String MOD_USUARIOS  = "usuarios";
 
     private final NormativaRepository normativaRepository;
     private final EstudioRepository estudioRepository;
     private final UsuarioRepository usuarioRepository;
     private final ParametrosSistemaService parametrosService;
+    private final ConfiguracionUiRolService uiConfigService;
 
     public SearchService(NormativaRepository normativaRepository,
                          EstudioRepository estudioRepository,
                          UsuarioRepository usuarioRepository,
-                         ParametrosSistemaService parametrosService) {
+                         ParametrosSistemaService parametrosService,
+                         ConfiguracionUiRolService uiConfigService) {
         this.normativaRepository = normativaRepository;
         this.estudioRepository = estudioRepository;
         this.usuarioRepository = usuarioRepository;
         this.parametrosService = parametrosService;
+        this.uiConfigService = uiConfigService;
     }
 
     public SearchResponseDTO buscar(String queryRaw, String rolEfectivo) {
@@ -99,17 +111,32 @@ public class SearchService {
 
     // ─── Reglas de visibilidad ───────────────────────────────────
 
+    /**
+     * Devuelve los tipos de resultado que el rol puede VER en la búsqueda global.
+     * Aplica el filtro de {@code ConfiguracionUiRolService} para respetar lo
+     * que el SuperAdmin configuró en {@code configuracion-vistas.html}: si un
+     * módulo (ej. "normativo") está deshabilitado para el rol, no se incluyen
+     * resultados de ese tipo.
+     * <p>
+     * SUPERADMIN bypasea el filtro de UI (puede ver todo, igual que el resto
+     * de la app).
+     * </p>
+     */
     private List<String> tiposPermitidosParaRol(String rol) {
-        if ("SOCIO".equals(rol)) {
-            return SOCIO_TIPOS;            // NORMATIVA + ESTUDIO (públicos y privados)
-        }
-        if ("VISUALIZADOR".equals(rol)) {
-            return VIZ_TIPOS;              // NORMATIVA + ESTUDIO (solo públicos)
-        }
-        if ("ADMINISTRADOR".equals(rol) || "SUPERADMIN".equals(rol)) {
+        if ("SUPERADMIN".equals(rol)) {
             return ADMIN_TIPOS;
         }
-        return Collections.emptyList(); // rol desconocido → sin resultados
+        // SOCIO / VISUALIZADOR / ADMINISTRADOR: solo los módulos que el SuperAdmin
+        // les dejó habilitados en la config de UI.
+        List<String> modulosHabilitados = uiConfigService.getModulosSidebar(rol);
+        if (modulosHabilitados == null || modulosHabilitados.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> tipos = new ArrayList<>(3);
+        if (modulosHabilitados.contains(MOD_NORMATIVA)) tipos.add("NORMATIVA");
+        if (modulosHabilitados.contains(MOD_ESTUDIOS))  tipos.add("ESTUDIO");
+        if (modulosHabilitados.contains(MOD_USUARIOS))  tipos.add("USUARIO");
+        return tipos;
     }
 
     /**

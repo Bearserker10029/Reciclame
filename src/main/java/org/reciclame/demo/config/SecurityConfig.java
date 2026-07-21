@@ -30,6 +30,7 @@ public class SecurityConfig {
     private final AccessDeniedHandler accessDeniedHandler;
     private final ForzarCambioPasswordFilter forzarCambioPasswordFilter;
     private final MantenimientoGlobalFilter mantenimientoGlobalFilter;
+    private final ConfiguracionUiFilter configuracionUiFilter;
     private final LogoutHandler auditLogoutHandler;
 
     public SecurityConfig(UserDetailsService userDetailsService,
@@ -38,6 +39,7 @@ public class SecurityConfig {
                           AccessDeniedHandler accessDeniedHandler,
                           ForzarCambioPasswordFilter forzarCambioPasswordFilter,
                           MantenimientoGlobalFilter mantenimientoGlobalFilter,
+                          ConfiguracionUiFilter configuracionUiFilter,
                           LogoutHandler auditLogoutHandler) {
         this.userDetailsService = userDetailsService;
         this.successHandler = successHandler;
@@ -45,6 +47,7 @@ public class SecurityConfig {
         this.accessDeniedHandler = accessDeniedHandler;
         this.forzarCambioPasswordFilter = forzarCambioPasswordFilter;
         this.mantenimientoGlobalFilter = mantenimientoGlobalFilter;
+        this.configuracionUiFilter = configuracionUiFilter;
         this.auditLogoutHandler = auditLogoutHandler;
     }
 
@@ -139,7 +142,11 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable())
                 .addFilterAfter(forzarCambioPasswordFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(mantenimientoGlobalFilter, ForzarCambioPasswordFilter.class);
+                .addFilterAfter(mantenimientoGlobalFilter, ForzarCambioPasswordFilter.class)
+                // El check de módulos por rol corre DESPUÉS de los filtros críticos
+                // (auth, password change, mantenimiento) para que esos casos
+                // especiales se atiendan primero.
+                .addFilterAfter(configuracionUiFilter, MantenimientoGlobalFilter.class);
 
         return http.build();
     }
