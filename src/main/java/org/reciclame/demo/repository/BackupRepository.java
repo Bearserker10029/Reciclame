@@ -16,6 +16,13 @@ public interface BackupRepository extends JpaRepository<SolicitudesRespaldo, Lon
 
     List<SolicitudesRespaldo> findByEstadoAndEstadoActivoTrueOrderByCreatedAtDesc(String estado);
 
+    /**
+     * Busca el backup de emergencia más reciente (storageKey fijo) y activo.
+     * Se usa en {@code BackupService.eliminarBackupEmergenciaAnterior} antes de
+     * crear un nuevo backup de emergencia (solo 1 archivo a la vez).
+     */
+    SolicitudesRespaldo findFirstByStorageKeyAndEstadoActivoOrderByIdDesc(String storageKey, Boolean estadoActivo);
+
     @Query("SELECT b FROM SolicitudesRespaldo b WHERE b.estado = :estado AND b.estadoActivo = true ORDER BY b.createdAt DESC")
     List<SolicitudesRespaldo> findByEstado(@Param("estado") String estado);
 

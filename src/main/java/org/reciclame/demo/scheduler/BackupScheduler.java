@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -43,8 +44,16 @@ public class BackupScheduler {
         }
     }
 
+    /**
+     * Decide si una programación debe ejecutarse AHORA. Para backups de tipo
+     * {@code EMERGENCIA} se ignora el flag {@code habilitado} (no se puede
+     * desactivar) y la ventana es de 72h en vez de "hoy". Para los demás tipos
+     * se mantiene el comportamiento legacy (diario, respeta habilitado).
+     */
     private boolean debeEjecutar(ProgramacionBackup programacion) {
-        if (!programacion.getHabilitado()) {
+        boolean esEmergencia = "EMERGENCIA".equalsIgnoreCase(programacion.getTipo());
+
+        if (!esEmergencia && !programacion.getHabilitado()) {
             return false;
         }
 
@@ -57,10 +66,20 @@ public class BackupScheduler {
             return false;
         }
 
-        if (!fueEjecutadoHoy(programacion)) {
-            return true;
+        if (esEmergencia) {
+            return !fueEjecutadoEnUltimasHoras(72);
         }
+        return !fueEjecutadoHoy(programacion);
+    }
 
+    private boolean fueEjecutadoEnUltimasHoras(int horas) {
+        Instant limite = Instant.now().minus(Duration.ofHours(horas));
+        List<SolicitudesRespaldo> backupsRecientes = backupService.findByEstado("COMPLETADO");
+        for (SolicitudesRespaldo backup : backupsRecientes) {
+            if (backup.getCreatedAt() != null && backup.getCreatedAt().isAfter(limite)) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -88,6 +107,22 @@ public class BackupScheduler {
     private void ejecutarBackupProgramado(ProgramacionBackup programacion) {
         log.info("Ejecutando backup programado: {} - {}", programacion.getTipo(), programacion.getFrecuencia());
 
+        boolean esEmergencia = "EMERGENCIA".equalsIgnoreCase(programacion.getTipo());
+
+        // Si es un backup de emergencia, primero limpiamos el anterior para que
+        // solo exista 1 archivo a la vez. No aborta si falla: la prioridad es
+        // tener un backup fresco.
+        if (esEmergencia) {
+            try {
+                Long idAnterior = backupService.eliminarBackupEmergenciaAnterior();
+                if (idAnterior != null) {
+                    log.info("Backup de emergencia anterior (ID={}) marcado para reemplazo", idAnterior);
+                }
+            } catch (Exception e) {
+                log.warn("No se pudo limpiar backup emergencia anterior (continúa con el nuevo): {}", e.getMessage());
+            }
+        }
+
         Usuario superAdmin = usuarioRepository.findById(1L).orElse(null);
         if (superAdmin == null) {
             superAdmin = usuarioRepository.findAll().stream()
@@ -113,7 +148,7 @@ public class BackupScheduler {
 
             backupService.ejecutarBackupAsync(backup);
 
-            log.info("Backup programado {} creado exitosamente", backup.getId());
+            log.info("Backup programado {} creado exitosamente (tipo={})", backup.getId(), programacion.getTipo());
 
         } catch (Exception e) {
             log.error("Error ejecutando backup programado: {}", e.getMessage(), e);
@@ -130,14 +165,17 @@ public class BackupScheduler {
     private void crearProgramacionDefault() {
         try {
             ProgramacionBackup defaultProg = new ProgramacionBackup();
-            defaultProg.setTipo("COMPLETO");
-            defaultProg.setFrecuencia("DIARIA");
+            // Política actual: 1 backup de emergencia cada 72h, no desactivable.
+            // El archivo se llama siempre backup_emergencia.sql y sobreescribe
+            // al anterior (solo 1 archivo en disco a la vez).
+            defaultProg.setTipo("EMERGENCIA");
+            defaultProg.setFrecuencia("CADA_72H");
             defaultProg.setHoraEjecucion(LocalTime.of(2, 0));
             defaultProg.setHabilitado(true);
             defaultProg.setEstadoActivo(true);
 
             backupService.crearProgramacion(defaultProg);
-            log.info("Programación de backup diario creada por defecto (02:00)");
+            log.info("Programación de backup de emergencia creada por defecto (cada 72h, 02:00, no desactivable)");
         } catch (Exception e) {
             log.warn("No se pudo crear programación default: {}", e.getMessage());
         }

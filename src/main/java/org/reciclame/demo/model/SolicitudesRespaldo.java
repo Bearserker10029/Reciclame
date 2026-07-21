@@ -33,8 +33,8 @@ public class SolicitudesRespaldo {
     private Usuario solicitadoPor;
 
     @NotBlank(message = "El tipo de respaldo es obligatorio")
-    @Pattern(regexp = "^(COMPLETO|PARCIAL_USUARIOS|PARCIAL_DOCUMENTOS|PARCIAL_LOGS)$",
-            message = "El tipo debe ser COMPLETO, PARCIAL_USUARIOS, PARCIAL_DOCUMENTOS o PARCIAL_LOGS")
+    @Pattern(regexp = "^(COMPLETO|PARCIAL_USUARIOS|PARCIAL_DOCUMENTOS|PARCIAL_LOGS|EMERGENCIA)$",
+            message = "El tipo debe ser COMPLETO, PARCIAL_USUARIOS, PARCIAL_DOCUMENTOS, PARCIAL_LOGS o EMERGENCIA")
     @ColumnDefault("'COMPLETO'")
     @Column(name = "tipo", nullable = false, length = 30)
     private String tipo;

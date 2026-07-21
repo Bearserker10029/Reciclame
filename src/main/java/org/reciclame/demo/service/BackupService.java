@@ -1,9 +1,13 @@
 package org.reciclame.demo.service;
 
+import org.reciclame.demo.model.Estudio;
+import org.reciclame.demo.model.Normativa;
 import org.reciclame.demo.model.ProgramacionBackup;
 import org.reciclame.demo.model.SolicitudesRespaldo;
 import org.reciclame.demo.model.Usuario;
 import org.reciclame.demo.repository.BackupRepository;
+import org.reciclame.demo.repository.EstudioRepository;
+import org.reciclame.demo.repository.NormativaRepository;
 import org.reciclame.demo.repository.ProgramacionBackupRepository;
 import org.reciclame.demo.repository.UsuarioRepository;
 import org.slf4j.Logger;
@@ -102,6 +106,10 @@ public class BackupService {
     private final UsuarioRepository usuarioRepository;
     private final NotificacionService notificacionService;
     private final MantenimientoGlobalService mantenimientoService;
+    private final MinioPendingDeletionService minioPendingDeletionService;
+    private final MinioStorageService minioStorageService;
+    private final EstudioRepository estudioRepository;
+    private final NormativaRepository normativaRepository;
 
     @Value("${spring.datasource.url}")
     private String datasourceUrl;
@@ -120,13 +128,21 @@ public class BackupService {
                          AuditoriaService auditoriaService,
                          UsuarioRepository usuarioRepository,
                          NotificacionService notificacionService,
-                         MantenimientoGlobalService mantenimientoService) {
+                         MantenimientoGlobalService mantenimientoService,
+                         MinioPendingDeletionService minioPendingDeletionService,
+                         MinioStorageService minioStorageService,
+                         EstudioRepository estudioRepository,
+                         NormativaRepository normativaRepository) {
         this.backupRepository = backupRepository;
         this.programacionRepository = programacionRepository;
         this.auditoriaService = auditoriaService;
         this.usuarioRepository = usuarioRepository;
         this.notificacionService = notificacionService;
         this.mantenimientoService = mantenimientoService;
+        this.minioPendingDeletionService = minioPendingDeletionService;
+        this.minioStorageService = minioStorageService;
+        this.estudioRepository = estudioRepository;
+        this.normativaRepository = normativaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -370,14 +386,20 @@ public class BackupService {
 
             ejecutarSqlViaJdbc(jdbcUrl, archivoPath, 300);
 
+            int purgasCanceladas = cancelarPurgasDeDocsActivos();
+            log.info("Restauración: {} purgas de MinIO canceladas por documentos activos tras el restore", purgasCanceladas);
+
             backup.setRestauradoPor(usuario);
             backup.setFechaRestauracion(Instant.now());
             backup.setEstado("COMPLETADO");
             backupRepository.save(backup);
 
+            String descripcionRestore = "Restauración desde backup ID: " + backupId
+                    + " (" + backup.getStorageKey() + ")"
+                    + (purgasCanceladas > 0 ? " — " + purgasCanceladas + " purga(s) de MinIO cancelada(s)" : "");
             registrarAuditoria(usuario, AuditoriaService.ACCION_RESTAURO_BACKUP,
                     AuditoriaService.MODULO_BACKUPS,
-                    "Restauración desde backup ID: " + backupId + " (" + backup.getStorageKey() + ")");
+                    descripcionRestore);
 
             log.info("Restauración completada desde backup {} por usuario {}", backupId, usuario.getNombreCompleto());
 
@@ -406,6 +428,54 @@ public class BackupService {
         String dbName = extraerDbName(datasourceUrl);
         return "jdbc:mysql://" + host + ":" + port + "/" + dbName
                 + "?useSSL=false&serverTimezone=America/Lima&allowPublicKeyRetrieval=true";
+    }
+
+    /**
+     * Cancela las purgas pendientes de MinIO para cualquier documento (estudio o
+     * normativa) que tras el restore quedó con {@code estadoActivo=true}. Sin
+     * esto, el {@code MinioCleanupScheduler} procesaría la fila resurrecta y
+     * borraría físicamente el archivo aunque el admin acaba de restaurar el
+     * documento, dejándolo con URL rota.
+     * <p>
+     * Idempotente: si no hay archivoUrl, si la URL no es de MinIO, o si no hay
+     * una purga pendiente, simplemente no hace nada para ese documento.
+     * </p>
+     *
+     * @return cantidad de purgas efectivamente canceladas
+     */
+    private int cancelarPurgasDeDocsActivos() {
+        int cancelados = 0;
+        try {
+            for (Estudio e : estudioRepository.findByEstadoActivoTrue()) {
+                if (e.getArchivoUrl() != null && !e.getArchivoUrl().isBlank()) {
+                    try {
+                        String objectName = minioStorageService.getObjectNameFromUrl(e.getArchivoUrl());
+                        if (minioPendingDeletionService.cancelarEliminacion(objectName)) {
+                            cancelados++;
+                            log.debug("Restore canceló purga pendiente de estudio {} (objectName={})", e.getId(), objectName);
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Restore no pudo evaluar purga de estudio {}: {}", e.getId(), ex.getMessage());
+                    }
+                }
+            }
+            for (Normativa n : normativaRepository.findByEstadoActivoTrue()) {
+                if (n.getArchivoUrl() != null && !n.getArchivoUrl().isBlank()) {
+                    try {
+                        String objectName = minioStorageService.getObjectNameFromUrl(n.getArchivoUrl());
+                        if (minioPendingDeletionService.cancelarEliminacion(objectName)) {
+                            cancelados++;
+                            log.debug("Restore canceló purga pendiente de normativa {} (objectName={})", n.getId(), objectName);
+                        }
+                    } catch (Exception ex) {
+                        log.warn("Restore no pudo evaluar purga de normativa {}: {}", n.getId(), ex.getMessage());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error cancelando purgas post-restore (continúa de todas formas): {}", e.getMessage(), e);
+        }
+        return cancelados;
     }
 
     private void ejecutarSqlViaJdbc(String jdbcUrl, Path archivoPath, int timeoutSeconds) throws Exception {
@@ -585,6 +655,11 @@ public class BackupService {
     @Transactional
     public ProgramacionBackup toggleProgramacion(Long id) {
         ProgramacionBackup programacion = programacionRepository.findById(id).orElse(null);
+        if (programacion != null && "EMERGENCIA".equalsIgnoreCase(programacion.getTipo())) {
+            throw new IllegalStateException(
+                    "La programación de backup de emergencia es obligatoria y no se puede desactivar. "
+                  + "Si necesitás un mantenimiento programado, eliminá la programación y recreala después.");
+        }
         if (programacion != null) {
             programacion.setHabilitado(!programacion.getHabilitado());
             return programacionRepository.save(programacion);
@@ -620,6 +695,37 @@ public class BackupService {
                     AuditoriaService.ACCION_ELIMINAR_BACKUP, AuditoriaService.MODULO_BACKUPS,
                     descripcion);
         });
+    }
+
+    /**
+     * Busca el backup de emergencia anterior (el más reciente con
+     * {@code storage_key=backup_emergencia.sql} y {@code estado_activo=true}) y lo
+     * elimina: borra el archivo del disco y marca la fila como inactiva. La fila
+     * queda en BD para auditoría.
+     * <p>
+     * Se usa antes de crear un nuevo backup de emergencia: por política solo existe
+     * UN archivo de emergencia a la vez, el nuevo sobreescribe al anterior.
+     * </p>
+     *
+     * @return id del backup anterior eliminado, o null si no había
+     */
+    @Transactional
+    public Long eliminarBackupEmergenciaAnterior() {
+        SolicitudesRespaldo anterior = backupRepository
+                .findFirstByStorageKeyAndEstadoActivoOrderByIdDesc("backup_emergencia.sql", true);
+        if (anterior == null) {
+            return null;
+        }
+        try {
+            Path archivoPath = Paths.get(backupPath, anterior.getStorageKey());
+            Files.deleteIfExists(archivoPath);
+        } catch (IOException e) {
+            log.warn("No se pudo eliminar archivo de backup emergencia anterior: {}", e.getMessage());
+        }
+        anterior.setEstadoActivo(false);
+        backupRepository.save(anterior);
+        log.info("Backup de emergencia anterior (ID={}) reemplazado por uno nuevo", anterior.getId());
+        return anterior.getId();
     }
 
     public boolean esHoraDeEjecutar(ProgramacionBackup programacion) {
@@ -685,7 +791,19 @@ public class BackupService {
         return dbName.isEmpty() ? "reciclame_db" : dbName;
     }
 
+    /**
+     * Nombre del archivo .sql en disco.
+     * <p>
+     * Para tipo {@code EMERGENCIA} se usa un nombre fijo ({@code backup_emergencia.sql})
+     * porque por política solo existe un backup de emergencia a la vez: el nuevo
+     * sobreescribe al anterior. Para los demás tipos se usa un nombre con timestamp
+     * (un archivo por corrida, conserva historial).
+     * </p>
+     */
     private String generarNombreArchivo(String tipo) {
+        if ("EMERGENCIA".equalsIgnoreCase(tipo)) {
+            return "backup_emergencia.sql";
+        }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
         String timestamp = java.time.LocalDateTime.now(ZoneId.of("America/Lima")).format(formatter);
         return "backup_" + tipo.toLowerCase() + "_" + timestamp + ".sql";
