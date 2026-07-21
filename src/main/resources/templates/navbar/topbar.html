@@ -435,7 +435,7 @@
       <script src="https://unpkg.com/centrifuge@5.3.5/dist/centrifuge.js"></script>
       <script th:inline="javascript">
         (function () {
-          const WS_URL =  'ws://localhost:8001/connection/websocket';
+          const WS_URL = /*[[${@environment.getProperty('centrifugo.ws.url', 'ws://localhost:8001/connection/websocket')}]]*/ 'ws://localhost:8001/connection/websocket';
 
           let centrifuge = null, suscripcion = null;
           let miId = null;
@@ -460,7 +460,7 @@
               gain.gain.setValueAtTime(0.18, audioCtx.currentTime);
               gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
               osc.start(); osc.stop(audioCtx.currentTime + 0.25);
-            } catch (e) {  }
+            } catch (e) { /* silencioso */ }
           }
           function pedirPermisoNotif() {
             if (!('Notification' in window)) return;

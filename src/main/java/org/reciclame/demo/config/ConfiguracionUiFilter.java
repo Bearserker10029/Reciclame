@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -55,6 +56,10 @@ public class ConfiguracionUiFilter extends OncePerRequestFilter {
             "cambiar-password"
     );
 
+    private static final Map<String, String> MODULE_ALIASES = Map.of(
+            "documentos", "admin-docs"
+    );
+
     private static final List<String> ROL_PREFIXES = Arrays.asList(
             "/admin", "/superadmin", "/socio", "/visualizador"
     );
@@ -81,6 +86,7 @@ public class ConfiguracionUiFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        modulo = normalizeModule(modulo);
 
         if (MODULOS_SIEMPRE_PERMITIDOS.contains(modulo)) {
             filterChain.doFilter(request, response);
@@ -155,6 +161,10 @@ public class ConfiguracionUiFilter extends OncePerRequestFilter {
      * {@code /admin}                  → null (es solo el prefijo de rol)
      * {@code /admin/}                 → null
      */
+    private String normalizeModule(String modulo) {
+        return MODULE_ALIASES.getOrDefault(modulo, modulo);
+    }
+
     private String extractModulo(String uri, String prefix) {
         if (!uri.startsWith(prefix + "/")) {
             return null;
